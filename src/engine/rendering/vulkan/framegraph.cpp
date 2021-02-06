@@ -211,18 +211,7 @@ namespace RHI::Vulkan
 
   void RenderGraph::Execute()
   {
-    std::vector<vk::ClearValue> clearColors;
-    for (const ImageAttachment& img : imageAttachments)
-    {
-      vk::ClearValue clearValue;
-
-      if (img.type == ImageType::DepthOnlyAttachment || img.type == ImageType::DepthStencilAttachment || img.type == ImageType::StencilOnlyAttachment)
-        clearValue = vk::ClearDepthStencilValue(1.0f, 0.0f);
-      else
-        clearValue = vk::ClearColorValue{ std::array<float,4>{ 0.5529f, 0.6f, 0.6823f, 1.0f} };
-
-      clearColors.push_back(clearValue);
-    }
+    std::vector<vk::ClearValue> clearColors = GetClearColorsForImageAttachments();
 
     const auto rpBeginInfo = vk::RenderPassBeginInfo()
       .setRenderPass(renderPass)
@@ -249,44 +238,33 @@ namespace RHI::Vulkan
 
       context.subpassNumber = subpass.id;
       context.outputAttachmentBlendStates = subpass.outputAttachmentBlendStates;
+
       subpass.renderCallback(context);
 
       if (i != (subpasses.size() - 1))
-      {
         cmdBuffer.nextSubpass(vk::SubpassContents::eInline);
-
-        std::vector<vk::ImageMemoryBarrier> imageMemoryBarriers = GetImageMemoryBarriersForSubpass(subpass);
-        if (imageMemoryBarriers.size() != 0)
-        {
-          cmdBuffer.pipelineBarrier(
-            vk::PipelineStageFlagBits::eFragmentShader,
-            vk::PipelineStageFlagBits::eFragmentShader,
-            vk::DependencyFlagBits{},
-            0, nullptr,
-            0, nullptr,
-            imageMemoryBarriers.size(), imageMemoryBarriers.data()
-          );
-        }
-      }
     }
 
     cmdBuffer.endRenderPass();
     cmdBuffer.end();
   }
 
-  std::vector<vk::ImageMemoryBarrier> RenderGraph::GetImageMemoryBarriersForSubpass(const RenderSubpass& subpass) const
+  std::vector<vk::ClearValue> RenderGraph::GetClearColorsForImageAttachments() const
   {
-    std::vector<vk::ImageMemoryBarrier> barriers;
-
-    for (const ResourceId& resourceId : subpass.inputSamplers)
+    std::vector<vk::ClearValue> clearColors;
+    for (const ImageAttachment& img : imageAttachments)
     {
-      const AttachmentId attId = resourceIdToAttachmentIdMap.at(resourceId);
-      const ImageAttachment& attachment = imageAttachments[attId];
+      vk::ClearValue clearValue;
 
-      barriers.push_back(core.GetImageMemoryBarrier(attachment.view, attachment.type));
+      if (img.type == ImageType::DepthOnlyAttachment || img.type == ImageType::DepthStencilAttachment || img.type == ImageType::StencilOnlyAttachment)
+        clearValue = vk::ClearDepthStencilValue(1.0f, 0.0f);
+      else
+        clearValue = vk::ClearColorValue{ std::array<float,4>{ 0.5529f, 0.6f, 0.6823f, 0.0f} };
+
+      clearColors.push_back(clearValue);
     }
 
-    return barriers;
+    return clearColors;
   }
 
   vk::RenderPass RenderGraph::CreateRenderpass()

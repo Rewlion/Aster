@@ -639,6 +639,7 @@ namespace RHI::Vulkan
     case ImageType::Present:
       oldLayout = vk::ImageLayout::ePresentSrcKHR;
       newLayout = vk::ImageLayout::ePresentSrcKHR;
+      break;
 
     default:
       throw std::runtime_error("GetImageMemoryBarriersForSubpass: unsupported image type");
@@ -646,7 +647,7 @@ namespace RHI::Vulkan
 
     return vk::ImageMemoryBarrier{}
       .setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)
-      .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)
+      .setDstAccessMask(vk::AccessFlags{})
       .setOldLayout(oldLayout)
       .setNewLayout(newLayout)
       .setSrcQueueFamilyIndex(graphicsFamilyIndex)

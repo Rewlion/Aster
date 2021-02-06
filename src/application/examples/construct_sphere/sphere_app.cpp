@@ -113,13 +113,23 @@ void SphereConstructDemo::Dt(float dt)
 {
   RHI::Vulkan::RenderGraph* rg =  m_VkCore->BeginFrame();
 
+  if (m_Mesh.isRebuildRequired)
+    RebuildMesh();
+
   rg->AddRenderSubpass()
-    .AddExistOutputColorAttachment(BACKBUFFER_RESOURCE_ID)
+    .AddExistOutputColorAttachment(
+      BACKBUFFER_RESOURCE_ID,
+      vk::PipelineColorBlendAttachmentState{}
+        .setBlendEnable(true)
+        .setColorBlendOp(vk::BlendOp::eAdd)
+        .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
+        .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
+        .setColorWriteMask(RHI::Vulkan::ColorWriteAll)
+    )
     .SetRenderCallback([&](RHI::Vulkan::FrameContext& ctx) 
     {
-        if (m_Mesh.indexCount == 0)
-          return;
-
+      if (m_Mesh.indexCount != 0)
+      {
         const RHI::Vulkan::RasterizationMode rasterMode = m_CullNone ? RHI::Vulkan::WireframeNoCullMode : RHI::Vulkan::WireframeMode;
         RHI::Vulkan::Pipeline* pipeline = ctx.GetPipeline(*m_LineShader, GetLinesVID(), vk::PrimitiveTopology::eTriangleList, RHI::Vulkan::DisableDepthTest, rasterMode);
         ctx.commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->GetPipeline());
@@ -128,7 +138,7 @@ void SphereConstructDemo::Dt(float dt)
         {
           glm::mat4 Projection;
           glm::mat4 View;
-        } camera {
+        } camera{
             m_Camera.GetProjection(),
             m_Camera.GetView()
         };
@@ -143,34 +153,35 @@ void SphereConstructDemo::Dt(float dt)
         ctx.commandBuffer.bindIndexBuffer(m_Mesh.indexBuffer.GetBuffer(), 0, vk::IndexType::eUint32);
 
         ctx.commandBuffer.drawIndexed(m_Mesh.indexCount, 1, 0, 0, 0);
+      }
+
+      const auto lastSegments = m_Segments;
+      const auto lastRadius = m_SphereRadius;
+      m_GUI.DrawGUI(ctx, [&]()
+        {
+          ImGui::Begin("Settings");
+          ImGui::SliderInt("segments", &m_Segments, 0, 7, "%d");
+          ImGui::SliderFloat("sphere's radius", &m_SphereRadius, 1.0f, 10.0f, "%.3f");
+          ImGui::Checkbox("cull none", &m_CullNone);
+          ImGui::End();
+        });
+
+      m_Mesh.isRebuildRequired = (lastSegments != m_Segments) || (lastRadius != m_SphereRadius);
     });
 
-  const auto lastSegments = m_Segments;
-  const auto lastRadius = m_SphereRadius;
-
-  m_GUI.AddGUIRenderingSubpass(rg, false, [&]()
-  {
-    ImGui::Begin("Settings");
-    ImGui::SliderInt("segments", &m_Segments, 0, 7, "%d");
-    ImGui::SliderFloat("sphere's radius", &m_SphereRadius, 1.0f, 10.0f, "%.3f");
-    ImGui::Checkbox("cull none", &m_CullNone);
-    ImGui::End();
-  });
-
   m_VkCore->EndFrame();
-
-  const bool needToRebuildMesh = (lastSegments != m_Segments) || (lastRadius != m_SphereRadius);
-  if (needToRebuildMesh)
-    RebuildMesh();
 }
 
 
 void SphereConstructDemo::RebuildMesh()
 {
+  m_VkCore->GetLogicalDevice().waitIdle();
   auto [vertices, indices] = Utils::GenerateSphere(m_Segments, m_SphereRadius);
 
   m_Mesh.vertexBuffer = m_VkCore->AllocateDeviceBuffer(vertices.data(), vertices.size() * sizeof(vertices[0]), vk::BufferUsageFlagBits::eVertexBuffer);
   m_Mesh.indexBuffer = m_VkCore->AllocateDeviceBuffer(indices.data(), indices.size() * sizeof(indices[0]), vk::BufferUsageFlagBits::eIndexBuffer);
   m_Mesh.indexCount = indices.size();
+
+  m_Mesh.isRebuildRequired = false;
 }
 

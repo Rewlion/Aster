@@ -17,6 +17,8 @@ namespace RHI::Vulkan
   class Core;
 
   class RenderGraph;
+
+  class FrameContext;
 }
 
 namespace GUI
@@ -32,7 +34,7 @@ namespace GUI
   public:
     ImGuiBackend(GLFWwindow* wnd, RHI::Vulkan::Core& vkCore);
 
-    void AddGUIRenderingSubpass(RHI::Vulkan::RenderGraph* rg, bool isBarrierForOutputColorAttachmentRequired, std::function<void()> renderCallback);
+    void DrawGUI(RHI::Vulkan::FrameContext& ctx, std::function<void()> renderCallback);
 
   private:
     std::tuple<RHI::Vulkan::Buffer, RHI::Vulkan::Buffer, size_t> GatherDrawBuffers(const ImDrawData* drawData);

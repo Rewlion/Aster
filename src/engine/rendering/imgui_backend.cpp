@@ -96,73 +96,56 @@ namespace GUI
     };
   }
 
-  void ImGuiBackend::AddGUIRenderingSubpass(RHI::Vulkan::RenderGraph* rg, bool isBarrierForOutputColorAttachmentRequired, std::function<void()> renderCallback)
+  void ImGuiBackend::DrawGUI(RHI::Vulkan::FrameContext& ctx, std::function<void()> renderCallback)
   {
     savedRenderCallback = renderCallback;
-    RHI::Vulkan::RenderSubpass& sp = rg->AddRenderSubpass();
 
-    if (isBarrierForOutputColorAttachmentRequired)
-      sp.AddInputSampler(BACKBUFFER_RESOURCE_ID);
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    savedRenderCallback();
+    ImGui::Render();
 
-    sp.AddExistOutputColorAttachment(
-      BACKBUFFER_RESOURCE_ID,
-      vk::PipelineColorBlendAttachmentState{}
-        .setBlendEnable(true)
-        .setColorBlendOp(vk::BlendOp::eAdd)
-        .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
-        .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
-        .setColorWriteMask(RHI::Vulkan::ColorWriteAll)
-    )
-      .SetRenderCallback([&](RHI::Vulkan::FrameContext& ctx)
+    ImDrawData* drawData = ImGui::GetDrawData();
+    if (drawData == nullptr || drawData->TotalVtxCount <= 0)
+      return;
+
+    FrameResources& fResources = frameResources[iFrame % frameResources.size()];
+
+    auto [vertices, indices, vertexCount] = GatherDrawBuffers(drawData);
+
+    fResources.vertexBuffer = std::move(vertices);
+    fResources.indexBuffer = std::move(indices);
+
+    RHI::Vulkan::Pipeline* pipeline = ctx.GetPipeline(*imguiProgram, GetImGuiVID(), vk::PrimitiveTopology::eTriangleList, RHI::Vulkan::DisableDepthTest, RHI::Vulkan::FillMode);
+    ctx.commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->GetPipeline());
+
+    RHI::Vulkan::UniformsAccessor* uniforms = ctx.GetUniformsAccessor(*imguiProgram);
+    uniforms->SetSampler2D("sTexture", fontTexture);
+
+    ImGuiConstants constants = GetImGuiScaleTranslate(drawData);
+    uniforms->SetUniformBuffer("Constants", &constants);
+
+    std::vector<vk::DescriptorSet> descriptorSets = uniforms->GetUpdatedDescriptorSets();
+    ctx.commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline->GetLayout(), 0, descriptorSets.size(), descriptorSets.data(), 0, nullptr);
+
+    vk::DeviceSize offset = 0;
+    ctx.commandBuffer.bindVertexBuffers(0, 1, &fResources.vertexBuffer.GetBuffer(), &offset);
+    ctx.commandBuffer.bindIndexBuffer(fResources.indexBuffer.GetBuffer(), 0, vk::IndexType::eUint32);
+
+    uint32_t indexOffset = 0;
+    uint32_t vertexOffset = 0;
+    for (int nCmdList = 0; nCmdList < drawData->CmdListsCount; ++nCmdList)
+    {
+      ImDrawList* cmdList = drawData->CmdLists[nCmdList];
+      for (int nCmd = 0; nCmd < cmdList->CmdBuffer.size(); ++nCmd)
       {
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        savedRenderCallback();
-        ImGui::Render();
-
-        ImDrawData* drawData = ImGui::GetDrawData();
-        if (drawData == nullptr || drawData->TotalVtxCount <= 0)
-          return;
-
-        FrameResources& fResources = frameResources[iFrame % frameResources.size()];
-
-        auto [vertices, indices, vertexCount] = GatherDrawBuffers(drawData);
-
-        fResources.vertexBuffer = std::move(vertices);
-        fResources.indexBuffer = std::move(indices);
-
-        RHI::Vulkan::Pipeline* pipeline = ctx.GetPipeline(*imguiProgram, GetImGuiVID(), vk::PrimitiveTopology::eTriangleList, RHI::Vulkan::DisableDepthTest, RHI::Vulkan::FillMode);
-        ctx.commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->GetPipeline());
-
-        RHI::Vulkan::UniformsAccessor* uniforms = ctx.GetUniformsAccessor(*imguiProgram);
-        uniforms->SetSampler2D("sTexture", fontTexture);
-
-        ImGuiConstants constants = GetImGuiScaleTranslate(drawData);
-        uniforms->SetUniformBuffer("Constants", &constants);
-
-        std::vector<vk::DescriptorSet> descriptorSets = uniforms->GetUpdatedDescriptorSets();
-        ctx.commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline->GetLayout(), 0, descriptorSets.size(), descriptorSets.data(), 0, nullptr);
-
-        vk::DeviceSize offset = 0;
-        ctx.commandBuffer.bindVertexBuffers(0, 1, &fResources.vertexBuffer.GetBuffer(), &offset);
-        ctx.commandBuffer.bindIndexBuffer(fResources.indexBuffer.GetBuffer(), 0, vk::IndexType::eUint32);
-
-        uint32_t indexOffset = 0;
-        uint32_t vertexOffset = 0;
-        for (int nCmdList = 0; nCmdList < drawData->CmdListsCount; ++nCmdList)
-        {
-          ImDrawList* cmdList = drawData->CmdLists[nCmdList];
-          for (int nCmd = 0; nCmd < cmdList->CmdBuffer.size(); ++nCmd)
-          {
-            const ImDrawCmd& cmd = cmdList->CmdBuffer[nCmd];
-            ctx.commandBuffer.drawIndexed(cmd.ElemCount, 1, cmd.IdxOffset + indexOffset, cmd.VtxOffset + vertexOffset, 0);
-          }
-
-          indexOffset += cmdList->IdxBuffer.size();
-          vertexOffset += cmdList->VtxBuffer.size();
-        }
+        const ImDrawCmd& cmd = cmdList->CmdBuffer[nCmd];
+        ctx.commandBuffer.drawIndexed(cmd.ElemCount, 1, cmd.IdxOffset + indexOffset, cmd.VtxOffset + vertexOffset, 0);
       }
-    );
+
+      indexOffset += cmdList->IdxBuffer.size();
+      vertexOffset += cmdList->VtxBuffer.size();
+    }
 
     ++iFrame;
   }

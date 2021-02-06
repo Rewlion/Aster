@@ -37,6 +37,7 @@ private:
     RHI::Vulkan::Buffer vertexBuffer;
     RHI::Vulkan::Buffer indexBuffer;
     uint32_t indexCount = 0;
+    bool isRebuildRequired = false;
   } m_Mesh;
 
   std::unique_ptr<RHI::Vulkan::ShaderProgram> m_LineShader;

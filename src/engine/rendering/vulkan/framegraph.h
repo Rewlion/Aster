@@ -141,7 +141,7 @@ namespace RHI::Vulkan
 
     void Execute();
 
-    std::vector<vk::ImageMemoryBarrier> GetImageMemoryBarriersForSubpass(const RenderSubpass& subpass) const;
+    std::vector<vk::ClearValue> GetClearColorsForImageAttachments() const;
 
     const ImageView& GetImageView(const ResourceId& id) const;
   private:
