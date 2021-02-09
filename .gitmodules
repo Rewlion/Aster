@@ -7,3 +7,6 @@
 [submodule "dependency/Catch2"]
 	path = dependency/Catch2
 	url = https://github.com/catchorg/Catch2
+[submodule "dependency/google/benchmark"]
+	path = dependency/google/benchmark
+	url = https://github.com/google/benchmark

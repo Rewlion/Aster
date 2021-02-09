@@ -17,6 +17,7 @@ set(CATCH2_DEP_DIR "${DEP_DIR}/Catch2")
 set(YAML_CPP_DEP_DIR "${DEP_DIR}/yaml-cpp")
 set(KTX_DIR "${DEP_DIR}/ktx")
 set(IMGUI_DEP_DIR "${DEP_DIR}/imgui")
+set(GOOGLE_BENCHMARK_DEP_DIR "${DEP_DIR}/google/benchmark")
 
 include_directories(
     "${CMAKE_SOURCE_DIR}/src"
@@ -24,11 +25,13 @@ include_directories(
     "${Vulkan_INCLUDE_DIRS}"
     "${CATCH2_DEP_DIR}/Catch2"
     "${KTX_DIR}/"
+    "${GOOGLE_BENCHMARK_DEP_DIR}/include"
 )
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/dependency/Catch2")
 add_subdirectory("${CMAKE_SOURCE_DIR}/dependency/ecs")
 add_subdirectory("${CMAKE_SOURCE_DIR}/dependency/imgui")
+add_subdirectory("${CMAKE_SOURCE_DIR}/dependency/google/benchmark")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine")
 
@@ -37,3 +40,5 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/src/application/mesh_editor")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/application/examples")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/tests/shader_parsing")
+
+add_subdirectory("${CMAKE_SOURCE_DIR}/benchmarks")

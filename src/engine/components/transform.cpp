@@ -132,5 +132,6 @@ glm::vec3 Transform::GetOrientationVector(OrientationVectorType type) const
 
   default:
     assert(!"Unknown orientation type");
+    return {}; //shhhh, warnings
   }
 }
