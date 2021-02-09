@@ -4,3 +4,6 @@
 [submodule "bin/data/meshes/gltf-samples"]
 	path = bin/data/meshes/gltf-samples
 	url = https://github.com/KhronosGroup/glTF-Sample-Models
+[submodule "dependency/Catch2"]
+	path = dependency/Catch2
+	url = https://github.com/catchorg/Catch2
