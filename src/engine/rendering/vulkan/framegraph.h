@@ -55,6 +55,17 @@ namespace RHI::Vulkan
 
   typedef std::function<void(FrameContext&)> RenderPassExecutionFunction;
 
+  enum class SubpassDependencyType
+  {
+    //write to the same output resource 
+    Write,
+  };
+
+  enum class SubpassResourceType
+  {
+    OutputColorAttachment
+  };
+
   // Rendering task
   // describes a unique subpass of Render Pass
   class RenderSubpass
@@ -88,6 +99,13 @@ namespace RHI::Vulkan
     RenderSubpass& AddOutputSampler();
 
     RenderSubpass& SetRenderCallback(RenderPassExecutionFunction callback);
+
+    inline unsigned int GetId() const
+    {
+      return id;
+    }
+
+    std::optional<SubpassResourceType> GetResourceTypeFromId(const ResourceId& resourceId) const;
 
   private:
     const unsigned int id;
@@ -144,8 +162,12 @@ namespace RHI::Vulkan
     std::vector<vk::ClearValue> GetClearColorsForImageAttachments() const;
 
     const ImageView& GetImageView(const ResourceId& id) const;
+
+    void AddDependencyFromOutputResource(const unsigned int srcId, const unsigned int dstId, const ResourceId& resourceId, SubpassDependencyType dependencyType);
+
   private:
-    std::vector<vk::SubpassDependency> GetAttachmentDependencies();
+    std::vector<vk::SubpassDependency> GetSubpassDependencies() const;
+    std::vector<vk::SubpassDependency> GetAttachmentDependencies() const;
 
     vk::RenderPass CreateRenderpass();
 
@@ -165,6 +187,7 @@ namespace RHI::Vulkan
     std::vector<ImageAttachment> imageAttachments;
 
     std::vector<Image> ownedImages;
+    std::vector<vk::SubpassDependency> m_ManualSetDependency;
 
     vk::RenderPass renderPass;
     vk::Framebuffer framebuffer;

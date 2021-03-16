@@ -1,6 +1,8 @@
 #include "framegraph.h"
 #include "core.h"
 
+#include <iterator>
+
 namespace RHI::Vulkan
 {
   SubpassInput::SubpassInput(const ResourceId& id, vk::ImageLayout layout)
@@ -113,6 +115,15 @@ namespace RHI::Vulkan
     return *this;
   }
 
+  std::optional<SubpassResourceType> RenderSubpass::GetResourceTypeFromId(const ResourceId& resourceId) const
+  {
+    for (const ResourceId& id : outputColorAttachments)
+      if (id == resourceId)
+        return SubpassResourceType::OutputColorAttachment;
+
+    return std::nullopt;
+  }
+
   RenderGraph::RenderGraph(Core& core)
     : core(core)
   {
@@ -134,7 +145,15 @@ namespace RHI::Vulkan
     this->framebuffer = CreateFramebuffer();
   }
 
-  std::vector<vk::SubpassDependency> RenderGraph::GetAttachmentDependencies()
+  std::vector<vk::SubpassDependency> RenderGraph::GetSubpassDependencies() const
+  {
+    std::vector<vk::SubpassDependency> deps = GetAttachmentDependencies();
+    std::copy(m_ManualSetDependency.begin(), m_ManualSetDependency.end(), std::back_inserter(deps));
+
+    return deps;
+  }
+
+  std::vector<vk::SubpassDependency> RenderGraph::GetAttachmentDependencies() const
   {
     std::vector<vk::SubpassDependency> deps;
 
@@ -207,6 +226,7 @@ namespace RHI::Vulkan
     resourceIdToAttachmentIdMap.clear();
     imageAttachments.clear();
     ownedImages.clear();
+    m_ManualSetDependency.clear();
   }
 
   void RenderGraph::Execute()
@@ -310,7 +330,7 @@ namespace RHI::Vulkan
       subpassKeys.push_back(std::move(subkey));
     }
 
-    std::vector<vk::SubpassDependency> deps = GetAttachmentDependencies();
+    std::vector<vk::SubpassDependency> deps = GetSubpassDependencies();
 
     const auto rpKey = RenderPassKey()
       .SetBackbufferFormat(backbufferDescription.format)
@@ -383,5 +403,33 @@ namespace RHI::Vulkan
     const ImageAttachment& attachment = imageAttachments[attId];
 
     return attachment.view;
+  }
+
+  void RenderGraph::AddDependencyFromOutputResource(const unsigned int srcId, const unsigned int dstId, const ResourceId& resourceId, SubpassDependencyType dependencyType)
+  {
+    RenderSubpass& src = subpasses[srcId];
+
+    const std::optional<SubpassResourceType> resourceType = src.GetResourceTypeFromId(resourceId);
+    if (resourceType.has_value() == false)
+      throw std::runtime_error("RenderSubpass::AddDependencyFromOutputResource: there is no such resourceId in src subpass");
+
+    auto dep = vk::SubpassDependency()
+      .setSrcSubpass(srcId)
+      .setDstSubpass(dstId);
+
+    switch (resourceType.value())
+    {
+    case SubpassResourceType::OutputColorAttachment:
+      dep.setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
+      dep.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+      dep.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
+      dep.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+      break;
+
+    default:
+      throw std::runtime_error("RenderSubpass::AddDependencyFromOutputResource: resource type is not supported");
+    }
+
+    m_ManualSetDependency.push_back(dep);
   }
 }

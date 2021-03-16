@@ -116,16 +116,8 @@ void SphereConstructDemo::Dt(float dt)
   if (m_Mesh.isRebuildRequired)
     RebuildMesh();
 
-  rg->AddRenderSubpass()
-    .AddExistOutputColorAttachment(
-      BACKBUFFER_RESOURCE_ID,
-      vk::PipelineColorBlendAttachmentState{}
-        .setBlendEnable(true)
-        .setColorBlendOp(vk::BlendOp::eAdd)
-        .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
-        .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
-        .setColorWriteMask(RHI::Vulkan::ColorWriteAll)
-    )
+  unsigned int meshDrawingSubpassId = rg->AddRenderSubpass()
+    .AddExistOutputColorAttachment(BACKBUFFER_RESOURCE_ID)
     .SetRenderCallback([&](RHI::Vulkan::FrameContext& ctx) 
     {
       if (m_Mesh.indexCount != 0)
@@ -154,20 +146,37 @@ void SphereConstructDemo::Dt(float dt)
 
         ctx.commandBuffer.drawIndexed(m_Mesh.indexCount, 1, 0, 0, 0);
       }
+    })
+    .GetId();
 
+  unsigned int guiSubpassId = rg->AddRenderSubpass()
+    .AddExistOutputColorAttachment(
+      BACKBUFFER_RESOURCE_ID,
+      vk::PipelineColorBlendAttachmentState{}
+      .setBlendEnable(true)
+      .setColorBlendOp(vk::BlendOp::eAdd)
+      .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
+      .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
+      .setColorWriteMask(RHI::Vulkan::ColorWriteAll)
+    )
+    .SetRenderCallback([&](RHI::Vulkan::FrameContext& ctx)
+    {
       const auto lastSegments = m_Segments;
       const auto lastRadius = m_SphereRadius;
       m_GUI.DrawGUI(ctx, [&]()
-        {
-          ImGui::Begin("Settings");
-          ImGui::SliderInt("segments", &m_Segments, 0, 7, "%d");
-          ImGui::SliderFloat("sphere's radius", &m_SphereRadius, 1.0f, 10.0f, "%.3f");
-          ImGui::Checkbox("cull none", &m_CullNone);
-          ImGui::End();
-        });
+      {
+        ImGui::Begin("Settings");
+        ImGui::SliderInt("segments", &m_Segments, 0, 7, "%d");
+        ImGui::SliderFloat("sphere's radius", &m_SphereRadius, 1.0f, 10.0f, "%.3f");
+        ImGui::Checkbox("cull none", &m_CullNone);
+        ImGui::End();
+      });
 
       m_Mesh.isRebuildRequired = (lastSegments != m_Segments) || (lastRadius != m_SphereRadius);
-    });
+    })
+    .GetId();
+
+  rg->AddDependencyFromOutputResource(meshDrawingSubpassId, guiSubpassId, BACKBUFFER_RESOURCE_ID, RHI::Vulkan::SubpassDependencyType::Write);
 
   m_VkCore->EndFrame();
 }
