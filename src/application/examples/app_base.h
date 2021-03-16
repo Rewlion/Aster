@@ -4,7 +4,7 @@
 
 struct GLFWwindow;
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   class Core;
 }
@@ -12,7 +12,7 @@ namespace RHI::Vulkan
 class ApplicationBase
 {
 public:
-  ApplicationBase(GLFWwindow* wnd, RHI::Vulkan::Core* vkCore, int wndWidth, int wndHeight);
+  ApplicationBase(GLFWwindow* wnd, Vulkan::Core* vkCore, int wndWidth, int wndHeight);
 
   void Start();
 
@@ -24,6 +24,6 @@ protected:
   int m_WndWidth;
   int m_WndHeight;
 
-  RHI::Vulkan::Core* m_VkCore;
+  Vulkan::Core* m_VkCore;
   GUI::ImGuiBackend m_GUI;
 };

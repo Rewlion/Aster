@@ -23,7 +23,7 @@ int main()
   uint32_t count;
   const char** extensions = glfwGetRequiredInstanceExtensions(&count);
 
-  std::unique_ptr<RHI::Vulkan::Core> vkCore = std::make_unique<RHI::Vulkan::Core>(wnd, extensions, count, vk::Extent2D{ wndWidth, wndHeight });
+  std::unique_ptr<Vulkan::Core> vkCore = std::make_unique<Vulkan::Core>(wnd, extensions, count, vk::Extent2D{ wndWidth, wndHeight });
 
   ApplicationBase* app = new SphereConstructDemo{ wnd, vkCore.get(), wndWidth, wndHeight };
   app->Start();

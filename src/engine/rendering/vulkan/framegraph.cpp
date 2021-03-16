@@ -3,7 +3,7 @@
 
 #include <iterator>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   SubpassInput::SubpassInput(const ResourceId& id, vk::ImageLayout layout)
     : id(id)

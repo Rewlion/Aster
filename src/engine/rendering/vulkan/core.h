@@ -21,7 +21,7 @@
 
 struct GLFWwindow;
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   struct FrameResources
   {

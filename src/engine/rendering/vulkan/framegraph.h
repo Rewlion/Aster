@@ -14,7 +14,7 @@
 #include <set>
 #include <optional>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   class Core;
   class PipelineStorage;
@@ -27,7 +27,7 @@ namespace RHI::Vulkan
   
   constexpr vk::ColorComponentFlags ColorWriteAll = vk::ColorComponentFlagBits::eA | vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB;
 
-  #define BACKBUFFER_RESOURCE_ID RHI::Vulkan::ResourceId("__backbuffer_resource")
+  #define BACKBUFFER_RESOURCE_ID Vulkan::ResourceId("__backbuffer_resource")
 
   struct SubpassInput
   {

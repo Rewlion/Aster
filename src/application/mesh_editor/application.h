@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   class Core;
 }
@@ -48,7 +48,7 @@ namespace Editor
 
   private:
     GLFWwindow* m_Wnd;
-    std::unique_ptr<RHI::Vulkan::Core> m_VkCore;
+    std::unique_ptr<Vulkan::Core> m_VkCore;
     std::unique_ptr<Rendering::SceneRenderer> m_SceneRenderer;
 
     Scene m_Scene;

@@ -1,7 +1,7 @@
 #include "pipeline.h"
 #include "vertex_input_declaration.h"
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
 
   Pipeline::Pipeline(vk::Device logicalDevice,

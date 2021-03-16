@@ -7,7 +7,7 @@
 #include <tuple>
 #include <map>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   struct FramebufferKey
   {

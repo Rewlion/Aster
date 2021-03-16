@@ -10,7 +10,7 @@
 #include <tuple>
 #include <map>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   class Core;
   struct FrameContext;

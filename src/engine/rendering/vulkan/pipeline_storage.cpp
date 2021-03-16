@@ -16,7 +16,7 @@ namespace vk
   }
 }
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   PipelineKey& PipelineKey::SetShaderProgramId(const std::string& id)
   {

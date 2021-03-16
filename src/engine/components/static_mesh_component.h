@@ -9,7 +9,7 @@
 
 #include <vector>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   struct StaticMesh
   {

@@ -32,7 +32,7 @@ Engine::Engine(const Settings& settings)
   uint32_t count;
   const char** extensions = glfwGetRequiredInstanceExtensions(&count);
 
-  vkCore = std::make_unique<RHI::Vulkan::Core>(wnd, extensions, count, vk::Extent2D{ settings.window.width, settings.window.height });
+  vkCore = std::make_unique<Vulkan::Core>(wnd, extensions, count, vk::Extent2D{ settings.window.width, settings.window.height });
   assetStorage = std::make_unique<AssetStorage>(*vkCore);
   inputHandler = std::make_unique<InputHandler>(wnd);
 

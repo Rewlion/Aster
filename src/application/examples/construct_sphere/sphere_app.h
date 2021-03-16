@@ -5,7 +5,7 @@
 class SphereConstructDemo final : public ApplicationBase
 {
 public:
-  SphereConstructDemo(GLFWwindow* wnd, RHI::Vulkan::Core* vkCore, int wndWidth, int wndHeight);
+  SphereConstructDemo(GLFWwindow* wnd, Vulkan::Core* vkCore, int wndWidth, int wndHeight);
 
   void ProcessKeyInput(int scancode, int action, int mods);
   void ProcessMouseInput(double xpos, double ypos);
@@ -34,11 +34,11 @@ private:
 
   struct Mesh
   {
-    RHI::Vulkan::Buffer vertexBuffer;
-    RHI::Vulkan::Buffer indexBuffer;
+    Vulkan::Buffer vertexBuffer;
+    Vulkan::Buffer indexBuffer;
     uint32_t indexCount = 0;
     bool isRebuildRequired = false;
   } m_Mesh;
 
-  std::unique_ptr<RHI::Vulkan::ShaderProgram> m_LineShader;
+  std::unique_ptr<Vulkan::ShaderProgram> m_LineShader;
 };

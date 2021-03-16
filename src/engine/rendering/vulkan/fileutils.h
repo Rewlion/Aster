@@ -3,7 +3,7 @@
 #include <fstream>
 #include <vector>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   inline std::vector<uint32_t> ReadFile(const std::string location)
   {

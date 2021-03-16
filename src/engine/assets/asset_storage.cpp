@@ -146,9 +146,9 @@ namespace
   };
 
 
-  std::tuple<std::vector<RHI::Vulkan::StaticMeshVertex>, std::vector<uint32_t>> GatherVertices(const tinygltf::Model& model, const tinygltf::Mesh& mesh)
+  std::tuple<std::vector<Vulkan::StaticMeshVertex>, std::vector<uint32_t>> GatherVertices(const tinygltf::Model& model, const tinygltf::Mesh& mesh)
   {
-    std::vector<RHI::Vulkan::StaticMeshVertex> vertices;
+    std::vector<Vulkan::StaticMeshVertex> vertices;
     std::vector<uint32_t> indices;
 
     for (tinygltf::Primitive primitive : mesh.primitives)
@@ -162,7 +162,7 @@ namespace
 
       for (int i = 0; i < posAccessor.GetCount(); ++i)
       {
-        RHI::Vulkan::StaticMeshVertex vertex;
+        Vulkan::StaticMeshVertex vertex;
         vertex.position = posAccessor++;
         vertex.uv = uvAccessor++;
 
@@ -197,12 +197,12 @@ namespace
   }
 
 
-  std::vector<RHI::Vulkan::TBNVectors> GenerateTBNVectors(const std::vector<RHI::Vulkan::StaticMeshVertex>& vertices, const std::vector<uint32_t>& indices)
+  std::vector<Vulkan::TBNVectors> GenerateTBNVectors(const std::vector<Vulkan::StaticMeshVertex>& vertices, const std::vector<uint32_t>& indices)
   {
-    std::vector<RHI::Vulkan::TBNVectors> tbnVectors;
+    std::vector<Vulkan::TBNVectors> tbnVectors;
     tbnVectors.resize(vertices.size());
 
-    std::vector<std::vector<RHI::Vulkan::TBNVectors>> averageVectors;
+    std::vector<std::vector<Vulkan::TBNVectors>> averageVectors;
     averageVectors.resize(vertices.size());
 
     for (size_t i = 0; i < indices.size(); i += 3)
@@ -239,8 +239,8 @@ namespace
 
     for (size_t i = 0; i < averageVectors.size(); ++i)
     {
-      const std::vector<RHI::Vulkan::TBNVectors>& perVertexVectors = averageVectors[i];
-      RHI::Vulkan::TBNVectors& average = tbnVectors[i];
+      const std::vector<Vulkan::TBNVectors>& perVertexVectors = averageVectors[i];
+      Vulkan::TBNVectors& average = tbnVectors[i];
 
       for (const auto& vectors : perVertexVectors)
       {
@@ -258,12 +258,12 @@ namespace
   }
 }
 
-AssetStorage::AssetStorage(RHI::Vulkan::Core& vkCore)
+AssetStorage::AssetStorage(Vulkan::Core& vkCore)
   : vkCore(vkCore)
 {
 }
 
-RHI::Vulkan::Image* AssetStorage::LoadCubeMap(const std::string& file, const std::string& cubeMapName)
+Vulkan::Image* AssetStorage::LoadCubeMap(const std::string& file, const std::string& cubeMapName)
 {
   ktxTexture* texture;
   KTX_error_code result;
@@ -292,7 +292,7 @@ RHI::Vulkan::Image* AssetStorage::LoadCubeMap(const std::string& file, const std
   ktx_uint8_t* src = texture->pData;
   ktx_size_t size = texture->dataSize;
 
-  RHI::Vulkan::Image cubeMap = vkCore.AllocateCubeMap(vk::Format::eR8G8B8A8Unorm, texture->pData, texture->dataSize, texture->baseWidth, texture->baseHeight, offsets);
+  Vulkan::Image cubeMap = vkCore.AllocateCubeMap(vk::Format::eR8G8B8A8Unorm, texture->pData, texture->dataSize, texture->baseWidth, texture->baseHeight, offsets);
 
   textures.insert({ cubeMapName, std::move(cubeMap) });
 
@@ -318,7 +318,7 @@ void AssetStorage::LoadTexture(const std::string& file, const std::string& cubeM
   );
 }
 
-RHI::Vulkan::StaticModel* AssetStorage::LoadModel(const std::string& file, const std::string& modelName)
+Vulkan::StaticModel* AssetStorage::LoadModel(const std::string& file, const std::string& modelName)
 {
   const std::string rootUri = GetFolderPath(file);
 
@@ -343,7 +343,7 @@ RHI::Vulkan::StaticModel* AssetStorage::LoadModel(const std::string& file, const
 
   LoadAllTextures(model, rootUri);
 
-  RHI::Vulkan::StaticModel staticModel = ProcessModel(model, rootUri);
+  Vulkan::StaticModel staticModel = ProcessModel(model, rootUri);
   staticModels.insert({ modelName, std::move(staticModel) });
 
   return &staticModels.at(modelName);
@@ -361,26 +361,26 @@ void AssetStorage::LoadAllTextures(const tinygltf::Model& model, const std::stri
     const vk::DeviceSize srcSize = pixelSize * imgSource.width * imgSource.height;
     const void* src = reinterpret_cast<const void*>(imgSource.image.data());
 
-    RHI::Vulkan::Image img = vkCore.Allocate2DImage(src, srcSize, vk::Format::eR8G8B8A8Unorm, imgExtent, vk::ImageUsageFlagBits::eSampled);
+    Vulkan::Image img = vkCore.Allocate2DImage(src, srcSize, vk::Format::eR8G8B8A8Unorm, imgExtent, vk::ImageUsageFlagBits::eSampled);
 
     textures.insert({ rootUri + "/" + imgSource.uri, std::move(img) });
   }
 }
 
-RHI::Vulkan::StaticModel AssetStorage::ProcessModel(const tinygltf::Model& model, const std::string& rootUri)
+Vulkan::StaticModel AssetStorage::ProcessModel(const tinygltf::Model& model, const std::string& rootUri)
 {
-  RHI::Vulkan::StaticModel staticModel;
+  Vulkan::StaticModel staticModel;
 
   for (tinygltf::Mesh mesh : model.meshes)
   {
     const auto [vertices, indices] = GatherVertices(model, mesh);
     const auto tbnVectors = GenerateTBNVectors(vertices, indices);
 
-    RHI::Vulkan::Buffer vertexBuffer = vkCore.AllocateDeviceBuffer(vertices.data(), vertices.size() * sizeof(RHI::Vulkan::StaticMeshVertex), vk::BufferUsageFlagBits::eVertexBuffer);
-    RHI::Vulkan::Buffer indexBuffer = vkCore.AllocateDeviceBuffer(indices.data(), indices.size() * sizeof(uint32_t), vk::BufferUsageFlagBits::eIndexBuffer);
-    RHI::Vulkan::Buffer tbnVectorsBuffer = vkCore.AllocateDeviceBuffer(tbnVectors.data(), tbnVectors.size() * sizeof(RHI::Vulkan::TBNVectors), vk::BufferUsageFlagBits::eVertexBuffer);
+    Vulkan::Buffer vertexBuffer = vkCore.AllocateDeviceBuffer(vertices.data(), vertices.size() * sizeof(Vulkan::StaticMeshVertex), vk::BufferUsageFlagBits::eVertexBuffer);
+    Vulkan::Buffer indexBuffer = vkCore.AllocateDeviceBuffer(indices.data(), indices.size() * sizeof(uint32_t), vk::BufferUsageFlagBits::eIndexBuffer);
+    Vulkan::Buffer tbnVectorsBuffer = vkCore.AllocateDeviceBuffer(tbnVectors.data(), tbnVectors.size() * sizeof(Vulkan::TBNVectors), vk::BufferUsageFlagBits::eVertexBuffer);
 
-    RHI::Vulkan::Material material;
+    Vulkan::Material material;
     const tinygltf::Material& gltfMaterial = model.materials[0];
 
     const std::string colorTextureName = rootUri + "/" + model.images[gltfMaterial.pbrMetallicRoughness.baseColorTexture.index].uri;
@@ -393,7 +393,7 @@ RHI::Vulkan::StaticModel AssetStorage::ProcessModel(const tinygltf::Model& model
     material.normalTexture = &textures.at(normalTextureName);
 
     staticModel.meshes.push_back(
-      RHI::Vulkan::StaticMesh{
+      Vulkan::StaticMesh{
         std::move(vertexBuffer),
         std::move(indexBuffer),
         std::move(tbnVectorsBuffer),
@@ -408,15 +408,15 @@ RHI::Vulkan::StaticModel AssetStorage::ProcessModel(const tinygltf::Model& model
 
 void AssetStorage::LoadStaticMesh(void* vertexSrc, size_t vertexSrcSize, void* indexSrc, uint32_t indexSrcSize, uint32_t indexCount, const std::string& meshName)
 {
-  RHI::Vulkan::Buffer vertexBuffer = vkCore.AllocateDeviceBuffer(vertexSrc, vertexSrcSize, vk::BufferUsageFlagBits::eVertexBuffer);
-  RHI::Vulkan::Buffer indexBuffer = vkCore.AllocateDeviceBuffer(indexSrc, indexSrcSize, vk::BufferUsageFlagBits::eIndexBuffer);
+  Vulkan::Buffer vertexBuffer = vkCore.AllocateDeviceBuffer(vertexSrc, vertexSrcSize, vk::BufferUsageFlagBits::eVertexBuffer);
+  Vulkan::Buffer indexBuffer = vkCore.AllocateDeviceBuffer(indexSrc, indexSrcSize, vk::BufferUsageFlagBits::eIndexBuffer);
 
   staticMeshes.insert({
     meshName,
-    RHI::Vulkan::StaticMesh{
+    Vulkan::StaticMesh{
       std::move(vertexBuffer),
       std::move(indexBuffer),
-      RHI::Vulkan::Buffer{},
+      Vulkan::Buffer{},
       static_cast<uint32_t>(indexCount)
     }
     });

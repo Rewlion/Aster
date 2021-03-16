@@ -2,7 +2,7 @@
 
 #include "vertex_input_declaration.h"
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   struct TBNVectors
   {

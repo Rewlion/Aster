@@ -2,7 +2,7 @@
 #include "core.h"
 #include "image.h"
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   UniformsAccessor::UniformsAccessor(Core& core, vk::DescriptorPool descriptorPool, const std::vector<vk::DescriptorSetLayout>& layouts, const PipelineUniforms& uniforms)
     : core(core)

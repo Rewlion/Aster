@@ -5,7 +5,7 @@
 
 #include <tuple>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   class ImageView
   {

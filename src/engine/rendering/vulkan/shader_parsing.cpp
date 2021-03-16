@@ -6,7 +6,7 @@
 
 namespace
 {
-  RHI::Vulkan::ShaderStages GetShaderStage(const spirv_cross::EntryPoint& ep)
+  Vulkan::ShaderStages GetShaderStage(const spirv_cross::EntryPoint& ep)
   {
     switch (ep.execution_model)
     {
@@ -22,15 +22,15 @@ namespace
     }
   }
 
-  RHI::Vulkan::UniformType GetUniformTypeFromSpirvDim(spv::Dim dim)
+  Vulkan::UniformType GetUniformTypeFromSpirvDim(spv::Dim dim)
   {
     switch (dim)
     {
     case spv::Dim::Dim2D:
-      return RHI::Vulkan::UniformType::Sampler2D;
+      return Vulkan::UniformType::Sampler2D;
 
     case spv::Dim::DimCube:
-      return RHI::Vulkan::UniformType::SamplerCube;
+      return Vulkan::UniformType::SamplerCube;
 
     default:
       throw std::runtime_error("unsupported dim for sampler");
@@ -38,7 +38,7 @@ namespace
   }
 }
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   void PipelineUniforms::AddUniform(unsigned int set, unsigned int binding, const std::string& name, const UniformBindingDescription& description)
   {

@@ -8,9 +8,9 @@
 
 namespace
 {
-  RHI::Vulkan::VertexInputDeclaration GetImGuiVID()
+  Vulkan::VertexInputDeclaration GetImGuiVID()
   {
-    RHI::Vulkan::VertexInputDeclaration vid;
+    Vulkan::VertexInputDeclaration vid;
 
     vid.AddBindingDescription(0, sizeof(ImDrawVert));
 
@@ -48,14 +48,14 @@ namespace
 
 namespace GUI
 {
-  ImGuiBackend::ImGuiBackend(GLFWwindow* wnd, RHI::Vulkan::Core& vkCore)
+  ImGuiBackend::ImGuiBackend(GLFWwindow* wnd, Vulkan::Core& vkCore)
     : vkCore(vkCore)
     , iFrame(0)
   {
     //imgui shaders
-    auto vertexShader = vkCore.CreateShader(RHI::Vulkan::ReadFile("../data/shaders/spirv/imgui/shader.vert.spv"));
-    auto fragmentShader = vkCore.CreateShader(RHI::Vulkan::ReadFile("../data/shaders/spirv/imgui/shader.frag.spv"));
-    imguiProgram = std::make_unique< RHI::Vulkan::ShaderProgram>(vkCore, std::move(vertexShader), std::move(fragmentShader));
+    auto vertexShader = vkCore.CreateShader(Vulkan::ReadFile("../data/shaders/spirv/imgui/shader.vert.spv"));
+    auto fragmentShader = vkCore.CreateShader(Vulkan::ReadFile("../data/shaders/spirv/imgui/shader.frag.spv"));
+    imguiProgram = std::make_unique< Vulkan::ShaderProgram>(vkCore, std::move(vertexShader), std::move(fragmentShader));
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -71,7 +71,7 @@ namespace GUI
     frameResources.resize(vkCore.GetSwapchainImagesCount());
   }
 
-  std::tuple<RHI::Vulkan::Buffer, RHI::Vulkan::Buffer, size_t> ImGuiBackend::GatherDrawBuffers(const ImDrawData* drawData)
+  std::tuple<Vulkan::Buffer, Vulkan::Buffer, size_t> ImGuiBackend::GatherDrawBuffers(const ImDrawData* drawData)
   {
     std::vector<ImDrawVert> vertices;
     vertices.reserve(drawData->TotalVtxCount);
@@ -96,7 +96,7 @@ namespace GUI
     };
   }
 
-  void ImGuiBackend::DrawGUI(RHI::Vulkan::FrameContext& ctx, std::function<void()> renderCallback)
+  void ImGuiBackend::DrawGUI(Vulkan::FrameContext& ctx, std::function<void()> renderCallback)
   {
     savedRenderCallback = renderCallback;
 
@@ -116,10 +116,10 @@ namespace GUI
     fResources.vertexBuffer = std::move(vertices);
     fResources.indexBuffer = std::move(indices);
 
-    RHI::Vulkan::Pipeline* pipeline = ctx.GetPipeline(*imguiProgram, GetImGuiVID(), vk::PrimitiveTopology::eTriangleList, RHI::Vulkan::DisableDepthTest, RHI::Vulkan::FillMode);
+    Vulkan::Pipeline* pipeline = ctx.GetPipeline(*imguiProgram, GetImGuiVID(), vk::PrimitiveTopology::eTriangleList, Vulkan::DisableDepthTest, Vulkan::FillMode);
     ctx.commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->GetPipeline());
 
-    RHI::Vulkan::UniformsAccessor* uniforms = ctx.GetUniformsAccessor(*imguiProgram);
+    Vulkan::UniformsAccessor* uniforms = ctx.GetUniformsAccessor(*imguiProgram);
     uniforms->SetSampler2D("sTexture", fontTexture);
 
     ImGuiConstants constants = GetImGuiScaleTranslate(drawData);

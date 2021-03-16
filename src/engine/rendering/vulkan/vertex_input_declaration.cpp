@@ -13,7 +13,7 @@ namespace vk
   }
 }
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   void VertexInputDeclaration::AddBindingDescription(const uint32_t binding, const uint32_t stride)
   {

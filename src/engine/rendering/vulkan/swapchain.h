@@ -12,7 +12,7 @@
 #undef max
 #undef min
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   struct SurfaceDetails
   {

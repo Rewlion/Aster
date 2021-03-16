@@ -5,7 +5,7 @@
 
 #include <ecs/BaseComponent.h>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   class Image;
   struct StaticMesh;

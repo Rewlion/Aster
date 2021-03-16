@@ -19,7 +19,7 @@ namespace Editor
         return m_Mesh;
       }
 
-      inline void UpdateBuffers(RHI::Vulkan::Buffer&& vertexBuffer, RHI::Vulkan::Buffer&& indexBuffer, uint32_t indexCount)
+      inline void UpdateBuffers(Vulkan::Buffer&& vertexBuffer, Vulkan::Buffer&& indexBuffer, uint32_t indexCount)
       {
         m_VertexBuffer = std::move(vertexBuffer);
         m_IndexBuffer = std::move(indexBuffer);
@@ -39,8 +39,8 @@ namespace Editor
     private:
       uint64_t m_Id;
       HalfedgeMesh m_Mesh;
-      RHI::Vulkan::Buffer m_VertexBuffer;
-      RHI::Vulkan::Buffer m_IndexBuffer;
+      Vulkan::Buffer m_VertexBuffer;
+      Vulkan::Buffer m_IndexBuffer;
       uint32_t m_IndexCount;
     };
 

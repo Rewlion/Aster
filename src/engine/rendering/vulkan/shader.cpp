@@ -7,18 +7,18 @@
 
 namespace
 {
-  vk::DescriptorType GetDescriptorType(RHI::Vulkan::UniformType type)
+  vk::DescriptorType GetDescriptorType(Vulkan::UniformType type)
   {
     switch (type)
     {
-    case RHI::Vulkan::UniformType::UniformBuffer:
+    case Vulkan::UniformType::UniformBuffer:
       return vk::DescriptorType::eUniformBuffer;
 
-    case RHI::Vulkan::UniformType::SamplerCube:
-    case RHI::Vulkan::UniformType::Sampler2D:
+    case Vulkan::UniformType::SamplerCube:
+    case Vulkan::UniformType::Sampler2D:
       return vk::DescriptorType::eCombinedImageSampler;
 
-    case RHI::Vulkan::UniformType::SubpassInput:
+    case Vulkan::UniformType::SubpassInput:
       return vk::DescriptorType::eInputAttachment;
 
     default:
@@ -26,7 +26,7 @@ namespace
     }
   }
 
-  vk::ShaderStageFlags GetShaderStageFlag(RHI::Vulkan::ShaderStages stages)
+  vk::ShaderStageFlags GetShaderStageFlag(Vulkan::ShaderStages stages)
   {
     vk::ShaderStageFlags bits;
 
@@ -40,7 +40,7 @@ namespace
   }
 }
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   Shader::Shader(vk::Device logicalDevice, const std::vector<uint32_t>& byteCode)
   {

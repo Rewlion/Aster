@@ -7,7 +7,7 @@
 
 #include <ctime>
 
-ApplicationBase::ApplicationBase(GLFWwindow* wnd, RHI::Vulkan::Core* vkCore, int wndWidth, int wndHeight)
+ApplicationBase::ApplicationBase(GLFWwindow* wnd, Vulkan::Core* vkCore, int wndWidth, int wndHeight)
   : m_Wnd(wnd)
   , m_VkCore(vkCore)
   , m_WndWidth(wndWidth)

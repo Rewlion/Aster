@@ -7,7 +7,7 @@
 #include "pipeline_storage.h"
 #include "uniforms_accessor_storage.h"
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   const ImageView& FrameContext::GetImageView(const ResourceId& id) const
   {

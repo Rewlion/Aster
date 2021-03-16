@@ -8,7 +8,7 @@
 
 #include <tuple>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   typedef std::string ResourceId;
 

@@ -8,7 +8,7 @@
 #include <memory>
 #include <optional>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   class Core;
 

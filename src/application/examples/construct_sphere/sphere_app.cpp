@@ -34,9 +34,9 @@ namespace
     handler->ProcessScrollInput(xoffset, yoffset);
   }
 
-  RHI::Vulkan::VertexInputDeclaration GetLinesVID()
+  Vulkan::VertexInputDeclaration GetLinesVID()
   {
-    RHI::Vulkan::VertexInputDeclaration vid;
+    Vulkan::VertexInputDeclaration vid;
 
     vid.AddBindingDescription(0, sizeof(glm::vec3));
     vid.AddAttributeDescription(vk::Format::eR32G32B32Sfloat, 0, 0, 0);
@@ -45,7 +45,7 @@ namespace
   }
 }
 
-SphereConstructDemo::SphereConstructDemo(GLFWwindow* wnd, RHI::Vulkan::Core* vkCore, int wndWidth, int wndHeight)
+SphereConstructDemo::SphereConstructDemo(GLFWwindow* wnd, Vulkan::Core* vkCore, int wndWidth, int wndHeight)
   : ApplicationBase(wnd, vkCore, wndWidth, wndHeight)
   , m_Camera(5.0f, -90.0f, 120.0f, { wndWidth, wndHeight })
   , m_RotateScene(false)
@@ -60,9 +60,9 @@ SphereConstructDemo::SphereConstructDemo(GLFWwindow* wnd, RHI::Vulkan::Core* vkC
   glfwSetScrollCallback(wnd, GLFW_ScrollCallback);
 
   {
-    auto vertex = m_VkCore->CreateShader(RHI::Vulkan::ReadFile("../data/shaders/spirv/examples/lines.vert.spv"));
-    auto fragment = m_VkCore->CreateShader(RHI::Vulkan::ReadFile("../data/shaders/spirv/examples/lines.frag.spv"));
-    m_LineShader = std::make_unique<RHI::Vulkan::ShaderProgram>(*m_VkCore, std::move(vertex), std::move(fragment));
+    auto vertex = m_VkCore->CreateShader(Vulkan::ReadFile("../data/shaders/spirv/examples/lines.vert.spv"));
+    auto fragment = m_VkCore->CreateShader(Vulkan::ReadFile("../data/shaders/spirv/examples/lines.frag.spv"));
+    m_LineShader = std::make_unique<Vulkan::ShaderProgram>(*m_VkCore, std::move(vertex), std::move(fragment));
   }
 }
 
@@ -111,19 +111,19 @@ void SphereConstructDemo::ProcessScrollInput(double xoffset, double yoffset)
 
 void SphereConstructDemo::Dt(float dt)
 {
-  RHI::Vulkan::RenderGraph* rg =  m_VkCore->BeginFrame();
+  Vulkan::RenderGraph* rg =  m_VkCore->BeginFrame();
 
   if (m_Mesh.isRebuildRequired)
     RebuildMesh();
 
   unsigned int meshDrawingSubpassId = rg->AddRenderSubpass()
     .AddExistOutputColorAttachment(BACKBUFFER_RESOURCE_ID)
-    .SetRenderCallback([&](RHI::Vulkan::FrameContext& ctx) 
+    .SetRenderCallback([&](Vulkan::FrameContext& ctx) 
     {
       if (m_Mesh.indexCount != 0)
       {
-        const RHI::Vulkan::RasterizationMode rasterMode = m_CullNone ? RHI::Vulkan::WireframeNoCullMode : RHI::Vulkan::WireframeMode;
-        RHI::Vulkan::Pipeline* pipeline = ctx.GetPipeline(*m_LineShader, GetLinesVID(), vk::PrimitiveTopology::eTriangleList, RHI::Vulkan::DisableDepthTest, rasterMode);
+        const Vulkan::RasterizationMode rasterMode = m_CullNone ? Vulkan::WireframeNoCullMode : Vulkan::WireframeMode;
+        Vulkan::Pipeline* pipeline = ctx.GetPipeline(*m_LineShader, GetLinesVID(), vk::PrimitiveTopology::eTriangleList, Vulkan::DisableDepthTest, rasterMode);
         ctx.commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->GetPipeline());
 
         struct
@@ -135,7 +135,7 @@ void SphereConstructDemo::Dt(float dt)
             m_Camera.GetView()
         };
 
-        RHI::Vulkan::UniformsAccessor* uniforms = ctx.GetUniformsAccessor(*m_LineShader);
+        Vulkan::UniformsAccessor* uniforms = ctx.GetUniformsAccessor(*m_LineShader);
         uniforms->SetUniformBuffer("Camera", &camera);
         std::vector<vk::DescriptorSet> descriptorSets = uniforms->GetUpdatedDescriptorSets();
 
@@ -157,9 +157,9 @@ void SphereConstructDemo::Dt(float dt)
       .setColorBlendOp(vk::BlendOp::eAdd)
       .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
       .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
-      .setColorWriteMask(RHI::Vulkan::ColorWriteAll)
+      .setColorWriteMask(Vulkan::ColorWriteAll)
     )
-    .SetRenderCallback([&](RHI::Vulkan::FrameContext& ctx)
+    .SetRenderCallback([&](Vulkan::FrameContext& ctx)
     {
       const auto lastSegments = m_Segments;
       const auto lastRadius = m_SphereRadius;
@@ -176,7 +176,7 @@ void SphereConstructDemo::Dt(float dt)
     })
     .GetId();
 
-  rg->AddDependencyFromOutputResource(meshDrawingSubpassId, guiSubpassId, BACKBUFFER_RESOURCE_ID, RHI::Vulkan::SubpassDependencyType::Write);
+  rg->AddDependencyFromOutputResource(meshDrawingSubpassId, guiSubpassId, BACKBUFFER_RESOURCE_ID, Vulkan::SubpassDependencyType::Write);
 
   m_VkCore->EndFrame();
 }

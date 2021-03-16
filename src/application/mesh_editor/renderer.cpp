@@ -7,9 +7,9 @@
 
 namespace
 {
-  RHI::Vulkan::VertexInputDeclaration GetSceneLinesVID()
+  Vulkan::VertexInputDeclaration GetSceneLinesVID()
   {
-    RHI::Vulkan::VertexInputDeclaration vid;
+    Vulkan::VertexInputDeclaration vid;
 
     vid.AddBindingDescription(0, sizeof(glm::vec3));
     vid.AddAttributeDescription(vk::Format::eR32G32B32Sfloat, 0, 0, 0);
@@ -17,9 +17,9 @@ namespace
     return vid;
   }
 
-  RHI::Vulkan::VertexInputDeclaration GetStaticMeshVID()
+  Vulkan::VertexInputDeclaration GetStaticMeshVID()
   {
-    RHI::Vulkan::VertexInputDeclaration vid;
+    Vulkan::VertexInputDeclaration vid;
 
     vid.AddBindingDescription(0, sizeof(Editor::StaticMeshVertex));
     vid.AddAttributeDescription(vk::Format::eR32G32B32Sfloat, 0, 0, offsetof(Editor::StaticMeshVertex, position));
@@ -32,30 +32,30 @@ namespace
 namespace Rendering
 {
 
-  SceneRenderer::SceneRenderer(RHI::Vulkan::Core* vkCore)
+  SceneRenderer::SceneRenderer(Vulkan::Core* vkCore)
     : m_VkCore(vkCore)
   {
     std::vector<glm::vec3> vertices = Utils::GenerateWirePlane(20, 20);
     m_SceneLines.vertices = m_VkCore->AllocateDeviceBuffer(vertices.data(), vertices.size() * sizeof(glm::vec3), vk::BufferUsageFlagBits::eVertexBuffer);
     m_SceneLines.vertexCount = vertices.size();
 
-    auto sceneLinesVert = m_VkCore->CreateShader(RHI::Vulkan::ReadFile("../data/shaders/spirv/mesh_editor/sceneLines.vert.spv"));
-    auto sceneLinesFrag = m_VkCore->CreateShader(RHI::Vulkan::ReadFile("../data/shaders/spirv/mesh_editor/sceneLines.frag.spv"));
-    m_SceneLinesProgram = std::make_unique<RHI::Vulkan::ShaderProgram>(*m_VkCore, std::move(sceneLinesVert), std::move(sceneLinesFrag));
+    auto sceneLinesVert = m_VkCore->CreateShader(Vulkan::ReadFile("../data/shaders/spirv/mesh_editor/sceneLines.vert.spv"));
+    auto sceneLinesFrag = m_VkCore->CreateShader(Vulkan::ReadFile("../data/shaders/spirv/mesh_editor/sceneLines.frag.spv"));
+    m_SceneLinesProgram = std::make_unique<Vulkan::ShaderProgram>(*m_VkCore, std::move(sceneLinesVert), std::move(sceneLinesFrag));
 
-    auto staticMeshVert = m_VkCore->CreateShader(RHI::Vulkan::ReadFile("../data/shaders/spirv/mesh_editor/static_mesh.vert.spv"));
-    auto staticMeshFrag = m_VkCore->CreateShader(RHI::Vulkan::ReadFile("../data/shaders/spirv/mesh_editor/static_mesh.frag.spv"));
-    m_StaticMeshProgram = std::make_unique<RHI::Vulkan::ShaderProgram>(*m_VkCore, std::move(staticMeshVert), std::move(staticMeshFrag));
+    auto staticMeshVert = m_VkCore->CreateShader(Vulkan::ReadFile("../data/shaders/spirv/mesh_editor/static_mesh.vert.spv"));
+    auto staticMeshFrag = m_VkCore->CreateShader(Vulkan::ReadFile("../data/shaders/spirv/mesh_editor/static_mesh.frag.spv"));
+    m_StaticMeshProgram = std::make_unique<Vulkan::ShaderProgram>(*m_VkCore, std::move(staticMeshVert), std::move(staticMeshFrag));
   }
 
   void SceneRenderer::Render(Editor::Scene& scene, const Editor::Camera& camera)
   {
-    RHI::Vulkan::RenderGraph* rg = m_VkCore->BeginFrame();
+    Vulkan::RenderGraph* rg = m_VkCore->BeginFrame();
 
     rg->AddRenderSubpass()
       //.AddDepthOnlyAttachment("DEPTH_ATTACHMENT")
       .AddExistOutputColorAttachment(BACKBUFFER_RESOURCE_ID)
-      .SetRenderCallback([&](RHI::Vulkan::FrameContext& ctx) 
+      .SetRenderCallback([&](Vulkan::FrameContext& ctx) 
     {
       SyncObjects(scene);
       RenderEditorWires(ctx, camera);
@@ -65,10 +65,10 @@ namespace Rendering
     m_VkCore->EndFrame();
   }
 
-  void SceneRenderer::RenderEditorWires(RHI::Vulkan::FrameContext& ctx, const Editor::Camera& camera)
+  void SceneRenderer::RenderEditorWires(Vulkan::FrameContext& ctx, const Editor::Camera& camera)
   {
-    //RHI::Vulkan::Pipeline* pipeline = ctx.GetPipeline(*m_SceneLinesProgram, GetSceneLinesVID(), vk::PrimitiveTopology::eLineList, RHI::Vulkan::EnableDepthTest);
-    RHI::Vulkan::Pipeline* pipeline = ctx.GetPipeline(*m_SceneLinesProgram, GetSceneLinesVID(), vk::PrimitiveTopology::eLineList, RHI::Vulkan::DisableDepthTest);
+    //Vulkan::Pipeline* pipeline = ctx.GetPipeline(*m_SceneLinesProgram, GetSceneLinesVID(), vk::PrimitiveTopology::eLineList, Vulkan::EnableDepthTest);
+    Vulkan::Pipeline* pipeline = ctx.GetPipeline(*m_SceneLinesProgram, GetSceneLinesVID(), vk::PrimitiveTopology::eLineList, Vulkan::DisableDepthTest);
     ctx.commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->GetPipeline());
 
     struct
@@ -80,7 +80,7 @@ namespace Rendering
         camera.GetView()
     };
 
-    RHI::Vulkan::UniformsAccessor* uniforms = ctx.GetUniformsAccessor(*m_SceneLinesProgram);
+    Vulkan::UniformsAccessor* uniforms = ctx.GetUniformsAccessor(*m_SceneLinesProgram);
     uniforms->SetUniformBuffer("Camera", &cameraResource);
     std::vector<vk::DescriptorSet> descriptorSets = uniforms->GetUpdatedDescriptorSets();
 
@@ -92,12 +92,12 @@ namespace Rendering
     ctx.commandBuffer.draw(m_SceneLines.vertexCount, 1, 0, 0);
   }
 
-  void SceneRenderer::RenderSceneObjects(RHI::Vulkan::FrameContext& ctx, const Editor::Camera& camera, Editor::Scene& scene)
+  void SceneRenderer::RenderSceneObjects(Vulkan::FrameContext& ctx, const Editor::Camera& camera, Editor::Scene& scene)
   {
     std::vector<Editor::Scene::Object>& objects = scene.GetObjects();
 
-    //RHI::Vulkan::Pipeline* pipeline = ctx.GetPipeline(*m_StaticMeshProgram, GetStaticMeshVID(), vk::PrimitiveTopology::eLineList, RHI::Vulkan::EnableDepthTest);
-    RHI::Vulkan::Pipeline* pipeline = ctx.GetPipeline(*m_StaticMeshProgram, GetStaticMeshVID(), vk::PrimitiveTopology::eTriangleList, RHI::Vulkan::DisableDepthTest);
+    //Vulkan::Pipeline* pipeline = ctx.GetPipeline(*m_StaticMeshProgram, GetStaticMeshVID(), vk::PrimitiveTopology::eLineList, Vulkan::EnableDepthTest);
+    Vulkan::Pipeline* pipeline = ctx.GetPipeline(*m_StaticMeshProgram, GetStaticMeshVID(), vk::PrimitiveTopology::eTriangleList, Vulkan::DisableDepthTest);
     ctx.commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->GetPipeline());
 
     struct
@@ -111,7 +111,7 @@ namespace Rendering
         camera.GetWorldPosition()
     };
 
-    RHI::Vulkan::UniformsAccessor* uniforms = ctx.GetUniformsAccessor(*m_StaticMeshProgram);
+    Vulkan::UniformsAccessor* uniforms = ctx.GetUniformsAccessor(*m_StaticMeshProgram);
     uniforms->SetUniformBuffer("Camera", &cameraResource);
     std::vector<vk::DescriptorSet> descriptorSets = uniforms->GetUpdatedDescriptorSets();
 
@@ -145,8 +145,8 @@ namespace Rendering
           std::printf("Failed to render object(id:%lld). Error:%s\n", obj.GetId(), errMsg.c_str());
 
         const auto& [vertices, indices] = mesh.GetStaticMeshData();
-        RHI::Vulkan::Buffer vertexBuffer = m_VkCore->AllocateDeviceBuffer(vertices.data(), sizeof(vertices[0]) * vertices.size(), vk::BufferUsageFlagBits::eVertexBuffer);
-        RHI::Vulkan::Buffer indexBuffer = m_VkCore->AllocateDeviceBuffer(indices.data(), sizeof(indices[0]) * indices.size(), vk::BufferUsageFlagBits::eIndexBuffer);
+        Vulkan::Buffer vertexBuffer = m_VkCore->AllocateDeviceBuffer(vertices.data(), sizeof(vertices[0]) * vertices.size(), vk::BufferUsageFlagBits::eVertexBuffer);
+        Vulkan::Buffer indexBuffer = m_VkCore->AllocateDeviceBuffer(indices.data(), sizeof(indices[0]) * indices.size(), vk::BufferUsageFlagBits::eIndexBuffer);
 
         obj.UpdateBuffers(std::move(vertexBuffer), std::move(indexBuffer), indices.size());
       }

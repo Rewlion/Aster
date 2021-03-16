@@ -2,7 +2,7 @@
 #include "core.h"
 #include "shader.h"
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   UniformsAccessorStorage::UniformsAccessorStorage(Core& core, vk::DescriptorPool descriptorPool)
     : core(core)

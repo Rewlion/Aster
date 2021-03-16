@@ -1,6 +1,6 @@
 #include "framebuffer_storage.h"
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   bool FramebufferKey::operator< (const FramebufferKey& r) const
   {

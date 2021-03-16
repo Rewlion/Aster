@@ -4,7 +4,7 @@
 #include <vulkan/vulkan.hpp>
 #include <memory>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   class Buffer
   {

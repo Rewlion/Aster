@@ -5,7 +5,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   class VertexInputDeclaration;
   class DepthStencilSettings;

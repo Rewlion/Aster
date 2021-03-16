@@ -1,6 +1,6 @@
 #include "buffer.h"
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   Buffer::Buffer(vk::Device logicalDevice, vk::UniqueBuffer&& buffer, vk::UniqueDeviceMemory&& memory, vk::DeviceSize memorySize)
     : logicalDevice(logicalDevice)

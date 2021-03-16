@@ -4,7 +4,7 @@
 #include "Shader.h"
 #include "buffer.h"
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   class Core;
   class Image;

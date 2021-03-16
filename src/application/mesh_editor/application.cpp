@@ -56,7 +56,7 @@ namespace Editor
     uint32_t count;
     const char** extensions = glfwGetRequiredInstanceExtensions(&count);
 
-    m_VkCore = std::make_unique<RHI::Vulkan::Core>( m_Wnd, extensions, count, vk::Extent2D{ wndWidth, wndHeight } );
+    m_VkCore = std::make_unique<Vulkan::Core>( m_Wnd, extensions, count, vk::Extent2D{ wndWidth, wndHeight } );
 
     m_SceneRenderer = std::make_unique<Rendering::SceneRenderer>(m_VkCore.get());
 

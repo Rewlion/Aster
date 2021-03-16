@@ -1,6 +1,6 @@
 #pragma once
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   enum class ImageType
   {

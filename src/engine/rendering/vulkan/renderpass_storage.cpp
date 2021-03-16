@@ -15,7 +15,7 @@ namespace vk
   }
 }
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   bool SubpassKey::operator<(const SubpassKey& r) const
   {

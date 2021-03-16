@@ -5,7 +5,7 @@
 #include <tuple>
 #include <vector>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   enum class UniformType
   {
@@ -17,8 +17,8 @@ namespace RHI::Vulkan
   };
 
   typedef unsigned int ShaderStages;
-  #define SHADER_VERTEX_STAGE (RHI::Vulkan::ShaderStages) 0x1
-  #define SHADER_FRAGMENT_STAGE (RHI::Vulkan::ShaderStages) 0x2
+  #define SHADER_VERTEX_STAGE (Vulkan::ShaderStages) 0x1
+  #define SHADER_FRAGMENT_STAGE (Vulkan::ShaderStages) 0x2
   #define HAS_STAGE(v, s) (v & s)
 
   struct UniformBindingDescription

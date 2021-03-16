@@ -5,7 +5,7 @@
 #include <vulkan/vulkan.hpp>
 #include <map>
 
-namespace RHI::Vulkan
+namespace Vulkan
 {
   class Core;
   class ShaderProgram;
