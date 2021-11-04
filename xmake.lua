@@ -17,8 +17,6 @@ end
 
 add_includedirs(
   "src",
-  "deps/entt-3.8.1/include",
-  "deps/glfw-3.3.4/include",
   "deps/glm-0.9.9.8/include",
   "deps/eastl-3.17.06/include"
 )
