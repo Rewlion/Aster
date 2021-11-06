@@ -169,7 +169,9 @@ off {
 }
 
 ["][^ \t\r\n]+["] {
-  yylval.sval = strdup(yytext); return TEXT;
+  char* text = yytext + 1;
+  text[strlen(yytext) - 2] = '\0';
+  yylval.sval = strdup(text); return TEXT;
 }
 
 . { printf("Syntax error in line %d, `%s`\n", yylineno, yytext); exit(1); }

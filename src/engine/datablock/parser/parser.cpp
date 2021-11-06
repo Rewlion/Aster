@@ -6,7 +6,7 @@
 extern int yyparse(Ast::Config* root);
 extern FILE *yyin;
 
-DataBlock DbkParser::parse_file(const String& path)
+DataBlock BlkParser::parse_file(const String& path)
 {
   FILE* f = fopen(path.c_str(), "r");
 
@@ -24,12 +24,12 @@ DataBlock DbkParser::parse_file(const String& path)
   return traverse_ast(root);
 }
 
-DataBlock DbkParser::traverse_ast(const Ast::Config& ast)
+DataBlock BlkParser::traverse_ast(const Ast::Config& ast)
 {
   return construct_block(ast.paramList);
 }
 
-DataBlock DbkParser::construct_block(const Ast::AnnotatedParam* paramList)
+DataBlock BlkParser::construct_block(const Ast::AnnotatedParam* paramList)
 {
   DataBlock dbk;
   for(const Ast::AnnotatedParam* p = paramList; p != nullptr; p = p->next)
@@ -58,7 +58,7 @@ DataBlock DbkParser::construct_block(const Ast::AnnotatedParam* paramList)
   return dbk;
 }
 
-DataBlock::Attribute DbkParser::construct_attribute(const Ast::Attribute* attribute)
+DataBlock::Attribute BlkParser::construct_attribute(const Ast::Attribute* attribute)
 {
   DataBlock::Attribute value;
   value.name = attribute->name;

@@ -9,7 +9,7 @@
 
 class DataBlock
 {
-  friend class DbkParser;
+  friend class BlkParser;
 public:
   using ValueType = Ast::AttributeType;
   struct Attribute

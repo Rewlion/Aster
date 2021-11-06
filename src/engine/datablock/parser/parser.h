@@ -5,7 +5,7 @@
 #include <engine/types.h>
 #include <engine/datablock/datablock.h>
 
-class DbkParser
+class BlkParser
 {
 public:
   DataBlock parse_file(const String& pathToDbk);

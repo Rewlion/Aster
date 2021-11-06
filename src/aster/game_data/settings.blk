@@ -1,0 +1,5 @@
+app_name:text="aster"
+
+graphics{
+  resolution:text="1024x768"
+}

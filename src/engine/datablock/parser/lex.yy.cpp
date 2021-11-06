@@ -1103,20 +1103,22 @@ case 36:
 YY_RULE_SETUP
 #line 171 "parser.l"
 {
-  yylval.sval = strdup(yytext); return TEXT;
+  char* text = yytext + 1;
+  text[strlen(yytext) - 2] = '\0';
+  yylval.sval = strdup(text); return TEXT;
 }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 175 "parser.l"
+#line 177 "parser.l"
 { printf("Syntax error in line %d, `%s`\n", yylineno, yytext); exit(1); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 177 "parser.l"
+#line 179 "parser.l"
 ECHO;
 	YY_BREAK
-#line 1119 "lex.yy.cpp"
+#line 1121 "lex.yy.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2132,6 +2134,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 177 "parser.l"
+#line 179 "parser.l"
 
 
