@@ -12,10 +12,7 @@ DataBlock* DataBlock::get_child_block(const String& path)
     for(DataBlock& child: dbk->m_ChildBlocks)
     {
       if (child.m_Name == subPath)
-      {
-        dbk = &child;
-        break;
-      }
+        return &child;
     }
     return &EMPTY_BLOCK;
   }
