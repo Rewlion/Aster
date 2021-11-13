@@ -41,7 +41,9 @@ target("aster")
 
 target("engine")
   set_kind("static")
-  add_links("user32")
+  add_links("user32",
+            "EASTL"
+           )
   add_files("src/engine/datablock/datablock.cpp",
             "src/engine/datablock/utils.cpp",
             "src/engine/datablock/parser/lex.yy.cpp",
@@ -50,5 +52,6 @@ target("engine")
             "src/engine/settings.cpp",
             "src/engine/window.cpp",
             "src/engine/log.cpp",
-            "src/engine/assert.cpp"
+            "src/engine/assert.cpp",
+            "src/engine/eastl_memory.cpp"
             )
