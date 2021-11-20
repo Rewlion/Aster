@@ -27,15 +27,45 @@ if is_arch("x64") and is_os("windows") then
     add_linkdirs(
       "deps/eastl-3.17.06/win64"
     )
+    add_defines("PLATFORM_WIN64")
 end
 
 -------------------------------------------
 -- [GLOBAL_END]
 -------------------------------------------
+rule("ecs_generation")
+  set_extensions(".ecs.cpp")
+  on_build_file(function (target, sourcefile, opt)
+        import("core.project.depend")
+        import("utils.progress")
+
+        includes = target:get("includedirs")
+        includesArg = ""
+        for _, i in ipairs(includes) do
+          includesArg = format("%s -I %s", includesArg, i)
+        end
+
+        os.mkdir(target:targetdir())
+
+        depend.on_changed(function ()
+            codegen = "src/engine/ecs/codegen/ecs_generator.py"
+            cmd = format("python %s %s %s", codegen, includesArg, sourcefile)
+            os.vrun(cmd)
+            progress.show(opt.progress, "${color.build.object}ecs generation %s", sourcefile)
+        end, {files = sourcefile})
+    end)
+
+target("aster-ecs")
+  set_kind("object")
+  add_rules("ecs_generation")
+  add_files("src/aster/ecs/*.ecs.cpp")
+
 target("aster")
   set_kind("binary")
-  add_files("src/aster/main.cpp")
-  add_deps("engine")
+  add_files("src/aster/main.cpp",
+            "src/aster/ecs/*gen.cpp"
+           )
+  add_deps("aster-ecs", "engine")
   set_suffixname("-$(mode)")
   set_targetdir("/game/aster")
 
@@ -53,5 +83,10 @@ target("engine")
             "src/engine/window.cpp",
             "src/engine/log.cpp",
             "src/engine/assert.cpp",
-            "src/engine/eastl_memory.cpp"
+            "src/engine/eastl_memory.cpp",
+            "src/engine/ecs/archetype.cpp",
+            "src/engine/ecs/entity_initializer.cpp",
+            "src/engine/ecs/query.cpp",
+            "src/engine/ecs/components_accessor.cpp",
+            "src/engine/ecs/registry.cpp"
             )
