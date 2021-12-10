@@ -35,8 +35,8 @@
    especially those whose name start with YY_ or yy_.  They are
    private implementation details that can be changed or removed.  */
 
-#ifndef YY_YY_PARSER_TAB_HPP_INCLUDED
-# define YY_YY_PARSER_TAB_HPP_INCLUDED
+#ifndef YY_YY_SRC_ENGINE_DATABLOCK_PARSER_PARSER_TAB_HPP_INCLUDED
+# define YY_YY_SRC_ENGINE_DATABLOCK_PARSER_PARSER_TAB_HPP_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 16 "parser.y"
+#line 16 "src/engine/datablock/parser/parser.y"
 
   #include "ast.h"
   #include <cstdio>
@@ -59,7 +59,7 @@ extern int yydebug;
   using glm::mat3;
   using glm::mat4;
 
-#line 63 "parser.tab.hpp"
+#line 63 "src/engine/datablock/parser/parser.tab.hpp"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -103,7 +103,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 34 "parser.y"
+#line 34 "src/engine/datablock/parser/parser.y"
 
   bool bval;
   int ival;
@@ -122,7 +122,7 @@ union YYSTYPE
   Ast::AttributeType attributeType;
   Ast::AttributeValue* attributeValue;
 
-#line 126 "parser.tab.hpp"
+#line 126 "src/engine/datablock/parser/parser.tab.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -135,4 +135,4 @@ extern YYSTYPE yylval;
 
 int yyparse (Ast::Config* rootAst);
 
-#endif /* !YY_YY_PARSER_TAB_HPP_INCLUDED  */
+#endif /* !YY_YY_SRC_ENGINE_DATABLOCK_PARSER_PARSER_TAB_HPP_INCLUDED  */

@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 2 "parser.y"
+#line 2 "src/engine/datablock/parser/parser.y"
 
   #include "ast.h"
   #include <glm/glm.hpp>
@@ -81,7 +81,7 @@
   extern int columno;
   extern char* yytext;
 
-#line 85 "parser.tab.cpp"
+#line 85 "src/engine/datablock/parser/parser.tab.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -1363,87 +1363,87 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* CONFIG: PARAM_LIST  */
-#line 91 "parser.y"
+#line 91 "src/engine/datablock/parser/parser.y"
                        {
     rootAst->paramList = (yyvsp[0].paramListNode);
   }
-#line 1371 "parser.tab.cpp"
+#line 1371 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 3: /* PARAM_LIST: ANNOTATED_PARAM PARAM_LIST  */
-#line 97 "parser.y"
+#line 97 "src/engine/datablock/parser/parser.y"
                                         {
     (yyval.paramListNode) = (yyvsp[-1].paramListNode);
     (yyval.paramListNode)->next = (yyvsp[0].paramListNode);
   }
-#line 1380 "parser.tab.cpp"
+#line 1380 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 4: /* PARAM_LIST: ANNOTATED_PARAM  */
-#line 101 "parser.y"
+#line 101 "src/engine/datablock/parser/parser.y"
                        {
     (yyval.paramListNode) = (yyvsp[0].paramListNode);
   }
-#line 1388 "parser.tab.cpp"
+#line 1388 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 5: /* ANNOTATED_PARAM: "@" NAME ":" NAME BLOCK  */
-#line 107 "parser.y"
+#line 107 "src/engine/datablock/parser/parser.y"
                                             { printf("KOKO:!!:%s:%s", (yyvsp[-3].sval), (yyvsp[-1].sval));
     (yyval.paramListNode) = (yyvsp[0].blockNode);
     (yyval.paramListNode)->name = (yyvsp[-1].sval); free((yyvsp[-1].sval));
     (yyval.paramListNode)->annotation = (yyvsp[-3].sval);
   }
-#line 1398 "parser.tab.cpp"
+#line 1398 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 6: /* ANNOTATED_PARAM: NAME BLOCK  */
-#line 112 "parser.y"
+#line 112 "src/engine/datablock/parser/parser.y"
                             {
     (yyval.paramListNode) = (yyvsp[0].blockNode);
     (yyval.paramListNode)->name = (yyvsp[-1].sval);
   }
-#line 1407 "parser.tab.cpp"
+#line 1407 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 7: /* ANNOTATED_PARAM: "@" NAME ":" NAME ":" ATTRIBUTE  */
-#line 116 "parser.y"
+#line 116 "src/engine/datablock/parser/parser.y"
                                                    {
     (yyval.paramListNode) = (yyvsp[0].attributeNode);
     (yyval.paramListNode)->name = (yyvsp[-2].sval); free((yyvsp[-2].sval));
     (yyval.paramListNode)->annotation = (yyvsp[-4].sval);
   }
-#line 1417 "parser.tab.cpp"
+#line 1417 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 8: /* ANNOTATED_PARAM: NAME ":" ATTRIBUTE  */
-#line 121 "parser.y"
+#line 121 "src/engine/datablock/parser/parser.y"
                                    {
     (yyval.paramListNode) = (yyvsp[0].attributeNode);
     (yyval.paramListNode)->name = (yyvsp[-2].sval);
   }
-#line 1426 "parser.tab.cpp"
+#line 1426 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 9: /* BLOCK: "{" PARAM_LIST "}"  */
-#line 128 "parser.y"
+#line 128 "src/engine/datablock/parser/parser.y"
                                {
     (yyval.blockNode) = new Ast::Block;
     (yyval.blockNode)->paramList = (yyvsp[-1].paramListNode);
   }
-#line 1435 "parser.tab.cpp"
+#line 1435 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 10: /* BLOCK: "{" "}"  */
-#line 132 "parser.y"
+#line 132 "src/engine/datablock/parser/parser.y"
             {
     (yyval.blockNode) = new Ast::Block;
   }
-#line 1443 "parser.tab.cpp"
+#line 1443 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 11: /* ATTRIBUTE: ATTRIBUTE_TYPE "=" ATTRIBUTE_VALUE  */
-#line 138 "parser.y"
+#line 138 "src/engine/datablock/parser/parser.y"
                                                     {
     auto valueType = (yyvsp[0].attributeValue)->GetType();
     if ( (yyvsp[-2].attributeType) == valueType )
@@ -1467,231 +1467,231 @@ yyreduce:
       yyerror(nullptr, buffer);
     }
   }
-#line 1471 "parser.tab.cpp"
+#line 1471 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 12: /* ATTRIBUTE_TYPE: INT_TYPE  */
-#line 164 "parser.y"
+#line 164 "src/engine/datablock/parser/parser.y"
              {
     (yyval.attributeType) = Ast::AttributeType::Int;
   }
-#line 1479 "parser.tab.cpp"
+#line 1479 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 13: /* ATTRIBUTE_TYPE: INT_POINT_2D_TYPE  */
-#line 167 "parser.y"
+#line 167 "src/engine/datablock/parser/parser.y"
                       {
     (yyval.attributeType) = Ast::AttributeType::Int2;
   }
-#line 1487 "parser.tab.cpp"
+#line 1487 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 14: /* ATTRIBUTE_TYPE: INT_POINT_3D_TYPE  */
-#line 170 "parser.y"
+#line 170 "src/engine/datablock/parser/parser.y"
                       {
     (yyval.attributeType) = Ast::AttributeType::Int3;
   }
-#line 1495 "parser.tab.cpp"
+#line 1495 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 15: /* ATTRIBUTE_TYPE: INT_POINT_4D_TYPE  */
-#line 173 "parser.y"
+#line 173 "src/engine/datablock/parser/parser.y"
                       {
     (yyval.attributeType) = Ast::AttributeType::Int4;
   }
-#line 1503 "parser.tab.cpp"
+#line 1503 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 16: /* ATTRIBUTE_TYPE: FLOAT_TYPE  */
-#line 176 "parser.y"
+#line 176 "src/engine/datablock/parser/parser.y"
                {
     (yyval.attributeType) = Ast::AttributeType::Float;
   }
-#line 1511 "parser.tab.cpp"
+#line 1511 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 17: /* ATTRIBUTE_TYPE: POINT_2D_TYPE  */
-#line 179 "parser.y"
+#line 179 "src/engine/datablock/parser/parser.y"
                   {
     (yyval.attributeType) = Ast::AttributeType::Float2;
   }
-#line 1519 "parser.tab.cpp"
+#line 1519 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 18: /* ATTRIBUTE_TYPE: POINT_3D_TYPE  */
-#line 182 "parser.y"
+#line 182 "src/engine/datablock/parser/parser.y"
                   {
     (yyval.attributeType) = Ast::AttributeType::Float3;
   }
-#line 1527 "parser.tab.cpp"
+#line 1527 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 19: /* ATTRIBUTE_TYPE: POINT_4D_TYPE  */
-#line 185 "parser.y"
+#line 185 "src/engine/datablock/parser/parser.y"
                   {
     (yyval.attributeType) = Ast::AttributeType::Float4;
   }
-#line 1535 "parser.tab.cpp"
+#line 1535 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 20: /* ATTRIBUTE_TYPE: MAT3_TYPE  */
-#line 188 "parser.y"
+#line 188 "src/engine/datablock/parser/parser.y"
               {
     (yyval.attributeType) = Ast::AttributeType::Mat3;
   }
-#line 1543 "parser.tab.cpp"
+#line 1543 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 21: /* ATTRIBUTE_TYPE: MAT4_TYPE  */
-#line 191 "parser.y"
+#line 191 "src/engine/datablock/parser/parser.y"
               {
     (yyval.attributeType) = Ast::AttributeType::Mat4;
   }
-#line 1551 "parser.tab.cpp"
+#line 1551 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 22: /* ATTRIBUTE_TYPE: BOOL_TYPE  */
-#line 194 "parser.y"
+#line 194 "src/engine/datablock/parser/parser.y"
               {
     (yyval.attributeType) = Ast::AttributeType::Bool;
   }
-#line 1559 "parser.tab.cpp"
+#line 1559 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 23: /* ATTRIBUTE_TYPE: TEXT_TYPE  */
-#line 197 "parser.y"
+#line 197 "src/engine/datablock/parser/parser.y"
               {
     (yyval.attributeType) = Ast::AttributeType::Text;
   }
-#line 1567 "parser.tab.cpp"
+#line 1567 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 24: /* ATTRIBUTE_VALUE: TEXT  */
-#line 203 "parser.y"
+#line 203 "src/engine/datablock/parser/parser.y"
             {
     auto v = new Ast::TextValue; v->value = std::string((yyvsp[0].sval)); free((yyvsp[0].sval));
     (yyval.attributeValue) = v;
   }
-#line 1576 "parser.tab.cpp"
+#line 1576 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 25: /* ATTRIBUTE_VALUE: FLOAT  */
-#line 207 "parser.y"
+#line 207 "src/engine/datablock/parser/parser.y"
              {
     auto v = new Ast::FloatValue; v->value = (yyvsp[0].fval);
     (yyval.attributeValue) = v;
   }
-#line 1585 "parser.tab.cpp"
+#line 1585 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 26: /* ATTRIBUTE_VALUE: FLOAT "," FLOAT  */
-#line 211 "parser.y"
+#line 211 "src/engine/datablock/parser/parser.y"
                             {
     auto v = new Ast::Float2Value; v->value = vec2((yyvsp[-2].fval), (yyvsp[0].fval));
     (yyval.attributeValue) = v;
   }
-#line 1594 "parser.tab.cpp"
+#line 1594 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 27: /* ATTRIBUTE_VALUE: FLOAT "," FLOAT "," FLOAT  */
-#line 215 "parser.y"
+#line 215 "src/engine/datablock/parser/parser.y"
                                           {
     auto v = new Ast::Float3Value; v->value = vec3((yyvsp[-4].fval), (yyvsp[-2].fval), (yyvsp[0].fval));
     (yyval.attributeValue) = v;
   }
-#line 1603 "parser.tab.cpp"
+#line 1603 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 28: /* ATTRIBUTE_VALUE: FLOAT "," FLOAT "," FLOAT "," FLOAT  */
-#line 219 "parser.y"
+#line 219 "src/engine/datablock/parser/parser.y"
                                                         {
     auto v = new Ast::Float4Value; v->value = vec4((yyvsp[-6].fval), (yyvsp[-4].fval), (yyvsp[-2].fval), (yyvsp[0].fval));
     (yyval.attributeValue) = v;
   }
-#line 1612 "parser.tab.cpp"
+#line 1612 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 29: /* ATTRIBUTE_VALUE: INT  */
-#line 223 "parser.y"
+#line 223 "src/engine/datablock/parser/parser.y"
            {
     auto v = new Ast::IntValue; v->value = (yyvsp[0].ival);
     (yyval.attributeValue) = v;
   }
-#line 1621 "parser.tab.cpp"
+#line 1621 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 30: /* ATTRIBUTE_VALUE: INT "," INT  */
-#line 227 "parser.y"
+#line 227 "src/engine/datablock/parser/parser.y"
                         {
     auto v = new Ast::Int2Value; v->value = ivec2((yyvsp[-2].ival), (yyvsp[0].ival));
     (yyval.attributeValue) = v;
   }
-#line 1630 "parser.tab.cpp"
+#line 1630 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 31: /* ATTRIBUTE_VALUE: INT "," INT "," INT  */
-#line 231 "parser.y"
+#line 231 "src/engine/datablock/parser/parser.y"
                                     {
     auto v = new Ast::Int3Value; v->value = ivec3((yyvsp[-4].ival), (yyvsp[-2].ival), (yyvsp[0].ival));
     (yyval.attributeValue) = v;
   }
-#line 1639 "parser.tab.cpp"
+#line 1639 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 32: /* ATTRIBUTE_VALUE: INT "," INT "," INT "," INT  */
-#line 235 "parser.y"
+#line 235 "src/engine/datablock/parser/parser.y"
                                                 {
     auto v = new Ast::Int4Value; v->value = ivec4((yyvsp[-6].ival), (yyvsp[-4].ival), (yyvsp[-2].ival), (yyvsp[0].ival));
     (yyval.attributeValue) = v;
   }
-#line 1648 "parser.tab.cpp"
+#line 1648 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 33: /* ATTRIBUTE_VALUE: BOOL  */
-#line 239 "parser.y"
+#line 239 "src/engine/datablock/parser/parser.y"
             {
     auto v = new Ast::BoolValue; v->value = (yyvsp[0].bval);
     (yyval.attributeValue) = v;
   }
-#line 1657 "parser.tab.cpp"
+#line 1657 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 34: /* ATTRIBUTE_VALUE: "[" ROW3 "," ROW3 "," ROW3 "]"  */
-#line 243 "parser.y"
+#line 243 "src/engine/datablock/parser/parser.y"
                                                {
     auto v = new Ast::Mat3Value; v->value = mat3( (yyvsp[-5].f3val), (yyvsp[-3].f3val), (yyvsp[-1].f3val));
     (yyval.attributeValue) = v;
   }
-#line 1666 "parser.tab.cpp"
+#line 1666 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 35: /* ATTRIBUTE_VALUE: "[" ROW4 "," ROW4 "," ROW4 "," ROW4 "]"  */
-#line 247 "parser.y"
+#line 247 "src/engine/datablock/parser/parser.y"
                                                             {
     auto v = new Ast::Mat4Value; v->value = mat4( (yyvsp[-7].f4val), (yyvsp[-5].f4val), (yyvsp[-3].f4val), (yyvsp[-1].f4val));
     (yyval.attributeValue) = v;
   }
-#line 1675 "parser.tab.cpp"
+#line 1675 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 36: /* ROW3: "[" FLOAT "," FLOAT "," FLOAT "]"  */
-#line 254 "parser.y"
+#line 254 "src/engine/datablock/parser/parser.y"
                                                   {
     (yyval.f3val) = vec3{ (yyvsp[-5].fval), (yyvsp[-3].fval), (yyvsp[-1].fval) };
   }
-#line 1683 "parser.tab.cpp"
+#line 1683 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 37: /* ROW4: "[" FLOAT "," FLOAT "," FLOAT "," FLOAT "]"  */
-#line 260 "parser.y"
+#line 260 "src/engine/datablock/parser/parser.y"
                                                                 {
     (yyval.f4val) = vec4{ (yyvsp[-7].fval), (yyvsp[-5].fval), (yyvsp[-3].fval), (yyvsp[-1].fval) };
   }
-#line 1691 "parser.tab.cpp"
+#line 1691 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
 
-#line 1695 "parser.tab.cpp"
+#line 1695 "src/engine/datablock/parser/parser.tab.cpp"
 
       default: break;
     }
@@ -1916,7 +1916,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 265 "parser.y"
+#line 265 "src/engine/datablock/parser/parser.y"
 
 
 void yyerror(Ast::Config* rootAst, const char* msg) {
