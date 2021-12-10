@@ -59,6 +59,8 @@
 %token AT "@"
 %token COLON ":"
 %token EQUAL_OP "="
+%token LEFT_PARENTHESIS "("
+%token RIGHT_PARENTHESIS ")"
 %token LEFT_BRACKET "{"
 %token RIGHT_BRACKET "}"
 %token LEFT_SQUARE_BRACKET "["
@@ -105,7 +107,7 @@ PARAM_LIST
   ;
 
 ANNOTATED_PARAM
-  : "@" NAME_VAL[a] ":" NAME_VAL[name] BLOCK[block] { printf("KOKO:!!:%s:%s", $a, $name);
+  : "@" "(" TEXT_VAL[a] ")" NAME_VAL[name] BLOCK[block] {
     $$ = $block;
     $$->name = $name; free($name);
     $$->annotation = $a;
@@ -114,7 +116,7 @@ ANNOTATED_PARAM
     $$ = $block;
     $$->name = $name;
   }
-  | "@" NAME_VAL[a] ":" NAME_VAL[name] ":" ATTRIBUTE[attr] {
+  | "@" "(" TEXT_VAL[a] ")" NAME_VAL[name] ":" ATTRIBUTE[attr] {
     $$ = $attr;
     $$->name = $name; free($name);
     $$->annotation = $a;

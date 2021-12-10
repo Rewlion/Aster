@@ -65,6 +65,14 @@
   return EQUAL_OP;
 }
 
+\( {
+  return LEFT_PARENTHESIS;
+}
+
+\) {
+  return RIGHT_PARENTHESIS;
+}
+
 \{ {
   return LEFT_BRACKET;
 }

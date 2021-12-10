@@ -78,23 +78,25 @@ extern int yydebug;
     AT = 263,                      /* "@"  */
     COLON = 264,                   /* ":"  */
     EQUAL_OP = 265,                /* "="  */
-    LEFT_BRACKET = 266,            /* "{"  */
-    RIGHT_BRACKET = 267,           /* "}"  */
-    LEFT_SQUARE_BRACKET = 268,     /* "["  */
-    RIGHT_SQUARE_BRACKET = 269,    /* "]"  */
-    COMMA = 270,                   /* ","  */
-    INT_TYPE = 271,                /* INT_TYPE  */
-    FLOAT_TYPE = 272,              /* FLOAT_TYPE  */
-    TEXT_TYPE = 273,               /* TEXT_TYPE  */
-    POINT_2D_TYPE = 274,           /* POINT_2D_TYPE  */
-    POINT_3D_TYPE = 275,           /* POINT_3D_TYPE  */
-    POINT_4D_TYPE = 276,           /* POINT_4D_TYPE  */
-    INT_POINT_2D_TYPE = 277,       /* INT_POINT_2D_TYPE  */
-    INT_POINT_3D_TYPE = 278,       /* INT_POINT_3D_TYPE  */
-    INT_POINT_4D_TYPE = 279,       /* INT_POINT_4D_TYPE  */
-    MAT4_TYPE = 280,               /* MAT4_TYPE  */
-    MAT3_TYPE = 281,               /* MAT3_TYPE  */
-    BOOL_TYPE = 282                /* BOOL_TYPE  */
+    LEFT_PARENTHESIS = 266,        /* "("  */
+    RIGHT_PARENTHESIS = 267,       /* ")"  */
+    LEFT_BRACKET = 268,            /* "{"  */
+    RIGHT_BRACKET = 269,           /* "}"  */
+    LEFT_SQUARE_BRACKET = 270,     /* "["  */
+    RIGHT_SQUARE_BRACKET = 271,    /* "]"  */
+    COMMA = 272,                   /* ","  */
+    INT_TYPE = 273,                /* INT_TYPE  */
+    FLOAT_TYPE = 274,              /* FLOAT_TYPE  */
+    TEXT_TYPE = 275,               /* TEXT_TYPE  */
+    POINT_2D_TYPE = 276,           /* POINT_2D_TYPE  */
+    POINT_3D_TYPE = 277,           /* POINT_3D_TYPE  */
+    POINT_4D_TYPE = 278,           /* POINT_4D_TYPE  */
+    INT_POINT_2D_TYPE = 279,       /* INT_POINT_2D_TYPE  */
+    INT_POINT_3D_TYPE = 280,       /* INT_POINT_3D_TYPE  */
+    INT_POINT_4D_TYPE = 281,       /* INT_POINT_4D_TYPE  */
+    MAT4_TYPE = 282,               /* MAT4_TYPE  */
+    MAT3_TYPE = 283,               /* MAT3_TYPE  */
+    BOOL_TYPE = 284                /* BOOL_TYPE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -122,7 +124,7 @@ union YYSTYPE
   Ast::AttributeType attributeType;
   Ast::AttributeValue* attributeValue;
 
-#line 126 "src/engine/datablock/parser/parser.tab.hpp"
+#line 128 "src/engine/datablock/parser/parser.tab.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
