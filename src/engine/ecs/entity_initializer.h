@@ -80,7 +80,7 @@ class EntityInitializer
     EntityInitializer& operator=(const EntityInitializer&) = delete;
 
     template<class T>
-    void InitComponent(const component_name_id nameId, T&& value)
+    void init_component(const component_name_id nameId, T&& value)
     {
       const component_type_id typeId = get_component_type_id<T>();
       const auto it = m_ComponentMap.find(nameId);

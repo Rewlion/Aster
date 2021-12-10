@@ -17,9 +17,9 @@ int main()
 
   ecs.create_entity(str_hash("template1"),
   [](const EntityId& eid, EntityInitializer& init){
-    init.InitComponent<Float2>(str_hash("test_float2"), Float2{23.0f, 1.0f});
-    init.InitComponent<float>(str_hash("test_float"), 274.0);
-    init.InitComponent<String>(str_hash("test_str"), "LOL");
+    init.init_component<Float2>(str_hash("test_float2"), Float2{23.0f, 1.0f});
+    init.init_component<float>(str_hash("test_float"), 274.0);
+    init.init_component<String>(str_hash("test_str"), "LOL");
   });
 
   ecs.create_entity(str_hash("template2"),
