@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 16 "src/engine/datablock/parser/parser.y"
+#line 17 "src/engine/datablock/parser/parser.y"
 
   #include "ast.h"
   #include <cstdio>
@@ -70,11 +70,11 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    BOOL = 258,                    /* BOOL  */
-    INT = 259,                     /* INT  */
-    FLOAT = 260,                   /* FLOAT  */
-    TEXT = 261,                    /* TEXT  */
-    NAME = 262,                    /* NAME  */
+    BOOL_VAL = 258,                /* BOOL_VAL  */
+    INT_VAL = 259,                 /* INT_VAL  */
+    FLOAT_VAL = 260,               /* FLOAT_VAL  */
+    TEXT_VAL = 261,                /* TEXT_VAL  */
+    NAME_VAL = 262,                /* NAME_VAL  */
     AT = 263,                      /* "@"  */
     COLON = 264,                   /* ":"  */
     EQUAL_OP = 265,                /* "="  */
@@ -103,7 +103,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 34 "src/engine/datablock/parser/parser.y"
+#line 35 "src/engine/datablock/parser/parser.y"
 
   bool bval;
   int ival;

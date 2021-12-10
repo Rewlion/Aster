@@ -88,5 +88,11 @@ target("engine")
             "src/engine/ecs/entity_initializer.cpp",
             "src/engine/ecs/query.cpp",
             "src/engine/ecs/components_accessor.cpp",
-            "src/engine/ecs/registry.cpp"
+            "src/engine/ecs/registry.cpp",
+            "src/engine/ecs/fs/load_templates.cpp"
             )
+
+target("blk-test")
+  set_kind("binary")
+  add_deps("engine")
+  add_files("src/test/datablock/main.cpp")

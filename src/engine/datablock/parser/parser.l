@@ -2,6 +2,7 @@
     #include <stdio.h>
     #include "parser.tab.hpp"
 
+    void yyerror(Ast::Config* rootAst, const char* msg);
     extern int yylex();
     int columno = 1;
     std::string lineText;
@@ -133,45 +134,45 @@ bool {
 }
 
 yes {
-  yylval.bval = true; return BOOL;
+  yylval.bval = true; return BOOL_VAL;
 }
 
 true {
-  yylval.bval = true; return BOOL;
+  yylval.bval = true; return BOOL_VAL;
 }
 
 on {
-  yylval.bval = true; return BOOL;
+  yylval.bval = true; return BOOL_VAL;
 }
 
 no {
-  yylval.bval = false; return BOOL;
+  yylval.bval = false; return BOOL_VAL;
 }
 
 false {
-  yylval.bval = false; return BOOL;
+  yylval.bval = false; return BOOL_VAL;
 }
 
 off {
-  yylval.bval = false; return BOOL;
+  yylval.bval = false; return BOOL_VAL;
 }
 
 [-+]?[0-9]+ {
-  yylval.ival = atoi(yytext); return INT; 
+  yylval.ival = atoi(yytext); return INT_VAL; 
 }
 
 [-+]?[0-9]+[.][0-9]* { 
-  yylval.fval = atof(yytext); return FLOAT;
+  yylval.fval = atof(yytext); return FLOAT_VAL;
 }
 
 [a-zA-Z\-_][0-9a-zA-Z\-_.]* {
-  yylval.sval = strdup(yytext); return NAME;
+  yylval.sval = strdup(yytext); return NAME_VAL;
 }
 
 ["][^ \t\r\n]+["] {
   char* text = yytext + 1;
   text[strlen(yytext) - 2] = '\0';
-  yylval.sval = strdup(text); return TEXT;
+  yylval.sval = strdup(text); return TEXT_VAL;
 }
 
 . { printf("Syntax error in line %d, `%s`\n", yylineno, yytext); exit(1); }

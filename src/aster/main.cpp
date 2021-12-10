@@ -13,25 +13,10 @@ int main()
   ::init_log();
   ::init_window();
 
-  const eastl::vector<ComponentDescription> templateDesc{
-    DESCRIBE_COMPONENT("eid", EntityId),
-    DESCRIBE_COMPONENT("test_float2", Float2),
-    DESCRIBE_COMPONENT("test_float", float),
-    DESCRIBE_COMPONENT("test_str", String)
-  };
-
-  const eastl::vector<ComponentDescription> template2Desc{
-    DESCRIBE_COMPONENT("test_float2", Float2),
-  };
-
-  ecs.add_template(str_hash("template1"), templateDesc);
-  ecs.add_template(str_hash("template2"), template2Desc);
-
-  ecs.register_cpp_queries();
+  ::init_ecs_from_settings();
 
   ecs.create_entity(str_hash("template1"),
   [](const EntityId& eid, EntityInitializer& init){
-    init.InitComponent(str_hash("eid"), EntityId{eid});
     init.InitComponent<Float2>(str_hash("test_float2"), Float2{23.0f, 1.0f});
     init.InitComponent<float>(str_hash("test_float"), 274.0);
     init.InitComponent<String>(str_hash("test_str"), "LOL");

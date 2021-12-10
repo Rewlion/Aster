@@ -26,6 +26,11 @@ public:
     String annotation;
     ValueType type = ValueType::None;
     Value as;
+
+    inline const char* GetTypeStr() const
+    {
+      return Ast::GetAttributeTypeStr(type);
+    }
   };
 
   typedef std::vector<DataBlock> BlocksArray;

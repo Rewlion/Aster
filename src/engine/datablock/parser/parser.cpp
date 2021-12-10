@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 extern int yyparse(Ast::Config* root);
+extern void yyrestart(FILE* f);
 extern FILE *yyin;
 
 DataBlock BlkParser::parse_file(const String& path)
@@ -18,6 +19,7 @@ DataBlock BlkParser::parse_file(const String& path)
 
   yyin = f;
   Ast::Config root;
+  yyrestart(f);
   yyparse(&root);
   fclose(f);
 

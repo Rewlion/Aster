@@ -96,4 +96,6 @@ class Registry
     eastl::fixed_vector<RegisteredQueryInfo, 128, true> m_RegisteredQueues;
 };
 
+void init_ecs_from_settings();
+
 extern Registry ecs;

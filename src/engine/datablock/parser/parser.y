@@ -2,6 +2,7 @@
 %{
   #include "ast.h"
   #include <glm/glm.hpp>
+  #include <engine/log.h>
 
 // Declare stuff from Flex that Bison needs to know about:
   extern int yylex();
@@ -50,11 +51,11 @@
   Ast::AttributeValue* attributeValue;
 }
 
-%token <bval> BOOL
-%token <ival> INT
-%token <fval> FLOAT
-%token <sval> TEXT
-%token <sval> NAME
+%token <bval> BOOL_VAL
+%token <ival> INT_VAL
+%token <fval> FLOAT_VAL
+%token <sval> TEXT_VAL
+%token <sval> NAME_VAL
 %token AT "@"
 %token COLON ":"
 %token EQUAL_OP "="
@@ -104,21 +105,21 @@ PARAM_LIST
   ;
 
 ANNOTATED_PARAM
-  : "@" NAME[a] ":" NAME[name] BLOCK[block] { printf("KOKO:!!:%s:%s", $a, $name);
+  : "@" NAME_VAL[a] ":" NAME_VAL[name] BLOCK[block] { printf("KOKO:!!:%s:%s", $a, $name);
     $$ = $block;
     $$->name = $name; free($name);
     $$->annotation = $a;
   }
-  | NAME[name] BLOCK[block] {
+  | NAME_VAL[name] BLOCK[block] {
     $$ = $block;
     $$->name = $name;
   }
-  | "@" NAME[a] ":" NAME[name] ":" ATTRIBUTE[attr] {
+  | "@" NAME_VAL[a] ":" NAME_VAL[name] ":" ATTRIBUTE[attr] {
     $$ = $attr;
     $$->name = $name; free($name);
     $$->annotation = $a;
   }
-  | NAME[name] ":" ATTRIBUTE[attr] {
+  | NAME_VAL[name] ":" ATTRIBUTE[attr] {
     $$ = $attr;
     $$->name = $name;
   }
@@ -200,43 +201,43 @@ ATTRIBUTE_TYPE
   ;
 
 ATTRIBUTE_VALUE
-  : TEXT[t] {
+  : TEXT_VAL[t] {
     auto v = new Ast::TextValue; v->value = std::string($t); free($t);
     $$ = v;
   }
-  | FLOAT[v] {
+  | FLOAT_VAL[v] {
     auto v = new Ast::FloatValue; v->value = $v;
     $$ = v;
   }
-  | FLOAT[f0] "," FLOAT[f1] {
+  | FLOAT_VAL[f0] "," FLOAT_VAL[f1] {
     auto v = new Ast::Float2Value; v->value = vec2($f0, $f1);
     $$ = v;
   }
-  | FLOAT[f0] "," FLOAT[f1] "," FLOAT[f2] {
+  | FLOAT_VAL[f0] "," FLOAT_VAL[f1] "," FLOAT_VAL[f2] {
     auto v = new Ast::Float3Value; v->value = vec3($f0, $f1, $f2);
     $$ = v;
   }
-  | FLOAT[f0] "," FLOAT[f1] "," FLOAT[f2] "," FLOAT[f3] {
+  | FLOAT_VAL[f0] "," FLOAT_VAL[f1] "," FLOAT_VAL[f2] "," FLOAT_VAL[f3] {
     auto v = new Ast::Float4Value; v->value = vec4($f0, $f1, $f2, $f3);
     $$ = v;
   }
-  | INT[v] {
+  | INT_VAL[v] {
     auto v = new Ast::IntValue; v->value = $v;
     $$ = v;
   }
-  | INT[f0] "," INT[f1] {
+  | INT_VAL[f0] "," INT_VAL[f1] {
     auto v = new Ast::Int2Value; v->value = ivec2($f0, $f1);
     $$ = v;
   }
-  | INT[f0] "," INT[f1] "," INT[f2] {
+  | INT_VAL[f0] "," INT_VAL[f1] "," INT_VAL[f2] {
     auto v = new Ast::Int3Value; v->value = ivec3($f0, $f1, $f2);
     $$ = v;
   }
-  | INT[f0] "," INT[f1] "," INT[f2] "," INT[f3] {
+  | INT_VAL[f0] "," INT_VAL[f1] "," INT_VAL[f2] "," INT_VAL[f3] {
     auto v = new Ast::Int4Value; v->value = ivec4($f0, $f1, $f2, $f3);
     $$ = v;
   } 
-  | BOOL[b] {
+  | BOOL_VAL[b] {
     auto v = new Ast::BoolValue; v->value = $b;
     $$ = v;
   }
@@ -251,13 +252,13 @@ ATTRIBUTE_VALUE
   ;
 
 ROW3
-  : "[" FLOAT[v0] "," FLOAT[v1] "," FLOAT[v2] "]" {
+  : "[" FLOAT_VAL[v0] "," FLOAT_VAL[v1] "," FLOAT_VAL[v2] "]" {
     $$ = vec3{ $v0, $v1, $v2 };
   }
   ;
 
 ROW4
-  : "[" FLOAT[v0] "," FLOAT[v1] "," FLOAT[v2] "," FLOAT[v3] "]" {
+  : "[" FLOAT_VAL[v0] "," FLOAT_VAL[v1] "," FLOAT_VAL[v2] "," FLOAT_VAL[v3] "]" {
     $$ = vec4{ $v0, $v1, $v2, $v3 };
   }
   ;
@@ -265,6 +266,7 @@ ROW4
 %%
 
 void yyerror(Ast::Config* rootAst, const char* msg) {
-  fprintf(stderr, "(%d) %s\n", yylineno, msg);
-  exit(-1);
+  logerror("blk parsing error: {} {}", yylineno, msg);
+  assert(!"fuck");
+  //exit(-1);
 }

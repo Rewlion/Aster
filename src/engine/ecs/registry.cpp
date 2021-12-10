@@ -2,6 +2,10 @@
 
 #include "components_accessor.h"
 
+#include <engine/ecs/fs/load_templates.h>
+#include <engine/settings.h>
+#include <engine/log.h>
+
 Registry ecs;
 
 archetype_id Registry::get_archetype(const eastl::vector<ComponentDescription>& desc)
@@ -143,4 +147,23 @@ void Registry::tick()
   for(const RegisteredQueryInfo& query: m_RegisteredQueues)
     for(const archetype_id archetypeId: query.archetypes)
       query_archetype(archetypeId, query.cb);
+}
+
+void init_ecs_from_settings()
+{
+  log("initialization of ECS");
+  DataBlock* settings = get_app_settings();
+  DataBlock* templates = settings->get_child_block("entity_templates");
+  for(const auto& attr: templates->get_attributes())
+  {
+    if (attr.type == DataBlock::ValueType::Text)
+    {
+      const String blkWithTemplates = std::get<String>(attr.as);
+      log("reading templates from {}", blkWithTemplates);
+
+      add_templates_from_blk(ecs, blkWithTemplates);
+    }
+  }
+
+  ecs.register_cpp_queries();
 }
