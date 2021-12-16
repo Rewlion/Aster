@@ -7,11 +7,40 @@
 #include <engine/ecs/archetype.h>
 #include <engine/ecs/components_accessor.h>
 
+struct CmdEvent: public Event
+{
+  String name;
+
+  EVENT_CONSTRUCTOR(CmdEvent)
+  {
+  }
+};
+
+void _event_query(CmdEvent* event, String& test_str)
+{
+  volatile bool f = false;
+}
+
+void event_query(Event* event, ComponentsAccessor& comps)
+{
+  String& str = comps.Get<String>(str_hash("test_str"));
+  _event_query((CmdEvent*)(event), str);
+}
+
 int main()
 {
   ::load_app_settings("game_data/settings.blk");
   ::init_log();
   ::init_window();
+
+  ecs.register_event(str_hash("CmdEvent"));
+
+  QueryDescription query;
+  query.eventCb = event_query;
+  query.event = str_hash("CmdEvent");
+
+  bool b = ecs.register_cpp_query(std::move(query));
+
 
   ::init_ecs_from_settings();
 
@@ -28,6 +57,11 @@ int main()
 
   for(;;)
   {
+    CmdEvent event; event.name = "vv";
+    ecs.broadcast_event(event);
+    event.name = "mmmm!!";
+    ecs.broadcast_event(event);
+
     ::poll_input_events();
 
     ecs.tick();

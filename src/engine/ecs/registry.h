@@ -5,12 +5,16 @@
 #include "eid.h"
 #include "components.h"
 #include "archetype.h"
+#include "events.h"
+
+#include <engine/log.h>
 
 #include <EASTL/vector_map.h>
+#include <EASTL/vector.h>
 
 class EntityInitializer;
 
-class Registry
+class Registry final
 {
   public:
     typedef eastl::function<void(const EntityId&, EntityInitializer&)> CreationCb;
@@ -24,6 +28,23 @@ class Registry
 
     void register_cpp_queries();
     void register_query(const QueryDescription& queryDesc);
+
+    template<class T>
+    void broadcast_event(T&& event)
+    {
+      if (m_EventHandleQueries.find(event.eventNameHash) != m_EventHandleQueries.end())
+        m_EventsQueue.push_event(eastl::forward<T>(event));
+      else
+        logerror("can't broadcast event `{}`, it is not registered.");
+    }
+
+    inline void register_event(const event_hash_name event)
+    {
+      m_EventHandleQueries.insert({
+        event,
+        eastl::vector<RegisteredEventQueryInfo>{}
+      });
+    }
 
     inline static bool register_cpp_query(QueryDescription&& desc)
     {
@@ -67,6 +88,8 @@ class Registry
     };
 
   private:
+    void process_events();
+
     DesiredArchetypes find_desired_archetypes(const QueryComponents& queryComponents);
 
     archetype_id get_archetype(const eastl::vector<ComponentDescription>& desc);
@@ -86,14 +109,30 @@ class Registry
         }
     }
 
+    template<class Cb>
+    void query_archetype_by_event(Event* event, const archetype_id archetypeId, Cb cb)
+    {
+      Archetype& archetype = m_Archetypes[archetypeId];
+      for(Chunk& chunk: archetype.m_CompStorage.m_Chunks)
+        for (int i = 0; i < chunk.usedBlocks; ++i)
+        {
+          uint8_t* data = chunk.data + archetype.m_CompStorage.m_BlockSize * i;
+          ComponentsAccessor compAccessor(data, archetype.m_ComponentsMap);
+          cb(event, compAccessor);
+        }
+    }
+
   private:
     eastl::fixed_vector<Archetype, 128, true> m_Archetypes;
     eastl::vector_map<template_name_id, archetype_id> m_TemplateToArhetypeMap;
+    eastl::vector_map<event_hash_name, eastl::vector<RegisteredEventQueryInfo>> m_EventHandleQueries;
 
     uint64_t m_NextEntityId = 1;
     eastl::vector_map<uint64_t, EntityInfo> m_EntitiesInfo;
 
     eastl::fixed_vector<RegisteredQueryInfo, 128, true> m_RegisteredQueues;
+
+    EventsQueue m_EventsQueue;
 };
 
 void init_ecs_from_settings();

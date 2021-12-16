@@ -10,6 +10,7 @@ using component_type_id = string_hash;
 using archetype_id = uint16_t;
 using template_name_id = string_hash;
 using query_id = uint16_t;
+using event_hash_name = string_hash;
 
 constexpr size_t CHUNK_SIZE = 16 * 1024;
 
