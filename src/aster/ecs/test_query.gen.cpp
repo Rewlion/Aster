@@ -25,6 +25,25 @@
   }
   
 
+static void event_system_internal(Event* event, ComponentsAccessor& accessor)
+{
+  TestEvent* casted_event = reinterpret_cast<TestEvent*>(event);
+   const String& test_str = accessor.Get<String>(str_hash("test_str")) ;
+  event_system(*casted_event, test_str);
+}
+  
+
+static const bool event_system_desc = Registry::register_cpp_query(
+  QueryDescription{
+    .components = {
+       DESCRIBE_QUERY_COMPONENT("test_str", String)
+    },
+    .eventCb = event_system_internal,
+    .event = str_hash("TestEvent")
+  }
+);
+  
+
 static void system_test_internal(ComponentsAccessor& accessor)
 {
    const float& test_float = accessor.Get<float>(str_hash("test_float")) ;

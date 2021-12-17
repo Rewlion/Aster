@@ -9,9 +9,17 @@
 
 #include <type_traits>
 
-struct Event;
+#ifdef __clang__
+  #define ECS_EVENT_BASE() [[clang::annotate("ecs_event_base_struct")]]
+#else
+  #define ECS_EVENT_BASE()
+#endif
+
+struct ECS_EVENT_BASE() Event;
+
 using EventDestructorPtr = void(Event*);
-struct Event
+
+struct ECS_EVENT_BASE() Event
 {
   friend class EventsQueue;
   friend class Registry;

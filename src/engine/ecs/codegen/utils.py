@@ -3,7 +3,9 @@ import pprint
 import os
 
 ES_SYSTEM_TAG = "ecs_system"
+ES_EVENT_SYSTEM_TAG = "ecs_event_system"
 ES_QUERY_TAG = "ecs_query"
+ECS_EVENT_BASE_STRUCT = "ecs_event_base_struct"
 
 VALID_PARAM_TYPES = {
   'int',
@@ -175,17 +177,19 @@ def gen_query(parsedQuery):
 
   return gen_src
 
+def get_param_info(param):
+  paramType = param.type
+  return {
+    'name':param.spelling,
+    'type_name': get_type_name(paramType),
+    'const': "const" if is_const_type(paramType) else "",
+    'ref': "&" if is_ref_type(paramType) else ""
+  }
 
 def parse_function_params(paramsNodes):
   paramInfos = []
   for param in paramsNodes:
-    paramType = param.type
-    paramInfos = paramInfos + [{
-      'name':param.spelling,
-      'type_name': get_type_name(paramType),
-      'const': "const" if is_const_type(paramType) else "",
-      'ref': "&" if is_ref_type(paramType) else ""
-    }]
+    paramInfos = paramInfos + [get_param_info(param)]
 
   return paramInfos
 
@@ -194,6 +198,82 @@ def parse_system(function, paramNodes):
     'name': function.spelling,
     'function_params': parse_function_params(paramNodes)
   }
+
+def get_event_name(event):
+  type = event.type.get_pointee() if is_ref_type(event.type) else event.type
+  return type.get_declaration().spelling
+
+def parse_event_system(function, paramNodes):
+  return {
+    'name': function.spelling,
+    'event_name': get_event_name(paramNodes[0]),
+    'function_params': parse_function_params(paramNodes[1:])
+  }
+
+def gen_event_system(parsedFunction):
+  funcParamsInfo = parsedFunction['function_params']
+  eventName = parsedFunction['event_name']
+
+  componentAccessTemplate = """{is_const} {param_type}{is_ref} {param_name} = accessor.Get<{param_type}>(str_hash("{param_name}")) """
+  componentsAccessors = ""
+  for p in funcParamsInfo:
+    componentsAccessors = "{} {};\n".format(
+      componentsAccessors,
+      componentAccessTemplate.format(
+        is_const = p['const'],
+        param_type = p['type_name'],
+        is_ref = p['ref'],
+        param_name = p['name']
+      )
+    )
+  componentsAccessors = componentsAccessors[:-1]
+
+  callbackParams = ""
+  for p in funcParamsInfo:
+    callbackParams = callbackParams + p['name'] + ","
+  callbackParams = callbackParams[:-1]
+
+  systemName = parsedFunction['name']
+  systemDeclaration = """
+static void {system_name}_internal(Event* event, ComponentsAccessor& accessor)
+{{
+  {event_type}* casted_event = reinterpret_cast<{event_type}*>(event);
+  {component_accessors}
+  {system_name}(*casted_event, {callback_execute_params});
+}}
+  """.format(
+    system_name = systemName,
+    event_type = eventName,
+    component_accessors = componentsAccessors,
+    callback_execute_params = callbackParams
+  )
+
+  queryComponentTemplate = """DESCRIBE_QUERY_COMPONENT("{component_name}", {component_type})"""
+  queryComponents = ""
+  for p in funcParamsInfo:
+    queryComponents = "{} {},".format(
+      queryComponents,
+      queryComponentTemplate.format(component_name = p['name'], component_type= p['type_name'])
+    )
+  queryComponents = queryComponents[:-1]
+
+  systemRegistration = """
+static const bool {system_name}_desc = Registry::register_cpp_query(
+  QueryDescription{{
+    .components = {{
+      {components_descriptions}
+    }},
+    .eventCb = {system_name}_internal,
+    .event = str_hash("{event_type}")
+  }}
+);
+  """.format(
+    system_name = systemName,
+    components_descriptions = queryComponents,
+    event_type = eventName
+  )
+
+  return '\n'.join([systemDeclaration, systemRegistration])
 
 def gen_system(parsedFunction):
   funcParamsInfo = parsedFunction['function_params']
@@ -289,6 +369,7 @@ def generate_ecs_impl(from_src, includeArgs):
       name = function.spelling
       paramsNodes = []
       isEsSystem = False
+      isEsEventSystem = False
       isEsQuery = False
 
       for child in function.get_children():
@@ -299,6 +380,8 @@ def generate_ecs_impl(from_src, includeArgs):
         elif child.kind == clang.cindex.CursorKind.ANNOTATE_ATTR:
           if child.spelling == ES_SYSTEM_TAG:
             isEsSystem = True
+          if child.spelling == ES_EVENT_SYSTEM_TAG:
+            isEsEventSystem = True
           if child.spelling == ES_QUERY_TAG:
             isEsQuery = True
 
@@ -314,6 +397,11 @@ def generate_ecs_impl(from_src, includeArgs):
       if isEsSystem:
         parsedSystem = parse_system(function, paramsNodes)
         code = gen_system(parsedSystem)
+        generated_srs = generated_srs + [code]
+
+      if isEsEventSystem:
+        parsedSystem = parse_event_system(function, paramsNodes)
+        code = gen_event_system(parsedSystem)
         generated_srs = generated_srs + [code]
 
   final_src = '\n'.join(generated_srs)
