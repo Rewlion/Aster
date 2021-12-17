@@ -82,6 +82,7 @@ target("engine")
             "src/engine/settings.cpp",
             "src/engine/window.cpp",
             "src/engine/log.cpp",
+            "src/engine/level.cpp",
             "src/engine/assert.cpp",
             "src/engine/eastl_memory.cpp",
             "src/engine/ecs/archetype.cpp",

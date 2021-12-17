@@ -2,6 +2,7 @@
 
 #include <engine/engine.h>
 
+#include <engine/level.h>
 #include <engine/ecs/registry.h>
 #include <engine/ecs/components.h>
 #include <engine/ecs/archetype.h>
@@ -14,17 +15,7 @@ int main()
   ::init_window();
 
   ::init_ecs_from_settings();
-
-  ecs.create_entity(str_hash("template1"),
-  [](const EntityId& eid, EntityInitializer& init){
-    init.init_component<Float2>(str_hash("test_float2"), Float2{23.0f, 1.0f});
-    init.init_component<float>(str_hash("test_float"), 274.0);
-    init.init_component<String>(str_hash("test_str"), "LOL");
-  });
-
-  ecs.create_entity(str_hash("template2"),
-    [](const EntityId& eid, EntityInitializer& init) {
-  });
+  ::load_level( ::get_app_settings()->get_text("init_level") );
 
   for(;;)
   {

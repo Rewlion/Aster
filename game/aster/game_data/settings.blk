@@ -4,6 +4,8 @@ entity_templates{
   template:text="game_data/templates/templates.blk"
 }
 
+init_level:text = "game_data/levels/test_level.blk"
+
 graphics{
   resolution:text="1024x768"
 }
