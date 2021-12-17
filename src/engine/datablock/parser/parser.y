@@ -107,7 +107,7 @@ PARAM_LIST
   ;
 
 ANNOTATED_PARAM
-  : "@" "(" TEXT_VAL[a] ")" NAME_VAL[name] BLOCK[block] {
+  : NAME_VAL[name] "@" "(" TEXT_VAL[a] ")" BLOCK[block] {
     $$ = $block;
     $$->name = $name; free($name);
     $$->annotation = $a;
@@ -116,7 +116,7 @@ ANNOTATED_PARAM
     $$ = $block;
     $$->name = $name;
   }
-  | "@" "(" TEXT_VAL[a] ")" NAME_VAL[name] ":" ATTRIBUTE[attr] {
+  | NAME_VAL[name] ":" ATTRIBUTE[attr] "@" "(" TEXT_VAL[a] ")" {
     $$ = $attr;
     $$->name = $name; free($name);
     $$->annotation = $a;
