@@ -1,9 +1,9 @@
-app_name:text="aster"
+text app_name ="aster"
 
 entity_templates{
-  template:text="game_data/templates/templates.blk"
+  text template ="game_data/templates/templates.blk"
 }
 
 graphics{
-  resolution:text="1024x768"
+  text resolution ="1024x768"
 }

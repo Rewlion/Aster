@@ -114,16 +114,14 @@ ANNOTATED_PARAM
   }
   | NAME_VAL[name] BLOCK[block] {
     $$ = $block;
-    $$->name = $name;
-  }
-  | NAME_VAL[name] ":" ATTRIBUTE[attr] "@" "(" TEXT_VAL[a] ")" {
-    $$ = $attr;
     $$->name = $name; free($name);
+  }
+  | ATTRIBUTE[attr] "@" "(" TEXT_VAL[a] ")" {
+    $$ = $attr;
     $$->annotation = $a;
   }
-  | NAME_VAL[name] ":" ATTRIBUTE[attr] {
+  | ATTRIBUTE[attr] {
     $$ = $attr;
-    $$->name = $name;
   }
   ;
 
@@ -138,12 +136,13 @@ BLOCK
   ;
 
 ATTRIBUTE
-  : ATTRIBUTE_TYPE[type] "=" ATTRIBUTE_VALUE[value] {
+  : ATTRIBUTE_TYPE[type] NAME_VAL[name] "=" ATTRIBUTE_VALUE[value] {
     auto valueType = $value->GetType();
     if ( $type == valueType )
     {
       $$ = new Ast::Attribute;
       $$->valueNode = $value;
+      $$->name = $name; free($name);
       $$->type = $type;
     }
     else

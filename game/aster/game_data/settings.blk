@@ -1,15 +1,15 @@
-app_name:text="aster"
+text app_name ="aster"
 
 entity_templates{
-  template:text="game_data/templates/templates.blk"
+  text template = "game_data/templates/templates.blk"
 }
 
-init_level:text = "game_data/levels/test_level.blk"
+text init_level = "game_data/levels/test_level.blk"
 
 graphics{
-  resolution:text="1024x768"
+  text resolution = "1024x768"
 }
 
 events{
-  event:text = "TestEvent"
+  text event = "TestEvent"
 }

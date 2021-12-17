@@ -1,10 +1,10 @@
 template1 @("entity_template"){
-  test_float2:float2 = 0.0, 0.0
-  test_float:float = 0.0
-  test_str:text = "a"
+  float2 test_float2 = 0.0, 0.0
+  float test_float = 0.0
+  text test_str = "a"
 }
 
-template2 @("entity_template"){
-  test_float2:float2 = 0.0, 0.0
+template2 @("entity_template") {
+  float2 test_float2 = 0.0, 0.0
 }
 

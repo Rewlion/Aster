@@ -457,9 +457,9 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  9
+#define YYFINAL  22
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   94
+#define YYLAST   99
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  30
@@ -520,10 +520,10 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    94,    94,   100,   104,   110,   115,   119,   124,   131,
-     135,   141,   167,   170,   173,   176,   179,   182,   185,   188,
-     191,   194,   197,   200,   206,   210,   214,   218,   222,   226,
-     230,   234,   238,   242,   246,   250,   257,   263
+       0,    94,    94,   100,   104,   110,   115,   119,   123,   129,
+     133,   139,   166,   169,   172,   175,   178,   181,   184,   187,
+     190,   193,   196,   199,   205,   209,   213,   217,   221,   225,
+     229,   233,   237,   241,   245,   249,   256,   262
 };
 #endif
 
@@ -578,15 +578,15 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      -4,     4,    19,   -53,    -4,     0,    11,    -6,   -53,   -53,
-     -53,    16,   -53,   -53,   -53,   -53,   -53,   -53,   -53,   -53,
-     -53,   -53,   -53,   -53,    12,    13,   -53,    10,    15,    30,
-       1,   -53,    29,    20,   -53,     8,    26,   -53,    31,   -53,
-     -53,    32,    41,    42,    43,    33,    34,   -53,    35,    36,
-      37,    40,    44,    45,    51,    52,    53,    46,    55,    47,
-      48,    49,    50,    54,    40,    56,    44,    57,    63,    64,
-      65,    58,    67,    59,   -53,   -53,    -7,    60,   -53,    61,
-      44,   -53,    70,    74,    75,    66,    68,    69,    71,   -53,
+      20,    -7,   -53,   -53,   -53,   -53,   -53,   -53,   -53,   -53,
+     -53,   -53,   -53,   -53,     2,   -53,    20,     4,    -2,    -1,
+      -3,   -53,   -53,   -53,    18,     3,    24,   -53,    17,    26,
+      48,    21,   -53,    22,   -53,    19,    38,   -53,    41,   -53,
+      44,   -53,    31,    53,    54,    43,    45,   -53,    47,    49,
+      50,    46,    55,    61,    63,    64,    66,    56,    67,    57,
+      58,    59,    60,    62,    46,    65,    55,    74,    75,    76,
+      78,    68,    80,    69,   -53,   -53,    -8,    70,   -53,    71,
+      55,   -53,    84,    85,    86,    77,    79,    81,    82,   -53,
      -53
 };
 
@@ -595,11 +595,11 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,     0,     0,     2,     4,     0,     0,     0,     6,     1,
-       3,     0,    12,    16,    23,    17,    18,    19,    13,    14,
-      15,    21,    20,    22,     8,     0,    10,     0,     0,     0,
-       0,     9,     0,     0,    33,    29,    25,    24,     0,    11,
-       5,     0,     0,     0,     0,     0,     0,     7,    30,    26,
+       0,     0,    12,    16,    23,    17,    18,    19,    13,    14,
+      15,    21,    20,    22,     0,     2,     4,     8,     0,     0,
+       0,     6,     1,     3,     0,     0,     0,    10,     0,     0,
+       0,     0,     9,     0,    33,    29,    25,    24,     0,    11,
+       0,     7,     0,     0,     0,     0,     0,     5,    30,    26,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
       31,    27,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,    32,    28,     0,     0,    34,     0,
@@ -610,13 +610,13 @@ static const yytype_int8 yydefact[] =
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -53,   -53,    14,   -53,    62,   -53,   -53,   -53,   -49,   -52
+     -53,   -53,   -13,   -53,    52,   -53,   -53,   -53,   -14,   -52
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     2,     3,     4,     8,    24,    25,    39,    45,    46
+      -1,    14,    15,    16,    21,    17,    18,    39,    45,    46
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -624,41 +624,41 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      59,     1,    57,     1,    34,    35,    36,    37,    26,    81,
-      82,    11,     5,     6,    73,    71,    38,     7,    10,     9,
-      29,    27,    28,    30,    31,    42,    41,    32,    85,    12,
-      13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
-      23,    33,     7,    43,    47,    48,    44,    49,    50,    60,
-      51,    52,    53,    54,    55,    56,    61,    62,    63,    58,
-      65,    74,     0,    64,    66,    67,    68,    69,    75,    76,
-      77,    70,    79,    72,    78,    86,    80,    83,    84,    87,
-      88,     0,    89,     0,    90,    81,     0,     0,    82,     0,
-       0,     0,     0,     0,    40
+      59,    19,    22,    23,     1,    25,    20,    28,    81,    82,
+      26,    27,    24,    30,    73,     2,     3,     4,     5,     6,
+       7,     8,     9,    10,    11,    12,    13,     1,    85,    29,
+      31,    32,    33,    40,    41,    48,    42,    57,     2,     3,
+       4,     5,     6,     7,     8,     9,    10,    11,    12,    13,
+      71,    34,    35,    36,    37,    43,    44,    20,    49,    50,
+      51,    56,    52,    38,    53,    60,    54,    55,    61,    62,
+      58,    63,    65,    64,    66,    67,    68,    69,    74,    70,
+      75,    76,    72,    77,    78,    79,    80,    83,    84,    86,
+      87,    88,    47,    89,     0,    90,     0,    81,     0,    82
 };
 
 static const yytype_int8 yycheck[] =
 {
-      52,     7,    51,     7,     3,     4,     5,     6,    14,    16,
-      17,    11,     8,     9,    66,    64,    15,    13,     4,     0,
-       8,     7,     6,    10,    14,    17,     6,    12,    80,    18,
-      19,    20,    21,    22,    23,    24,    25,    26,    27,    28,
-      29,    11,    13,    17,    12,     4,    15,     5,     5,     4,
-      17,    17,    17,    17,    17,    15,     5,     5,     5,    15,
-       5,     4,    -1,    17,    17,    17,    17,    17,     5,     5,
-       5,    17,     5,    17,    16,     5,    17,    17,    17,     5,
-       5,    -1,    16,    -1,    16,    16,    -1,    -1,    17,    -1,
-      -1,    -1,    -1,    -1,    32
+      52,     8,     0,    16,     7,     7,    13,    20,    16,    17,
+      11,    14,     8,    10,    66,    18,    19,    20,    21,    22,
+      23,    24,    25,    26,    27,    28,    29,     7,    80,    11,
+       6,    14,     6,    12,    12,     4,    17,    51,    18,    19,
+      20,    21,    22,    23,    24,    25,    26,    27,    28,    29,
+      64,     3,     4,     5,     6,    17,    15,    13,     5,     5,
+      17,    15,    17,    15,    17,     4,    17,    17,     5,     5,
+      15,     5,     5,    17,    17,    17,    17,    17,     4,    17,
+       5,     5,    17,     5,    16,     5,    17,    17,    17,     5,
+       5,     5,    40,    16,    -1,    16,    -1,    16,    -1,    17
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     7,    31,    32,    33,     8,     9,    13,    34,     0,
-      32,    11,    18,    19,    20,    21,    22,    23,    24,    25,
-      26,    27,    28,    29,    35,    36,    14,    32,     6,     8,
-      10,    14,    12,    11,     3,     4,     5,     6,    15,    37,
-      34,     6,    17,    17,    15,    38,    39,    12,     4,     5,
+       0,     7,    18,    19,    20,    21,    22,    23,    24,    25,
+      26,    27,    28,    29,    31,    32,    33,    35,    36,     8,
+      13,    34,     0,    32,     8,     7,    11,    14,    32,    11,
+      10,     6,    14,     6,     3,     4,     5,     6,    15,    37,
+      12,    12,    17,    17,    15,    38,    39,    34,     4,     5,
        5,    17,    17,    17,    17,    17,    15,    38,    15,    39,
        4,     5,     5,     5,    17,     5,    17,    17,    17,    17,
       17,    38,    17,    39,     4,     5,     5,     5,    16,     5,
@@ -678,8 +678,8 @@ static const yytype_int8 yyr1[] =
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     1,     2,     1,     6,     2,     7,     3,     3,
-       2,     3,     1,     1,     1,     1,     1,     1,     1,     1,
+       0,     2,     1,     2,     1,     6,     2,     5,     1,     3,
+       2,     4,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     3,     5,     7,     1,
        3,     5,     7,     1,     7,     9,     7,     9
 };
@@ -1410,60 +1410,59 @@ yyreduce:
 #line 115 "src/engine/datablock/parser/parser.y"
                                 {
     (yyval.paramListNode) = (yyvsp[0].blockNode);
-    (yyval.paramListNode)->name = (yyvsp[-1].sval);
+    (yyval.paramListNode)->name = (yyvsp[-1].sval); free((yyvsp[-1].sval));
   }
 #line 1416 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
-  case 7: /* ANNOTATED_PARAM: NAME_VAL ":" ATTRIBUTE "@" "(" TEXT_VAL ")"  */
+  case 7: /* ANNOTATED_PARAM: ATTRIBUTE "@" "(" TEXT_VAL ")"  */
 #line 119 "src/engine/datablock/parser/parser.y"
-                                                               {
+                                            {
     (yyval.paramListNode) = (yyvsp[-4].attributeNode);
-    (yyval.paramListNode)->name = (yyvsp[-6].sval); free((yyvsp[-6].sval));
     (yyval.paramListNode)->annotation = (yyvsp[-1].sval);
   }
-#line 1426 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1425 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
-  case 8: /* ANNOTATED_PARAM: NAME_VAL ":" ATTRIBUTE  */
-#line 124 "src/engine/datablock/parser/parser.y"
-                                       {
+  case 8: /* ANNOTATED_PARAM: ATTRIBUTE  */
+#line 123 "src/engine/datablock/parser/parser.y"
+                    {
     (yyval.paramListNode) = (yyvsp[0].attributeNode);
-    (yyval.paramListNode)->name = (yyvsp[-2].sval);
   }
-#line 1435 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1433 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 9: /* BLOCK: "{" PARAM_LIST "}"  */
-#line 131 "src/engine/datablock/parser/parser.y"
+#line 129 "src/engine/datablock/parser/parser.y"
                                {
     (yyval.blockNode) = new Ast::Block;
     (yyval.blockNode)->paramList = (yyvsp[-1].paramListNode);
   }
-#line 1444 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1442 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 10: /* BLOCK: "{" "}"  */
-#line 135 "src/engine/datablock/parser/parser.y"
+#line 133 "src/engine/datablock/parser/parser.y"
             {
     (yyval.blockNode) = new Ast::Block;
   }
-#line 1452 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1450 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
-  case 11: /* ATTRIBUTE: ATTRIBUTE_TYPE "=" ATTRIBUTE_VALUE  */
-#line 141 "src/engine/datablock/parser/parser.y"
-                                                    {
+  case 11: /* ATTRIBUTE: ATTRIBUTE_TYPE NAME_VAL "=" ATTRIBUTE_VALUE  */
+#line 139 "src/engine/datablock/parser/parser.y"
+                                                                   {
     auto valueType = (yyvsp[0].attributeValue)->GetType();
-    if ( (yyvsp[-2].attributeType) == valueType )
+    if ( (yyvsp[-3].attributeType) == valueType )
     {
       (yyval.attributeNode) = new Ast::Attribute;
       (yyval.attributeNode)->valueNode = (yyvsp[0].attributeValue);
-      (yyval.attributeNode)->type = (yyvsp[-2].attributeType);
+      (yyval.attributeNode)->name = (yyvsp[-2].sval); free((yyvsp[-2].sval));
+      (yyval.attributeNode)->type = (yyvsp[-3].attributeType);
     }
     else
     {
-      auto expectedTypeStr = Ast::GetAttributeTypeStr((yyvsp[-2].attributeType));
+      auto expectedTypeStr = Ast::GetAttributeTypeStr((yyvsp[-3].attributeType));
       auto valueTypeStr = Ast::GetAttributeTypeStr(valueType);
       auto valueStr = (yyvsp[0].attributeValue)->ToStr();
 
@@ -1476,231 +1475,231 @@ yyreduce:
       yyerror(nullptr, buffer);
     }
   }
-#line 1480 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1479 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 12: /* ATTRIBUTE_TYPE: INT_TYPE  */
-#line 167 "src/engine/datablock/parser/parser.y"
+#line 166 "src/engine/datablock/parser/parser.y"
              {
     (yyval.attributeType) = Ast::AttributeType::Int;
   }
-#line 1488 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1487 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 13: /* ATTRIBUTE_TYPE: INT_POINT_2D_TYPE  */
-#line 170 "src/engine/datablock/parser/parser.y"
+#line 169 "src/engine/datablock/parser/parser.y"
                       {
     (yyval.attributeType) = Ast::AttributeType::Int2;
   }
-#line 1496 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1495 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 14: /* ATTRIBUTE_TYPE: INT_POINT_3D_TYPE  */
-#line 173 "src/engine/datablock/parser/parser.y"
+#line 172 "src/engine/datablock/parser/parser.y"
                       {
     (yyval.attributeType) = Ast::AttributeType::Int3;
   }
-#line 1504 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1503 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 15: /* ATTRIBUTE_TYPE: INT_POINT_4D_TYPE  */
-#line 176 "src/engine/datablock/parser/parser.y"
+#line 175 "src/engine/datablock/parser/parser.y"
                       {
     (yyval.attributeType) = Ast::AttributeType::Int4;
   }
-#line 1512 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1511 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 16: /* ATTRIBUTE_TYPE: FLOAT_TYPE  */
-#line 179 "src/engine/datablock/parser/parser.y"
+#line 178 "src/engine/datablock/parser/parser.y"
                {
     (yyval.attributeType) = Ast::AttributeType::Float;
   }
-#line 1520 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1519 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 17: /* ATTRIBUTE_TYPE: POINT_2D_TYPE  */
-#line 182 "src/engine/datablock/parser/parser.y"
+#line 181 "src/engine/datablock/parser/parser.y"
                   {
     (yyval.attributeType) = Ast::AttributeType::Float2;
   }
-#line 1528 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1527 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 18: /* ATTRIBUTE_TYPE: POINT_3D_TYPE  */
-#line 185 "src/engine/datablock/parser/parser.y"
+#line 184 "src/engine/datablock/parser/parser.y"
                   {
     (yyval.attributeType) = Ast::AttributeType::Float3;
   }
-#line 1536 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1535 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 19: /* ATTRIBUTE_TYPE: POINT_4D_TYPE  */
-#line 188 "src/engine/datablock/parser/parser.y"
+#line 187 "src/engine/datablock/parser/parser.y"
                   {
     (yyval.attributeType) = Ast::AttributeType::Float4;
   }
-#line 1544 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1543 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 20: /* ATTRIBUTE_TYPE: MAT3_TYPE  */
-#line 191 "src/engine/datablock/parser/parser.y"
+#line 190 "src/engine/datablock/parser/parser.y"
               {
     (yyval.attributeType) = Ast::AttributeType::Mat3;
   }
-#line 1552 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1551 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 21: /* ATTRIBUTE_TYPE: MAT4_TYPE  */
-#line 194 "src/engine/datablock/parser/parser.y"
+#line 193 "src/engine/datablock/parser/parser.y"
               {
     (yyval.attributeType) = Ast::AttributeType::Mat4;
   }
-#line 1560 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1559 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 22: /* ATTRIBUTE_TYPE: BOOL_TYPE  */
-#line 197 "src/engine/datablock/parser/parser.y"
+#line 196 "src/engine/datablock/parser/parser.y"
               {
     (yyval.attributeType) = Ast::AttributeType::Bool;
   }
-#line 1568 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1567 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 23: /* ATTRIBUTE_TYPE: TEXT_TYPE  */
-#line 200 "src/engine/datablock/parser/parser.y"
+#line 199 "src/engine/datablock/parser/parser.y"
               {
     (yyval.attributeType) = Ast::AttributeType::Text;
   }
-#line 1576 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1575 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 24: /* ATTRIBUTE_VALUE: TEXT_VAL  */
-#line 206 "src/engine/datablock/parser/parser.y"
+#line 205 "src/engine/datablock/parser/parser.y"
                 {
     auto v = new Ast::TextValue; v->value = std::string((yyvsp[0].sval)); free((yyvsp[0].sval));
     (yyval.attributeValue) = v;
   }
-#line 1585 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1584 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 25: /* ATTRIBUTE_VALUE: FLOAT_VAL  */
-#line 210 "src/engine/datablock/parser/parser.y"
+#line 209 "src/engine/datablock/parser/parser.y"
                  {
     auto v = new Ast::FloatValue; v->value = (yyvsp[0].fval);
     (yyval.attributeValue) = v;
   }
-#line 1594 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1593 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 26: /* ATTRIBUTE_VALUE: FLOAT_VAL "," FLOAT_VAL  */
-#line 214 "src/engine/datablock/parser/parser.y"
+#line 213 "src/engine/datablock/parser/parser.y"
                                     {
     auto v = new Ast::Float2Value; v->value = vec2((yyvsp[-2].fval), (yyvsp[0].fval));
     (yyval.attributeValue) = v;
   }
-#line 1603 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1602 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 27: /* ATTRIBUTE_VALUE: FLOAT_VAL "," FLOAT_VAL "," FLOAT_VAL  */
-#line 218 "src/engine/datablock/parser/parser.y"
+#line 217 "src/engine/datablock/parser/parser.y"
                                                       {
     auto v = new Ast::Float3Value; v->value = vec3((yyvsp[-4].fval), (yyvsp[-2].fval), (yyvsp[0].fval));
     (yyval.attributeValue) = v;
   }
-#line 1612 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1611 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 28: /* ATTRIBUTE_VALUE: FLOAT_VAL "," FLOAT_VAL "," FLOAT_VAL "," FLOAT_VAL  */
-#line 222 "src/engine/datablock/parser/parser.y"
+#line 221 "src/engine/datablock/parser/parser.y"
                                                                         {
     auto v = new Ast::Float4Value; v->value = vec4((yyvsp[-6].fval), (yyvsp[-4].fval), (yyvsp[-2].fval), (yyvsp[0].fval));
     (yyval.attributeValue) = v;
   }
-#line 1621 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1620 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 29: /* ATTRIBUTE_VALUE: INT_VAL  */
-#line 226 "src/engine/datablock/parser/parser.y"
+#line 225 "src/engine/datablock/parser/parser.y"
                {
     auto v = new Ast::IntValue; v->value = (yyvsp[0].ival);
     (yyval.attributeValue) = v;
   }
-#line 1630 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1629 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 30: /* ATTRIBUTE_VALUE: INT_VAL "," INT_VAL  */
-#line 230 "src/engine/datablock/parser/parser.y"
+#line 229 "src/engine/datablock/parser/parser.y"
                                 {
     auto v = new Ast::Int2Value; v->value = ivec2((yyvsp[-2].ival), (yyvsp[0].ival));
     (yyval.attributeValue) = v;
   }
-#line 1639 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1638 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 31: /* ATTRIBUTE_VALUE: INT_VAL "," INT_VAL "," INT_VAL  */
-#line 234 "src/engine/datablock/parser/parser.y"
+#line 233 "src/engine/datablock/parser/parser.y"
                                                 {
     auto v = new Ast::Int3Value; v->value = ivec3((yyvsp[-4].ival), (yyvsp[-2].ival), (yyvsp[0].ival));
     (yyval.attributeValue) = v;
   }
-#line 1648 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1647 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 32: /* ATTRIBUTE_VALUE: INT_VAL "," INT_VAL "," INT_VAL "," INT_VAL  */
-#line 238 "src/engine/datablock/parser/parser.y"
+#line 237 "src/engine/datablock/parser/parser.y"
                                                                 {
     auto v = new Ast::Int4Value; v->value = ivec4((yyvsp[-6].ival), (yyvsp[-4].ival), (yyvsp[-2].ival), (yyvsp[0].ival));
     (yyval.attributeValue) = v;
   }
-#line 1657 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1656 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 33: /* ATTRIBUTE_VALUE: BOOL_VAL  */
-#line 242 "src/engine/datablock/parser/parser.y"
+#line 241 "src/engine/datablock/parser/parser.y"
                 {
     auto v = new Ast::BoolValue; v->value = (yyvsp[0].bval);
     (yyval.attributeValue) = v;
   }
-#line 1666 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1665 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 34: /* ATTRIBUTE_VALUE: "[" ROW3 "," ROW3 "," ROW3 "]"  */
-#line 246 "src/engine/datablock/parser/parser.y"
+#line 245 "src/engine/datablock/parser/parser.y"
                                                {
     auto v = new Ast::Mat3Value; v->value = mat3( (yyvsp[-5].f3val), (yyvsp[-3].f3val), (yyvsp[-1].f3val));
     (yyval.attributeValue) = v;
   }
-#line 1675 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1674 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 35: /* ATTRIBUTE_VALUE: "[" ROW4 "," ROW4 "," ROW4 "," ROW4 "]"  */
-#line 250 "src/engine/datablock/parser/parser.y"
+#line 249 "src/engine/datablock/parser/parser.y"
                                                             {
     auto v = new Ast::Mat4Value; v->value = mat4( (yyvsp[-7].f4val), (yyvsp[-5].f4val), (yyvsp[-3].f4val), (yyvsp[-1].f4val));
     (yyval.attributeValue) = v;
   }
-#line 1684 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1683 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 36: /* ROW3: "[" FLOAT_VAL "," FLOAT_VAL "," FLOAT_VAL "]"  */
-#line 257 "src/engine/datablock/parser/parser.y"
+#line 256 "src/engine/datablock/parser/parser.y"
                                                               {
     (yyval.f3val) = vec3{ (yyvsp[-5].fval), (yyvsp[-3].fval), (yyvsp[-1].fval) };
   }
-#line 1692 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1691 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
   case 37: /* ROW4: "[" FLOAT_VAL "," FLOAT_VAL "," FLOAT_VAL "," FLOAT_VAL "]"  */
-#line 263 "src/engine/datablock/parser/parser.y"
+#line 262 "src/engine/datablock/parser/parser.y"
                                                                                 {
     (yyval.f4val) = vec4{ (yyvsp[-7].fval), (yyvsp[-5].fval), (yyvsp[-3].fval), (yyvsp[-1].fval) };
   }
-#line 1700 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1699 "src/engine/datablock/parser/parser.tab.cpp"
     break;
 
 
-#line 1704 "src/engine/datablock/parser/parser.tab.cpp"
+#line 1703 "src/engine/datablock/parser/parser.tab.cpp"
 
       default: break;
     }
@@ -1925,7 +1924,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 268 "src/engine/datablock/parser/parser.y"
+#line 267 "src/engine/datablock/parser/parser.y"
 
 
 void yyerror(Ast::Config* rootAst, const char* msg) {
