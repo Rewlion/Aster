@@ -7,3 +7,7 @@ entity_templates{
 graphics{
   resolution:text="1024x768"
 }
+
+events{
+  event:text = "TestEvent"
+}

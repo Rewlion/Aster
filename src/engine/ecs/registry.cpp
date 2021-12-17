@@ -180,6 +180,20 @@ void init_ecs_from_settings()
 {
   log("initialization of ECS");
   DataBlock* settings = get_app_settings();
+
+  log("init events");
+  DataBlock* events = settings->get_child_block("events");
+  for(const auto& attr: events->get_attributes())
+  {
+    if (attr.name == "event")
+    {
+      const String eventName = std::get<String>(attr.as);
+      ecs.register_event(str_hash(eventName.c_str()));
+      log("registered event `{}`", eventName);
+    }
+  }
+
+  log("init templates");
   DataBlock* templates = settings->get_child_block("entity_templates");
   for(const auto& attr: templates->get_attributes())
   {

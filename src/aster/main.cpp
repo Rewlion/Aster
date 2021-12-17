@@ -13,8 +13,6 @@ int main()
   ::init_log();
   ::init_window();
 
-  ecs.register_event(str_hash("TestEvent"));
-
   ::init_ecs_from_settings();
 
   ecs.create_entity(str_hash("template1"),
