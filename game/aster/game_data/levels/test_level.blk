@@ -3,11 +3,11 @@ entity{
 
   test_float2:float2 = 23.0, 1.0
   test_float:float = 112.0
-  test_str:text = "some#text"
+  test_str:text = "some text"
 }
 
 entity{
   template:text = "template2"
 
-  test_str:text = "hi#from#template2"
+  test_str:text = "hi from template2"
 }

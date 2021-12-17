@@ -177,7 +177,7 @@ off {
   yylval.sval = strdup(yytext); return NAME_VAL;
 }
 
-["][^ \t\r\n]+["] {
+["][^\t\r\n]+["] {
   char* text = yytext + 1;
   text[strlen(yytext) - 2] = '\0';
   yylval.sval = strdup(text); return TEXT_VAL;
