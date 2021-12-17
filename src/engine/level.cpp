@@ -18,9 +18,6 @@ namespace
       {
         for(const auto& attr: m_Entity.get_attributes())
         {
-          if (attr.name == "template")
-            continue;
-
           const string_hash componentName = str_hash(attr.name.c_str());
 
           switch(attr.type)
@@ -108,7 +105,7 @@ namespace
 
 static void add_entity(const DataBlock& entityBlk)
 {
-  const String tmpl = entityBlk.get_text("template");
+  const String tmpl = entityBlk.get_annotation();
   if (tmpl != "")
   {
     const auto tmplHash = str_hash(tmpl.c_str());

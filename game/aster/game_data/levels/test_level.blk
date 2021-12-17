@@ -1,13 +1,11 @@
-entity{
-  text template = "template1"
-
+entity @("template1")
+{
   float2 test_float2 = 23.0, 1.0
   float test_float = 112.0
   text test_str = "some text"
 }
 
-entity{
-  text template = "template2"
-
+entity @("template2")
+{
   text test_str = "hi from template2"
 }
