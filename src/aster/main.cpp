@@ -2,6 +2,7 @@
 
 #include <engine/engine.h>
 
+#include <engine/time.h>
 #include <engine/level.h>
 #include <engine/ecs/registry.h>
 #include <engine/ecs/components.h>
@@ -10,6 +11,8 @@
 
 int main()
 {
+  ::init_engine_clock();
+
   ::load_app_settings("game_data/settings.blk");
   ::init_log();
   ::init_window();
@@ -19,6 +22,8 @@ int main()
 
   for(;;)
   {
+    tick_time();
+
     TestEvent event;
     event.testString = "some value";
     ecs.broadcast_event(event);
