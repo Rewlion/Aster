@@ -2,21 +2,34 @@
 
 #include <sstream>
 
-DataBlock* DataBlock::get_child_block(const String& path)
+const DataBlock* DataBlock::get_child_block(const String& path) const
 {
   std::stringstream buf(path);
   String subPath;
-  DataBlock* dbk = this;
+  const DataBlock* dbk = this;
   while(std::getline(buf, subPath, '/'))
   {
-    for(DataBlock& child: dbk->m_ChildBlocks)
+    bool found = false;
+    for(const DataBlock& child: dbk->m_ChildBlocks)
     {
       if (child.m_Name == subPath)
-        return &child;
+      {
+        dbk = &child;
+        found = true;
+        break;
+      }
     }
-    return &EMPTY_BLOCK;
+
+    if (!found)
+      return &EMPTY_BLOCK;
   }
   return dbk;
+}
+
+DataBlock* DataBlock::get_child_block(const String& path)
+{
+  const DataBlock* constThis = const_cast<const DataBlock*>(this);
+  return const_cast<DataBlock*>(constThis->get_child_block(path));
 }
 
 size_t DataBlock::add_attribute(const Attribute& attribute)

@@ -2,7 +2,7 @@
 
 #include <engine/assert.h>
 
-#include <profileapi.h>
+#include <windows.h>
 
 static uint64_t perf_counter_frequency = 0;
 static uint64_t start_hires_clock = 0;
@@ -51,5 +51,5 @@ uint64_t get_time_since_start()
 
 float get_dt()
 {
-  static_cast<float>(ms_dt) / 1000.0f;
+  return static_cast<float>(ms_dt) / 1000.0f;
 }

@@ -1,0 +1,21 @@
+ControllerMappings
+{
+  Keyboard
+  {
+    Actions
+    {
+      FlyingCamera
+      {
+        Button
+        {
+          int MoveLeft = 65
+          int MoveRight = 0
+          int MoveForward = 0
+          int MoveBackward = 0
+          int MoveUp = 0
+          int MoveDown = 0
+        }
+      }
+    }
+  }
+}

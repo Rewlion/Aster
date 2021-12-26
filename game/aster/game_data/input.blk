@@ -1,0 +1,27 @@
+Actions
+{
+  FlyingCamera
+  {
+    Button
+    {
+      MoveLeft
+      {
+      }
+      MoveRight
+      {
+      }
+      MoveForward
+      {
+      }
+      MoveBackward
+      {
+      }
+      MoveUp
+      {
+      }
+      MoveDown
+      {
+      }
+    }
+  }
+}

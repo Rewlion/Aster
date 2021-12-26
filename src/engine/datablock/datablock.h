@@ -47,6 +47,8 @@ public:
   }
 
   DataBlock* get_child_block(const  String& path);
+  const DataBlock* get_child_block(const  String& path) const;
+
   size_t add_attribute(const Attribute& attribute);
   int get_int(const  String& name) const;
   Int2 get_int2(const  String& name) const;

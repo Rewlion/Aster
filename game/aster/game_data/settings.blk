@@ -6,10 +6,14 @@ entity_templates{
 
 text init_level = "game_data/levels/test_level.blk"
 
+text input_settings = "game_data/input.blk"
+text input_mappings = "game_data/input_mappings.blk"
+
 graphics{
   text resolution = "1024x768"
 }
 
 events{
+  text event = "ButtonActionInputEvent"
   text event = "TestEvent"
 }

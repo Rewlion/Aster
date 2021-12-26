@@ -85,13 +85,15 @@ target("engine")
             "src/engine/level.cpp",
             "src/engine/assert.cpp",
             "src/engine/eastl_memory.cpp",
-            "src/engine/time.cpp"
+            "src/engine/time.cpp",
+            "src/engine/input/input.cpp",
+            "src/engine/input/keyboard.cpp",
             "src/engine/ecs/archetype.cpp",
             "src/engine/ecs/entity_initializer.cpp",
             "src/engine/ecs/query.cpp",
             "src/engine/ecs/components_accessor.cpp",
             "src/engine/ecs/registry.cpp",
-            "src/engine/ecs/fs/load_templates.cpp",
+            "src/engine/ecs/fs/load_templates.cpp"
             )
 
 target("blk-test")

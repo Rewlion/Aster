@@ -1,7 +1,9 @@
 #include "../events.h"
 
+#include <engine/input/events.h>
 #include <engine/ecs/registry.h>
 #include <engine/ecs/macros.h>
+#include <engine/log.h>
 
 #include <EASTL/functional.h>
 
@@ -26,4 +28,10 @@ static void system_with_query(const float& test_float)
   query([](const Float2& test_float2) {
     volatile bool b = false;
   });
+}
+
+ECS_EVENT_SYSTEM()
+static void input_handler(const ButtonActionInputEvent& evt, const String& test_str)
+{
+  log("YAAAY, EVENT!");
 }

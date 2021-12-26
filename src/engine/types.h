@@ -12,3 +12,5 @@ using Float4 = glm::vec4;
 using Mat3 = glm::mat3;
 using Mat4 = glm::mat4;
 using String = std::string;
+
+using string_hash = uint64_t;
