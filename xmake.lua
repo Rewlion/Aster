@@ -75,27 +75,7 @@ target("engine")
   add_links("user32",
             "EASTL"
            )
-  add_files("src/engine/datablock/datablock.cpp",
-            "src/engine/datablock/utils.cpp",
-            "src/engine/datablock/parser/lex.yy.cpp",
-            "src/engine/datablock/parser/parser.cpp",
-            "src/engine/datablock/parser/parser.tab.cpp",
-            "src/engine/settings.cpp",
-            "src/engine/window.cpp",
-            "src/engine/log.cpp",
-            "src/engine/level.cpp",
-            "src/engine/assert.cpp",
-            "src/engine/eastl_memory.cpp",
-            "src/engine/time.cpp",
-            "src/engine/input/input.cpp",
-            "src/engine/input/keyboard.cpp",
-            "src/engine/ecs/archetype.cpp",
-            "src/engine/ecs/entity_initializer.cpp",
-            "src/engine/ecs/query.cpp",
-            "src/engine/ecs/components_accessor.cpp",
-            "src/engine/ecs/registry.cpp",
-            "src/engine/ecs/fs/load_templates.cpp"
-            )
+  add_files("src/engine/**.cpp")
 
 target("blk-test")
   set_kind("binary")
