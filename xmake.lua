@@ -20,7 +20,8 @@ add_includedirs(
   "deps/glm-0.9.9.8/include",
   "deps/eastl-3.17.06/include",
   "deps/spdlog-1.9.2/include",
-  "deps/boost-1.77/include"
+  "deps/boost-1.77/include",
+  "deps/vulkan-1.2.198.1/include"
 )
 
 if is_arch("x64") and is_os("windows") then
