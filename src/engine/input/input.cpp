@@ -68,7 +68,7 @@ void InputManager::load_registered_actions(const DataBlock& inputSettings)
     dump_action_set(actionSet);
 
     m_ActionSets.insert({
-      fnv1a(actionSet.name.c_str()),
+      str_hash(actionSet.name.c_str()),
       actionSet
     });
   }

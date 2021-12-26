@@ -2,8 +2,8 @@
 
 #include "eid.h"
 #include "types.h"
-#include "string_hash.h"
 
+#include <engine/algorithm/hash.h>
 #include <engine/types.h>
 #include <engine/assert.h>
 

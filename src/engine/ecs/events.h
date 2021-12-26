@@ -1,9 +1,10 @@
 #pragma once
 
-#include "string_hash.h"
+#include "types.h"
 
-#include <engine/platform/memory.h>
+#include <engine/algorithm/hash.h>
 #include <engine/assert.h>
+#include <engine/platform/memory.h>
 
 #include <EASTL/fixed_vector.h>
 

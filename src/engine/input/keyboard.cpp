@@ -14,7 +14,7 @@ void Keyboard::init(const eastl::vector_map<string_hash, ActionSet>& registeredA
   for(const auto& actionSet: keyboardMappings.get_child_blocks())
   {
     const String& setName = actionSet.get_name();
-    if (registeredActions.end() == registeredActions.find(fnv1a(setName.c_str())))
+    if (registeredActions.end() == registeredActions.find(str_hash(setName.c_str())))
     {
       logerror("Keyboard mapping error: button action `{}` is not registered by the game", setName);
       continue;
@@ -28,14 +28,14 @@ void Keyboard::init(const eastl::vector_map<string_hash, ActionSet>& registeredA
         continue;
 
       const String& name = action.name;
-      const string_hash actionHash = fnv1a(action.name.c_str());
+      const string_hash actionHash = str_hash(action.name.c_str());
       const int buttonId = std::get<int>(action.as);
 
       buttonMappings.emplace_back(actionHash, action.name, buttonId, ButtonStatus::Release);
     }
 
     m_ActionSets.insert({
-      fnv1a(setName.c_str()),
+      str_hash(setName.c_str()),
       eastl::move(buttonMappings)
     });
   }

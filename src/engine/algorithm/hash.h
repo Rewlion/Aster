@@ -30,3 +30,8 @@ constexpr uint64_t fnv1a(const char* str)
   }
   return hash;
 }
+
+constexpr string_hash str_hash(const char* str)
+{
+  return fnv1a(str);
+}
