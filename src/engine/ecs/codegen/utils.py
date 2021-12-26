@@ -233,13 +233,16 @@ def gen_event_system(parsedFunction):
     callbackParams = callbackParams + p['name'] + ","
   callbackParams = callbackParams[:-1]
 
+  if len(funcParamsInfo) > 0:
+    callbackParams = ', ' + callbackParams
+
   systemName = parsedFunction['name']
   systemDeclaration = """
 static void {system_name}_internal(Event* event, ComponentsAccessor& accessor)
 {{
   {event_type}* casted_event = reinterpret_cast<{event_type}*>(event);
   {component_accessors}
-  {system_name}(*casted_event, {callback_execute_params});
+  {system_name}(*casted_event {callback_execute_params});
 }}
   """.format(
     system_name = systemName,

@@ -29,7 +29,7 @@ static void event_system_internal(Event* event, ComponentsAccessor& accessor)
 {
   TestEvent* casted_event = reinterpret_cast<TestEvent*>(event);
    const String& test_str = accessor.Get<String>(str_hash("test_str")) ;
-  event_system(*casted_event, test_str);
+  event_system(*casted_event , test_str);
 }
   
 
@@ -81,15 +81,15 @@ static const bool system_with_query_desc = Registry::register_cpp_query(
 static void input_handler_internal(Event* event, ComponentsAccessor& accessor)
 {
   ButtonActionInputEvent* casted_event = reinterpret_cast<ButtonActionInputEvent*>(event);
-   const String& test_str = accessor.Get<String>(str_hash("test_str")) ;
-  input_handler(*casted_event, test_str);
+  
+  input_handler(*casted_event );
 }
   
 
 static const bool input_handler_desc = Registry::register_cpp_query(
   QueryDescription{
     .components = {
-       DESCRIBE_QUERY_COMPONENT("test_str", String)
+      
     },
     .eventCb = input_handler_internal,
     .event = str_hash("ButtonActionInputEvent")

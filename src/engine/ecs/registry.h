@@ -122,6 +122,14 @@ class Registry final
         }
     }
 
+    template<class Cb>
+    void process_event_without_archetypes(Event* event, Cb cb)
+    {
+       ComponentMap emptyCompMap;
+       ComponentsAccessor compAccessor(nullptr, emptyCompMap);
+       cb(event, compAccessor);
+    }
+
   private:
     eastl::fixed_vector<Archetype, 128, true> m_Archetypes;
     eastl::vector_map<template_name_id, archetype_id> m_TemplateToArhetypeMap;

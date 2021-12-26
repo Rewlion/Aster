@@ -87,6 +87,8 @@ bool Registry::destroy_entity(const EntityId eid)
 DesiredArchetypes Registry::find_desired_archetypes(const QueryComponents& queryComponents)
 {
   DesiredArchetypes desiredArchetypes;
+  if (queryComponents.empty())
+    return desiredArchetypes;
 
   for (size_t i = 0; i < m_Archetypes.size(); ++i)
   {
@@ -125,7 +127,7 @@ void Registry::register_query(const QueryDescription& queryDesc)
 {
   DesiredArchetypes desiredArchetypes = find_desired_archetypes(queryDesc.components);
 
-  if (queryDesc.event != INVALID_HASH && desiredArchetypes.size() > 0)
+  if (queryDesc.event != INVALID_HASH)
   {
     auto it = m_EventHandleQueries.find(queryDesc.event);
     if (it != m_EventHandleQueries.end())
@@ -167,9 +169,17 @@ void Registry::process_events()
   while (Event* event = m_EventsQueue.pop_event())
   {
     eastl::vector<RegisteredEventQueryInfo>& queries = m_EventHandleQueries[event->eventNameHash];
+
     for(const auto& query: queries)
-      for(const archetype_id archetypeId: query.archetypes)
-        query_archetype_by_event(event, archetypeId, query.eventCb);
+    {
+      if (!query.archetypes.empty())
+      {
+        for(const archetype_id archetypeId: query.archetypes)
+          query_archetype_by_event(event, archetypeId, query.eventCb);
+      }
+      else
+        process_event_without_archetypes(event, query.eventCb);
+    }
 
     event->_destr(event);
   }
