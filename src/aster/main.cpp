@@ -28,7 +28,7 @@ int main()
   {
     tick_time();
 
-    poll_input_events();
+    poll_wnd_messages();
     input_manager.process_input();
 
     ecs.tick();

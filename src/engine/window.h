@@ -2,5 +2,5 @@
 
 void init_window();
 
-void poll_input_events();
+void poll_wnd_messages();
 

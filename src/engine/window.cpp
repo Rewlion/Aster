@@ -90,7 +90,7 @@ void init_window()
   init_win32_window(width, height);
 }
 
-void poll_input_events()
+void poll_wnd_messages()
 {
   MSG msg = { };
   while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
