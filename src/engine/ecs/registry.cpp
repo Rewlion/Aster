@@ -164,8 +164,7 @@ void Registry::tick()
 
 void Registry::process_events()
 {
-  Event* event = m_EventsQueue.pop_event();
-  while (event != nullptr)
+  while (Event* event = m_EventsQueue.pop_event())
   {
     eastl::vector<RegisteredEventQueryInfo>& queries = m_EventHandleQueries[event->eventNameHash];
     for(const auto& query: queries)
