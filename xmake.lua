@@ -26,7 +26,8 @@ add_includedirs(
 
 if is_arch("x64") and is_os("windows") then
     add_linkdirs(
-      "deps/eastl-3.17.06/win64"
+      "deps/eastl-3.17.06/win64",
+      "deps/vulkan-1.2.198.1/win64"
     )
     add_defines("PLATFORM_WIN64")
 end
@@ -73,7 +74,8 @@ target("aster")
 target("engine")
   set_kind("static")
   add_links("user32",
-            "EASTL"
+            "EASTL",
+            "vulkan-1"
            )
   add_files("src/engine/**.cpp")
 
@@ -81,3 +83,4 @@ target("blk-test")
   set_kind("binary")
   add_deps("engine")
   add_files("src/test/datablock/main.cpp")
+  

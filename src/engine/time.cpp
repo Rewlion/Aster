@@ -32,6 +32,8 @@ bool init_engine_clock()
   perf_counter_frequency = largeInt.QuadPart;
   start_hires_clock = get_hires_clock();
   last_hires_clock = start_hires_clock;
+
+  return true;
 }
 
 void tick_time()

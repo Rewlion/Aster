@@ -4,7 +4,7 @@
 
 #define ASSERT_COMMON(cond, isIgnorable)\
         do{\
-          if (cond == false)\
+          if ((cond) == false)\
             show_assert_window(#cond, isIgnorable);\
         } while(false)
 

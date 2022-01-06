@@ -6,6 +6,17 @@
 #include <Windows.h>
 
 HWND CURRENT_WINDOW_HANDLER = 0;
+Int2 window_size = {0,0};
+
+void* get_hwnd()
+{
+  return reinterpret_cast<void*>(&CURRENT_WINDOW_HANDLER);
+}
+
+Int2 get_window_size()
+{
+  return window_size;
+}
 
 static bool split_resolution_string(const String& str, unsigned int& width, unsigned int& height)
 {
@@ -88,6 +99,8 @@ void init_window()
   ASSERT(split_resolution_string(resolution, width, height));
 
   init_win32_window(width, height);
+
+  window_size = Int2{width, height};
 }
 
 void poll_wnd_messages()
