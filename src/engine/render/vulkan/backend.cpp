@@ -122,11 +122,11 @@ namespace gapi::vulkan
       setMemoryIndex(memoryIndices.deviceLocalMemory,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-      setMemoryIndex(memoryIndices.hostVisibleMemory,
+      setMemoryIndex(memoryIndices.stagingMemory,
         vk::MemoryPropertyFlagBits::eDeviceLocal);
     }
 
-    ASSERT(memoryIndices.hostVisibleMemory != size_t(-1) && memoryIndices.deviceLocalMemory != size_t(-1));
+    ASSERT(memoryIndices.stagingMemory != size_t(-1) && memoryIndices.deviceLocalMemory != size_t(-1));
     return memoryIndices;
   }
 

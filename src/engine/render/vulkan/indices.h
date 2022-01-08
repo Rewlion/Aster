@@ -11,7 +11,7 @@ namespace gapi::vulkan
 
   struct MemoryIndices
   {
-    size_t hostVisibleMemory = -1;
+    size_t stagingMemory = -1;
     size_t deviceLocalMemory = -1;
   };
 }

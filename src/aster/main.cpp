@@ -27,6 +27,10 @@ int main()
   input_manager.init();
   input_manager.set_actionset(str_hash("FlyingCamera"));
 
+  gapi::CommandList cmdList;
+  cmdList.push_back(gapi::BeginRenderPassCmd{});
+  gapi::submitCommands(std::move(cmdList));
+
   for(;;)
   {
     tick_time();

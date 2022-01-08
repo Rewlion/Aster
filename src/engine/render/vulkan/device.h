@@ -1,46 +1,21 @@
 #pragma once
 
 #include "indices.h"
+#include "resources.h"
 
 #include <engine/types.h>
 
 #include <vulkan/vulkan.hpp>
-
 #include <EASTL/vector.h>
 #include <vector>
 
 namespace gapi::vulkan
 {
-  constexpr int SWAPCHAIN_IMAGES_COUNT = 2;
-
-  class Image
-  {
-    friend class Device;
-    public:
-      enum class Type: uint8_t
-      {
-        None = 0,
-        Swapchain = 1
-      };
-
-    public:
-      inline ~Image()
-      {
-        if (m_ImageOwner)
-          vkDestroyImage(m_Device, m_Image, NULL);
-      }
-
-    private:
-      vk::Image m_Image;
-      vk::Device m_Device;
-
-      bool m_ImageOwner = false;
-      Type m_Type = Type::None;
-
-  };
-
   class Device
   {
+    friend class RenderPassStorage;
+    friend class CompileContext;
+
     public:
       struct CreateInfo
       {
@@ -61,8 +36,24 @@ namespace gapi::vulkan
       Device() = default;
       Device(CreateInfo&&);
 
+      inline uint8_t getSurfaceRtId() const { return frameId; }
+
+      inline vk::Extent2D getSurfaceExtent() const { return m_SurfaceExtent; };
+
+      vk::CommandBuffer allocateGraphicsCmdBuffer();
+
+      vk::Format getTextureFormat(const TextureHandler handler);
+
+      vk::ImageView getImageView(const TextureHandler handler);
+
+      void beginFrame();
+      void endFrame();
+
     private:
-      vk::UniqueSwapchainKHR createSwapchain(const CreateInfo& ci) const;
+      vk::UniqueSwapchainKHR createSwapchain(
+        const CreateInfo& ci,
+        const vk::SurfaceFormatKHR& surfaceFormat,
+        const vk::Extent2D& surfaceExtent) const;
 
       vk::SurfaceFormatKHR getSuitableSurfaceFormat(
         const std::vector<vk::SurfaceFormatKHR>& availableFormats) const;
@@ -80,13 +71,18 @@ namespace gapi::vulkan
     private:
       vk::UniqueDevice m_Device;
 
+      vk::SurfaceFormatKHR m_SurfaceFormat;
+      vk::Extent2D m_SurfaceExtent;
       vk::UniqueSwapchainKHR m_Swapchain;
       struct SwapchainResources
       {
-        Image images[SWAPCHAIN_IMAGES_COUNT];
-        vk::UniqueFence imageAcquiredFences[SWAPCHAIN_IMAGES_COUNT];
+        vk::Image images[SWAPCHAIN_IMAGES_COUNT];
+        vk::UniqueImageView views[SWAPCHAIN_IMAGES_COUNT];
+        vk::UniqueFence imageAcquiredFence;
+        vk::UniqueSemaphore renderingFinishedSemaphores[SWAPCHAIN_IMAGES_COUNT];
       };
       SwapchainResources m_SwapchainResources;
+      uint32_t frameId = 0;
 
       QueueIndices m_QueueIndices;
       MemoryIndices m_MemoryIndices;
