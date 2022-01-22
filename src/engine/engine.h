@@ -1,6 +1,7 @@
 #pragma once
 
-#include <engine/types.h>
-#include <engine/settings.h>
-#include <engine/window.h>
-#include <engine/log.h>
+namespace Engine
+{
+  void Init();
+  void StartTick();
+}
