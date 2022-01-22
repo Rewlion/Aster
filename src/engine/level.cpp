@@ -16,7 +16,7 @@ namespace
 
       void operator()(const EntityId& eid, EntityInitializer& init)
       {
-        for(const auto& attr: m_Entity.get_attributes())
+        for(const auto& attr: m_Entity.GetAttributes())
         {
           const string_hash componentName = str_hash(attr.name.c_str());
 
@@ -103,9 +103,9 @@ namespace
   };
 }
 
-static void add_entity(const DataBlock& entityBlk)
+static void AddEntity(const DataBlock& entityBlk)
 {
-  const String tmpl = entityBlk.get_annotation();
+  const String tmpl = entityBlk.GetAnnotation();
   if (tmpl != "")
   {
     const auto tmplHash = str_hash(tmpl.c_str());
@@ -113,18 +113,18 @@ static void add_entity(const DataBlock& entityBlk)
   }
   else
   {
-    logerror("entity `{}` doesn't have template", entityBlk.get_name());
+    logerror("entity `{}` doesn't have template", entityBlk.GetName());
     return;
   }
 }
 
-void load_level(const String& levelBlk)
+void LoadLevel(const String& levelBlk)
 {
   DataBlock blk;
-  const bool levelLoaded = load_blk_from_file(&blk, levelBlk.c_str());
+  const bool levelLoaded = LoadBlkFromFile(&blk, levelBlk.c_str());
   ASSERT(levelLoaded);
 
-  for(const DataBlock& entityBlk: blk.get_child_blocks())
-    if (entityBlk.get_name() == "entity")
-      add_entity(entityBlk);
+  for(const DataBlock& entityBlk: blk.GetChildBlocks())
+    if (entityBlk.GetName() == "entity")
+      AddEntity(entityBlk);
 }

@@ -8,17 +8,17 @@
 HWND CURRENT_WINDOW_HANDLER = 0;
 Int2 window_size = {0,0};
 
-void* get_hwnd()
+void* GetHwnd()
 {
   return reinterpret_cast<void*>(&CURRENT_WINDOW_HANDLER);
 }
 
-Int2 get_window_size()
+Int2 GetWindowSize()
 {
   return window_size;
 }
 
-static bool split_resolution_string(const String& str, unsigned int& width, unsigned int& height)
+static bool SplitResolutionString(const String& str, unsigned int& width, unsigned int& height)
 {
   try
   {
@@ -42,17 +42,17 @@ static bool split_resolution_string(const String& str, unsigned int& width, unsi
   }
 }
 
-static LRESULT CALLBACK window_proc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-static void init_win32_window(const unsigned int width, const unsigned int height)
+static void InitWin32Window(const unsigned int width, const unsigned int height)
 {
   const LPCSTR CLASS_NAME = "Sample Window Class";
 
   WNDCLASS wc = { };
-  wc.lpfnWndProc = window_proc;
+  wc.lpfnWndProc = WindowProc;
   wc.hInstance = NULL;
   wc.lpszClassName = CLASS_NAME;
 
@@ -88,22 +88,22 @@ static void init_win32_window(const unsigned int width, const unsigned int heigh
   ShowWindow(CURRENT_WINDOW_HANDLER, SW_SHOWDEFAULT);
 }
 
-void init_window()
+void InitWindow()
 {
-  DataBlock* blk = ::get_app_settings();
-  DataBlock* graphicsBlk = blk->get_child_block("graphics");
-  const String resolution = graphicsBlk->get_text("resolution");
+  DataBlock* blk = ::GetAppSettings();
+  DataBlock* graphicsBlk = blk->GetChildBlock("graphics");
+  const String resolution = graphicsBlk->GetText("resolution");
   unsigned int width = 0;
   unsigned int height = 0;
 
-  ASSERT(split_resolution_string(resolution, width, height));
+  ASSERT(SplitResolutionString(resolution, width, height));
 
-  init_win32_window(width, height);
+  InitWin32Window(width, height);
 
   window_size = Int2{width, height};
 }
 
-void poll_wnd_messages()
+void PollWndMessages()
 {
   MSG msg = { };
   while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))

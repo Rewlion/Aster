@@ -8,9 +8,9 @@
 class BlkParser
 {
 public:
-  DataBlock parse_file(const String& pathToDbk);
+  DataBlock ParseFile(const String& pathToDbk);
 private:
-  DataBlock traverse_ast(const Ast::Config& ast);
-  DataBlock construct_block(const Ast::AnnotatedParam* paramList);
-  DataBlock::Attribute construct_attribute(const Ast::Attribute* attr);
+  DataBlock TraverseAst(const Ast::Config& ast);
+  DataBlock ConstructBlock(const Ast::AnnotatedParam* paramList);
+  DataBlock::Attribute ConstructAttribute(const Ast::Attribute* attr);
 };

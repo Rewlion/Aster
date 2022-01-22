@@ -5,11 +5,11 @@
 #define ASSERT_COMMON(cond, isIgnorable)\
         do{\
           if ((cond) == false)\
-            show_assert_window(#cond, isIgnorable);\
+            ShowAssertWindow(#cond, isIgnorable);\
         } while(false)
 
 #define ASSERT(cond) ASSERT_COMMON(cond, false)
 
 #define IASSERT(cond) ASSERT_COMMON(cond, true)
 
-void show_assert_window(String error, const bool isIgnorable = false);
+void ShowAssertWindow(String error, const bool isIgnorable = false);

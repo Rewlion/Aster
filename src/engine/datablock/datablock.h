@@ -37,47 +37,47 @@ public:
   typedef std::vector<Attribute> AttributesArray;
 
 public:
-  inline const String& get_name() const
+  inline const String& GetName() const
   {
     return m_Name;
   }
-  inline const  String& get_annotation() const
+  inline const  String& GetAnnotation() const
   {
     return m_Annotation;
   }
 
-  DataBlock* get_child_block(const  String& path);
-  const DataBlock* get_child_block(const  String& path) const;
+  DataBlock* GetChildBlock(const  String& path);
+  const DataBlock* GetChildBlock(const  String& path) const;
 
-  size_t add_attribute(const Attribute& attribute);
-  int get_int(const  String& name) const;
-  Int2 get_int2(const  String& name) const;
-  Int3 get_int3(const  String& name) const;
-  Int4 get_int4(const  String& name) const;
-  float get_float(const  String& name) const;
-  Float2 get_float2(const  String& name) const;
-  Float3 get_float3(const  String& name) const;
-  Float4 get_float4(const  String& name) const;
-  bool get_bool(const  String& name) const;
-  String get_text(const  String& name) const;
+  size_t AddAttribute(const Attribute& attribute);
+  int GetInt(const  String& name) const;
+  Int2 GetInt2(const  String& name) const;
+  Int3 GetInt3(const  String& name) const;
+  Int4 GetInt4(const  String& name) const;
+  float GetFloat(const  String& name) const;
+  Float2 GetFloat2(const  String& name) const;
+  Float3 GetFloat3(const  String& name) const;
+  Float4 GetFloat4(const  String& name) const;
+  bool GetBool(const  String& name) const;
+  String GetText(const  String& name) const;
 
-  int get_int(const String& name, const int def) const;
-  Int2 get_int2(const String& name, const Int2& def) const;
-  Int3 get_int3(const String& name, const Int3& def) const;
-  Int4 get_int4(const String& name, const Int4& def) const;
-  float get_float(const String& name, const float def) const;
-  Float2 get_float2(const String& name, const Float2 def) const;
-  Float3 get_float3(const String& name, const Float3 def) const;
-  Float4 get_float4(const String& name, const Float4 def) const;
-  bool get_bool(const String& name, const bool def) const;
-  String get_text(const String& name, const String& def) const;
+  int GetInt(const String& name, const int def) const;
+  Int2 GetInt2(const String& name, const Int2& def) const;
+  Int3 GetInt3(const String& name, const Int3& def) const;
+  Int4 GetInt4(const String& name, const Int4& def) const;
+  float GetFloat(const String& name, const float def) const;
+  Float2 GetFloat2(const String& name, const Float2 def) const;
+  Float3 GetFloat3(const String& name, const Float3 def) const;
+  Float4 GetFloat4(const String& name, const Float4 def) const;
+  bool GetBool(const String& name, const bool def) const;
+  String GetText(const String& name, const String& def) const;
 
-  inline const BlocksArray& get_child_blocks() const
+  inline const BlocksArray& GetChildBlocks() const
   {
     return m_ChildBlocks;
   }
 
-  inline const AttributesArray& get_attributes() const
+  inline const AttributesArray& GetAttributes() const
   {
     return m_Attributes;
   }

@@ -8,13 +8,13 @@ class DataBlock;
 class InputManager
 {
   public:
-    void init();
-    void process_input();
-    void set_actionset(const string_hash actionSet);
+    void Init();
+    void ProcessInput();
+    void SetActionset(const string_hash actionSet);
 
   private:
-    void load_registered_actions(const DataBlock& inputSettings);
-    void load_controller_mappings(const DataBlock& controllerMappings);
+    void LoadRegisteredActions(const DataBlock& inputSettings);
+    void LoadControllerMappings(const DataBlock& controllerMappings);
 
   private:
     eastl::vector_map<string_hash, ActionSet> m_ActionSets;

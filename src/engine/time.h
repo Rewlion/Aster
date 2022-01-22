@@ -2,10 +2,10 @@
 
 #include <stdint.h>
 
-bool init_engine_clock();
+bool InitEngineClock();
 
-void tick_time();
+void TickTime();
 
-uint64_t get_time_since_start();
+uint64_t GetTimeSinceStart();
 
-float get_dt();
+float GetDt();

@@ -63,7 +63,7 @@ class EventsQueue
     {
       const size_t storageBegin = m_NextEventOffset;
       size_t storageEnd = storageBegin + event.eventSize;
-      sys::align(storageEnd);
+      sys::Align(storageEnd);
 
       ASSERT(storageEnd < EVENTS_QUEUE_BUFFER_SIZE);
 

@@ -7,13 +7,13 @@
 
 #include <spdlog/fmt/fmt.h>
 
-void Keyboard::init(const eastl::vector_map<string_hash, ActionSet>& registeredActions, const DataBlock& keyboardMappings)
+void Keyboard::Init(const eastl::vector_map<string_hash, ActionSet>& registeredActions, const DataBlock& keyboardMappings)
 {
   log("Init keyboard mappings");
 
-  for(const auto& actionSet: keyboardMappings.get_child_blocks())
+  for(const auto& actionSet: keyboardMappings.GetChildBlocks())
   {
-    const String& setName = actionSet.get_name();
+    const String& setName = actionSet.GetName();
     if (registeredActions.end() == registeredActions.find(str_hash(setName.c_str())))
     {
       logerror("Keyboard mapping error: button action `{}` is not registered by the game", setName);
@@ -21,8 +21,8 @@ void Keyboard::init(const eastl::vector_map<string_hash, ActionSet>& registeredA
     }
 
     ButtonMappings buttonMappings;
-    const DataBlock* buttons = actionSet.get_child_block("Button");
-    for (const auto& action: buttons->get_attributes())
+    const DataBlock* buttons = actionSet.GetChildBlock("Button");
+    for (const auto& action: buttons->GetAttributes())
     {
       if (action.type != DataBlock::ValueType::Int)
         continue;
@@ -40,10 +40,10 @@ void Keyboard::init(const eastl::vector_map<string_hash, ActionSet>& registeredA
     });
   }
 
-  dump_button_mappings();
+  DumpButtonMappings();
 }
 
-void Keyboard::dump_button_mappings()
+void Keyboard::DumpButtonMappings()
 {
   String dmp = "keyboard handled actions:\n";
 
@@ -59,7 +59,7 @@ void Keyboard::dump_button_mappings()
   log(dmp);
 }
 
-void Keyboard::process_input()
+void Keyboard::ProcessInput()
 {
   if (!m_ActiveSet)
     return;
@@ -96,7 +96,7 @@ void Keyboard::process_input()
   }
 }
 
-void Keyboard::set_actionset(const string_hash actionSet)
+void Keyboard::SetActionset(const string_hash actionSet)
 {
   if (m_ActionSets.end() != m_ActionSets.find(actionSet))
   {

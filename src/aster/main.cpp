@@ -12,24 +12,24 @@
 
 int main()
 {
-  init_engine_clock();
+  InitEngineClock();
 
-  load_app_settings("game_data/settings.blk");
-  init_log();
-  init_window();
+  LoadAppSettings("game_data/settings.blk");
+  InitLog();
+  InitWindow();
 
-  init_ecs_from_settings();
-  load_level( ::get_app_settings()->get_text("init_level") );
+  InitEcsFromSettings();
+  LoadLevel( ::GetAppSettings()->GetText("init_level") );
 
-  input_manager.init();
-  input_manager.set_actionset(str_hash("FlyingCamera"));
+  input_manager.Init();
+  input_manager.SetActionset(str_hash("FlyingCamera"));
 
   for(;;)
   {
-    tick_time();
+    TickTime();
 
-    poll_wnd_messages();
-    input_manager.process_input();
+    PollWndMessages();
+    input_manager.ProcessInput();
 
     ecs.tick();
   }

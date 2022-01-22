@@ -3,9 +3,9 @@
 #include <engine/datablock/parser/parser.h>
 #include <engine/datablock/datablock.h>
 
-bool load_blk_from_file(DataBlock* blk, const char* path)
+bool LoadBlkFromFile(DataBlock* blk, const char* path)
 {
   BlkParser parser;
-  *blk = parser.parse_file(path);
+  *blk = parser.ParseFile(path);
   return true;
 }

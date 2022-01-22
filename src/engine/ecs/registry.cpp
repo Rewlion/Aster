@@ -185,14 +185,14 @@ void Registry::process_events()
   }
 }
 
-void init_ecs_from_settings()
+void InitEcsFromSettings()
 {
   log("initialization of ECS");
-  DataBlock* settings = get_app_settings();
+  DataBlock* settings = GetAppSettings();
 
   log("init events");
-  DataBlock* events = settings->get_child_block("events");
-  for(const auto& attr: events->get_attributes())
+  DataBlock* events = settings->GetChildBlock("events");
+  for(const auto& attr: events->GetAttributes())
   {
     if (attr.name == "event")
     {
@@ -203,8 +203,8 @@ void init_ecs_from_settings()
   }
 
   log("init templates");
-  DataBlock* templates = settings->get_child_block("entity_templates");
-  for(const auto& attr: templates->get_attributes())
+  DataBlock* templates = settings->GetChildBlock("entity_templates");
+  for(const auto& attr: templates->GetAttributes())
   {
     if (attr.type == DataBlock::ValueType::Text)
     {

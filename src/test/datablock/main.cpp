@@ -4,10 +4,10 @@
 
 int main()
 {
-  ::init_log();
+  ::InitLog();
 
   BlkParser parser;
-  DataBlock blk = parser.parse_file("templates.blk");
-  DataBlock blk2 = parser.parse_file("templates.blk");
+  DataBlock blk = parser.ParseFile("templates.blk");
+  DataBlock blk2 = parser.ParseFile("templates.blk");
 
 }

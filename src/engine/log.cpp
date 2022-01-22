@@ -24,14 +24,14 @@ static std::string get_time_string()
   return oss.str();
 }
 
-void init_log()
+void InitLog()
 {
   const auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
   console_sink->set_level(spdlog::level::trace);
   console_sink->set_pattern("[%^%l%$] %v");
 
-  DataBlock* settingsBlk = get_app_settings();
-  const String appName = settingsBlk->get_text("app_name");
+  DataBlock* settingsBlk = GetAppSettings();
+  const String appName = settingsBlk->GetText("app_name");
   const String timeStr = get_time_string();
   const String logFile = fmt::format("logs_{}/{}.log.txt", appName,timeStr);
 

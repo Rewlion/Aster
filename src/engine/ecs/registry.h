@@ -143,6 +143,6 @@ class Registry final
     EventsQueue m_EventsQueue;
 };
 
-void init_ecs_from_settings();
+void InitEcsFromSettings();
 
 extern Registry ecs;

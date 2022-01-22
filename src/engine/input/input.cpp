@@ -9,7 +9,7 @@
 
 InputManager input_manager;
 
-static void dump_action_set(const ActionSet& set)
+static void DumpActionSet(const ActionSet& set)
 {
   String buttons;
   for(const auto& btn: set.buttons)
@@ -18,42 +18,42 @@ static void dump_action_set(const ActionSet& set)
   log("added ActionSet `{}`\n  Buttons:\n{}", set.name, buttons);
 }
 
-void InputManager::init()
+void InputManager::Init()
 {
-  String inputFile = get_app_settings()->get_text("input_settings");
+  String inputFile = GetAppSettings()->GetText("input_settings");
   ASSERT(inputFile != "");
 
   log("loading input settings from {}", inputFile);
 
   DataBlock inputSettings;
-  const bool inputLoaded = load_blk_from_file(&inputSettings, inputFile.c_str());
+  const bool inputLoaded = LoadBlkFromFile(&inputSettings, inputFile.c_str());
   ASSERT(inputLoaded);
 
-  load_registered_actions(inputSettings);
+  LoadRegisteredActions(inputSettings);
 
-  String mappingsFile = get_app_settings()->get_text("input_mappings");
+  String mappingsFile = GetAppSettings()->GetText("input_mappings");
   ASSERT(mappingsFile != "");
 
   DataBlock controllerMappings;
-  const bool mappingsLoaded = load_blk_from_file(&controllerMappings, mappingsFile.c_str());
+  const bool mappingsLoaded = LoadBlkFromFile(&controllerMappings, mappingsFile.c_str());
   ASSERT(mappingsLoaded);
 
-  DataBlock* mappingsBlk = controllerMappings.get_child_block("ControllerMappings");
-  load_controller_mappings(*mappingsBlk);
+  DataBlock* mappingsBlk = controllerMappings.GetChildBlock("ControllerMappings");
+  LoadControllerMappings(*mappingsBlk);
 }
 
-void InputManager::load_registered_actions(const DataBlock& inputSettings)
+void InputManager::LoadRegisteredActions(const DataBlock& inputSettings)
 {
-  const DataBlock* actionSetsBlk = inputSettings.get_child_block("Actions");
-  for(const auto& actionSetBlk: actionSetsBlk->get_child_blocks())
+  const DataBlock* actionSetsBlk = inputSettings.GetChildBlock("Actions");
+  for(const auto& actionSetBlk: actionSetsBlk->GetChildBlocks())
   {
     ActionSet actionSet;
-    actionSet.name = actionSetBlk.get_name();
+    actionSet.name = actionSetBlk.GetName();
 
-    const DataBlock* buttons = actionSetBlk.get_child_block("Button");
-    for(const auto& button: buttons->get_child_blocks())
+    const DataBlock* buttons = actionSetBlk.GetChildBlock("Button");
+    for(const auto& button: buttons->GetChildBlocks())
     {
-      const String actionName = button.get_name();
+      const String actionName = button.GetName();
       if (actionName != "")
       {
         actionSet.buttons.emplace_back(actionName);
@@ -65,7 +65,7 @@ void InputManager::load_registered_actions(const DataBlock& inputSettings)
       }
     }
 
-    dump_action_set(actionSet);
+    DumpActionSet(actionSet);
 
     m_ActionSets.insert({
       str_hash(actionSet.name.c_str()),
@@ -74,18 +74,18 @@ void InputManager::load_registered_actions(const DataBlock& inputSettings)
   }
 }
 
-void InputManager::load_controller_mappings(const DataBlock& controllerMappings)
+void InputManager::LoadControllerMappings(const DataBlock& controllerMappings)
 {
-  const DataBlock* keyboardMappings = controllerMappings.get_child_block("Keyboard/Actions");
-  m_Keyboard.init(m_ActionSets, *keyboardMappings);
+  const DataBlock* keyboardMappings = controllerMappings.GetChildBlock("Keyboard/Actions");
+  m_Keyboard.Init(m_ActionSets, *keyboardMappings);
 }
 
-void InputManager::process_input()
+void InputManager::ProcessInput()
 {
-  m_Keyboard.process_input();
+  m_Keyboard.ProcessInput();
 }
 
-void InputManager::set_actionset(const string_hash actionSet)
+void InputManager::SetActionset(const string_hash actionSet)
 {
-  m_Keyboard.set_actionset(actionSet);
+  m_Keyboard.SetActionset(actionSet);
 }

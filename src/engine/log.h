@@ -4,7 +4,7 @@
 
 extern spdlog::logger LOGGER;
 
-void init_log();
+void InitLog();
 
 template<class ...Args>
 void debug(Args... args)

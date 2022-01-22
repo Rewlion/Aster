@@ -2,10 +2,10 @@
 
 #include <engine/types.h>
 
-void init_window();
+void InitWindow();
 
-void poll_wnd_messages();
+void PollWndMessages();
 
-void* get_hwnd();
+void* GetHwnd();
 
-Int2 get_window_size();
+Int2 GetWindowSize();

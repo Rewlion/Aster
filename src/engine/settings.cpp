@@ -6,13 +6,13 @@
 
 static DataBlock SETTINGS_BLK;
 
-void load_app_settings(const char* blkPath)
+void LoadAppSettings(const char* blkPath)
 {
-  if (!load_blk_from_file(&SETTINGS_BLK, blkPath))
+  if (!LoadBlkFromFile(&SETTINGS_BLK, blkPath))
     assert("failed to load blk");
 }
 
-DataBlock* get_app_settings()
+DataBlock* GetAppSettings()
 {
   return &SETTINGS_BLK;
 }

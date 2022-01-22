@@ -81,7 +81,7 @@ Archetype::Archetype(const eastl::vector<ComponentDescription>& desc)
     });
 
     blockOffset += d.size;
-    sys::align(blockOffset);
+    sys::Align(blockOffset);
   }
 
   const size_t blockSize = blockOffset;

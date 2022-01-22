@@ -7,7 +7,7 @@
 
 namespace utils
 {
-  eastl::vector<char> readFile(const String& file)
+  eastl::vector<char> ReadFile(const String& file)
   {
     std::error_code ec;
     const auto fileSize = std::filesystem::file_size(file, ec);
@@ -32,7 +32,7 @@ namespace utils
     return {};
   }
 
-  String getFilename(const String& filePath)
+  String GetFilename(const String& filePath)
   {
     const size_t i = filePath.find_last_of("/\\");
     if (i != String::npos)
@@ -41,7 +41,7 @@ namespace utils
       return "";
   }
 
-  String getFileExt(const String& fileName)
+  String GetFileExt(const String& fileName)
   {
     if (!fileName.empty())
     {
@@ -53,8 +53,8 @@ namespace utils
     return "";
   }
 
-  bool checkFileExt(const String& fileName, const String requiredExt)
+  bool CheckFileExt(const String& fileName, const String requiredExt)
   {
-    return getFileExt(fileName) == requiredExt;
+    return GetFileExt(fileName) == requiredExt;
   }
 }
