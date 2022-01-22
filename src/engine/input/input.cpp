@@ -13,7 +13,7 @@ namespace Engine::Input
 
   static void DumpActionSet(const ActionSet& set)
   {
-    String buttons;
+    string buttons;
     for(const auto& btn: set.buttons)
       buttons += "    " + btn.name + "\n";
 
@@ -22,7 +22,7 @@ namespace Engine::Input
 
   void InputManager::Init()
   {
-    String inputFile = Engine::GetAppSettings()->GetText("input_settings");
+    string inputFile = Engine::GetAppSettings()->GetText("input_settings");
     ASSERT(inputFile != "");
 
     log("loading input settings from {}", inputFile);
@@ -33,7 +33,7 @@ namespace Engine::Input
 
     LoadRegisteredActions(inputSettings);
 
-    String mappingsFile = Engine::GetAppSettings()->GetText("input_mappings");
+    string mappingsFile = Engine::GetAppSettings()->GetText("input_mappings");
     ASSERT(mappingsFile != "");
 
     DataBlock controllerMappings;
@@ -55,7 +55,7 @@ namespace Engine::Input
       const DataBlock* buttons = actionSetBlk.GetChildBlock("Button");
       for(const auto& button: buttons->GetChildBlocks())
       {
-        const String actionName = button.GetName();
+        const string actionName = button.GetName();
         if (actionName != "")
         {
           actionSet.buttons.emplace_back(actionName);

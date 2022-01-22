@@ -5,8 +5,8 @@
 
 namespace Utils
 {
-  eastl::vector<char> ReadFile(const String& file);
-  String GetFilename(const String& filePath);
-  String GetFileExt(const String& fileName);
-  bool CheckFileExt(const String& fileName, const String requiredExt);
+  eastl::vector<char> ReadFile(const string& file);
+  string GetFilename(const string& filePath);
+  string GetFileExt(const string& fileName);
+  bool CheckFileExt(const string& fileName, const string requiredExt);
 }

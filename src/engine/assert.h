@@ -12,4 +12,4 @@
 
 #define IASSERT(cond) ASSERT_COMMON(cond, true)
 
-void ShowAssertWindow(String error, const bool isIgnorable = false);
+void ShowAssertWindow(string error, const bool isIgnorable = false);

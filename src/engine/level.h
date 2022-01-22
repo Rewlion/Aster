@@ -4,5 +4,5 @@
 
 namespace Engine
 {
-  void LoadLevel(const String& levelBlk);
+  void LoadLevel(const string& levelBlk);
 }

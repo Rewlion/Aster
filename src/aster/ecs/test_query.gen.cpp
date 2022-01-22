@@ -9,17 +9,17 @@
   const static query_id query_queryId = Registry::register_direct_query(
     DirectQueryDescription{
       .components = {
-         DESCRIBE_QUERY_COMPONENT("test_float2", Float2)
+         DESCRIBE_QUERY_COMPONENT("test_float2", float2)
       }
     }
   );
   
 
-  static void query (eastl::function<void( const Float2& test_float2)> cb)
+  static void query (eastl::function<void( const float2& test_float2)> cb)
   {
     ecs.query(query_queryId, [&](ComponentsAccessor& accessor)
     {
-       const Float2& test_float2 = accessor.Get<Float2>(str_hash("test_float2")) ;
+       const float2& test_float2 = accessor.Get<float2>(str_hash("test_float2")) ;
       cb(test_float2);
     });
   }
@@ -28,7 +28,7 @@
 static void event_system_internal(Event* event, ComponentsAccessor& accessor)
 {
   TestEvent* casted_event = reinterpret_cast<TestEvent*>(event);
-   const String& test_str = accessor.Get<String>(str_hash("test_str")) ;
+   const string& test_str = accessor.Get<string>(str_hash("test_str")) ;
   event_system(*casted_event , test_str);
 }
   
@@ -36,7 +36,7 @@ static void event_system_internal(Event* event, ComponentsAccessor& accessor)
 static const bool event_system_desc = Registry::register_cpp_query(
   QueryDescription{
     .components = {
-       DESCRIBE_QUERY_COMPONENT("test_str", String)
+       DESCRIBE_QUERY_COMPONENT("test_str", string)
     },
     .eventCb = event_system_internal,
     .event = str_hash("TestEvent")

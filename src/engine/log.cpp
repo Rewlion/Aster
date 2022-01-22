@@ -33,9 +33,9 @@ namespace Engine
     console_sink->set_pattern("[%^%l%$] %v");
 
     DataBlock* settingsBlk = Engine::GetAppSettings();
-    const String appName = settingsBlk->GetText("app_name");
-    const String timeStr = GetTimeString();
-    const String logFile = fmt::format("logs_{}/{}.log.txt", appName,timeStr);
+    const string appName = settingsBlk->GetText("app_name");
+    const string timeStr = GetTimeString();
+    const string logFile = fmt::format("logs_{}/{}.log.txt", appName,timeStr);
 
     const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile.c_str(), true);
     file_sink->set_level(spdlog::level::trace);

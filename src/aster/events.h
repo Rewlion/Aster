@@ -2,7 +2,7 @@
 
 struct TestEvent: public Event
 {
-  String testString;
+  string testString;
 
   EVENT_CONSTRUCTOR(TestEvent)
   {

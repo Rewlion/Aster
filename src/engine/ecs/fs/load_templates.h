@@ -4,4 +4,4 @@
 
 class Registry;
 
-void add_templates_from_blk(Registry& ecs, const String& blk);
+void add_templates_from_blk(Registry& ecs, const string& blk);

@@ -5,7 +5,7 @@
 #include <boost/stacktrace.hpp>
 #include <winuser.h>
 
-void ShowAssertWindow(String error, const bool isIgnorable)
+void ShowAssertWindow(string error, const bool isIgnorable)
 {
   const auto st = boost::stacktrace::stacktrace();
   error += "\n";

@@ -198,7 +198,7 @@ namespace Engine
     {
       if (attr.name == "event")
       {
-        const String eventName = std::get<String>(attr.as);
+        const string eventName = std::get<string>(attr.as);
         ecs.register_event(str_hash(eventName.c_str()));
         log("registered event `{}`", eventName);
       }
@@ -210,7 +210,7 @@ namespace Engine
     {
       if (attr.type == DataBlock::ValueType::Text)
       {
-        const String blkWithTemplates = std::get<String>(attr.as);
+        const string blkWithTemplates = std::get<string>(attr.as);
         log("reading templates from {}", blkWithTemplates);
 
         add_templates_from_blk(ecs, blkWithTemplates);

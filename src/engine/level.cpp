@@ -30,19 +30,19 @@ namespace
             }
             case DataBlock::ValueType::Int2:
             {
-              auto value = std::get<Int2>(attr.as);
+              auto value = std::get<int2>(attr.as);
               init.init_component(componentName, std::move(value));
               break;
             }
             case DataBlock::ValueType::Int3:
             {
-              auto value = std::get<Int3>(attr.as);
+              auto value = std::get<int3>(attr.as);
               init.init_component(componentName, std::move(value));
               break;
             }
             case DataBlock::ValueType::Int4:
             {
-              auto value = std::get<Int4>(attr.as);
+              auto value = std::get<int4>(attr.as);
               init.init_component(componentName, std::move(value));
               break;
             }
@@ -54,37 +54,37 @@ namespace
             }
             case DataBlock::ValueType::Float2:
             {
-              auto value = std::get<Float2>(attr.as);
+              auto value = std::get<float2>(attr.as);
               init.init_component(componentName, std::move(value));
               break;
             }
             case DataBlock::ValueType::Float3:
             {
-              auto value = std::get<Float3>(attr.as);
+              auto value = std::get<float3>(attr.as);
               init.init_component(componentName, std::move(value));
               break;
             }
             case DataBlock::ValueType::Float4:
             {
-              auto value = std::get<Float4>(attr.as);
+              auto value = std::get<float4>(attr.as);
               init.init_component(componentName, std::move(value));
               break;
             }
             case DataBlock::ValueType::Text:
             {
-              auto value = std::get<String>(attr.as);
+              auto value = std::get<string>(attr.as);
               init.init_component(componentName, std::move(value));
               break;
             }
             case DataBlock::ValueType::Mat3:
             {
-              auto value = std::get<Mat3>(attr.as);
+              auto value = std::get<mat3>(attr.as);
               init.init_component(componentName, std::move(value));
               break;
             }
             case DataBlock::ValueType::Mat4:
             {
-              auto value = std::get<Mat4>(attr.as);
+              auto value = std::get<mat4>(attr.as);
               init.init_component(componentName, std::move(value));
               break;
             }
@@ -107,7 +107,7 @@ namespace Engine
 {
   static void AddEntity(const DataBlock& entityBlk)
   {
-    const String tmpl = entityBlk.GetAnnotation();
+    const string tmpl = entityBlk.GetAnnotation();
     if (tmpl != "")
     {
       const auto tmplHash = str_hash(tmpl.c_str());
@@ -120,7 +120,7 @@ namespace Engine
     }
   }
 
-  void LoadLevel(const String& levelBlk)
+  void LoadLevel(const string& levelBlk)
   {
     DataBlock blk;
     const bool levelLoaded = LoadBlkFromFile(&blk, levelBlk.c_str());

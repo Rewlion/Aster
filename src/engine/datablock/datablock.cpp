@@ -2,10 +2,10 @@
 
 #include <sstream>
 
-const DataBlock* DataBlock::GetChildBlock(const String& path) const
+const DataBlock* DataBlock::GetChildBlock(const string& path) const
 {
   std::stringstream buf(path);
-  String subPath;
+  string subPath;
   const DataBlock* dbk = this;
   while(std::getline(buf, subPath, '/'))
   {
@@ -26,7 +26,7 @@ const DataBlock* DataBlock::GetChildBlock(const String& path) const
   return dbk;
 }
 
-DataBlock* DataBlock::GetChildBlock(const String& path)
+DataBlock* DataBlock::GetChildBlock(const string& path)
 {
   const DataBlock* constThis = const_cast<const DataBlock*>(this);
   return const_cast<DataBlock*>(constThis->GetChildBlock(path));
@@ -39,57 +39,57 @@ size_t DataBlock::AddAttribute(const Attribute& attribute)
   return id;
 }
 
-int DataBlock::GetInt(const String& name) const
+int DataBlock::GetInt(const string& name) const
 {
   return GetInt(name, 0);
 }
 
-Int2 DataBlock::GetInt2(const String& name) const
+int2 DataBlock::GetInt2(const string& name) const
 {
   return GetInt2(name, {0, 0});
 }
 
-Int3 DataBlock::GetInt3(const String& name) const
+int3 DataBlock::GetInt3(const string& name) const
 {
   return GetInt3(name, {0, 0, 0});
 }
 
-Int4 DataBlock::GetInt4(const String& name) const
+int4 DataBlock::GetInt4(const string& name) const
 {
   return GetInt4(name, {0, 0, 0, 0});
 }
 
-float DataBlock::GetFloat(const String& name) const
+float DataBlock::GetFloat(const string& name) const
 {
   return GetFloat(name, 0.0f);
 }
 
-Float2 DataBlock::GetFloat2(const String& name) const
+float2 DataBlock::GetFloat2(const string& name) const
 {
   return GetFloat2(name, {0.0f, 0.0f});
 }
 
-Float3 DataBlock::GetFloat3(const String& name) const
+float3 DataBlock::GetFloat3(const string& name) const
 {
   return GetFloat3(name, {0.0f, 0.0f, 0.0f});
 }
 
-Float4 DataBlock::GetFloat4(const String& name) const
+float4 DataBlock::GetFloat4(const string& name) const
 {
   return GetFloat4(name, {0.0f, 0.0f, 0.0f, 0.0f});
 }
 
-bool DataBlock::GetBool(const String& name) const
+bool DataBlock::GetBool(const string& name) const
 {
   return GetBool(name, false);
 }
 
-String DataBlock::GetText(const String& name) const
+string DataBlock::GetText(const string& name) const
 {
   return GetText(name, "");
 }
 
-int DataBlock::GetInt(const String& name, const int def) const
+int DataBlock::GetInt(const string& name, const int def) const
 {
   for (const auto& a: m_Attributes)
     if (a.name == name && a.type == ValueType::Int)
@@ -98,34 +98,34 @@ int DataBlock::GetInt(const String& name, const int def) const
   return def;
 }
 
- Int2 DataBlock::GetInt2(const String& name, const Int2& def) const
+ int2 DataBlock::GetInt2(const string& name, const int2& def) const
  {
    for (const auto& a: m_Attributes)
      if (a.name == name && a.type == ValueType::Int2)
-       return std::get<Int2>(a.as);
+       return std::get<int2>(a.as);
 
    return def;
  }
 
-Int3 DataBlock::GetInt3(const String& name, const Int3& def) const
+int3 DataBlock::GetInt3(const string& name, const int3& def) const
 {
  for (const auto& a: m_Attributes)
    if (a.name == name && a.type == ValueType::Int3)
-     return std::get<Int3>(a.as);
+     return std::get<int3>(a.as);
 
  return def;
 }
 
-Int4 DataBlock::GetInt4(const String& name, const Int4& def) const
+int4 DataBlock::GetInt4(const string& name, const int4& def) const
 {
   for (const auto& a: m_Attributes)
     if (a.name == name && a.type == ValueType::Int4)
-      return std::get<Int4>(a.as);
+      return std::get<int4>(a.as);
 
   return def;
 }
 
-float DataBlock::GetFloat(const String& name, const float def) const
+float DataBlock::GetFloat(const string& name, const float def) const
 {
   for (const auto& a: m_Attributes)
     if (a.name == name && a.type == ValueType::Float)
@@ -134,34 +134,34 @@ float DataBlock::GetFloat(const String& name, const float def) const
   return def;
 }
 
-Float2 DataBlock::GetFloat2(const String& name, const Float2 def) const
+float2 DataBlock::GetFloat2(const string& name, const float2 def) const
 {
   for (const auto& a: m_Attributes)
     if (a.name == name && a.type == ValueType::Float2)
-      return std::get<Float2>(a.as);
+      return std::get<float2>(a.as);
 
   return def;
 }
 
-Float3 DataBlock::GetFloat3(const String& name, const Float3 def) const
+float3 DataBlock::GetFloat3(const string& name, const float3 def) const
 {
   for (const auto& a: m_Attributes)
     if (a.name == name && a.type == ValueType::Float3)
-      return std::get<Float3>(a.as);
+      return std::get<float3>(a.as);
 
   return def;
 }
 
-Float4 DataBlock::GetFloat4(const String& name, const Float4 def) const
+float4 DataBlock::GetFloat4(const string& name, const float4 def) const
 {
   for (const auto& a: m_Attributes)
     if (a.name == name && a.type == ValueType::Float4)
-      return std::get<Float4>(a.as);
+      return std::get<float4>(a.as);
 
   return def;
 }
 
-bool DataBlock::GetBool(const String& name, const bool def) const
+bool DataBlock::GetBool(const string& name, const bool def) const
 {
   for (const auto& a: m_Attributes)
     if (a.name == name && a.type == ValueType::Bool)
@@ -170,11 +170,11 @@ bool DataBlock::GetBool(const String& name, const bool def) const
   return def;
 }
 
-String DataBlock::GetText(const String& name, const String& def) const
+string DataBlock::GetText(const string& name, const string& def) const
 {
   for (const auto& a: m_Attributes)
     if (a.name == name && a.type == ValueType::Text)
-      return std::get<String>(a.as);
+      return std::get<string>(a.as);
 
   return def;
 }

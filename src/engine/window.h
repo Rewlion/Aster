@@ -10,5 +10,5 @@ namespace Engine::Window
 
   void* GetHwnd();
 
-  Int2 GetWindowSize();
+  int2 GetWindowSize();
 }

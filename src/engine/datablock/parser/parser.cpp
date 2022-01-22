@@ -7,7 +7,7 @@ extern int yyparse(Ast::Config* root);
 extern void yyrestart(FILE* f);
 extern FILE *yyin;
 
-DataBlock BlkParser::ParseFile(const String& path)
+DataBlock BlkParser::ParseFile(const string& path)
 {
   FILE* f = fopen(path.c_str(), "r");
 

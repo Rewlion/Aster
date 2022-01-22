@@ -8,27 +8,27 @@
 namespace Engine::Window
 {
   HWND CURRENT_WINDOW_HANDLER = 0;
-  Int2 window_size = {0,0};
+  int2 window_size = {0,0};
 
   void* GetHwnd()
   {
     return reinterpret_cast<void*>(&CURRENT_WINDOW_HANDLER);
   }
 
-  Int2 GetWindowSize()
+  int2 GetWindowSize()
   {
     return window_size;
   }
 
-  static bool SplitResolutionString(const String& str, unsigned int& width, unsigned int& height)
+  static bool SplitResolutionString(const string& str, unsigned int& width, unsigned int& height)
   {
     try
     {
       const auto d = str.find('x');
       if (d != std::string::npos && str.length() > 3)
       {
-        const String widthStr = str.substr(0, d);
-        const String heightStr = str.substr(d+1, str.length());
+        const string widthStr = str.substr(0, d);
+        const string heightStr = str.substr(d+1, str.length());
 
         width = std::stoul(widthStr);
         height = std::stoul(heightStr);
@@ -94,7 +94,7 @@ namespace Engine::Window
   {
     DataBlock* blk = Engine::GetAppSettings();
     DataBlock* graphicsBlk = blk->GetChildBlock("graphics");
-    const String resolution = graphicsBlk->GetText("resolution");
+    const string resolution = graphicsBlk->GetText("resolution");
     unsigned int width = 0;
     unsigned int height = 0;
 
@@ -102,7 +102,7 @@ namespace Engine::Window
 
     InitWin32Window(width, height);
 
-    window_size = Int2{width, height};
+    window_size = int2{width, height};
   }
 
   void PollWndMessages()

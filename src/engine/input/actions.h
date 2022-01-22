@@ -10,7 +10,7 @@ namespace Engine::Input
 {
   struct ButtonAction
   {
-    String name;
+    string name;
   };
 
   enum class ButtonStatus: char
@@ -22,7 +22,7 @@ namespace Engine::Input
   struct ButtonMapping
   {
     string_hash action = 0;
-    String actionName;
+    string actionName;
     char buttonId = 0;
 
     ButtonStatus status = ButtonStatus::Release;
@@ -30,7 +30,7 @@ namespace Engine::Input
 
   struct ActionSet
   {
-    String name;
+    string name;
 
     eastl::fixed_vector<ButtonAction, 256> buttons;
   };

@@ -22,17 +22,17 @@ static void add_template(Registry& ecs, const DataBlock& tmpl)
       }
       case DataBlock::ValueType::Int2:
       {
-        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), Int2));
+        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), int2));
         break;
       }
       case DataBlock::ValueType::Int3:
       {
-        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), Int3));
+        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), int3));
         break;
       }
       case DataBlock::ValueType::Int4:
       {
-        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), Int4));
+        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), int4));
         break;
       }
       case DataBlock::ValueType::Float:
@@ -42,22 +42,22 @@ static void add_template(Registry& ecs, const DataBlock& tmpl)
       }
       case DataBlock::ValueType::Float2:
       {
-        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), Float2));
+        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), float2));
         break;
       }
       case DataBlock::ValueType::Float3:
       {
-        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), Float3));
+        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), float3));
         break;
       }
       case DataBlock::ValueType::Float4:
       {
-        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), Float4));
+        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), float4));
         break;
       }
       case DataBlock::ValueType::Text:
       {
-        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), String));
+        templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), string));
         break;
       }
       case DataBlock::ValueType::Bool:
@@ -71,7 +71,7 @@ static void add_template(Registry& ecs, const DataBlock& tmpl)
     }
   }
 
-  String templateDump = tmpl.GetName();
+  string templateDump = tmpl.GetName();
   for(auto& comp: templateDesc)
   {
     templateDump = templateDump + "\n" + "component:" + comp.name;
@@ -81,7 +81,7 @@ static void add_template(Registry& ecs, const DataBlock& tmpl)
   ecs.add_template(str_hash(tmpl.GetName().c_str()), templateDesc);
 }
 
-void add_templates_from_blk(Registry& ecs, const String& blkPath)
+void add_templates_from_blk(Registry& ecs, const string& blkPath)
 {
   DataBlock blk;
   if (!LoadBlkFromFile(&blk, blkPath.c_str()))

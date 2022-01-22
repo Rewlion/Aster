@@ -15,7 +15,7 @@ namespace Engine::Input
 
     for(const auto& actionSet: keyboardMappings.GetChildBlocks())
     {
-      const String& setName = actionSet.GetName();
+      const string& setName = actionSet.GetName();
       if (registeredActions.end() == registeredActions.find(str_hash(setName.c_str())))
       {
         logerror("Keyboard mapping error: button action `{}` is not registered by the game", setName);
@@ -29,7 +29,7 @@ namespace Engine::Input
         if (action.type != DataBlock::ValueType::Int)
           continue;
 
-        const String& name = action.name;
+        const string& name = action.name;
         const string_hash actionHash = str_hash(action.name.c_str());
         const int buttonId = std::get<int>(action.as);
 
@@ -47,11 +47,11 @@ namespace Engine::Input
 
   void Keyboard::DumpButtonMappings()
   {
-    String dmp = "keyboard handled actions:\n";
+    string dmp = "keyboard handled actions:\n";
 
     for(auto&[hash, mappings] : m_ActionSets)
     {
-      String actionSetInfo = fmt::format("  ActionSet: {}\n", hash);
+      string actionSetInfo = fmt::format("  ActionSet: {}\n", hash);
       for(const auto& mapping: mappings)
         actionSetInfo += fmt::format("    ButtonAction: name:{} devId:{}\n", mapping.actionName, (int)mapping.buttonId);
 
