@@ -6,6 +6,7 @@
 #include <engine/ecs/registry.h>
 #include <engine/input/input.h>
 #include <engine/level.h>
+#include <engine/render/gapi.h>
 #include <engine/settings.h>
 #include <engine/time.h>
 #include <engine/types.h>
@@ -21,6 +22,7 @@ namespace Engine
     InitLog();
     Window::InitWindow();
 
+    gapi::init();
     Input::manager.Init();
 
     ECS::InitEcsFromSettings();
@@ -29,6 +31,10 @@ namespace Engine
 
   void StartTick()
   {
+    gapi::CommandList cmdList;
+    cmdList.push_back(gapi::BeginRenderPassCmd{});
+    gapi::submitCommands(std::move(cmdList));
+
     for(;;)
     {
       Time::Tick();
