@@ -2,9 +2,14 @@
 
 #include <stdint.h>
 
+namespace Engine::ECS
+{
+  class Registry;
+}
+
 class EntityId
 {
-  friend class Registry;
+  friend Engine::ECS::Registry;
 
   public:
     inline EntityId()

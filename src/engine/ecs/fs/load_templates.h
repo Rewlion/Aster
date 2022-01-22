@@ -2,6 +2,9 @@
 
 #include <engine/types.h>
 
-class Registry;
+namespace Engine::ECS
+{
+  class Registry;
 
-void add_templates_from_blk(Registry& ecs, const string& blk);
+  void AddTemplatesFromBlk(Registry& ecs, const string& blk);
+}

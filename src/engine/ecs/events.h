@@ -16,30 +16,6 @@
   #define ECS_EVENT_BASE()
 #endif
 
-struct ECS_EVENT_BASE() Event;
-
-using EventDestructorPtr = void(Event*);
-
-struct ECS_EVENT_BASE() Event
-{
-  friend class EventsQueue;
-  friend class Registry;
-
-  Event(event_hash_name hashName, size_t size, void (*destr)(Event*))
-    : eventNameHash(hashName)
-    , eventSize(size)
-    , _destr(destr)
-  {
-  }
-
-  private:
-    event_hash_name eventNameHash = 0;
-    size_t eventSize = 0;
-    size_t allocationSize = 0;
-    size_t previousAllocationOffset = 0;
-    void (*_destr)(Event* );
-};
-
 #define EVENT_STATIC_DESTR_NAME(eventStruct) eventStruct ## _destructor
 
 #define BASE_EVENT_CONSTRUCTOR(eventStruct) Event( str_hash(#eventStruct), sizeof(eventStruct),  EVENT_STATIC_DESTR_NAME(eventStruct))
@@ -55,53 +31,80 @@ struct ECS_EVENT_BASE() Event
 
 constexpr size_t EVENTS_QUEUE_BUFFER_SIZE = 1024;
 
-class EventsQueue
+namespace Engine::ECS
 {
-  public:
-    template<class T>
-    inline void push_event(T&& event)
+  struct ECS_EVENT_BASE() Event;
+
+  using EventDestructorPtr = void(Event*);
+
+  struct ECS_EVENT_BASE() Event
+  {
+    friend class EventsQueue;
+    friend class Registry;
+
+    Event(event_hash_name hashName, size_t size, void (*destr)(Event*))
+      : eventNameHash(hashName)
+      , eventSize(size)
+      , _destr(destr)
     {
-      const size_t storageBegin = m_NextEventOffset;
-      size_t storageEnd = storageBegin + event.eventSize;
-      Sys::Align(storageEnd);
-
-      ASSERT(storageEnd < EVENTS_QUEUE_BUFFER_SIZE);
-
-      uint8_t* rawStorage = &m_Buffer[storageBegin];
-      typedef std::remove_reference<T>::type unrefT;
-      unrefT* storage = new(rawStorage) unrefT;
-
-      *storage = eastl::forward<T>(event);
-
-      auto* allocatedEvent = reinterpret_cast<Event*>(storage);
-      allocatedEvent->allocationSize =  storageEnd - storageBegin;
-      allocatedEvent->previousAllocationOffset = m_LastEventStart;
-
-      m_LastEventStart = storageBegin;
-      m_NextEventOffset = storageEnd;
-      ++m_EventsCount;
     }
 
-    inline Event* pop_event()
-    {
-      Event* e = nullptr;
+    private:
+      event_hash_name eventNameHash = 0;
+      size_t eventSize = 0;
+      size_t allocationSize = 0;
+      size_t previousAllocationOffset = 0;
+      void (*_destr)(Event* );
+  };
 
-      if (m_EventsCount > 0)
+  class EventsQueue
+  {
+    public:
+      template<class T>
+      inline void push_event(T&& event)
       {
-        e = reinterpret_cast<Event*>(m_Buffer + m_LastEventStart);
+        const size_t storageBegin = m_NextEventOffset;
+        size_t storageEnd = storageBegin + event.eventSize;
+        Sys::Align(storageEnd);
 
-        m_NextEventOffset = m_LastEventStart;
-        m_LastEventStart = e->previousAllocationOffset;
+        ASSERT(storageEnd < EVENTS_QUEUE_BUFFER_SIZE);
 
-        --m_EventsCount;
+        uint8_t* rawStorage = &m_Buffer[storageBegin];
+        typedef std::remove_reference<T>::type unrefT;
+        unrefT* storage = new(rawStorage) unrefT;
+
+        *storage = eastl::forward<T>(event);
+
+        auto* allocatedEvent = reinterpret_cast<Event*>(storage);
+        allocatedEvent->allocationSize =  storageEnd - storageBegin;
+        allocatedEvent->previousAllocationOffset = m_LastEventStart;
+
+        m_LastEventStart = storageBegin;
+        m_NextEventOffset = storageEnd;
+        ++m_EventsCount;
       }
 
-      return e;
-    }
+      inline Event* pop_event()
+      {
+        Event* e = nullptr;
 
-  private:
-  size_t m_NextEventOffset = 0;
-  size_t m_LastEventStart = 0;
-  size_t m_EventsCount = 0;
-  uint8_t m_Buffer[EVENTS_QUEUE_BUFFER_SIZE];
-};
+        if (m_EventsCount > 0)
+        {
+          e = reinterpret_cast<Event*>(m_Buffer + m_LastEventStart);
+
+          m_NextEventOffset = m_LastEventStart;
+          m_LastEventStart = e->previousAllocationOffset;
+
+          --m_EventsCount;
+        }
+
+        return e;
+      }
+
+    private:
+    size_t m_NextEventOffset = 0;
+    size_t m_LastEventStart = 0;
+    size_t m_EventsCount = 0;
+    uint8_t m_Buffer[EVENTS_QUEUE_BUFFER_SIZE];
+  };
+}

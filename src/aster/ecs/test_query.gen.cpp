@@ -6,6 +6,8 @@
 
 #include "test_query.ecs.cpp" 
 
+using namespace Engine::ECS;
+
   const static query_id query_queryId = Registry::register_direct_query(
     DirectQueryDescription{
       .components = {

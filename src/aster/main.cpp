@@ -18,7 +18,7 @@ int main()
   Engine::InitLog();
   Engine::Window::InitWindow();
 
-  Engine::InitEcsFromSettings();
+  Engine::ECS::InitEcsFromSettings();
   Engine::LoadLevel( Engine::GetAppSettings()->GetText("init_level") );
 
   Engine::Input::manager.Init();

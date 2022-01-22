@@ -14,7 +14,7 @@ namespace
       {
       }
 
-      void operator()(const EntityId& eid, EntityInitializer& init)
+      void operator()(const EntityId& eid, Engine::ECS::EntityInitializer& init)
       {
         for(const auto& attr: m_Entity.GetAttributes())
         {

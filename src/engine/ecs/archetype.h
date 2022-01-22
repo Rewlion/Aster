@@ -6,91 +6,96 @@
 
 #include <engine/types.h>
 
-struct Chunk
+namespace Engine::ECS
 {
-  inline void reset()
+  struct Chunk
   {
-    if (data)
+    inline void reset()
     {
-      delete[] data;
-      data = nullptr;
+      if (data)
+      {
+        delete[] data;
+        data = nullptr;
+      }
+      capacity = 0;
+      usedBlocks = 0;
     }
-    capacity = 0;
-    usedBlocks = 0;
-  }
 
-  inline ~Chunk()
+    inline ~Chunk()
+    {
+      reset();
+    }
+
+    inline void allocate(const size_t size, const size_t blockSize)
+    {
+      data = new uint8_t[size];
+      capacity = (uint16_t)(size / blockSize);
+      usedBlocks = 0;
+    }
+
+    uint8_t* data = nullptr;
+    uint16_t capacity = 0;
+    uint16_t usedBlocks = 0;
+  };
+
+  class ComponentsStorage
   {
-    reset();
-  }
+    friend class Registry;
 
-  inline void allocate(const size_t size, const size_t blockSize)
+    public:
+      inline ComponentsStorage()
+        : m_BlockSize(0)
+      {
+      }
+
+      bool add_entity(const uint8_t* data, const size_t nComps, const uint16_t* offsets, const uint16_t* sizes, chunk_id& chunkId, block_id& blockId);
+
+      void destroy_entity(const ComponentMap& compMap, const chunk_id chunkId, const block_id blockId, block_id& replacedBlockId);
+
+      inline void init(const size_t blockSize)
+      {
+        m_Chunks.clear();
+        m_BlockSize = blockSize;
+      }
+
+      inline size_t get_block_size() const
+      {
+        return m_BlockSize;
+      }
+
+    private:
+      bool get_free_chunk(chunk_id& chunkId, block_id& blockId);
+
+    private:
+      eastl::fixed_vector<Chunk, 16, true> m_Chunks;
+      size_t m_BlockSize;
+  };
+
+  class Registry;
+  class Archetype
   {
-    data = new uint8_t[size];
-    capacity = (uint16_t)(size / blockSize);
-    usedBlocks = 0;
-  }
+    friend Registry;
 
-  uint8_t* data = nullptr;
-  uint16_t capacity = 0;
-  uint16_t usedBlocks = 0;
-};
+    public:
+      Archetype(const eastl::vector<ComponentDescription>& desc);
 
-class ComponentsStorage
-{
-  friend class Registry;
+      bool has_components(const eastl::vector<ComponentDescription>& desc) const;
 
-  public:
-    inline ComponentsStorage()
-      : m_BlockSize(0)
-    {
-    }
+      bool has_component(const component_type_id typeId, const component_name_id nameId) const;
 
-    bool add_entity(const uint8_t* data, const size_t nComps, const uint16_t* offsets, const uint16_t* sizes, chunk_id& chunkId, block_id& blockId);
+      inline const ComponentMap get_component_map() const
+      {
+        return m_ComponentsMap;
+      }
 
-    void destroy_entity(const ComponentMap& compMap, const chunk_id chunkId, const block_id blockId, block_id& replacedBlockId);
+      inline EntityInitializer get_new_entity_initializer() const
+      {
+        return EntityInitializer(m_ComponentsMap, m_CompStorage.get_block_size());
+      }
 
-    inline void init(const size_t blockSize)
-    {
-      m_Chunks.clear();
-      m_BlockSize = blockSize;
-    }
+    private:
+      ComponentMap m_ComponentsMap;
+      ComponentsStorage m_CompStorage;
+  };
 
-    inline size_t get_block_size() const
-    {
-      return m_BlockSize;
-    }
-
-  private:
-    bool get_free_chunk(chunk_id& chunkId, block_id& blockId);
-
-  private:
-    eastl::fixed_vector<Chunk, 16, true> m_Chunks;
-    size_t m_BlockSize;
-};
-
-class Archetype
-{
-  friend class Registry;
-
-  public:
-    Archetype(const eastl::vector<ComponentDescription>& desc);
-
-    bool has_components(const eastl::vector<ComponentDescription>& desc) const;
-
-    bool has_component(const component_type_id typeId, const component_name_id nameId) const;
-
-    inline const ComponentMap get_component_map() const
-    {
-      return m_ComponentsMap;
-    }
-
-    inline EntityInitializer get_new_entity_initializer() const
-    {
-      return EntityInitializer(m_ComponentsMap, m_CompStorage.get_block_size());
-    }
-
-  private:
-    ComponentMap m_ComponentsMap;
-    ComponentsStorage m_CompStorage;
-};
+}
