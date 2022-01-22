@@ -22,7 +22,7 @@ add_includedirs(
   "deps/spdlog-1.9.2/include",
   "deps/boost-1.77/include",
   "deps/vulkan-1.2.198.1/include",
-  "deps/SPIRV-Cross-moltenvk_1.1.5/include/SPIRV-Cross"
+  "deps/SPIRV-Cross-moltenvk_1.1.5/include/SPIRV-Cross",
 )
 
 if is_arch("x64") and is_os("windows") then
