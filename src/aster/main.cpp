@@ -12,24 +12,24 @@
 
 int main()
 {
-  InitEngineClock();
+  Engine::Time::InitClock();
 
-  LoadAppSettings("game_data/settings.blk");
-  InitLog();
-  InitWindow();
+  Engine::LoadAppSettings("game_data/settings.blk");
+  Engine::InitLog();
+  Engine::Window::InitWindow();
 
-  InitEcsFromSettings();
-  LoadLevel( ::GetAppSettings()->GetText("init_level") );
+  Engine::InitEcsFromSettings();
+  Engine::LoadLevel( Engine::GetAppSettings()->GetText("init_level") );
 
-  input_manager.Init();
-  input_manager.SetActionset(str_hash("FlyingCamera"));
+  Engine::Input::manager.Init();
+  Engine::Input::manager.SetActionset(str_hash("FlyingCamera"));
 
   for(;;)
   {
-    TickTime();
+    Engine::Time::Tick();
 
-    PollWndMessages();
-    input_manager.ProcessInput();
+    Engine::Window::PollWndMessages();
+    Engine::Input::manager.ProcessInput();
 
     ecs.tick();
   }

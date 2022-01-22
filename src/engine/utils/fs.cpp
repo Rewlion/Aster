@@ -5,7 +5,7 @@
 #include <fstream>
 #include <filesystem>
 
-namespace utils
+namespace Utils
 {
   eastl::vector<char> ReadFile(const String& file)
   {

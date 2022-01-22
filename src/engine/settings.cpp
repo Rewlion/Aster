@@ -4,15 +4,18 @@
 #include <engine/datablock/utils.h>
 #include <assert.h>
 
-static DataBlock SETTINGS_BLK;
-
-void LoadAppSettings(const char* blkPath)
+namespace Engine
 {
-  if (!LoadBlkFromFile(&SETTINGS_BLK, blkPath))
-    assert("failed to load blk");
-}
+  static DataBlock SETTINGS_BLK;
 
-DataBlock* GetAppSettings()
-{
-  return &SETTINGS_BLK;
+  void LoadAppSettings(const char* blkPath)
+  {
+    if (!LoadBlkFromFile(&SETTINGS_BLK, blkPath))
+      assert("failed to load blk");
+  }
+
+  DataBlock* GetAppSettings()
+  {
+    return &SETTINGS_BLK;
+  }
 }

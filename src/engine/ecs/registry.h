@@ -143,6 +143,9 @@ class Registry final
     EventsQueue m_EventsQueue;
 };
 
-void InitEcsFromSettings();
+namespace Engine
+{
+  void InitEcsFromSettings();
+};
 
 extern Registry ecs;

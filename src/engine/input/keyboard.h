@@ -8,21 +8,24 @@
 
 class DataBlock;
 
-class Keyboard
+namespace Engine::Input
 {
-  public:
-    void Init(const eastl::vector_map<string_hash, ActionSet>& registeredActions, const DataBlock& keyboardMappings);
-    void ProcessInput();
-    void SetActionset(const string_hash actionSet);
+  class Keyboard
+  {
+    public:
+      void Init(const eastl::vector_map<string_hash, ActionSet>& registeredActions, const DataBlock& keyboardMappings);
+      void ProcessInput();
+      void SetActionset(const string_hash actionSet);
 
-  private:
-    using ButtonMappings = eastl::fixed_vector<ButtonMapping, 256>;
-    using HandledActionSet = eastl::vector_map<string_hash, ButtonMappings>;
+    private:
+      using ButtonMappings = eastl::fixed_vector<ButtonMapping, 256>;
+      using HandledActionSet = eastl::vector_map<string_hash, ButtonMappings>;
 
-  private:
-    void DumpButtonMappings();
+    private:
+      void DumpButtonMappings();
 
-  private:
-    HandledActionSet m_ActionSets;
-    eastl::optional<string_hash> m_ActiveSet;
-};
+    private:
+      HandledActionSet m_ActionSets;
+      eastl::optional<string_hash> m_ActiveSet;
+  };
+}

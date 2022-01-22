@@ -6,7 +6,7 @@
 struct ButtonActionInputEvent: public Event
 {
   string_hash action = -1;
-  ButtonStatus status = ButtonStatus::Release;
+  Engine::Input::ButtonStatus status = Engine::Input::ButtonStatus::Release;
 
   EVENT_CONSTRUCTOR(ButtonActionInputEvent)
   {

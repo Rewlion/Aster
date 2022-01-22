@@ -185,35 +185,38 @@ void Registry::process_events()
   }
 }
 
-void InitEcsFromSettings()
+namespace Engine
 {
-  log("initialization of ECS");
-  DataBlock* settings = GetAppSettings();
-
-  log("init events");
-  DataBlock* events = settings->GetChildBlock("events");
-  for(const auto& attr: events->GetAttributes())
+  void InitEcsFromSettings()
   {
-    if (attr.name == "event")
+    log("initialization of ECS");
+    DataBlock* settings = Engine::GetAppSettings();
+
+    log("init events");
+    DataBlock* events = settings->GetChildBlock("events");
+    for(const auto& attr: events->GetAttributes())
     {
-      const String eventName = std::get<String>(attr.as);
-      ecs.register_event(str_hash(eventName.c_str()));
-      log("registered event `{}`", eventName);
+      if (attr.name == "event")
+      {
+        const String eventName = std::get<String>(attr.as);
+        ecs.register_event(str_hash(eventName.c_str()));
+        log("registered event `{}`", eventName);
+      }
     }
-  }
 
-  log("init templates");
-  DataBlock* templates = settings->GetChildBlock("entity_templates");
-  for(const auto& attr: templates->GetAttributes())
-  {
-    if (attr.type == DataBlock::ValueType::Text)
+    log("init templates");
+    DataBlock* templates = settings->GetChildBlock("entity_templates");
+    for(const auto& attr: templates->GetAttributes())
     {
-      const String blkWithTemplates = std::get<String>(attr.as);
-      log("reading templates from {}", blkWithTemplates);
+      if (attr.type == DataBlock::ValueType::Text)
+      {
+        const String blkWithTemplates = std::get<String>(attr.as);
+        log("reading templates from {}", blkWithTemplates);
 
-      add_templates_from_blk(ecs, blkWithTemplates);
+        add_templates_from_blk(ecs, blkWithTemplates);
+      }
     }
-  }
 
-  ecs.register_cpp_queries();
+    ecs.register_cpp_queries();
+  }
 }

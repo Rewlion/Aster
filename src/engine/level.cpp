@@ -103,28 +103,32 @@ namespace
   };
 }
 
-static void AddEntity(const DataBlock& entityBlk)
+namespace Engine
 {
-  const String tmpl = entityBlk.GetAnnotation();
-  if (tmpl != "")
+  static void AddEntity(const DataBlock& entityBlk)
   {
-    const auto tmplHash = str_hash(tmpl.c_str());
-    ecs.create_entity(tmplHash, From(entityBlk));
+    const String tmpl = entityBlk.GetAnnotation();
+    if (tmpl != "")
+    {
+      const auto tmplHash = str_hash(tmpl.c_str());
+      ecs.create_entity(tmplHash, From(entityBlk));
+    }
+    else
+    {
+      logerror("entity `{}` doesn't have template", entityBlk.GetName());
+      return;
+    }
   }
-  else
+
+  void LoadLevel(const String& levelBlk)
   {
-    logerror("entity `{}` doesn't have template", entityBlk.GetName());
-    return;
+    DataBlock blk;
+    const bool levelLoaded = LoadBlkFromFile(&blk, levelBlk.c_str());
+    ASSERT(levelLoaded);
+
+    for(const DataBlock& entityBlk: blk.GetChildBlocks())
+      if (entityBlk.GetName() == "entity")
+        AddEntity(entityBlk);
   }
-}
 
-void LoadLevel(const String& levelBlk)
-{
-  DataBlock blk;
-  const bool levelLoaded = LoadBlkFromFile(&blk, levelBlk.c_str());
-  ASSERT(levelLoaded);
-
-  for(const DataBlock& entityBlk: blk.GetChildBlocks())
-    if (entityBlk.GetName() == "entity")
-      AddEntity(entityBlk);
 }

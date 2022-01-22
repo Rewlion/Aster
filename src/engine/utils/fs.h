@@ -3,7 +3,7 @@
 #include <EASTL/vector.h>
 #include <engine/types.h>
 
-namespace utils
+namespace Utils
 {
   eastl::vector<char> ReadFile(const String& file);
   String GetFilename(const String& filePath);

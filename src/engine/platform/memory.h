@@ -1,6 +1,6 @@
 #pragma once
 
-namespace sys
+namespace Sys
 {
   #ifdef PLATFORM_WIN64
     constexpr size_t alignment = 4;
@@ -10,8 +10,8 @@ namespace sys
 
   inline static void Align(size_t& v)
   {
-    const size_t r = v % sys::alignment;
+    const size_t r = v % Sys::alignment;
     if (r > 0)
-      v = v + (sys::alignment - r);
+      v = v + (Sys::alignment - r);
   }
 }

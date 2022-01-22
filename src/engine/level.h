@@ -2,4 +2,7 @@
 
 #include <engine/types.h>
 
-void LoadLevel(const String& levelBlk);
+namespace Engine
+{
+  void LoadLevel(const String& levelBlk);
+}

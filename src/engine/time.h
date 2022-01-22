@@ -2,10 +2,13 @@
 
 #include <stdint.h>
 
-bool InitEngineClock();
+namespace Engine::Time
+{
+  bool InitClock();
 
-void TickTime();
+  void Tick();
 
-uint64_t GetTimeSinceStart();
+  uint64_t GetTimeSinceStart();
 
-float GetDt();
+  float GetDt();
+}

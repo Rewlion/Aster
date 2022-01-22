@@ -2,10 +2,13 @@
 
 #include <engine/types.h>
 
-void InitWindow();
+namespace Engine::Window
+{
+  void InitWindow();
 
-void PollWndMessages();
+  void PollWndMessages();
 
-void* GetHwnd();
+  void* GetHwnd();
 
-Int2 GetWindowSize();
+  Int2 GetWindowSize();
+}

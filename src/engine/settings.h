@@ -2,5 +2,8 @@
 
 #include <engine/datablock/datablock.h>
 
-void LoadAppSettings(const char* path);
-DataBlock* GetAppSettings();
+namespace Engine
+{
+  void LoadAppSettings(const char* path);
+  DataBlock* GetAppSettings();
+}
