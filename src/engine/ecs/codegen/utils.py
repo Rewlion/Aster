@@ -6,6 +6,7 @@ ES_SYSTEM_TAG = "ecs_system"
 ES_EVENT_SYSTEM_TAG = "ecs_event_system"
 ES_QUERY_TAG = "ecs_query"
 ECS_EVENT_BASE_STRUCT = "ecs_event_base_struct"
+ECS_NAMESPACE = "Engine::ECS"
 
 VALID_PARAM_TYPES = {
   'int',
@@ -159,7 +160,7 @@ def gen_query(parsedQuery):
   queryDeclaration = """
   static void {query_name} (eastl::function<void({functor_params})> cb)
   {{
-    ecs.query({query_id}, [&](ComponentsAccessor& accessor)
+    {ecs_namespace}::manager.query({query_id}, [&](ComponentsAccessor& accessor)
     {{
       {components_accessors}
       cb({callback_execute_params});
@@ -168,6 +169,7 @@ def gen_query(parsedQuery):
   """.format(
     query_name = queryName,
     functor_params = functorParams,
+    ecs_namespace = ECS_NAMESPACE,
     query_id = queryIdName,
     components_accessors = componentsAccessors,
     callback_execute_params = queryCallbackParams

@@ -36,7 +36,7 @@ namespace Engine
       Window::PollWndMessages();
       Input::manager.ProcessInput();
 
-      ecs.tick();
+      ECS::manager.tick();
     }
   }
 }

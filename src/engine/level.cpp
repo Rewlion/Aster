@@ -111,7 +111,7 @@ namespace Engine
     if (tmpl != "")
     {
       const auto tmplHash = str_hash(tmpl.c_str());
-      ecs.create_entity(tmplHash, From(entityBlk));
+      ECS::manager.create_entity(tmplHash, From(entityBlk));
     }
     else
     {

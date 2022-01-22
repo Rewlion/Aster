@@ -76,7 +76,7 @@ namespace Engine::Input
                                    auto inputEvent = ButtonActionInputEvent{};
                                    inputEvent.action = action;
                                    inputEvent.status = status;
-                                   ecs.broadcast_event<ButtonActionInputEvent>(eastl::move(inputEvent));
+                                   ECS::manager.broadcast_event<ButtonActionInputEvent>(eastl::move(inputEvent));
                                  };
 
       for (auto& mapping: mappings)

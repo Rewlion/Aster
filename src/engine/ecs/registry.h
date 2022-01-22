@@ -146,6 +146,5 @@ namespace Engine::ECS
   };
 
   void InitEcsFromSettings();
+  extern Engine::ECS::Registry manager;
 }
-
-extern Engine::ECS::Registry ecs;

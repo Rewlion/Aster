@@ -8,7 +8,7 @@
 
 namespace Engine::ECS
 {
-  static void AddTemplate(Registry& ecs, const DataBlock& tmpl)
+  static void AddTemplate(Registry& manager, const DataBlock& tmpl)
   {
     eastl::vector<ComponentDescription> templateDesc;
 
@@ -68,7 +68,7 @@ namespace Engine::ECS
           break;
         }
         default:
-          logwarn("ecs: template {}: can't add template's attribute {}: unknown type {}",
+          logwarn("manager: template {}: can't add template's attribute {}: unknown type {}",
             tmpl.GetName(), attr.name, attr.type, attr.GetTypeStr());
       }
     }
@@ -80,10 +80,10 @@ namespace Engine::ECS
     }
     log("added template {}", templateDump);
 
-    ecs.add_template(str_hash(tmpl.GetName().c_str()), templateDesc);
+    manager.add_template(str_hash(tmpl.GetName().c_str()), templateDesc);
   }
 
-  void AddTemplatesFromBlk(Registry& ecs, const string& blkPath)
+  void AddTemplatesFromBlk(Registry& manager, const string& blkPath)
   {
     DataBlock blk;
     if (!LoadBlkFromFile(&blk, blkPath.c_str()))
@@ -95,7 +95,7 @@ namespace Engine::ECS
     for(const auto& tmpl: blk.GetChildBlocks())
     {
       if (tmpl.GetAnnotation() == "entity_template")
-        AddTemplate(ecs, tmpl);
+        AddTemplate(manager, tmpl);
     }
   }
 }

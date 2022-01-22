@@ -19,7 +19,7 @@ using namespace Engine::ECS;
 
   static void query (eastl::function<void( const float2& test_float2)> cb)
   {
-    ecs.query(query_queryId, [&](ComponentsAccessor& accessor)
+    Engine::ECS::manager.query(query_queryId, [&](ComponentsAccessor& accessor)
     {
        const float2& test_float2 = accessor.Get<float2>(str_hash("test_float2")) ;
       cb(test_float2);

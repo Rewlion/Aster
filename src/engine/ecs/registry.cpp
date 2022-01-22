@@ -6,10 +6,10 @@
 #include <engine/settings.h>
 #include <engine/log.h>
 
-Engine::ECS::Registry ecs;
-
 namespace Engine::ECS
 {
+  Engine::ECS::Registry manager;
+
   archetype_id Registry::get_archetype(const eastl::vector<ComponentDescription>& desc)
   {
     for (size_t i = 0; i < m_Archetypes.size(); ++i)
@@ -199,7 +199,7 @@ namespace Engine::ECS
       if (attr.name == "event")
       {
         const string eventName = std::get<string>(attr.as);
-        ecs.register_event(str_hash(eventName.c_str()));
+        manager.register_event(str_hash(eventName.c_str()));
         log("registered event `{}`", eventName);
       }
     }
@@ -213,10 +213,10 @@ namespace Engine::ECS
         const string blkWithTemplates = std::get<string>(attr.as);
         log("reading templates from {}", blkWithTemplates);
 
-        AddTemplatesFromBlk(ecs, blkWithTemplates);
+        AddTemplatesFromBlk(manager, blkWithTemplates);
       }
     }
 
-    ecs.register_cpp_queries();
+    manager.register_cpp_queries();
   }
 }
