@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vulkan/vulkan.hpp>
 #include <EASTL/vector.h>
 
 namespace spirv

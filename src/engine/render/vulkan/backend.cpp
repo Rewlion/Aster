@@ -14,7 +14,7 @@ namespace gapi::vulkan
   eastl::vector<const char*> Backend::getValidationLayers()
   {
     eastl::vector<const char*> validationLayers;
-    if (get_app_settings()->get_child_block("vulkan")->get_bool("validation", false))
+    if (Engine::GetAppSettings()->GetChildBlock("vulkan")->GetBool("validation", false))
       validationLayers.emplace_back("VK_LAYER_KHRONOS_validation");
 
     return validationLayers;
@@ -23,7 +23,7 @@ namespace gapi::vulkan
   vk::UniqueInstance Backend::createInstance()
   {
     eastl::vector<const char*> validationLayers = getValidationLayers();
-    const auto appName = get_app_settings()->get_text("app_name");
+    const auto appName = Engine::GetAppSettings()->GetText("app_name");
 
     const auto appInfo = vk::ApplicationInfo()
       .setPApplicationName(appName.c_str())
@@ -155,7 +155,7 @@ namespace gapi::vulkan
 
     vk::UniqueDevice device =  m_PhysicalDevice.createDeviceUnique(deviceCreateInfo);
 
-    const Int2 wndSize = get_window_size();
+    const int2 wndSize = Engine::Window::GetWindowSize();
 
     Device::CreateInfo deviceCi{
       .instance = *m_Instance,

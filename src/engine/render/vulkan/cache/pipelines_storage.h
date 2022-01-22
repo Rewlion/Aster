@@ -31,9 +31,6 @@ namespace gapi::vulkan
 
     private:
       void createShaderModules();
-      void collectPipelineDescriptions();
-      void collectPipelineDescription(const DataBlock& ppBlk);
-
     private:
       Device* m_Device;
 
@@ -46,10 +43,6 @@ namespace gapi::vulkan
         vk::UniqueShaderModule module;
       };
       eastl::hash_map<string_hash, ShaderModule> m_ShaderModules;
-
-      using PipelinesMap = eastl::hash_map<string_hash, vk::UniquePipeline>;
-      eastl::hash_map<string_hash, PipelineDescription> m_PipelineDescriptions;
-      eastl::hash_map<vk::RenderPass, PipelinesMap> m_Pipelines;
   };
 
 };
