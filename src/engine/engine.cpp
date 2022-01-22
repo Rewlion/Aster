@@ -21,11 +21,10 @@ namespace Engine
     InitLog();
     Window::InitWindow();
 
+    Input::manager.Init();
+
     ECS::InitEcsFromSettings();
     LoadLevel( Engine::GetAppSettings()->GetText("init_level") );
-
-    Input::manager.Init();
-    Input::manager.SetActionset(str_hash("FlyingCamera"));
   }
 
   void StartTick()

@@ -89,6 +89,7 @@ namespace Engine::Input
 
   void InputManager::SetActionset(const string_hash actionSet)
   {
-    m_Keyboard.SetActionset(actionSet);
+    if (actionSet != str_hash(""))
+      m_Keyboard.SetActionset(actionSet);
   }
 }

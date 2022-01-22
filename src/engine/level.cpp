@@ -3,7 +3,7 @@
 #include <engine/datablock/datablock.h>
 #include <engine/datablock/utils.h>
 #include <engine/ecs/registry.h>
-
+#include <engine/input/input.h>
 namespace
 {
   class From
@@ -129,6 +129,9 @@ namespace Engine
     for(const DataBlock& entityBlk: blk.GetChildBlocks())
       if (entityBlk.GetName() == "entity")
         AddEntity(entityBlk);
+
+    const string actionSet = blk.GetText("input.initial_action_set");
+    Input::manager.SetActionset(str_hash(actionSet.c_str()));
   }
 
 }

@@ -1,3 +1,5 @@
+text input.initial_action_set = "FlyingCamera"
+
 entity @("template1")
 {
   float2 test_float2 = 23.0, 1.0
