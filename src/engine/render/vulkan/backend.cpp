@@ -30,7 +30,7 @@ namespace gapi::vulkan
       .setApplicationVersion(VK_MAKE_VERSION(-1, 0, 0))
       .setPEngineName(appName.c_str())
       .setEngineVersion(VK_MAKE_VERSION(-1, 0, 0))
-      .setApiVersion(VK_API_VERSION_1_2);
+      .setApiVersion(VK_API_VERSION_1_1);
 
     const char* instanceExtensions[] = {
       "VK_KHR_surface",

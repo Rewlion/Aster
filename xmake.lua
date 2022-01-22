@@ -21,7 +21,8 @@ add_includedirs(
   "deps/eastl-3.17.06/include",
   "deps/spdlog-1.9.2/include",
   "deps/boost-1.77/include",
-  "deps/vulkan-1.2.198.1/include"
+  "deps/vulkan-1.2.198.1/include",
+  "deps/SPIRV-Cross-moltenvk_1.1.5/include/SPIRV-Cross",
 )
 
 if is_arch("x64") and is_os("windows") then
@@ -57,6 +58,11 @@ rule("ecs_generation")
         end, {files = sourcefile})
     end)
 
+target("spirv-cross")
+  set_kind("static")
+  add_files("deps/SPIRV-Cross-moltenvk_1.1.5/src/*.cpp")
+  set_languages("cxx11")
+
 target("aster-ecs")
   set_kind("object")
   add_rules("ecs_generation")
@@ -77,6 +83,7 @@ target("engine")
             "EASTL",
             "vulkan-1"
            )
+  add_deps("spirv-cross")
   add_files("src/engine/**.cpp")
 
 target("blk-test")

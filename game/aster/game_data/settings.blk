@@ -1,6 +1,7 @@
 text app_name ="aster"
 
-entity_templates{
+entity_templates
+{
   text template = "game_data/templates/templates.blk"
 }
 
@@ -9,9 +10,11 @@ text init_level = "game_data/levels/test_level.blk"
 text input_settings = "game_data/input.blk"
 text input_mappings = "game_data/input_mappings.blk"
 
-graphics{
+graphics
+{
   text gapi = "vulkan"
   text resolution = "1024x768"
+  text pipelines_blk = "game_data/pipelines.blk"
 }
 
 vulkan
@@ -19,7 +22,8 @@ vulkan
   bool validation = on
 }
 
-events{
+events
+{
   text event = "ButtonActionInputEvent"
   text event = "TestEvent"
 }
