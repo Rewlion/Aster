@@ -33,6 +33,8 @@ namespace gapi::vulkan
     m_CurrentCmdBuf.beginRenderPass(rpBeginInfo, vk::SubpassContents::eInline);
     m_CurrentRenderPass = rp;
     m_CurrentSubpass = 0;
+
+    GetCurrentFrameOwnedResources().m_Framebuffers.push_back(std::move(fbUnique));
   }
 
   vk::UniqueFramebuffer CompileContext::createFramebuffer(const BeginRenderPassCmd& cmd, const vk::RenderPass& rp)

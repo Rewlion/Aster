@@ -1,9 +1,11 @@
 #pragma once
 
+#include "frame_owned_resources.h"
+#include "resources.h"
+
 #include <engine/render/vulkan/cache/renderpass_storage.h>
 #include <engine/render/vulkan/cache/pipelines_storage.h>
 
-#include "resources.h"
 
 #include <EASTL/vector.h>
 #include <vulkan/vulkan.hpp>
@@ -28,6 +30,10 @@ namespace gapi::vulkan
 
     private:
       vk::UniqueFramebuffer createFramebuffer(const BeginRenderPassCmd& cmd, const vk::RenderPass& rp);
+      inline FrameOwnedResources& GetCurrentFrameOwnedResources()
+      {
+        return m_FrameOwnedResources[m_CurrentFrame];
+      }
 
     private:
       Device* m_Device = nullptr;
@@ -37,11 +43,7 @@ namespace gapi::vulkan
       vk::CommandBuffer m_CurrentCmdBuf;
       vk::UniqueCommandPool m_CurrentFramebuffer;
 
-      struct FrameResources
-      {
-        eastl::vector<vk::UniqueFramebuffer> framebuffers;
-      };
-      FrameResources m_Frames[SWAPCHAIN_IMAGES_COUNT];
+      FrameOwnedResources m_FrameOwnedResources[SWAPCHAIN_IMAGES_COUNT];
       size_t m_CurrentFrame = 0;
 
       vk::RenderPass m_CurrentRenderPass;
