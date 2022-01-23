@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <engine/types.h>
 
 #include <variant>
 #include <EASTL/vector.h>
@@ -12,6 +12,13 @@ namespace gapi
   enum class TextureHandler: uint64_t { Invalid = (uint64_t)-1 };
   enum class BufferHandler: uint64_t { Invalid = (uint64_t)-1 };
   enum class DepthStencilStateHandler: uint64_t { Invalid = (uint64_t)-1 };
+
+  enum class ShaderStage: uint8_t
+  {
+    None     = 0,
+    Vertex   = 1,
+    Fragment = 2,
+  };
 
   enum class TextureLoadOp
   {
@@ -87,6 +94,33 @@ namespace gapi
     StencilOp stencilDepthFailOp = StencilOp::Keep;
     CompareOp stencilCompareOp = CompareOp::Never;
     uint32_t stencilReferenceValue = 0;
+
+    size_t hash() const;
+  };
+
+  enum class PrimitiveTopology: uint8_t
+  {
+    PointList = 0,
+    LineList = 1,
+    LineStrip = 2,
+    TriangleList = 3,
+    TriangleStrip = 4,
+    TriangleFan = 5,
+    LineListWithAdjacency = 6,
+    LineStripWithAdjacency = 7,
+    TriangleListWithAdjacency = 8,
+    TriangleStripWithAdjacency = 9,
+    PathList = 10
+  };
+
+  struct GraphicsPipelineDescription
+  {
+    string_hash shadersNames[2];
+    size_t shadersCount = 0;
+    PrimitiveTopology topology;
+    DepthStencilStateDescription depthStencilState;
+
+    size_t hash() const;
   };
 
   struct BeginRenderPassCmd
@@ -101,6 +135,15 @@ namespace gapi
   {
   };
 
-  using Command = std::variant<BeginRenderPassCmd, EndRenderPassCmd>;
+  struct BindGraphicsPipelineCmd
+  {
+    GraphicsPipelineDescription description;
+  };
+
+  using Command = std::variant<
+    BeginRenderPassCmd,
+    EndRenderPassCmd,
+    BindGraphicsPipelineCmd
+  >;
   using CommandList = eastl::vector<Command>;
 }

@@ -24,4 +24,36 @@ namespace gapi
 
     return hash;
   }
+
+  size_t DepthStencilStateDescription::hash() const
+  {
+    using boost::hash_combine;
+    size_t hash = 0;
+
+    hash_combine(hash, depthTestEnabled);
+    hash_combine(hash, depthWriteEnabled);
+    hash_combine(hash, depthOp);
+
+    hash_combine(hash, stencilTestEnabled);
+    hash_combine(hash, stencilFailOp);
+    hash_combine(hash, stencilPassOp);
+    hash_combine(hash, stencilDepthFailOp);
+    hash_combine(hash, stencilCompareOp);
+    hash_combine(hash, stencilReferenceValue);
+
+    return hash;
+  }
+
+  size_t GraphicsPipelineDescription::hash() const
+  {
+    using boost::hash_combine;
+    size_t hash = 0;
+
+    for (size_t i = 0; i < shadersCount; ++i)
+      hash_combine(hash, shadersNames[i]);
+    hash_combine(hash, topology);
+    hash_combine(hash, depthStencilState.hash());
+
+    return hash;
+  }
 }

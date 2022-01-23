@@ -31,6 +31,8 @@ namespace gapi::vulkan
     rpBeginInfo.pClearValues = clearValues;
 
     m_CurrentCmdBuf.beginRenderPass(rpBeginInfo, vk::SubpassContents::eInline);
+    m_CurrentRenderPass = rp;
+    m_CurrentSubpass = 0;
   }
 
   vk::UniqueFramebuffer CompileContext::createFramebuffer(const BeginRenderPassCmd& cmd, const vk::RenderPass& rp)
@@ -66,5 +68,11 @@ namespace gapi::vulkan
   {
     m_CurrentCmdBuf.endRenderPass();
     m_CurrentCmdBuf.end();
+  }
+
+  void CompileContext::compileCommand(const BindGraphicsPipelineCmd& cmd)
+  {
+    vk::Pipeline pipeline = m_PipelinesStorage.GetPipeline(cmd.description, m_CurrentRenderPass, m_CurrentSubpass);
+    m_CurrentCmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
   }
 }

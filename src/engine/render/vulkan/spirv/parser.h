@@ -1,5 +1,7 @@
 #pragma once
 
+#include <engine/types.h>
+
 #include <vulkan/vulkan.hpp>
 #include <EASTL/vector.h>
 
@@ -10,7 +12,8 @@ namespace spirv
       ParsedSpirv() = default;
       ParsedSpirv(const eastl::vector<char>& binary);
 
-      vk::PipelineShaderStageCreateInfo m_StageInfo;
+      string m_EntryPoint;
+      vk::ShaderStageFlagBits m_Stage;
       size_t m_VertexAttributesCount = 0;
 
       uint32_t m_VertexStride = 0;

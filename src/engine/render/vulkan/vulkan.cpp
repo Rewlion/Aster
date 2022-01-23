@@ -5,7 +5,7 @@
 #include "compile_context.h"
 #include "resources.h"
 
-#include <engine/render/vulkan/cache/shaders_storage.h>
+#include <engine/render/vulkan/cache/pipelines_storage.h>
 #include <engine/render/gapi.h>
 
 #include <vulkan/vulkan.hpp>
@@ -22,7 +22,7 @@ namespace gapi::vulkan
 {
   static Backend backend;
   static Device device;
-  static ShadersStorage pipelineStorage;
+  static PipelinesStorage pipelines_storage;
   static CompileContext compileContext;
 
   void submitCommands(CommandList&& cmds)
@@ -66,7 +66,7 @@ namespace gapi::vulkan
 
     backend.Init();
     device = backend.CreateDevice();
-    pipelineStorage.Init(&device);
+    pipelines_storage.Init(&device);
     compileContext.init(&device);
   }
 

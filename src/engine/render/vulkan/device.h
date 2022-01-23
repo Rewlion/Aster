@@ -16,6 +16,7 @@ namespace gapi::vulkan
     friend class RenderPassStorage;
     friend class CompileContext;
     friend class ShadersStorage;
+    friend class PipelinesStorage;
 
     public:
       struct CreateInfo

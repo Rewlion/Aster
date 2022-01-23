@@ -8,28 +8,23 @@
 
 namespace spirv
 {
-  static vk::PipelineShaderStageCreateInfo getShaderStage(const spirv_cross::EntryPoint& ep)
+  static vk::ShaderStageFlagBits getShaderStage(const spirv_cross::EntryPoint& ep)
   {
-    vk::PipelineShaderStageCreateInfo info;
-
     switch (ep.execution_model)
     {
     case spv::ExecutionModel::ExecutionModelVertex:
     {
-      info.stage = vk::ShaderStageFlagBits::eVertex;
-      break;
+      return vk::ShaderStageFlagBits::eVertex;
     }
 
     case spv::ExecutionModel::ExecutionModelFragment:
     {
-      info.stage = vk::ShaderStageFlagBits::eFragment;
-      break;
+      return vk::ShaderStageFlagBits::eFragment;
     }
-
-    return info;
 
     default:
       ASSERT(!"unknown shader stage");
+      return vk::ShaderStageFlagBits::eVertex; //make compiler happy
     }
   }
 
@@ -87,11 +82,12 @@ namespace spirv
       logwarn("shader has more than one entry point, using the first one.");
 
     const spirv_cross::EntryPoint entryPoint = entryPoints[0];
-    m_StageInfo = getShaderStage(entryPoint);
+    m_EntryPoint = entryPoint.name;
+    m_Stage = getShaderStage(entryPoint);
 
     const spirv_cross::ShaderResources resources = glsl.get_shader_resources();
 
-    if (m_StageInfo.stage == vk::ShaderStageFlagBits::eVertex)
+    if (m_Stage == vk::ShaderStageFlagBits::eVertex)
     {
       size_t attributeOffset = 0;
       for(size_t i = 0; i < resources.stage_inputs.size(); ++i)
