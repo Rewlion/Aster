@@ -49,6 +49,8 @@ namespace gapi::vulkan
       vk::ImageView getImageView(const TextureHandler handler);
 
       void beginFrame();
+      void SubmitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf);
+
       void endFrame();
 
     private:

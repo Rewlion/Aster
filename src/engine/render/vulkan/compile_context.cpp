@@ -70,6 +70,7 @@ namespace gapi::vulkan
   {
     m_CurrentCmdBuf.endRenderPass();
     m_CurrentCmdBuf.end();
+    m_Device->SubmitGraphicsCmdBuf(m_CurrentCmdBuf);
   }
 
   void CompileContext::compileCommand(const BindGraphicsPipelineCmd& cmd)

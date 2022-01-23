@@ -157,6 +157,14 @@ namespace gapi::vulkan
     ASSERT(r == vk::Result::eSuccess);
   }
 
+  void Device::SubmitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf)
+  {
+    vk::SubmitInfo submit;
+    submit.pCommandBuffers = &cmdBuf;
+    submit.commandBufferCount = 1;
+    m_GraphicsQueue.submit(submit);
+  }
+
   void Device::endFrame()
   {
     auto cmdBuf = allocateGraphicsCmdBuffer();
