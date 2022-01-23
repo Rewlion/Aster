@@ -77,4 +77,9 @@ namespace gapi::vulkan
     vk::Pipeline pipeline = m_PipelinesStorage.GetPipeline(cmd.description, m_CurrentRenderPass, m_CurrentSubpass);
     m_CurrentCmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
   }
+
+  void CompileContext::compileCommand(const DrawCmd& cmd)
+  {
+    m_CurrentCmdBuf.draw(cmd.vertexCount, cmd.instanceCount, cmd.firstVertex, cmd.firstInstance);
+  }
 }

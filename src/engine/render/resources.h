@@ -140,10 +140,19 @@ namespace gapi
     GraphicsPipelineDescription description;
   };
 
+  struct DrawCmd
+  {
+    uint32_t vertexCount = 0;
+    uint32_t instanceCount = 0;
+    uint32_t firstVertex = 0;
+    uint32_t firstInstance = 0;
+  };
+
   using Command = std::variant<
     BeginRenderPassCmd,
     EndRenderPassCmd,
-    BindGraphicsPipelineCmd
+    BindGraphicsPipelineCmd,
+    DrawCmd
   >;
   using CommandList = eastl::vector<Command>;
 }
