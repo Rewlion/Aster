@@ -10,15 +10,15 @@ namespace gapi::vulkan
   class Backend
   {
     public:
-      void init();
-      Device createDevice();
+      void Init();
+      Device CreateDevice();
 
     private:
-      eastl::vector<const char*> getValidationLayers();
-      vk::UniqueInstance createInstance();
-      vk::PhysicalDevice getSuitablePhysicalDevice() const;
-      QueueIndices getQueueIndices();
-      MemoryIndices getMemoryIndices();
+      eastl::vector<const char*> GetValidationLayers();
+      vk::UniqueInstance CreateInstance();
+      vk::PhysicalDevice GetSuitablePhysicalDevice() const;
+      QueueIndices GetQueueIndices();
+      MemoryIndices GetMemoryIndices();
 
     private:
       vk::UniqueInstance m_Instance;

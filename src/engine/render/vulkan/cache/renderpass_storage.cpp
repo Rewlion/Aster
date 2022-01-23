@@ -5,7 +5,7 @@
 
 namespace gapi::vulkan
 {
-  vk::RenderPass RenderPassStorage::getRenderPass(const BeginRenderPassCmd& cmd)
+  vk::RenderPass RenderPassStorage::GetRenderPass(const BeginRenderPassCmd& cmd)
   {
     const size_t hash = cmd.hash();
 
@@ -13,7 +13,7 @@ namespace gapi::vulkan
     if (it != m_RenderPasses.end())
       return it->second.get();
 
-    auto rpUnique = createRenderPass(cmd);
+    auto rpUnique = CreateRenderPass(cmd);
     auto rp = rpUnique.get();
     m_RenderPasses.insert({
       hash,
@@ -23,7 +23,7 @@ namespace gapi::vulkan
     return rp;
   }
 
-  vk::UniqueRenderPass RenderPassStorage::createRenderPass(const BeginRenderPassCmd& cmd)
+  vk::UniqueRenderPass RenderPassStorage::CreateRenderPass(const BeginRenderPassCmd& cmd)
   {
     vk::AttachmentDescription2 attachments[MAX_RENDER_TARGETS + 1];
     vk::AttachmentReference2 attachmentsRef[MAX_RENDER_TARGETS + 1];

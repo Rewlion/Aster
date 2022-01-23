@@ -12,15 +12,15 @@ namespace gapi::vulkan
   class RenderPassStorage
   {
     public:
-      inline void init(Device* device)
+      inline void Init(Device* device)
       {
         m_Device = device;
       }
 
-      vk::RenderPass getRenderPass(const BeginRenderPassCmd& cmd);
+      vk::RenderPass GetRenderPass(const BeginRenderPassCmd& cmd);
 
     private:
-      vk::UniqueRenderPass createRenderPass(const BeginRenderPassCmd& cmd);
+      vk::UniqueRenderPass CreateRenderPass(const BeginRenderPassCmd& cmd);
 
     private:
       Device* m_Device = nullptr;

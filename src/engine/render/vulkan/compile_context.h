@@ -17,7 +17,7 @@ namespace gapi::vulkan
       inline void init(Device* device)
       {
         m_Device = device;
-        m_RenderPassStorage.init(m_Device);
+        m_RenderPassStorage.Init(m_Device);
       }
 
       void compileCommand(const BeginRenderPassCmd& cmd);

@@ -1,27 +1,27 @@
 #pragma once
 
-#include "pipelines_storage.h"
+#include "shaders_storage.h"
 
+#include <engine/algorithm/hash.h>
 #include <engine/assert.h>
 #include <engine/datablock/utils.h>
-#include <engine/algorithm/hash.h>
-#include <engine/render/vulkan/device.h>
-#include <engine/utils/fs.h>
 #include <engine/log.h>
+#include <engine/render/vulkan/device.h>
 #include <engine/settings.h>
+#include <engine/utils/fs.h>
 
 #include <filesystem>
 
 namespace gapi::vulkan
 {
-  void PipelineStorage::init(Device* device)
+  void ShadersStorage::Init(Device* device)
   {
     m_Device = device;
 
-    createShaderModules();
+    CreateShaderModules();
   }
 
-  void PipelineStorage::createShaderModules()
+  void ShadersStorage::CreateShaderModules()
   {
     const char* shaderModulesDir = "bin/shaders/spirv";
     log("reading shader modules from {}", shaderModulesDir);
@@ -67,5 +67,14 @@ namespace gapi::vulkan
 
       log("added module `{}`", shaderName);
     }
+  }
+
+  const ShaderModule& ShadersStorage::GetShaderModule(const string_hash name)
+  {
+    const auto it = m_ShaderModules.find(name);
+    if (it != m_ShaderModules.end())
+      return it->second;
+
+    ASSERT(!"shader is not founnd");
   }
 }

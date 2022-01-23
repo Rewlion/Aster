@@ -15,7 +15,7 @@ namespace gapi::vulkan
       .setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
     );
 
-    vk::RenderPass rp = m_RenderPassStorage.getRenderPass(cmd);
+    vk::RenderPass rp = m_RenderPassStorage.GetRenderPass(cmd);
     vk::UniqueFramebuffer fbUnique = createFramebuffer(cmd, rp);
     vk::Framebuffer fb = *fbUnique;
 

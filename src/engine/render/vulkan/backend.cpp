@@ -11,7 +11,7 @@
 
 namespace gapi::vulkan
 {
-  eastl::vector<const char*> Backend::getValidationLayers()
+  eastl::vector<const char*> Backend::GetValidationLayers()
   {
     eastl::vector<const char*> validationLayers;
     if (Engine::GetAppSettings()->GetChildBlock("vulkan")->GetBool("validation", false))
@@ -20,9 +20,9 @@ namespace gapi::vulkan
     return validationLayers;
   }
 
-  vk::UniqueInstance Backend::createInstance()
+  vk::UniqueInstance Backend::CreateInstance()
   {
-    eastl::vector<const char*> validationLayers = getValidationLayers();
+    eastl::vector<const char*> validationLayers = GetValidationLayers();
     const auto appName = Engine::GetAppSettings()->GetText("app_name");
 
     const auto appInfo = vk::ApplicationInfo()
@@ -47,16 +47,16 @@ namespace gapi::vulkan
     return vk::createInstanceUnique(instanceCreateInfo);
   }
 
-  void Backend::init()
+  void Backend::Init()
   {
-    m_Instance = createInstance();
-    m_PhysicalDevice = getSuitablePhysicalDevice();
+    m_Instance = CreateInstance();
+    m_PhysicalDevice = GetSuitablePhysicalDevice();
     m_Surface = createPlatformSurface(*m_Instance);
-    m_QueueIndices = getQueueIndices();
-    m_MemoryIndices = getMemoryIndices();
+    m_QueueIndices = GetQueueIndices();
+    m_MemoryIndices = GetMemoryIndices();
   }
 
-  vk::PhysicalDevice Backend::getSuitablePhysicalDevice() const
+  vk::PhysicalDevice Backend::GetSuitablePhysicalDevice() const
   {
     vk::PhysicalDevice physicalDevice = nullptr;
     for (const vk::PhysicalDevice& device : m_Instance->enumeratePhysicalDevices())
@@ -75,7 +75,7 @@ namespace gapi::vulkan
     return physicalDevice;
   }
 
-  QueueIndices Backend::getQueueIndices()
+  QueueIndices Backend::GetQueueIndices()
   {
     std::vector<vk::QueueFamilyProperties> queueFamilies = m_PhysicalDevice.getQueueFamilyProperties();
     QueueIndices indices;
@@ -106,7 +106,7 @@ namespace gapi::vulkan
     return indices;
   }
 
-  MemoryIndices Backend::getMemoryIndices()
+  MemoryIndices Backend::GetMemoryIndices()
   {
     vk::PhysicalDeviceMemoryProperties memoryProperties = m_PhysicalDevice.getMemoryProperties();
     MemoryIndices memoryIndices;
@@ -130,7 +130,7 @@ namespace gapi::vulkan
     return memoryIndices;
   }
 
-  Device Backend::createDevice()
+  Device Backend::CreateDevice()
   {
     eastl::vector_set<size_t> uniqueQueueFamilyIndices = { m_QueueIndices.graphics, m_QueueIndices.present, m_QueueIndices.transfer };
 
