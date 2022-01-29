@@ -11,6 +11,21 @@
 
 namespace gapi::vulkan
 {
+  static VKAPI_ATTR VkBool32 VKAPI_CALL VkDebugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void* pUserData)
+  {
+    if (messageType == VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT &&
+        messageSeverity > VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    {
+      logerror("vulkan: {}", pCallbackData->pMessage);
+    }
+
+    return VK_FALSE;
+  }
+
   eastl::vector<const char*> Backend::GetValidationLayers()
   {
     eastl::vector<const char*> validationLayers;
@@ -18,6 +33,16 @@ namespace gapi::vulkan
       validationLayers.emplace_back("VK_LAYER_KHRONOS_validation");
 
     return validationLayers;
+  }
+
+  UniqueDynamicDbgUtilsMessenger Backend::CreateDebugMessenger()
+  {
+    vk::DebugUtilsMessengerCreateInfoEXT ci;
+    ci.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
+    ci.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
+    ci.pfnUserCallback = VkDebugCallback;
+
+    return m_Instance->createDebugUtilsMessengerEXTUnique(ci, nullptr, m_Loader);
   }
 
   vk::UniqueInstance Backend::CreateInstance()
@@ -34,7 +59,8 @@ namespace gapi::vulkan
 
     const char* instanceExtensions[] = {
       "VK_KHR_surface",
-      "VK_KHR_win32_surface"
+      "VK_KHR_win32_surface",
+      "VK_EXT_debug_utils"
     };
 
     const auto instanceCreateInfo = vk::InstanceCreateInfo()
@@ -50,6 +76,8 @@ namespace gapi::vulkan
   void Backend::Init()
   {
     m_Instance = CreateInstance();
+    m_Loader = vk::DispatchLoaderDynamic(m_Instance.get(), vkGetInstanceProcAddr);
+    m_DebugMessenger = CreateDebugMessenger();
     m_PhysicalDevice = GetSuitablePhysicalDevice();
     m_Surface = createPlatformSurface(*m_Instance);
     m_QueueIndices = GetQueueIndices();
