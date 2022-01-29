@@ -32,7 +32,11 @@ namespace Engine
   void StartTick()
   {
     gapi::CommandList cmdList;
-    cmdList.push_back(gapi::BeginRenderPassCmd{});
+    gapi::BeginRenderPassCmd beginPass;
+    beginPass.renderTargets[0].texture = gapi::getCurrentSurfaceRT();
+    beginPass.renderTargets[0].loadOp = gapi::TextureLoadOp::Clear;
+
+    cmdList.push_back(beginPass);
     gapi::submitCommands(std::move(cmdList));
 
     for(;;)

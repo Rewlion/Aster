@@ -25,8 +25,8 @@ namespace gapi::vulkan
 
   vk::UniqueRenderPass RenderPassStorage::CreateRenderPass(const BeginRenderPassCmd& cmd)
   {
-    vk::AttachmentDescription2 attachments[MAX_RENDER_TARGETS + 1];
-    vk::AttachmentReference2 attachmentsRef[MAX_RENDER_TARGETS + 1];
+    vk::AttachmentDescription attachments[MAX_RENDER_TARGETS + 1];
+    vk::AttachmentReference attachmentsRef[MAX_RENDER_TARGETS + 1];
 
     size_t attachmentsCount = 0;
     for (size_t i = 0; i < MAX_RENDER_TARGETS; ++i)
@@ -83,20 +83,20 @@ namespace gapi::vulkan
         .setFinalLayout( layout );
     }
 
-    auto subpassDesc = vk::SubpassDescription2()
+    auto subpassDesc = vk::SubpassDescription()
       .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics);
     subpassDesc.colorAttachmentCount = rtCount;
     subpassDesc.pColorAttachments = attachmentsRef;
     if (depthStencilId != -1)
       subpassDesc.pDepthStencilAttachment = &attachmentsRef[depthStencilId];
 
-    auto rpCi = vk::RenderPassCreateInfo2{};
+    auto rpCi = vk::RenderPassCreateInfo{};
     rpCi.attachmentCount = attachmentsCount;
     rpCi.pAttachments = attachments;
     rpCi.subpassCount = 1;
     rpCi.pSubpasses = &subpassDesc;
 
 
-    return m_Device->m_Device->createRenderPass2Unique(rpCi);
+    return m_Device->m_Device->createRenderPassUnique(rpCi);
   }
 }
