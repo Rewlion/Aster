@@ -130,11 +130,19 @@ namespace gapi::vulkan
       m_SwapchainResources.images[i] = images[i];
 
       const auto& compMap = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA);
+      vk::ImageSubresourceRange subresourceRange;
+      subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+      subresourceRange.baseMipLevel = 0;
+      subresourceRange.levelCount = 1;
+      subresourceRange.baseArrayLayer = 0;
+      subresourceRange.layerCount = 1;
+
       const auto imgViewCi = vk::ImageViewCreateInfo()
         .setImage(images[i])
         .setViewType(vk::ImageViewType::e2D)
         .setFormat(m_SurfaceFormat.format)
-        .setComponents(compMap);
+        .setComponents(compMap)
+        .setSubresourceRange(subresourceRange);
       m_SwapchainResources.views[i] = m_Device->createImageViewUnique(imgViewCi);
 
       m_SwapchainResources.imageAcquiredFence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
