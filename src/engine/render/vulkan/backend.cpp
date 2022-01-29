@@ -60,7 +60,8 @@ namespace gapi::vulkan
     const char* instanceExtensions[] = {
       "VK_KHR_surface",
       "VK_KHR_win32_surface",
-      "VK_EXT_debug_utils"
+      "VK_EXT_debug_utils",
+      "VK_KHR_get_physical_device_properties2"
     };
 
     const auto instanceCreateInfo = vk::InstanceCreateInfo()
@@ -174,7 +175,10 @@ namespace gapi::vulkan
       queueCreateInfos.push_back(queueCreateInfo);
     }
 
-    const char* deviceExtensions[] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+    const char* deviceExtensions[] = {
+      VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+      "VK_KHR_timeline_semaphore"};
+
     const auto deviceCreateInfo = vk::DeviceCreateInfo()
         .setQueueCreateInfoCount(queueCreateInfos.size())
         .setPQueueCreateInfos(queueCreateInfos.data())
