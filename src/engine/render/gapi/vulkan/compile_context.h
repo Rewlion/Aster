@@ -3,8 +3,8 @@
 #include "frame_owned_resources.h"
 #include "resources.h"
 
-#include <engine/render/vulkan/cache/renderpass_storage.h>
-#include <engine/render/vulkan/cache/pipelines_storage.h>
+#include <engine/render/gapi/vulkan/cache/renderpass_storage.h>
+#include <engine/render/gapi/vulkan/cache/pipelines_storage.h>
 
 
 #include <EASTL/vector.h>

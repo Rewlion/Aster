@@ -1,7 +1,7 @@
 #pragma once
 
 #include <engine/types.h>
-#include <engine/render/vulkan/spirv/parser.h>
+#include <engine/render/gapi/vulkan/spirv/parser.h>
 #include <engine/assert.h>
 
 #include <vulkan/vulkan.hpp>

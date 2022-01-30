@@ -3,7 +3,7 @@
 #include "gapi.h"
 
 #include <engine/assert.h>
-#include <engine/render/vulkan/vulkan.h>
+#include <engine/render/gapi/vulkan/vulkan.h>
 #include <engine/settings.h>
 
 namespace gapi

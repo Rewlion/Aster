@@ -6,7 +6,7 @@
 #include <engine/ecs/registry.h>
 #include <engine/input/input.h>
 #include <engine/level.h>
-#include <engine/render/gapi.h>
+#include <engine/render/gapi/gapi.h>
 #include <engine/settings.h>
 #include <engine/time.h>
 #include <engine/types.h>

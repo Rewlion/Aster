@@ -6,7 +6,7 @@
 #include <engine/assert.h>
 #include <engine/datablock/utils.h>
 #include <engine/log.h>
-#include <engine/render/vulkan/device.h>
+#include <engine/render/gapi/vulkan/device.h>
 #include <engine/settings.h>
 #include <engine/utils/fs.h>
 

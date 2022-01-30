@@ -1,7 +1,7 @@
 #pragma once
 
 #include <engine/assert.h>
-#include <engine/render/resources.h>
+#include <engine/render/gapi/resources.h>
 
 #include <vulkan/vulkan.hpp>
 #include <stdint.h>

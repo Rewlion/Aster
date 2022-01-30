@@ -5,8 +5,8 @@
 #include "compile_context.h"
 #include "resources.h"
 
-#include <engine/render/vulkan/cache/pipelines_storage.h>
-#include <engine/render/gapi.h>
+#include <engine/render/gapi/vulkan/cache/pipelines_storage.h>
+#include <engine/render/gapi/gapi.h>
 
 #include <vulkan/vulkan.hpp>
 
