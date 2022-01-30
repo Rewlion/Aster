@@ -2,6 +2,7 @@
 
 #include "indices.h"
 #include "resources.h"
+#include "swapchain.h"
 
 #include <engine/types.h>
 
@@ -38,9 +39,9 @@ namespace gapi::vulkan
       Device() = default;
       Device(CreateInfo&&);
 
-      inline uint8_t getSurfaceRtId() const { return frameId; }
+      inline uint8_t getSurfaceRtId() const { return m_Swapchain.GetSurfaceRtId(); }
 
-      inline vk::Extent2D getSurfaceExtent() const { return m_SurfaceExtent; };
+      inline vk::Extent2D getSurfaceExtent() const { return m_Swapchain.GetSurfaceExtent(); };
 
       vk::CommandBuffer allocateGraphicsCmdBuffer();
 
@@ -51,48 +52,18 @@ namespace gapi::vulkan
       void beginFrame();
       void SubmitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf);
 
+      void TransitSurfaceImgForPresent();
       void endFrame();
-
-    private:
-      vk::UniqueSwapchainKHR createSwapchain(
-        const CreateInfo& ci,
-        const vk::SurfaceFormatKHR& surfaceFormat,
-        const vk::Extent2D& surfaceExtent) const;
-
-      vk::SurfaceFormatKHR getSuitableSurfaceFormat(
-        const std::vector<vk::SurfaceFormatKHR>& availableFormats) const;
-
-      vk::PresentModeKHR getSwapchainPresentMode(
-        const std::vector<vk::PresentModeKHR>& availablePresentModes,
-        const vk::PresentModeKHR& preferredMode) const;
-
-      vk::Extent2D getSwapchainExtent(
-        const vk::SurfaceCapabilitiesKHR& capabilities,
-        const vk::Extent2D& windowSize) const;
-
-      void setSwapchainResources();
 
     private:
       vk::UniqueDevice m_Device;
 
-      vk::SurfaceFormatKHR m_SurfaceFormat;
-      vk::Extent2D m_SurfaceExtent;
-      vk::UniqueSwapchainKHR m_Swapchain;
-      struct SwapchainResources
-      {
-        vk::Image images[SWAPCHAIN_IMAGES_COUNT];
-        vk::UniqueImageView views[SWAPCHAIN_IMAGES_COUNT];
-        vk::UniqueFence imageAcquiredFence;
-        vk::UniqueSemaphore renderingFinishedSemaphores[SWAPCHAIN_IMAGES_COUNT];
-      };
-      SwapchainResources m_SwapchainResources;
-      uint32_t frameId = 0;
+      Swapchain m_Swapchain;
 
       QueueIndices m_QueueIndices;
       MemoryIndices m_MemoryIndices;
 
       vk::Queue m_GraphicsQueue;
-      vk::Queue m_PresentQueue;
       vk::Queue m_TransferQueue;
 
       vk::UniqueCommandPool m_GraphicsCmdPool;
