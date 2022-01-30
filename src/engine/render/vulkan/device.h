@@ -49,11 +49,10 @@ namespace gapi::vulkan
 
       vk::ImageView getImageView(const TextureHandler handler);
 
-      void beginFrame();
       void SubmitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf);
 
-      void TransitSurfaceImgForPresent();
-      void endFrame();
+      void TransitSurfaceImageForPresent();
+      void PresentSurfaceImage();
 
     private:
       vk::UniqueDevice m_Device;

@@ -12,6 +12,7 @@ namespace gapi::vulkan
     m_SurfaceExtent = GetSwapchainExtent(ci.surfaceCapabilities, ci.swapchainImageExtent);
     m_Swapchain = CreateSwapchain(ci, m_SurfaceFormat, m_SurfaceExtent);
     SetSwapchainResources();
+    AcquireSurfaceImage();
   }
 
   vk::UniqueSwapchainKHR Swapchain::CreateSwapchain(
@@ -113,14 +114,14 @@ namespace gapi::vulkan
     }
   }
 
-  void Swapchain::BeginFrame()
+  void Swapchain::AcquireSurfaceImage()
   {
     frameId = m_Device.acquireNextImageKHR(*m_Swapchain, -1, {}, *m_SwapchainResources.imageAcquiredFence).value;
     const vk::Result r = m_Device.waitForFences(1, &m_SwapchainResources.imageAcquiredFence.get(), true, -1);
     ASSERT(r == vk::Result::eSuccess);
   }
 
-  void Swapchain::EndFrame()
+  void Swapchain::Present()
   {
     vk::SwapchainKHR swapchains[] {m_Swapchain.get()};
     const auto presentInfo = vk::PresentInfoKHR()
@@ -133,5 +134,7 @@ namespace gapi::vulkan
 
     const vk::Result r = m_PresentQueue.presentKHR(presentInfo);
     ASSERT(r == vk::Result::eSuccess);
+
+    AcquireSurfaceImage();
   }
 }

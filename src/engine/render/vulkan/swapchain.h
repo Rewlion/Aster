@@ -25,8 +25,7 @@ namespace gapi::vulkan
       Swapchain() = default;
       Swapchain(const CreateInfo& ci);
 
-      void BeginFrame();
-      void EndFrame();
+      void Present();
 
       inline uint8_t GetSurfaceRtId() const
       {
@@ -59,6 +58,9 @@ namespace gapi::vulkan
       }
 
     private:
+      
+      void AcquireSurfaceImage();
+
       vk::UniqueSwapchainKHR CreateSwapchain(
         const CreateInfo& ci,
         const vk::SurfaceFormatKHR& surfaceFormat,

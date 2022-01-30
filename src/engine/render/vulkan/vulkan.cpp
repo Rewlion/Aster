@@ -14,8 +14,7 @@ namespace gapi
 {
   extern void (*gapiSubmitCommands)(CommandList&& cmds);
   extern TextureHandler (*gapiGetCurrentSurfaceRT)();
-  extern void (*gapiBeginFrame)();
-  extern void (*gapiEndFrame)();
+  extern void (*gapiPresentSurfaceImage)();
 }
 
 namespace gapi::vulkan
@@ -47,22 +46,16 @@ namespace gapi::vulkan
     return h;
   }
 
-  void beginFrame()
+  void PresentSurfaceImage()
   {
-    device.beginFrame();
-  }
-
-  void endFrame()
-  {
-    device.endFrame();
+    device.PresentSurfaceImage();
   }
 
   void init()
   {
     gapiSubmitCommands = submitCommands;
     gapiGetCurrentSurfaceRT = getCurrentSurfaceRT;
-    gapiBeginFrame = beginFrame;
-    gapiEndFrame = endFrame;
+    gapiPresentSurfaceImage = PresentSurfaceImage;
 
     backend.Init();
     device = backend.CreateDevice();

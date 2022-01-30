@@ -10,8 +10,7 @@ namespace gapi
 {
   void (*gapiSubmitCommands)(CommandList&& cmds);
   TextureHandler (*gapiGetCurrentSurfaceRT)();
-  void (*gapiBeginFrame)();
-  void (*gapiEndFrame)();
+  void (*gapiPresentSurfaceImage)();
   DepthStencilStateHandler (*gapiCreateDepthStencilState)(const DepthStencilStateDescription& desc);
 
   void init()
@@ -33,14 +32,9 @@ namespace gapi
     return gapiGetCurrentSurfaceRT();
   }
 
-  void beginFrame()
+  void PresentSurfaceImage()
   {
-    gapiBeginFrame();
-  }
-
-  void endFrame()
-  {
-    gapiEndFrame();
+    gapiPresentSurfaceImage();
   }
 
   DepthStencilStateHandler createDepthStencilState(const DepthStencilStateDescription& desc)

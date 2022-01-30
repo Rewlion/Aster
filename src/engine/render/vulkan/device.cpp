@@ -45,7 +45,7 @@ namespace gapi::vulkan
       vk::CommandBufferBeginInfo()
       .setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
     );
-    
+
     return cmdBuf;
   }
 
@@ -69,11 +69,6 @@ namespace gapi::vulkan
     return vk::ImageView{};
   }
 
-  void Device::beginFrame()
-  {
-    m_Swapchain.BeginFrame();
-  }
-
   void Device::SubmitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf)
   {
     vk::SubmitInfo submit;
@@ -82,7 +77,7 @@ namespace gapi::vulkan
     m_GraphicsQueue.submit(submit);
   }
 
-  void Device::TransitSurfaceImgForPresent()
+  void Device::TransitSurfaceImageForPresent()
   {
     auto cmdBuf = allocateGraphicsCmdBuffer();
 
@@ -110,9 +105,9 @@ namespace gapi::vulkan
     m_GraphicsQueue.submit(submitInfo);
   }
 
-  void Device::endFrame()
+  void Device::PresentSurfaceImage()
   {
-    TransitSurfaceImgForPresent();
-    m_Swapchain.EndFrame();
+    TransitSurfaceImageForPresent();
+    m_Swapchain.Present();
   }
 }

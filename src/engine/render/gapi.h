@@ -5,8 +5,7 @@
 namespace gapi
 {
   void init();
-  void beginFrame();
-  void endFrame();
+  void PresentSurfaceImage();
   void submitCommands(CommandList&& cmds);
   TextureHandler getCurrentSurfaceRT();
   DepthStencilStateHandler createDepthStencilState(const DepthStencilStateDescription& desc);
