@@ -79,4 +79,9 @@ namespace gapi::vulkan
   {
     m_CurrentCmdBuf.draw(cmd.vertexCount, cmd.instanceCount, cmd.firstVertex, cmd.firstInstance);
   }
+
+  void CompileContext::compileCommand(const PresentSurfaceImageCmd& cmd)
+  {
+    m_Device->PresentSurfaceImage();
+  }
 }

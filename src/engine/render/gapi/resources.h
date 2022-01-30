@@ -148,11 +148,14 @@ namespace gapi
     uint32_t firstInstance = 0;
   };
 
+  struct PresentSurfaceImageCmd {};
+
   using Command = std::variant<
     BeginRenderPassCmd,
     EndRenderPassCmd,
     BindGraphicsPipelineCmd,
-    DrawCmd
+    DrawCmd,
+    PresentSurfaceImageCmd
   >;
   using CommandList = eastl::vector<Command>;
 }

@@ -7,6 +7,7 @@
 #include <engine/input/input.h>
 #include <engine/level.h>
 #include <engine/render/gapi/gapi.h>
+#include <engine/render/world_render.h>
 #include <engine/settings.h>
 #include <engine/time.h>
 #include <engine/types.h>
@@ -31,14 +32,6 @@ namespace Engine
 
   void StartTick()
   {
-    gapi::CommandList cmdList;
-    gapi::BeginRenderPassCmd beginPass;
-    beginPass.renderTargets[0].texture = gapi::getCurrentSurfaceRT();
-    beginPass.renderTargets[0].loadOp = gapi::TextureLoadOp::Clear;
-
-    cmdList.push_back(beginPass);
-    gapi::submitCommands(std::move(cmdList));
-
     for(;;)
     {
       Time::Tick();
@@ -47,6 +40,8 @@ namespace Engine
       Input::manager.ProcessInput();
 
       ECS::manager.tick();
+
+      Render::world_render.Render();
     }
   }
 }

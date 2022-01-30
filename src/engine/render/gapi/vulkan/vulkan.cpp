@@ -14,7 +14,6 @@ namespace gapi
 {
   extern void (*gapiSubmitCommands)(CommandList&& cmds);
   extern TextureHandler (*gapiGetCurrentSurfaceRT)();
-  extern void (*gapiPresentSurfaceImage)();
 }
 
 namespace gapi::vulkan
@@ -55,7 +54,6 @@ namespace gapi::vulkan
   {
     gapiSubmitCommands = submitCommands;
     gapiGetCurrentSurfaceRT = getCurrentSurfaceRT;
-    gapiPresentSurfaceImage = PresentSurfaceImage;
 
     backend.Init();
     device = backend.CreateDevice();
