@@ -40,6 +40,12 @@ namespace gapi::vulkan
       .setCommandBufferCount(1);
 
     vk::CommandBuffer cmdBuf = m_Device->allocateCommandBuffers(allocInfo)[0];
+
+    cmdBuf.begin(
+      vk::CommandBufferBeginInfo()
+      .setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+    );
+    
     return cmdBuf;
   }
 
@@ -79,10 +85,6 @@ namespace gapi::vulkan
   void Device::TransitSurfaceImgForPresent()
   {
     auto cmdBuf = allocateGraphicsCmdBuffer();
-    cmdBuf.begin(
-      vk::CommandBufferBeginInfo()
-      .setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-    );
 
     const auto layoutBarrier = vk::ImageMemoryBarrier()
       .setNewLayout(vk::ImageLayout::ePresentSrcKHR)

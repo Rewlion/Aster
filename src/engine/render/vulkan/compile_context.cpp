@@ -10,10 +10,6 @@ namespace gapi::vulkan
   void CompileContext::compileCommand(const BeginRenderPassCmd& cmd)
   {
     m_CurrentCmdBuf = m_Device->allocateGraphicsCmdBuffer();
-    m_CurrentCmdBuf.begin(
-      vk::CommandBufferBeginInfo()
-      .setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-    );
 
     vk::RenderPass rp = m_RenderPassStorage.GetRenderPass(cmd);
     vk::UniqueFramebuffer fbUnique = createFramebuffer(cmd, rp);
