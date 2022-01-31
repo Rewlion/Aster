@@ -32,11 +32,17 @@ namespace Utils
     return {};
   }
 
-  string GetFilename(const string& filePath)
+  string GetFileName(const string& filePath)
   {
     const size_t i = filePath.find_last_of("/\\");
     if (i != string::npos)
-      return filePath.substr(i+1);
+    {
+      const size_t j = filePath.find_last_of(".");
+      if (j != string::npos)
+        return filePath.substr(i+1, j-i-1);
+      else
+        return filePath.substr(i+1);
+    }
     else
       return "";
   }

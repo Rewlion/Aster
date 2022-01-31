@@ -33,10 +33,10 @@ namespace gapi::vulkan
         continue;
 
       const string filePath = file.path().string().c_str();
-      const string fileName = Utils::GetFilename(filePath);
-
-      if (!Utils::CheckFileExt(fileName, "spv"))
+      if (!Utils::CheckFileExt(filePath, "spv"))
         continue;
+
+      const string fileName = Utils::GetFileName(filePath);
 
       eastl::vector<char> rawBlob = Utils::ReadFile(filePath.c_str());
       const char* shaderName = fileName.c_str();
