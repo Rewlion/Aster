@@ -4,27 +4,6 @@
 
 namespace gapi
 {
-  size_t BeginRenderPassCmd::hash() const
-  {
-    using boost::hash_combine;
-    size_t hash = 0;
-
-    for(size_t i = 0; i < MAX_RENDER_TARGETS; ++i)
-    {
-      auto& rt = renderTargets[i];
-      hash_combine(hash, rt.loadOp);
-      hash_combine(hash, rt.storeOp);
-    }
-
-    hash_combine(hash, depthStencil.texture);
-    hash_combine(hash, depthStencil.depthLoadOp);
-    hash_combine(hash, depthStencil.depthStoreOp);
-    hash_combine(hash, depthStencil.stencilLoadOp);
-    hash_combine(hash, depthStencil.stencilStoreOp);
-
-    return hash;
-  }
-
   size_t DepthStencilStateDescription::hash() const
   {
     using boost::hash_combine;
@@ -53,6 +32,41 @@ namespace gapi
       hash_combine(hash, shadersNames[i]);
     hash_combine(hash, topology);
     hash_combine(hash, depthStencilState.hash());
+    hash_combine(hash, blendState.hash());
+
+    return hash;
+  }
+
+  size_t AttachmentBlendState::hash() const
+  {
+    using boost::hash_combine;
+    size_t hash = 0;
+
+     hash_combine(hash, blendEnabled);
+     hash_combine(hash, srcColorBlendFactor);
+     hash_combine(hash, dstColorBlendFactor);
+     hash_combine(hash, colorBlendOp);
+     hash_combine(hash, srcAlphaBlendFactor);
+     hash_combine(hash, dstAlphaBlendFactor);
+     hash_combine(hash, alphaBlendOp);
+
+    return hash;
+  }
+
+  size_t BlendState::hash() const
+  {
+    using boost::hash_combine;
+    size_t hash = 0;
+
+    hash_combine(hash, logicOpEnabled);
+    hash_combine(hash, logicOp);
+    hash_combine(hash, blendConstants[0]);
+    hash_combine(hash, blendConstants[1]);
+    hash_combine(hash, blendConstants[2]);
+    hash_combine(hash, blendConstants[3]);
+
+    for(size_t i = 0; i < attachmentsCount; ++i)
+      hash_combine(hash, attachments[i].hash());
 
     return hash;
   }

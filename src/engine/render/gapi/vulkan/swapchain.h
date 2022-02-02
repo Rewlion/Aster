@@ -52,6 +52,11 @@ namespace gapi::vulkan
         return m_SwapchainResources.images[frameId];
       }
 
+      inline vk::Extent2D GetSurfaceDim() const
+      {
+        return m_SurfaceExtent;
+      }
+
       inline const vk::Semaphore* GetWaitForRenderFinishedSemaphore() const
       {
         return &m_SwapchainResources.waitForRenderFinishedSemaphores[frameId].get();

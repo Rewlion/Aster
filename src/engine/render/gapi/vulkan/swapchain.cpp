@@ -116,9 +116,12 @@ namespace gapi::vulkan
 
   void Swapchain::AcquireSurfaceImage()
   {
-    frameId = m_Device.acquireNextImageKHR(*m_Swapchain, -1, {}, *m_SwapchainResources.imageAcquiredFence).value;
-    const vk::Result r = m_Device.waitForFences(1, &m_SwapchainResources.imageAcquiredFence.get(), true, -1);
-    ASSERT(r == vk::Result::eSuccess);
+    vk::Fence fence = m_SwapchainResources.imageAcquiredFence.get();
+    frameId = m_Device.acquireNextImageKHR(*m_Swapchain, -1, {}, fence).value;
+
+    ASSERT(vk::Result::eSuccess == m_Device.waitForFences(1, &fence, true, -1));
+
+    ASSERT(vk::Result::eSuccess == m_Device.resetFences(1, &fence));
   }
 
   void Swapchain::Present()

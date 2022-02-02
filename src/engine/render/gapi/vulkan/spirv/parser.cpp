@@ -104,6 +104,8 @@ namespace spirv
         attributeOffset += getAttributeSize(type);
       }
       m_VertexStride = attributeOffset;
+
+      m_HasInput = m_VertexStride > 0;
     }
   }
 }

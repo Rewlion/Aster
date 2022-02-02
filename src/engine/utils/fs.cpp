@@ -14,7 +14,7 @@ namespace Utils
     if (!ec)
     {
       std::ifstream f;
-      f.open(file);
+      f.open(file, std::ios::binary);
       if (f.is_open())
       {
         eastl::vector<char> readenFile;

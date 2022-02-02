@@ -20,7 +20,6 @@ namespace gapi::vulkan
 {
   static Backend backend;
   static Device device;
-  static PipelinesStorage pipelines_storage;
   static CompileContext compileContext;
 
   void submitCommands(CommandList&& cmds)
@@ -57,7 +56,6 @@ namespace gapi::vulkan
 
     backend.Init();
     device = backend.CreateDevice();
-    pipelines_storage.Init(&device);
     compileContext.init(&device);
   }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "resources.h"
+#include "commands.h"
 
 namespace gapi
 {

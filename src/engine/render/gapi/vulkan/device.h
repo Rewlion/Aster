@@ -18,6 +18,7 @@ namespace gapi::vulkan
     friend class CompileContext;
     friend class ShadersStorage;
     friend class PipelinesStorage;
+    friend class PipelineLayoutsStorage;
 
     public:
       struct CreateInfo
@@ -48,6 +49,8 @@ namespace gapi::vulkan
       vk::Format getTextureFormat(const TextureHandler handler);
 
       vk::ImageView getImageView(const TextureHandler handler);
+
+      vk::Extent3D GetImageDim(const TextureHandler handler);
 
       void SubmitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf);
 

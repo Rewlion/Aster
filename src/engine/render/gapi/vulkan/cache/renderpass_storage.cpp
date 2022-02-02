@@ -38,7 +38,7 @@ namespace gapi::vulkan
           .setFormat( m_Device->getTextureFormat(cmdRt.texture) )
           .setLoadOp( loadOpToVk(cmdRt.loadOp) )
           .setStoreOp( storeOpToVk(cmdRt.storeOp) )
-          .setInitialLayout( vk::ImageLayout::eColorAttachmentOptimal )
+          .setInitialLayout( vk::ImageLayout::eUndefined )
           .setFinalLayout( vk::ImageLayout::eColorAttachmentOptimal );
 
         attachmentsRef[i]

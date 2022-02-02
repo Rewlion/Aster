@@ -1,6 +1,7 @@
 #pragma once
 
 #include "shaders_storage.h"
+#include "layouts_storage.h"
 
 namespace gapi
 {
@@ -22,6 +23,7 @@ namespace gapi::vulkan
     private:
       Device* m_Device = nullptr;
       ShadersStorage m_ShadersStorage;
+      PipelineLayoutsStorage m_LayoutsStorage;
 
       eastl::hash_map<string_hash, vk::UniquePipeline> m_Pipelines;
   };

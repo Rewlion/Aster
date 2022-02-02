@@ -1,6 +1,7 @@
 #pragma once
 
 #include <engine/render/gapi/resources.h>
+#include <engine/render/gapi/commands.h>
 
 #include <vulkan/vulkan.hpp>
 #include <EASTL/hash_map.h>

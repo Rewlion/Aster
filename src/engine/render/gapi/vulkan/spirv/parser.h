@@ -18,5 +18,7 @@ namespace spirv
 
       uint32_t m_VertexStride = 0;
       vk::VertexInputAttributeDescription m_VertexAttributeDescriptions[32];
+
+      bool m_HasInput = false;
   };
 }

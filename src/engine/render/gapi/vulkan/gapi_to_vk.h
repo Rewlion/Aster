@@ -45,4 +45,53 @@ namespace gapi::vulkan
 
     return s;
   }
+
+  inline vk::LogicOp GetLogicOp(const LogicOp op)
+  {
+    return static_cast<vk::LogicOp>(op);
+  }
+
+  inline vk::BlendFactor GetBlendFactor(const BlendFactor f)
+  {
+    return static_cast<vk::BlendFactor>(f);
+  }
+
+  inline vk::BlendOp GetBlendOp(const BlendOp op)
+  {
+    return static_cast<vk::BlendOp>(op);
+  }
+
+  inline vk::PipelineColorBlendAttachmentState GetAttachmentBlendState(const AttachmentBlendState& state)
+  {
+    vk::PipelineColorBlendAttachmentState ret;
+    ret.blendEnable = state.blendEnabled;
+    ret.srcColorBlendFactor = GetBlendFactor(state.srcColorBlendFactor);
+    ret.dstColorBlendFactor = GetBlendFactor(state.dstColorBlendFactor);
+    ret.colorBlendOp = GetBlendOp(state.colorBlendOp);
+    ret.srcAlphaBlendFactor = GetBlendFactor(state.srcAlphaBlendFactor);
+    ret.dstAlphaBlendFactor = GetBlendFactor(state.dstAlphaBlendFactor);
+    ret.alphaBlendOp = GetBlendOp(state.alphaBlendOp);
+    ret.colorWriteMask = vk::ColorComponentFlagBits::eA | vk::ColorComponentFlagBits::eR
+                       | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB;
+
+    return ret;
+  }
+
+  inline vk::PipelineColorBlendStateCreateInfo GetBlendState(const BlendState& state, vk::PipelineColorBlendAttachmentState attachmentStates[MAX_RENDER_TARGETS])
+  {
+    vk::PipelineColorBlendStateCreateInfo ret;
+    ret.logicOpEnable = state.logicOpEnabled;
+    ret.logicOp = GetLogicOp(state.logicOp);
+    ret.blendConstants[0] = state.blendConstants[0];
+    ret.blendConstants[1] = state.blendConstants[1];
+    ret.blendConstants[2] = state.blendConstants[2];
+    ret.blendConstants[3] = state.blendConstants[3];
+
+    ret.attachmentCount = state.attachmentsCount;
+    for (size_t i = 0; i < state.attachmentsCount; ++i)
+      attachmentStates[i] = GetAttachmentBlendState(state.attachments[i]);
+    ret.pAttachments = attachmentStates;
+
+    return ret;
+  }
 }

@@ -25,10 +25,27 @@ namespace gapi::vulkan
   {
     m_Device = device;
     m_ShadersStorage.Init(device);
+    m_LayoutsStorage.Init(device);
   }
 
   vk::Pipeline PipelinesStorage::GetPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass)
   {
+    vk::PipelineShaderStageCreateInfo stages[traits::graphics::LAST_SHADER_ID];
+    const ShaderModule* vertexShaderModule = nullptr;
+
+    for (size_t i = 0; i < description.shadersCount; ++i)
+    {
+      const ShaderModule& sm = m_ShadersStorage.GetShaderModule(description.shadersNames[i]);
+      stages[i].stage = sm.metadata.m_Stage;
+      stages[i].module = sm.module.get();
+      stages[i].pName = sm.metadata.m_EntryPoint.c_str();
+
+      if (sm.metadata.m_Stage == vk::ShaderStageFlagBits::eVertex)
+        vertexShaderModule = &sm;
+    }
+    GraphicsPipelineLayoutDescription layoutDescription; //todo from shaders
+    //hash_combine(pipelineHash, layoutDescription.hash());
+
     using boost::hash_combine;
     size_t pipelineHash = description.hash();
     hash_combine(pipelineHash, rp);
@@ -40,32 +57,25 @@ namespace gapi::vulkan
 
     vk::GraphicsPipelineCreateInfo ci;
 
-    vk::PipelineShaderStageCreateInfo stages[traits::graphics::LAST_SHADER_ID];
-    const ShaderModule* vertexShaderModule = nullptr;
-    for (size_t i = 0; i < description.shadersCount; ++i)
-    {
-      const ShaderModule& sm = m_ShadersStorage.GetShaderModule(description.shadersNames[i]);
-      stages[i].stage = sm.metadata.m_Stage;
-      stages[i].module = sm.module.get();
-      stages[i].pName = sm.metadata.m_EntryPoint.c_str();
-
-      if (sm.metadata.m_Stage == vk::ShaderStageFlagBits::eVertex)
-        vertexShaderModule = &sm;
-    }
-
     vk::VertexInputBindingDescription bindingDesc;
     bindingDesc.binding = 0;
     bindingDesc.stride = vertexShaderModule->metadata.m_VertexStride;
     bindingDesc.inputRate = vk::VertexInputRate::eVertex;
 
     vk::PipelineVertexInputStateCreateInfo inputStateCi;
-    inputStateCi.vertexBindingDescriptionCount = 1;
+    inputStateCi.vertexBindingDescriptionCount = vertexShaderModule->metadata.m_HasInput ? 1 : 0;
     inputStateCi.pVertexBindingDescriptions = &bindingDesc;
     inputStateCi.vertexAttributeDescriptionCount = vertexShaderModule->metadata.m_VertexAttributesCount;
     inputStateCi.pVertexAttributeDescriptions = vertexShaderModule->metadata.m_VertexAttributeDescriptions;
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCi;
     inputAssemblyCi.topology = GetPrimitiveTopology(description.topology);
+
+    vk::PipelineViewportStateCreateInfo viewportCi;
+    viewportCi.scissorCount = 1;
+    viewportCi.viewportCount = 1;
+    viewportCi.pViewports = nullptr; //dynamic
+    viewportCi.pScissors = nullptr; //dynamic
 
     vk::PipelineRasterizationStateCreateInfo rasterizationStateCi;
     rasterizationStateCi.depthClampEnable = false;
@@ -75,22 +85,32 @@ namespace gapi::vulkan
     rasterizationStateCi.depthBiasEnable = false;
     rasterizationStateCi.lineWidth = 1.0f;
 
+    vk::PipelineMultisampleStateCreateInfo multisampleCi;
+    multisampleCi.sampleShadingEnable = false;
+    multisampleCi.rasterizationSamples = vk::SampleCountFlagBits::e1;
+
     vk::PipelineDepthStencilStateCreateInfo depthStencilCi = GetDepthStencilState(description.depthStencilState);
 
+    vk::PipelineColorBlendAttachmentState attachmentStates[MAX_RENDER_TARGETS];
+    vk::PipelineColorBlendStateCreateInfo blendingCi = GetBlendState(description.blendState, attachmentStates);
+
     vk::PipelineDynamicStateCreateInfo dynamicStateCi;
+    vk::DynamicState dynamicStates[] = { vk::DynamicState::eViewport, vk::DynamicState::eScissor};
+    dynamicStateCi.pDynamicStates = dynamicStates;
+    dynamicStateCi.dynamicStateCount = std::size(dynamicStates);
 
     ci.stageCount = description.shadersCount;
     ci.pStages = stages;
     ci.pVertexInputState = &inputStateCi;
     ci.pInputAssemblyState = &inputAssemblyCi;
     ci.pTessellationState = nullptr;
-    ci.pViewportState = nullptr;
+    ci.pViewportState = &viewportCi;
     ci.pRasterizationState = &rasterizationStateCi;
-    ci.pMultisampleState = nullptr;
+    ci.pMultisampleState = &multisampleCi;
     ci.pDepthStencilState = &depthStencilCi;
-    ci.pColorBlendState = nullptr;
+    ci.pColorBlendState = &blendingCi;
     ci.pDynamicState = &dynamicStateCi;
-    // ci.layout = todo
+    ci.layout = m_LayoutsStorage.GetPipelineLayout(layoutDescription);
     ci.renderPass = rp;
     ci.subpass = subpass;
 

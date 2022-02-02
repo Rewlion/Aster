@@ -37,6 +37,10 @@ namespace gapi::vulkan
         return m_FrameOwnedResources[m_CurrentFrame];
       }
 
+      void UpdateViewport(const BeginRenderPassCmd& cmd);
+
+      void NextFrame();
+
     private:
       Device* m_Device = nullptr;
       RenderPassStorage m_RenderPassStorage;
@@ -50,5 +54,7 @@ namespace gapi::vulkan
 
       vk::RenderPass m_CurrentRenderPass;
       size_t m_CurrentSubpass = 0;
+
+      vk::Extent2D m_CurrentViewportDim = {0,0};
   };
 }

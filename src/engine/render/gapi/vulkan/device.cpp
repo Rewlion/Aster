@@ -69,6 +69,19 @@ namespace gapi::vulkan
     return vk::ImageView{};
   }
 
+  vk::Extent3D Device::GetImageDim(const TextureHandler handler)
+  {
+    TextureHandlerInternal h{handler};
+    if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
+    {
+      auto dim = m_Swapchain.GetSurfaceExtent();
+      return {dim.width, dim.height, 0};
+    }
+
+    ASSERT(!"UNSUPPORTED");
+    return {0,0,0};
+  }
+
   void Device::SubmitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf)
   {
     vk::SubmitInfo submit;
@@ -81,13 +94,22 @@ namespace gapi::vulkan
   {
     auto cmdBuf = allocateGraphicsCmdBuffer();
 
+    vk::ImageSubresourceRange subresourceRange;
+    subresourceRange.baseMipLevel = 0;
+    subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+    subresourceRange.baseArrayLayer = 0;
+    subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+    subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+
     const auto layoutBarrier = vk::ImageMemoryBarrier()
+      .setOldLayout(vk::ImageLayout::eUndefined)
       .setNewLayout(vk::ImageLayout::ePresentSrcKHR)
-      .setImage(m_Swapchain.GetSurfaceImage());
+      .setImage(m_Swapchain.GetSurfaceImage())
+      .setSubresourceRange(subresourceRange);
 
     cmdBuf.pipelineBarrier(
-      vk::PipelineStageFlagBits::eColorAttachmentOutput,
-      vk::PipelineStageFlagBits::eColorAttachmentOutput,
+      vk::PipelineStageFlagBits::eAllCommands,
+      vk::PipelineStageFlagBits::eAllCommands,
       vk::DependencyFlagBits{},
       0, nullptr,
       0, nullptr,
