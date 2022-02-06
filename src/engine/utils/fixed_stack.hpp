@@ -11,6 +11,11 @@ namespace Utils
         return m_Size;
       }
 
+      inline size_t HasAny() const
+      {
+        return m_Size != 0;
+      }
+
       inline T& GetLast()
       {
         return m_Values[m_Size-1];
@@ -29,6 +34,17 @@ namespace Utils
       inline const T& GetFirst() const
       {
         return const_cast<FixedStack*>(this)->GetFirst();
+      }
+
+      bool Push(T&& v)
+      {
+        if (m_Size < N)
+        {
+          m_Values[m_Size++] = std::forward(v);
+          return true;
+        }
+        else
+          return false;
       }
 
       bool Push(const T& v)
