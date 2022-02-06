@@ -6,6 +6,7 @@ set_languages("cxx20")
 set_strip("debug")
 set_symbols("debug")
 set_warnings("all")
+add_cxxflags("/wd 4267")
 set_toolchains("msvc", {vs = "2019"})
 
 if is_mode("release") then
