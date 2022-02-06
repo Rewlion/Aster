@@ -13,6 +13,7 @@ namespace gapi::vulkan
 
   enum class TextureType: uint8_t
   {
+    None      = 0,
     SurfaceRT = 1
   };
 
@@ -42,6 +43,19 @@ namespace gapi::vulkan
         uint64_t type: 3;
       } typed;
     } as;
+  };
+
+  enum class BufferType: uint8_t
+  {
+    None    = 0,
+    Device  = 1,
+    Staging = 2
+  };
+
+  struct Buffer
+  {
+    vk::UniqueBuffer buffer;
+    vk::UniqueDeviceMemory memory;
   };
 
   inline vk::AttachmentLoadOp loadOpToVk(const TextureLoadOp op)

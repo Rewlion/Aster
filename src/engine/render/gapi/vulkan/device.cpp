@@ -1,5 +1,6 @@
 #include "device.h"
 #include "resources.h"
+#include "gapi_to_vk.h"
 
 #include <engine/assert.h>
 
@@ -131,5 +132,31 @@ namespace gapi::vulkan
   {
     TransitSurfaceImageForPresent();
     m_Swapchain.Present();
+  }
+
+  BufferHandler Device::AllocateBuffer(const BufferAllocationDescription& allocDesc)
+  {
+    Buffer b;
+
+    vk::MemoryAllocateInfo allocInfo;
+    allocInfo.allocationSize = allocDesc.size;
+    allocInfo.memoryTypeIndex = m_MemoryIndices.deviceLocalMemory;
+
+    b.memory = m_Device->allocateMemoryUnique(allocInfo);
+
+    vk::BufferCreateInfo bufferCi;
+    bufferCi.usage = GetBufferUsage(allocDesc.usage);
+    bufferCi.size = allocDesc.size;
+    bufferCi.sharingMode = vk::SharingMode::eExclusive;
+
+    b.buffer = m_Device->createBufferUnique(bufferCi);
+
+    size_t id = (size_t)(~0);
+    const bool allocated = m_AllocatedBuffers.Add(std::move(b), id);
+
+    m_Device->bindBufferMemory(b.buffer.get(), b.memory.get(), 0);
+
+    ASSERT(allocated);
+    return (BufferHandler)id;
   }
 }

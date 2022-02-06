@@ -195,13 +195,30 @@ namespace gapi
 
   struct GraphicsPipelineDescription
   {
-    string_hash shadersNames[2];
-    size_t shadersCount = 0;
-    PrimitiveTopology topology;
+    string_hash                  shadersNames[2];
+    size_t                       shadersCount = 0;
+    PrimitiveTopology            topology;
     DepthStencilStateDescription depthStencilState;
-    BlendState blendState;
+    BlendState                   blendState;
 
     size_t hash() const;
+  };
+
+  enum class BufferUsage: uint8_t
+  {
+    UniformTexel  = 4,
+    StorageTexel  = 8,
+    UniformBuffer = 10,
+    Storage       = 20,
+    Index         = 40,
+    Vertex        = 80,
+    Indirect      = 100
+  };
+
+  struct BufferAllocationDescription
+  {
+    size_t      size = 0;
+    BufferUsage usage;
   };
 
 }

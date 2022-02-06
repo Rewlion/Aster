@@ -11,6 +11,7 @@ namespace gapi
   void (*gapiSubmitCommands)(CommandList&& cmds);
   TextureHandler (*gapiGetCurrentSurfaceRT)();
   DepthStencilStateHandler (*gapiCreateDepthStencilState)(const DepthStencilStateDescription& desc);
+  BufferHandler (*gapiAllocateBuffer)(const BufferAllocationDescription&);
 
   void init()
   {
@@ -34,5 +35,10 @@ namespace gapi
   DepthStencilStateHandler createDepthStencilState(const DepthStencilStateDescription& desc)
   {
     return gapiCreateDepthStencilState(desc);
+  }
+
+  BufferHandler AllocateBuffer(const BufferAllocationDescription& allocDesc)
+  {
+    return gapiAllocateBuffer(allocDesc);
   }
 }

@@ -9,4 +9,5 @@ namespace gapi
   void submitCommands(CommandList&& cmds);
   TextureHandler getCurrentSurfaceRT();
   DepthStencilStateHandler createDepthStencilState(const DepthStencilStateDescription& desc);
+  BufferHandler AllocateBuffer(const BufferAllocationDescription& allocDesc);
 }

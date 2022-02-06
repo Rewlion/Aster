@@ -5,6 +5,7 @@
 #include "swapchain.h"
 
 #include <engine/types.h>
+#include <engine/utils/fixed_pool.hpp>
 
 #include <vulkan/vulkan.hpp>
 #include <EASTL/vector.h>
@@ -57,6 +58,8 @@ namespace gapi::vulkan
       void TransitSurfaceImageForPresent();
       void PresentSurfaceImage();
 
+      BufferHandler AllocateBuffer(const BufferAllocationDescription& allocDesc);
+
     private:
       vk::UniqueDevice m_Device;
 
@@ -69,5 +72,7 @@ namespace gapi::vulkan
       vk::Queue m_TransferQueue;
 
       vk::UniqueCommandPool m_GraphicsCmdPool;
+
+      Utils::FixedPool<Buffer, 1024> m_AllocatedBuffers;
   };
 }

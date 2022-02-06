@@ -14,6 +14,7 @@ namespace gapi
 {
   extern void (*gapiSubmitCommands)(CommandList&& cmds);
   extern TextureHandler (*gapiGetCurrentSurfaceRT)();
+  extern BufferHandler (*gapiAllocateBuffer)(const BufferAllocationDescription&);
 }
 
 namespace gapi::vulkan
@@ -47,6 +48,11 @@ namespace gapi::vulkan
   void PresentSurfaceImage()
   {
     device.PresentSurfaceImage();
+  }
+
+  BufferHandler AllocateBuffer(const BufferAllocationDescription& allocDesc)
+  {
+    return device.AllocateBuffer(allocDesc);
   }
 
   void init()

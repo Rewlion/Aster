@@ -94,4 +94,9 @@ namespace gapi::vulkan
 
     return ret;
   }
+
+  inline vk::BufferUsageFlagBits GetBufferUsage(const BufferUsage usage)
+  {
+    return static_cast<vk::BufferUsageFlagBits>(usage);
+  }
 }
