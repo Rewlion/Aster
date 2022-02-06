@@ -148,10 +148,10 @@ namespace gapi::vulkan
                                     if (index == size_t(-1) && memType.propertyFlags & flags)
                                       index = i;
                                   };
-      setMemoryIndex(memoryIndices.deviceLocalMemory,
+      setMemoryIndex(memoryIndices.stagingMemory,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-      setMemoryIndex(memoryIndices.stagingMemory,
+      setMemoryIndex(memoryIndices.deviceLocalMemory,
         vk::MemoryPropertyFlagBits::eDeviceLocal);
     }
 
