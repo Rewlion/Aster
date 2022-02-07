@@ -93,7 +93,7 @@ namespace spirv
       for(size_t i = 0; i < resources.stage_inputs.size(); ++i)
       {
         const spirv_cross::Resource& input = resources.stage_inputs[i];
-        const spirv_cross::SPIRType type = glsl.get_type(input.type_id);
+        const spirv_cross::SPIRType& type = glsl.get_type(input.type_id);
 
         vk::VertexInputAttributeDescription& attr = m_VertexAttributeDescriptions[i];
         attr.location = glsl.get_decoration(input.id, spv::Decoration::DecorationLocation);
@@ -106,6 +106,14 @@ namespace spirv
       m_VertexStride = attributeOffset;
 
       m_HasInput = m_VertexStride > 0;
+    }
+
+    if (!resources.push_constant_buffers.empty())
+    {
+      const spirv_cross::Resource& constants = resources.push_constant_buffers[0];
+      const spirv_cross::SPIRType& type = glsl.get_type(constants.type_id);
+
+      m_PushConstantsSize = glsl.get_declared_struct_size(type);
     }
   }
 }

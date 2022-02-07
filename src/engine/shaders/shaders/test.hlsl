@@ -1,3 +1,9 @@
+struct PushConstants
+{
+  float4 color;
+};
+
+[[vk::push_constant]] PushConstants consts;
 
 struct VsOutput
 {

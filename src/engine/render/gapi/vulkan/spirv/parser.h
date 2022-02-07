@@ -20,5 +20,7 @@ namespace spirv
       vk::VertexInputAttributeDescription m_VertexAttributeDescriptions[32];
 
       bool m_HasInput = false;
+
+      uint32_t m_PushConstantsSize = 0;
   };
 }
