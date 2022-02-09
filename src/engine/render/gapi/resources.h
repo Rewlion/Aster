@@ -194,12 +194,14 @@ namespace gapi
     size_t hash() const;
   };
 
+  using ShaderStagesNames = Utils::FixedStack<string_hash, 2>;
+
   struct GraphicsPipelineDescription
   {
-    Utils::FixedStack<string_hash, 2> shaderNames;
-    PrimitiveTopology                 topology;
-    DepthStencilStateDescription      depthStencilState;
-    BlendState                        blendState;
+    ShaderStagesNames            shaderNames;
+    PrimitiveTopology            topology;
+    DepthStencilStateDescription depthStencilState;
+    BlendState                   blendState;
 
     size_t hash() const;
   };
