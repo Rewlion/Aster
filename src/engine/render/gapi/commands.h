@@ -32,12 +32,19 @@ namespace gapi
 
   struct PresentSurfaceImageCmd {};
 
+  struct PushConstantsCmd
+  {
+    void*  data = nullptr;
+    size_t size = 0;
+  };
+
   using Command = std::variant<
     BeginRenderPassCmd,
     EndRenderPassCmd,
     BindGraphicsPipelineCmd,
     DrawCmd,
-    PresentSurfaceImageCmd
+    PresentSurfaceImageCmd,
+    PushConstantsCmd
   >;
   using CommandList = eastl::vector<Command>;
 
