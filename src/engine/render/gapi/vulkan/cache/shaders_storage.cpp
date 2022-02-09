@@ -16,12 +16,27 @@
 
 namespace gapi::vulkan
 {
+  constexpr size_t EMPTY_PIPELINE_LAYOUT_HASH = 0;
+
   void ShadersStorage::Init(Device* device)
   {
     m_Device = device;
-    m_LayoutsStorage.Init(device);
 
+    CreateEmptyPipelineLayout();
     CreateShaderModules();
+  }
+
+  void ShadersStorage::CreateEmptyPipelineLayout()
+  {
+    vk::PipelineLayoutCreateInfo ci;
+    ci.pSetLayouts = nullptr;
+    ci.pPushConstantRanges = nullptr;
+    ci.setLayoutCount = 0;
+    ci.pushConstantRangeCount = 0;
+    m_PipelineLayouts.insert({
+      EMPTY_PIPELINE_LAYOUT_HASH,
+      m_Device->m_Device->createPipelineLayoutUnique(ci)
+    });
   }
 
   void ShadersStorage::CreateShaderModules()
@@ -79,7 +94,6 @@ namespace gapi::vulkan
       return it->second;
 
     ASSERT(!"shader is not founnd");
-    return {};
   }
 
   static size_t HashShadersProgram(const ShaderStagesNames& stages)
@@ -96,9 +110,9 @@ namespace gapi::vulkan
   std::optional<vk::PipelineLayout> ShadersStorage::GetShadersProgramLayout(const ShaderStagesNames& stages)
   {
     const size_t hash = HashShadersProgram(stages);
-    const auto it = m_CachedLayouts.find(hash);
-    if (it != m_CachedLayouts.end())
-      return it->second;
+    const auto it = m_PipelineLayouts.find(hash);
+    if (it != m_PipelineLayouts.end())
+      return it->second.get();
 
     return std::nullopt;
   }
@@ -129,25 +143,30 @@ namespace gapi::vulkan
     programInfo.vertexInput.vertexAttributeDescriptionCount = vertexShaderModule->metadata.m_VertexAttributesCount;
     programInfo.vertexInput.pVertexAttributeDescriptions = vertexShaderModule->metadata.m_VertexAttributeDescriptions;
 
-    const size_t programHash = HashShadersProgram(stages);
-    const auto it = m_CachedLayouts.find(programHash);
-    if (it != m_CachedLayouts.end())
+    const uint32_t pushConstantsSize = vertexShaderModule->metadata.m_PushConstantsSize;
+
+    const bool isEmptyLayout = pushConstantsSize == 0;
+    const size_t programHash = isEmptyLayout ? EMPTY_PIPELINE_LAYOUT_HASH : HashShadersProgram(stages);
+    const auto it = m_PipelineLayouts.find(programHash);
+    if (it != m_PipelineLayouts.end())
     {
-      programInfo.layout = it->second;
+      programInfo.layout = it->second.get();
     }
     else
     {
       vk::PipelineLayoutCreateInfo layoutCi;
-      layoutCi.pushConstantRangeCount = vertexShaderModule->metadata.m_PushConstantsSize == 0 ? 0 : 1;
+      layoutCi.pushConstantRangeCount = pushConstantsSize == 0 ? 0 : 1;
       vk::PushConstantRange pushConstant;
       pushConstant.offset = 0;
       pushConstant.size = vertexShaderModule->metadata.m_PushConstantsSize;
       layoutCi.pPushConstantRanges = &pushConstant;
 
-      programInfo.layout = m_LayoutsStorage.GetPipelineLayout(layoutCi);
-      m_CachedLayouts.insert({
+      vk::UniquePipelineLayout uniqueLayout = m_Device->m_Device->createPipelineLayoutUnique(layoutCi);
+      programInfo.layout = uniqueLayout.get();
+
+      m_PipelineLayouts.insert({
         programHash,
-        programInfo.layout
+        std::move(uniqueLayout)
       });
     }
   }

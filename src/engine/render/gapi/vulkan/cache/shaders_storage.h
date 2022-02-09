@@ -1,7 +1,5 @@
 #pragma once
 
-#include "layouts_storage.h"
-
 #include <engine/assert.h>
 #include <engine/render/gapi/resources.h>
 #include <engine/render/gapi/vulkan/spirv/parser.h>
@@ -45,14 +43,14 @@ namespace gapi::vulkan
       void GetShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo);
 
     private:
+      void CreateEmptyPipelineLayout();
       void CreateShaderModules();
 
     private:
       Device* m_Device;
-      PipelineLayoutsStorage m_LayoutsStorage;
 
       eastl::hash_map<string_hash, ShaderModule> m_ShaderModules;
-      eastl::hash_map<string_hash, vk::PipelineLayout> m_CachedLayouts;
+      eastl::hash_map<string_hash, vk::UniquePipelineLayout> m_PipelineLayouts;
   };
 
 };
