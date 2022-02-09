@@ -18,9 +18,8 @@ namespace Engine::Render
     cmdList.push_back(beginPass);
 
     gapi::GraphicsPipelineDescription pipeline;
-    pipeline.shadersNames[0] = str_hash("test_vs");
-    pipeline.shadersNames[1] = str_hash("test_ps");
-    pipeline.shadersCount = 2;
+    pipeline.shaderNames.Push(str_hash("test_vs"));
+    pipeline.shaderNames.Push(str_hash("test_ps"));
     pipeline.topology = gapi::PrimitiveTopology::TriangleList;
     pipeline.blendState.attachmentsCount = 1;
 

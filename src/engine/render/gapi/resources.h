@@ -1,6 +1,7 @@
 #pragma once
 
 #include <engine/types.h>
+#include <engine/utils/fixed_stack.hpp>
 
 #include <variant>
 #include <EASTL/vector.h>
@@ -195,11 +196,10 @@ namespace gapi
 
   struct GraphicsPipelineDescription
   {
-    string_hash                  shadersNames[2];
-    size_t                       shadersCount = 0;
-    PrimitiveTopology            topology;
-    DepthStencilStateDescription depthStencilState;
-    BlendState                   blendState;
+    Utils::FixedStack<string_hash, 2> shaderNames;
+    PrimitiveTopology                 topology;
+    DepthStencilStateDescription      depthStencilState;
+    BlendState                        blendState;
 
     size_t hash() const;
   };

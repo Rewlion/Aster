@@ -30,15 +30,18 @@ namespace gapi::vulkan
 
   vk::Pipeline PipelinesStorage::GetPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass)
   {
-    vk::PipelineShaderStageCreateInfo stages[traits::graphics::LAST_SHADER_ID];
+    Utils::FixedStack<vk::PipelineShaderStageCreateInfo, traits::graphics::LAST_SHADER_ID>
+      stages;
     const ShaderModule* vertexShaderModule = nullptr;
 
-    for (size_t i = 0; i < description.shadersCount; ++i)
+    for (const string_hash& shaderName: description.shaderNames)
     {
-      const ShaderModule& sm = m_ShadersStorage.GetShaderModule(description.shadersNames[i]);
-      stages[i].stage = sm.metadata.m_Stage;
-      stages[i].module = sm.module.get();
-      stages[i].pName = sm.metadata.m_EntryPoint.c_str();
+      const ShaderModule& sm = m_ShadersStorage.GetShaderModule(shaderName);
+      vk::PipelineShaderStageCreateInfo stage;
+      stage.stage = sm.metadata.m_Stage;
+      stage.module = sm.module.get();
+      stage.pName = sm.metadata.m_EntryPoint.c_str();
+      stages.Push(stage);
 
       if (sm.metadata.m_Stage == vk::ShaderStageFlagBits::eVertex)
         vertexShaderModule = &sm;
@@ -103,8 +106,8 @@ namespace gapi::vulkan
     dynamicStateCi.pDynamicStates = dynamicStates;
     dynamicStateCi.dynamicStateCount = std::size(dynamicStates);
 
-    ci.stageCount = description.shadersCount;
-    ci.pStages = stages;
+    ci.stageCount = stages.GetSize();
+    ci.pStages = stages.GetData();
     ci.pVertexInputState = &inputStateCi;
     ci.pInputAssemblyState = &inputAssemblyCi;
     ci.pTessellationState = nullptr;

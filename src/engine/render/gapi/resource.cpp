@@ -28,8 +28,8 @@ namespace gapi
     using boost::hash_combine;
     size_t hash = 0;
 
-    for (size_t i = 0; i < shadersCount; ++i)
-      hash_combine(hash, shadersNames[i]);
+    for(const string_hash& name: shaderNames)
+      hash_combine(hash, name);
     hash_combine(hash, topology);
     hash_combine(hash, depthStencilState.hash());
     hash_combine(hash, blendState.hash());
