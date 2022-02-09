@@ -10,6 +10,8 @@
 #include <engine/settings.h>
 #include <engine/utils/fs.h>
 
+#include <boost/functional/hash.hpp>
+
 #include <filesystem>
 
 namespace gapi::vulkan
@@ -17,6 +19,7 @@ namespace gapi::vulkan
   void ShadersStorage::Init(Device* device)
   {
     m_Device = device;
+    m_LayoutsStorage.Init(device);
 
     CreateShaderModules();
   }
@@ -76,5 +79,76 @@ namespace gapi::vulkan
       return it->second;
 
     ASSERT(!"shader is not founnd");
+    return {};
+  }
+
+  static size_t HashShadersProgram(const ShaderStagesNames& stages)
+  {
+    using boost::hash_combine;
+    size_t hash = 0;
+
+    for(const auto& name: stages)
+      hash_combine(hash, name);
+
+    return hash;
+  }
+
+  std::optional<vk::PipelineLayout> ShadersStorage::GetShadersProgramLayout(const ShaderStagesNames& stages)
+  {
+    const size_t hash = HashShadersProgram(stages);
+    const auto it = m_CachedLayouts.find(hash);
+    if (it != m_CachedLayouts.end())
+      return it->second;
+
+    return std::nullopt;
+  }
+
+  void ShadersStorage::GetShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo)
+  {
+    const ShaderModule* vertexShaderModule = nullptr;
+
+    for (const auto& shaderName: stages)
+    {
+      const ShaderModule& sm = GetShaderModule(shaderName);
+      vk::PipelineShaderStageCreateInfo stage;
+      stage.stage = sm.metadata.m_Stage;
+      stage.module = sm.module.get();
+      stage.pName = sm.metadata.m_EntryPoint.c_str();
+      programInfo.stages.Push(stage);
+
+      if (sm.metadata.m_Stage == vk::ShaderStageFlagBits::eVertex)
+        vertexShaderModule = &sm;
+    }
+
+    programInfo.inputBinding.binding = 0;
+    programInfo.inputBinding.stride = vertexShaderModule->metadata.m_VertexStride;
+    programInfo.inputBinding.inputRate = vk::VertexInputRate::eVertex;
+
+    programInfo.vertexInput.vertexBindingDescriptionCount = vertexShaderModule->metadata.m_HasInput ? 1 : 0;
+    programInfo.vertexInput.pVertexBindingDescriptions = &programInfo.inputBinding;
+    programInfo.vertexInput.vertexAttributeDescriptionCount = vertexShaderModule->metadata.m_VertexAttributesCount;
+    programInfo.vertexInput.pVertexAttributeDescriptions = vertexShaderModule->metadata.m_VertexAttributeDescriptions;
+
+    const size_t programHash = HashShadersProgram(stages);
+    const auto it = m_CachedLayouts.find(programHash);
+    if (it != m_CachedLayouts.end())
+    {
+      programInfo.layout = it->second;
+    }
+    else
+    {
+      vk::PipelineLayoutCreateInfo layoutCi;
+      layoutCi.pushConstantRangeCount = vertexShaderModule->metadata.m_PushConstantsSize == 0 ? 0 : 1;
+      vk::PushConstantRange pushConstant;
+      pushConstant.offset = 0;
+      pushConstant.size = vertexShaderModule->metadata.m_PushConstantsSize;
+      layoutCi.pPushConstantRanges = &pushConstant;
+
+      programInfo.layout = m_LayoutsStorage.GetPipelineLayout(layoutCi);
+      m_CachedLayouts.insert({
+        programHash,
+        programInfo.layout
+      });
+    }
   }
 }

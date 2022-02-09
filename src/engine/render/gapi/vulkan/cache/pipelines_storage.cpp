@@ -25,34 +25,10 @@ namespace gapi::vulkan
   {
     m_Device = device;
     m_ShadersStorage.Init(device);
-    m_LayoutsStorage.Init(device);
   }
 
   vk::Pipeline PipelinesStorage::GetPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass)
   {
-    Utils::FixedStack<vk::PipelineShaderStageCreateInfo, traits::graphics::LAST_SHADER_ID>
-      stages;
-    const ShaderModule* vertexShaderModule = nullptr;
-
-    for (const string_hash& shaderName: description.shaderNames)
-    {
-      const ShaderModule& sm = m_ShadersStorage.GetShaderModule(shaderName);
-      vk::PipelineShaderStageCreateInfo stage;
-      stage.stage = sm.metadata.m_Stage;
-      stage.module = sm.module.get();
-      stage.pName = sm.metadata.m_EntryPoint.c_str();
-      stages.Push(stage);
-
-      if (sm.metadata.m_Stage == vk::ShaderStageFlagBits::eVertex)
-        vertexShaderModule = &sm;
-    }
-    vk::PipelineLayoutCreateInfo layoutCi;
-    layoutCi.pushConstantRangeCount = vertexShaderModule->metadata.m_PushConstantsSize == 0 ? 0 : 1;
-    vk::PushConstantRange pushConstant;
-    pushConstant.offset = 0;
-    pushConstant.size = vertexShaderModule->metadata.m_PushConstantsSize;
-    layoutCi.pPushConstantRanges = &pushConstant;
-
     using boost::hash_combine;
     size_t pipelineHash = description.hash();
     hash_combine(pipelineHash, rp);
@@ -64,16 +40,8 @@ namespace gapi::vulkan
 
     vk::GraphicsPipelineCreateInfo ci;
 
-    vk::VertexInputBindingDescription bindingDesc;
-    bindingDesc.binding = 0;
-    bindingDesc.stride = vertexShaderModule->metadata.m_VertexStride;
-    bindingDesc.inputRate = vk::VertexInputRate::eVertex;
-
-    vk::PipelineVertexInputStateCreateInfo inputStateCi;
-    inputStateCi.vertexBindingDescriptionCount = vertexShaderModule->metadata.m_HasInput ? 1 : 0;
-    inputStateCi.pVertexBindingDescriptions = &bindingDesc;
-    inputStateCi.vertexAttributeDescriptionCount = vertexShaderModule->metadata.m_VertexAttributesCount;
-    inputStateCi.pVertexAttributeDescriptions = vertexShaderModule->metadata.m_VertexAttributeDescriptions;
+    ShaderProgramInfo programInfo;
+    m_ShadersStorage.GetShaderProgramInfo(description.shaderNames, programInfo);
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCi;
     inputAssemblyCi.topology = GetPrimitiveTopology(description.topology);
@@ -106,9 +74,9 @@ namespace gapi::vulkan
     dynamicStateCi.pDynamicStates = dynamicStates;
     dynamicStateCi.dynamicStateCount = std::size(dynamicStates);
 
-    ci.stageCount = stages.GetSize();
-    ci.pStages = stages.GetData();
-    ci.pVertexInputState = &inputStateCi;
+    ci.stageCount = programInfo.stages.GetSize();
+    ci.pStages = programInfo.stages.GetData();
+    ci.pVertexInputState = &programInfo.vertexInput;
     ci.pInputAssemblyState = &inputAssemblyCi;
     ci.pTessellationState = nullptr;
     ci.pViewportState = &viewportCi;
@@ -117,7 +85,7 @@ namespace gapi::vulkan
     ci.pDepthStencilState = &depthStencilCi;
     ci.pColorBlendState = &blendingCi;
     ci.pDynamicState = &dynamicStateCi;
-    ci.layout = m_LayoutsStorage.GetPipelineLayout(layoutCi);
+    ci.layout = programInfo.layout;
     ci.renderPass = rp;
     ci.subpass = subpass;
 

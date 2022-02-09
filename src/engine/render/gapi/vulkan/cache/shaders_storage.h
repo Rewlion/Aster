@@ -1,11 +1,17 @@
 #pragma once
 
-#include <engine/types.h>
-#include <engine/render/gapi/vulkan/spirv/parser.h>
+#include "layouts_storage.h"
+
 #include <engine/assert.h>
+#include <engine/render/gapi/resources.h>
+#include <engine/render/gapi/vulkan/spirv/parser.h>
+#include <engine/types.h>
+#include <engine/utils/fixed_stack.hpp>
 
 #include <vulkan/vulkan.hpp>
 #include <EASTL/hash_map.h>
+
+#include <optional>
 
 namespace gapi::vulkan
 {
@@ -17,6 +23,15 @@ namespace gapi::vulkan
     vk::UniqueShaderModule module;
   };
 
+  struct ShaderProgramInfo
+  {
+    Utils::FixedStack<vk::PipelineShaderStageCreateInfo,2>
+                                           stages;
+    vk::VertexInputBindingDescription      inputBinding;
+    vk::PipelineVertexInputStateCreateInfo vertexInput;
+    vk::PipelineLayout                     layout;
+  };
+
   class ShadersStorage
   {
 
@@ -25,13 +40,19 @@ namespace gapi::vulkan
 
       const ShaderModule& GetShaderModule(const string_hash name);
 
+      std::optional<vk::PipelineLayout> GetShadersProgramLayout(const ShaderStagesNames& stages);
+
+      void GetShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo);
+
     private:
       void CreateShaderModules();
 
     private:
       Device* m_Device;
+      PipelineLayoutsStorage m_LayoutsStorage;
 
       eastl::hash_map<string_hash, ShaderModule> m_ShaderModules;
+      eastl::hash_map<string_hash, vk::PipelineLayout> m_CachedLayouts;
   };
 
 };
