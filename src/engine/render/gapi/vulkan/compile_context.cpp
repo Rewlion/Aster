@@ -121,6 +121,11 @@ namespace gapi::vulkan
     m_Device->PresentSurfaceImage();
   }
 
+  void CompileContext::compileCommand(const PushConstantsCmd& cmd)
+  {
+
+  }
+
   void CompileContext::NextFrame()
   {
     m_CurrentFrame = (m_CurrentFrame + 1) % SWAPCHAIN_IMAGES_COUNT;
