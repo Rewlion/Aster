@@ -2,6 +2,8 @@
 
 #include <engine/render/gapi/vulkan/device.h>
 
+#include <boost/functional/hash.hpp>
+
 namespace gapi::vulkan
 {
   void PipelineLayoutsStorage::Init(Device* device)
@@ -17,8 +19,15 @@ namespace gapi::vulkan
     m_EmptyLayout = m_Device->m_Device->createPipelineLayoutUnique(ci);
   }
 
-  vk::PipelineLayout PipelineLayoutsStorage::GetPipelineLayout(const GraphicsPipelineLayoutDescription& desc)
+  vk::PipelineLayout PipelineLayoutsStorage::GetPipelineLayout(const vk::PipelineLayoutCreateInfo& ci)
   {
-    return m_EmptyLayout.get();
+    if (ci.pushConstantRangeCount == 0 && ci.setLayoutCount == 0)
+      return m_EmptyLayout.get();
+
+    vk::UniquePipelineLayout layout = m_Device->m_Device->createPipelineLayoutUnique(ci);
+    vk::PipelineLayout r = layout.get();
+    m_Layouts.push_back(std::move(layout));
+
+    return r;
   }
 }

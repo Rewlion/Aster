@@ -43,8 +43,12 @@ namespace gapi::vulkan
       if (sm.metadata.m_Stage == vk::ShaderStageFlagBits::eVertex)
         vertexShaderModule = &sm;
     }
-    GraphicsPipelineLayoutDescription layoutDescription; //todo from shaders
-    //hash_combine(pipelineHash, layoutDescription.hash());
+    vk::PipelineLayoutCreateInfo layoutCi;
+    layoutCi.pushConstantRangeCount = vertexShaderModule->metadata.m_PushConstantsSize == 0 ? 0 : 1;
+    vk::PushConstantRange pushConstant;
+    pushConstant.offset = 0;
+    pushConstant.size = vertexShaderModule->metadata.m_PushConstantsSize;
+    layoutCi.pPushConstantRanges = &pushConstant;
 
     using boost::hash_combine;
     size_t pipelineHash = description.hash();
@@ -110,7 +114,7 @@ namespace gapi::vulkan
     ci.pDepthStencilState = &depthStencilCi;
     ci.pColorBlendState = &blendingCi;
     ci.pDynamicState = &dynamicStateCi;
-    ci.layout = m_LayoutsStorage.GetPipelineLayout(layoutDescription);
+    ci.layout = m_LayoutsStorage.GetPipelineLayout(layoutCi);
     ci.renderPass = rp;
     ci.subpass = subpass;
 

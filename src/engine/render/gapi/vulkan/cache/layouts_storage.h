@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
+#include <EASTL/vector.h>
 
 namespace gapi
 {
@@ -16,10 +17,11 @@ namespace gapi::vulkan
     public:
       void Init(Device* device);
 
-      vk::PipelineLayout GetPipelineLayout(const GraphicsPipelineLayoutDescription& desc);
+      vk::PipelineLayout GetPipelineLayout(const vk::PipelineLayoutCreateInfo& layout);
 
     private:
       Device* m_Device;
       vk::UniquePipelineLayout m_EmptyLayout;
+      eastl::vector<vk::UniquePipelineLayout> m_Layouts;
   };
 }
