@@ -57,5 +57,7 @@ namespace gapi::vulkan
       size_t m_CurrentSubpass = 0;
 
       vk::Extent2D m_CurrentViewportDim = {0,0};
+
+      ShaderStagesNames m_CurrentPipeline;
   };
 }

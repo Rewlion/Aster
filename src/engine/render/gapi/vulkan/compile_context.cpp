@@ -109,6 +109,8 @@ namespace gapi::vulkan
 
     vk::Rect2D sc {{0,0}, m_CurrentViewportDim};
     m_CurrentCmdBuf.setScissor(0, 1, &sc);
+
+    m_CurrentPipeline = cmd.description.shaderNames;
   }
 
   void CompileContext::compileCommand(const DrawCmd& cmd)
