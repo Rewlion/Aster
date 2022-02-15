@@ -3,6 +3,8 @@
 #include <engine/render/gapi/gapi.h>
 #include <engine/algorithm/hash.h>
 
+#include <engine/time.h>
+
 namespace Engine::Render
 {
   WorldRender world_render;
@@ -25,6 +27,16 @@ namespace Engine::Render
 
     cmdList.push_back(gapi::BindGraphicsPipelineCmd{
       .description = pipeline
+    });
+
+    static float4 color = {1.0,0, 0, 255};
+    color.g += Engine::Time::GetDt();
+    color.g = color.g > 1 ? 0 : color.g;
+
+    cmdList.push_back(gapi::PushConstantsCmd{
+      .data = &color,
+      .size = sizeof(color),
+      .stage = gapi::ShaderStage::Fragment
     });
 
     cmdList.push_back(gapi::DrawCmd{

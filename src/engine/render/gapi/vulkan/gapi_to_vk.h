@@ -99,4 +99,9 @@ namespace gapi::vulkan
   {
     return static_cast<vk::BufferUsageFlagBits>(usage);
   }
+
+  inline vk::ShaderStageFlagBits GetShaderStage(const ShaderStage stage)
+  {
+    return static_cast<vk::ShaderStageFlagBits>(stage);
+  }
 }

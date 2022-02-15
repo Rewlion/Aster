@@ -1,7 +1,8 @@
 #include "compile_context.h"
 
-#include "resources.h"
 #include "device.h"
+#include "gapi_to_vk.h"
+#include "resources.h"
 
 #include <engine/log.h>
 
@@ -110,7 +111,7 @@ namespace gapi::vulkan
     vk::Rect2D sc {{0,0}, m_CurrentViewportDim};
     m_CurrentCmdBuf.setScissor(0, 1, &sc);
 
-    m_CurrentPipeline = cmd.description.shaderNames;
+    m_CurrentPipelineStages = cmd.description.shaderNames;
   }
 
   void CompileContext::compileCommand(const DrawCmd& cmd)
@@ -125,7 +126,9 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const PushConstantsCmd& cmd)
   {
-
+    vk::PipelineLayout layout = m_PipelinesStorage.GetPipelineLayout(m_CurrentPipelineStages);
+    vk::ShaderStageFlagBits stages = GetShaderStage(cmd.stage);
+    m_CurrentCmdBuf.pushConstants(layout, stages, 0 , cmd.size, cmd.data);
   }
 
   void CompileContext::NextFrame()

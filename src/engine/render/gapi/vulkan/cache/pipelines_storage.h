@@ -16,6 +16,7 @@ namespace gapi::vulkan
     public:
       void Init(Device* device);
       vk::Pipeline GetPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass);
+      vk::PipelineLayout GetPipelineLayout(const ShaderStagesNames& stageNames);
 
     private:
 

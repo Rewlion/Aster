@@ -9,8 +9,6 @@
 #include <vulkan/vulkan.hpp>
 #include <EASTL/hash_map.h>
 
-#include <optional>
-
 namespace gapi::vulkan
 {
   class Device;
@@ -38,7 +36,7 @@ namespace gapi::vulkan
 
       const ShaderModule& GetShaderModule(const string_hash name);
 
-      std::optional<vk::PipelineLayout> GetShadersProgramLayout(const ShaderStagesNames& stages);
+      vk::PipelineLayout GetPipelineLayout(const ShaderStagesNames& stages);
 
       void GetShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo);
 

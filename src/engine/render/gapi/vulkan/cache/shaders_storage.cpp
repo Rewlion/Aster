@@ -107,19 +107,26 @@ namespace gapi::vulkan
     return hash;
   }
 
-  std::optional<vk::PipelineLayout> ShadersStorage::GetShadersProgramLayout(const ShaderStagesNames& stages)
+  vk::PipelineLayout ShadersStorage::GetPipelineLayout(const ShaderStagesNames& stages)
   {
     const size_t hash = HashShadersProgram(stages);
     const auto it = m_PipelineLayouts.find(hash);
     if (it != m_PipelineLayouts.end())
       return it->second.get();
 
-    return std::nullopt;
+    string stageDump;
+    for(const auto& stage: stages)
+      stageDump += stage + " ";
+
+    logerror("vulkan: failed to get pipeline layout for {}", stageDump);
+    return {};
   }
 
   void ShadersStorage::GetShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo)
   {
     const ShaderModule* vertexShaderModule = nullptr;
+
+    Utils::FixedStack<vk::PushConstantRange, 2> stagesPushConstants;
 
     for (const auto& shaderName: stages)
     {
@@ -132,6 +139,15 @@ namespace gapi::vulkan
 
       if (sm.metadata.m_Stage == vk::ShaderStageFlagBits::eVertex)
         vertexShaderModule = &sm;
+
+      if (sm.metadata.m_PushConstantsSize != 0)
+      {
+        auto pushConstant = vk::PushConstantRange{};
+        pushConstant.offset = 0;
+        pushConstant.size = sm.metadata.m_PushConstantsSize;
+        pushConstant.stageFlags = sm.metadata.m_Stage;
+        stagesPushConstants.Push(pushConstant);
+      }
     }
 
     programInfo.inputBinding.binding = 0;
@@ -143,9 +159,7 @@ namespace gapi::vulkan
     programInfo.vertexInput.vertexAttributeDescriptionCount = vertexShaderModule->metadata.m_VertexAttributesCount;
     programInfo.vertexInput.pVertexAttributeDescriptions = vertexShaderModule->metadata.m_VertexAttributeDescriptions;
 
-    const uint32_t pushConstantsSize = vertexShaderModule->metadata.m_PushConstantsSize;
-
-    const bool isEmptyLayout = pushConstantsSize == 0;
+    const bool isEmptyLayout = stagesPushConstants.GetSize() == 0;
     const size_t programHash = isEmptyLayout ? EMPTY_PIPELINE_LAYOUT_HASH : HashShadersProgram(stages);
     const auto it = m_PipelineLayouts.find(programHash);
     if (it != m_PipelineLayouts.end())
@@ -155,11 +169,8 @@ namespace gapi::vulkan
     else
     {
       vk::PipelineLayoutCreateInfo layoutCi;
-      layoutCi.pushConstantRangeCount = pushConstantsSize == 0 ? 0 : 1;
-      vk::PushConstantRange pushConstant;
-      pushConstant.offset = 0;
-      pushConstant.size = vertexShaderModule->metadata.m_PushConstantsSize;
-      layoutCi.pPushConstantRanges = &pushConstant;
+      layoutCi.pushConstantRangeCount = stagesPushConstants.GetSize();
+      layoutCi.pPushConstantRanges = stagesPushConstants.GetData();
 
       vk::UniquePipelineLayout uniqueLayout = m_Device->m_Device->createPipelineLayoutUnique(layoutCi);
       programInfo.layout = uniqueLayout.get();

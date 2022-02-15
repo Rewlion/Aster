@@ -34,8 +34,9 @@ namespace gapi
 
   struct PushConstantsCmd
   {
-    void*  data = nullptr;
-    size_t size = 0;
+    void*       data = nullptr;
+    size_t      size = 0;
+    ShaderStage stage = ShaderStage::Vertex;
   };
 
   using Command = std::variant<

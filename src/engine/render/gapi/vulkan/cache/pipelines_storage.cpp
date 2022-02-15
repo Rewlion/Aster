@@ -102,4 +102,9 @@ namespace gapi::vulkan
 
     return pipeline;
   }
+
+  vk::PipelineLayout PipelinesStorage::GetPipelineLayout(const ShaderStagesNames& stageNames)
+  {
+    return m_ShadersStorage.GetPipelineLayout(stageNames);
+  }
 }

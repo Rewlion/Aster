@@ -58,6 +58,6 @@ namespace gapi::vulkan
 
       vk::Extent2D m_CurrentViewportDim = {0,0};
 
-      ShaderStagesNames m_CurrentPipeline;
+      ShaderStagesNames m_CurrentPipelineStages;
   };
 }
