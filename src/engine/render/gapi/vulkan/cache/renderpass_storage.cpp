@@ -25,30 +25,26 @@ namespace gapi::vulkan
 
   vk::UniqueRenderPass RenderPassStorage::CreateRenderPass(const BeginRenderPassCmd& cmd)
   {
-    vk::AttachmentDescription attachments[MAX_RENDER_TARGETS + 1];
-    vk::AttachmentReference attachmentsRef[MAX_RENDER_TARGETS + 1];
+    Utils::FixedStack<vk::AttachmentDescription, MAX_RENDER_TARGETS + 1> attachments;
+    Utils::FixedStack<vk::AttachmentReference, MAX_RENDER_TARGETS + 1> attachmentsRef;
 
     size_t attachmentsCount = 0;
-    for (size_t i = 0; i < MAX_RENDER_TARGETS; ++i)
+    for(const auto& cmdRt: cmd.renderTargets)
     {
-      auto& cmdRt = cmd.renderTargets[i];
-      if (cmdRt.texture != TextureHandler::Invalid)
-      {
-        attachments[i]
-          .setFormat( m_Device->getTextureFormat(cmdRt.texture) )
-          .setLoadOp( loadOpToVk(cmdRt.loadOp) )
-          .setStoreOp( storeOpToVk(cmdRt.storeOp) )
-          .setInitialLayout( vk::ImageLayout::eUndefined )
-          .setFinalLayout( vk::ImageLayout::eColorAttachmentOptimal );
+      attachments.Push(vk::AttachmentDescription{}
+        .setFormat( m_Device->getTextureFormat(cmdRt.texture) )
+        .setLoadOp( loadOpToVk(cmdRt.loadOp) )
+        .setStoreOp( storeOpToVk(cmdRt.storeOp) )
+        .setInitialLayout( vk::ImageLayout::eUndefined )
+        .setFinalLayout( vk::ImageLayout::eColorAttachmentOptimal )
+      );
 
-        attachmentsRef[i]
-          .setAttachment(i)
-          .setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+      attachmentsRef.Push(vk::AttachmentReference{}
+        .setAttachment(attachmentsCount)
+        .setLayout(vk::ImageLayout::eColorAttachmentOptimal)
+      );
 
-        attachmentsCount += 1;
-      }
-      else
-        break;
+      attachmentsCount += 1;
     }
     size_t rtCount = attachmentsCount;
 
@@ -73,26 +69,28 @@ namespace gapi::vulkan
       else
         layout = vk::ImageLayout::eStencilAttachmentOptimal;
 
-      attachments[depthStencilId]
+      attachments.Push(vk::AttachmentDescription{}
         .setFormat( m_Device->getTextureFormat(att.texture) )
         .setLoadOp( loadOpToVk(att.depthLoadOp) )
         .setStoreOp( storeOpToVk(att.depthStoreOp) )
         .setStencilLoadOp( loadOpToVk(att.stencilLoadOp) )
         .setStencilStoreOp( storeOpToVk(att.stencilStoreOp) )
         .setInitialLayout( layout )
-        .setFinalLayout( layout );
+        .setFinalLayout( layout )
+      );
     }
 
     auto subpassDesc = vk::SubpassDescription()
       .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics);
     subpassDesc.colorAttachmentCount = rtCount;
-    subpassDesc.pColorAttachments = attachmentsRef;
-    if (depthStencilId != -1)
-      subpassDesc.pDepthStencilAttachment = &attachmentsRef[depthStencilId];
+    subpassDesc.pColorAttachments = attachmentsRef.GetData();
+
+    if (cmd.depthStencil.texture !=  TextureHandler::Invalid)
+      subpassDesc.pDepthStencilAttachment = &attachmentsRef.GetLast();
 
     auto rpCi = vk::RenderPassCreateInfo{};
     rpCi.attachmentCount = attachmentsCount;
-    rpCi.pAttachments = attachments;
+    rpCi.pAttachments = attachments.GetData();
     rpCi.subpassCount = 1;
     rpCi.pSubpasses = &subpassDesc;
 

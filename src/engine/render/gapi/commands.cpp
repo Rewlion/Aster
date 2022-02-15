@@ -8,9 +8,8 @@ namespace gapi
   {
     using boost::hash_combine;
     size_t hash = 0;
-    for(size_t i = 0; i < MAX_RENDER_TARGETS; ++i)
+    for(const auto& rt: renderTargets)
     {
-      auto& rt = renderTargets[i];
       hash_combine(hash, rt.loadOp);
       hash_combine(hash, rt.storeOp);
     }

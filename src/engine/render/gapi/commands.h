@@ -2,12 +2,14 @@
 
 #include "resources.h"
 
+#include <engine/utils/fixed_stack.hpp>
+
 namespace gapi
 {
 
   struct BeginRenderPassCmd
   {
-    ColorAttachment renderTargets[MAX_RENDER_TARGETS] = { TextureHandler::Invalid };
+    Utils::FixedStack<ColorAttachment, MAX_RENDER_TARGETS> renderTargets;
     DepthStencilAttachment depthStencil;
 
     size_t hash() const;

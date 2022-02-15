@@ -17,16 +17,19 @@ namespace gapi::vulkan
     vk::UniqueFramebuffer fbUnique = createFramebuffer(cmd, rp);
     vk::Framebuffer fb = *fbUnique;
 
-    vk::ClearValue clearValues[MAX_RENDER_TARGETS+1];
+    std::array<uint32_t,4> clearColor{0,0,0,0};
+    Utils::FixedStack<vk::ClearValue, MAX_RENDER_TARGETS+1> clearValues;
     for (size_t i = 0; i < MAX_RENDER_TARGETS; ++i)
-      clearValues[i].setColor(vk::ClearColorValue(std::array<uint32_t,4>{0,0,0,0}));
-    clearValues[MAX_RENDER_TARGETS].setDepthStencil(vk::ClearDepthStencilValue(0,0));
+      clearValues.Push(vk::ClearValue().setColor(vk::ClearColorValue(clearColor)));
+
+    if (cmd.depthStencil.texture != TextureHandler::Invalid)
+      clearValues.Push(vk::ClearValue().setDepthStencil(vk::ClearDepthStencilValue(0,0)));
 
     auto rpBeginInfo = vk::RenderPassBeginInfo();
     rpBeginInfo.renderPass = rp;
     rpBeginInfo.framebuffer = fb;
-    rpBeginInfo.clearValueCount = MAX_RENDER_TARGETS+1;
-    rpBeginInfo.pClearValues = clearValues;
+    rpBeginInfo.clearValueCount = clearValues.GetSize();
+    rpBeginInfo.pClearValues = clearValues.GetData();
     rpBeginInfo.renderArea = vk::Rect2D{ {0,0}, m_CurrentViewportDim };
 
     m_CurrentCmdBuf.beginRenderPass(rpBeginInfo, vk::SubpassContents::eInline);
@@ -39,25 +42,19 @@ namespace gapi::vulkan
 
   vk::UniqueFramebuffer CompileContext::createFramebuffer(const BeginRenderPassCmd& cmd, const vk::RenderPass& rp)
   {
-    vk::ImageView attachments[MAX_RENDER_TARGETS + 1];
+    Utils::FixedStack<vk::ImageView, MAX_RENDER_TARGETS + 1> attachments;
     size_t attachmentsCount = 0;
 
-    for (;attachmentsCount < MAX_RENDER_TARGETS; ++attachmentsCount)
-    {
-      const auto& rt = cmd.renderTargets[attachmentsCount];
-      if (rt.texture != TextureHandler::Invalid)
-        attachments[attachmentsCount] = m_Device->getImageView(rt.texture);
-      else
-        break;
-    }
+    for(const auto& rt: cmd.renderTargets)
+      attachments.Push(m_Device->getImageView(rt.texture));
 
     if (cmd.depthStencil.texture != TextureHandler::Invalid)
-      attachments[attachmentsCount] = m_Device->getImageView(cmd.depthStencil.texture);
+      attachments.Push(m_Device->getImageView(cmd.depthStencil.texture));
 
     auto fbCi = vk::FramebufferCreateInfo();
     fbCi.renderPass = rp;
-    fbCi.attachmentCount = attachmentsCount;
-    fbCi.pAttachments = attachments;
+    fbCi.attachmentCount = attachments.GetSize();
+    fbCi.pAttachments = attachments.GetData();
     fbCi.setWidth(m_CurrentViewportDim.width);
     fbCi.setHeight(m_CurrentViewportDim.height);
     fbCi.layers = 1;
@@ -68,9 +65,8 @@ namespace gapi::vulkan
   void CompileContext::UpdateViewport(const BeginRenderPassCmd& cmd)
   {
     vk::Extent2D min = {(uint32_t)~(0), (uint32_t)~(0)};
-    for (size_t i = 0; i < MAX_RENDER_TARGETS; ++i)
+    for(const auto& rt: cmd.renderTargets)
     {
-      const auto& rt = cmd.renderTargets[i];
       if (rt.texture != TextureHandler::Invalid)
       {
         vk::Extent3D dim = m_Device->GetImageDim(rt.texture);

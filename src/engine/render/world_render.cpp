@@ -14,9 +14,11 @@ namespace Engine::Render
     gapi::CommandList cmdList;
 
     gapi::BeginRenderPassCmd beginPass;
-    beginPass.renderTargets[0].texture = gapi::getCurrentSurfaceRT();
-    beginPass.renderTargets[0].loadOp = gapi::TextureLoadOp::Clear;
-    beginPass.renderTargets[0].storeOp = gapi::TextureStoreOp::Store;
+    beginPass.renderTargets.Push({
+      .texture = gapi::getCurrentSurfaceRT(),
+      .loadOp = gapi::TextureLoadOp::Clear,
+      .storeOp = gapi::TextureStoreOp::Store
+    });
     cmdList.push_back(beginPass);
 
     gapi::GraphicsPipelineDescription pipeline;
