@@ -12,18 +12,25 @@ namespace Engine::Render
   void WorldRender::Init()
   {
     gapi::BufferAllocationDescription ad;
-    ad.size = sizeof(float2) * 4;
+    ad.size = sizeof(float2) * 3;
     ad.usage = gapi::BufferUsage::Vertex;
     m_TestBuffer = gapi::AllocateBuffer(ad);
 
-    float2 vertices[4] = {
+    float2 vertices[3] = {
       float2(0,0),
       float2(0,1),
-      float2(1,0),
-      float2(1,1),
+      float2(1,0)
     };
 
     gapi::CopyToBufferSync((void*)vertices, 0, ad.size, m_TestBuffer);
+    
+    ad = gapi::BufferAllocationDescription{};
+    ad.size = sizeof(gapi::index_type) * 3;
+    ad.usage = gapi::BufferUsage::Index;
+    m_TestIndexBuffer = gapi::AllocateBuffer(ad);
+
+    gapi::index_type indices[3] = {0,1,2};
+    gapi::CopyToBufferSync(indices, 0,  ad.size, m_TestIndexBuffer);
   }
 
   void WorldRender::Render()
@@ -62,9 +69,16 @@ namespace Engine::Render
       .buffer = m_TestBuffer
     });
 
-    cmdList.push_back(gapi::DrawCmd{
-      .vertexCount = 3,
-      .instanceCount = 1
+    cmdList.push_back(gapi::BindIndexBufferCmd{
+      .buffer = m_TestIndexBuffer
+    });
+
+    cmdList.push_back(gapi::DrawIndexedCmd{
+      .indexCount = 3,
+      .instanceCount = 1,
+      .firstIndex = 0,
+      .vertexOffset = 0,
+      .firstInstance = 0
     });
 
     cmdList.push_back(gapi::EndRenderPassCmd{});

@@ -140,6 +140,17 @@ namespace gapi::vulkan
     m_CurrentCmdBuf.bindVertexBuffers(0, 1, &buffer, &offsets);
   }
 
+  void CompileContext::compileCommand(const BindIndexBufferCmd& cmd)
+  {
+    const vk::Buffer buffer = m_Device->GetBuffer(cmd.buffer);
+    m_CurrentCmdBuf.bindIndexBuffer(buffer, 0, vk::IndexType::eUint32);
+  }
+
+  void CompileContext::compileCommand(const DrawIndexedCmd& cmd)
+  {
+    m_CurrentCmdBuf.drawIndexed(cmd.indexCount, cmd.instanceCount, cmd.firstIndex, cmd.vertexOffset, cmd.firstInstance);
+  }
+
   void CompileContext::NextFrame()
   {
     m_CurrentFrame = (m_CurrentFrame + 1) % SWAPCHAIN_IMAGES_COUNT;

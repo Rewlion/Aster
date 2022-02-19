@@ -14,6 +14,8 @@ namespace gapi
   enum class BufferHandler: uint64_t { Invalid = (uint64_t)-1 };
   enum class DepthStencilStateHandler: uint64_t { Invalid = (uint64_t)-1 };
 
+  using index_type = uint32_t;
+
   enum ShaderStage
   {
     Vertex                 = 0x00000001,

@@ -12,6 +12,7 @@ namespace Engine::Render
 
     private:
       gapi::BufferHandler m_TestBuffer;
+      gapi::BufferHandler m_TestIndexBuffer;
   };
 
   extern WorldRender world_render;

@@ -46,6 +46,20 @@ namespace gapi
     BufferHandler buffer;
   };
 
+  struct BindIndexBufferCmd
+  {
+    BufferHandler buffer;
+  };
+
+  struct DrawIndexedCmd
+  {
+    uint32_t indexCount    = 0;
+    uint32_t instanceCount = 0;
+    uint32_t firstIndex    = 0;
+    uint32_t vertexOffset  = 0;
+    uint32_t firstInstance = 0;
+  };
+
   using Command = std::variant<
     BeginRenderPassCmd,
     EndRenderPassCmd,
@@ -53,7 +67,9 @@ namespace gapi
     DrawCmd,
     PresentSurfaceImageCmd,
     PushConstantsCmd,
-    BindVertexBufferCmd
+    BindVertexBufferCmd,
+    BindIndexBufferCmd,
+    DrawIndexedCmd
   >;
   using CommandList = eastl::vector<Command>;
 
