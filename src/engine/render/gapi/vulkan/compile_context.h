@@ -30,6 +30,7 @@ namespace gapi::vulkan
       void compileCommand(const DrawCmd& cmd);
       void compileCommand(const PresentSurfaceImageCmd& cmd);
       void compileCommand(const PushConstantsCmd& cmd);
+      void compileCommand(const BindVertexBufferCmd& cmd);
 
     private:
       vk::UniqueFramebuffer createFramebuffer(const BeginRenderPassCmd& cmd, const vk::RenderPass& rp);

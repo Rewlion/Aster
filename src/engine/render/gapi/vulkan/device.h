@@ -45,7 +45,7 @@ namespace gapi::vulkan
 
       inline vk::Extent2D getSurfaceExtent() const { return m_Swapchain.GetSurfaceExtent(); };
 
-      vk::CommandBuffer allocateGraphicsCmdBuffer();
+      vk::CommandBuffer AllocateGraphicsCmdBuffer();
 
       vk::Format getTextureFormat(const TextureHandler handler);
 
@@ -60,6 +60,17 @@ namespace gapi::vulkan
 
       BufferHandler AllocateBuffer(const BufferAllocationDescription& allocDesc);
 
+      void CopyToBufferSync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer);
+
+      vk::Buffer GetBuffer(const BufferHandler buffer);
+
+    private:
+      Buffer AllocateBufferInternal(const BufferAllocationDescription& allocDesc, const uint32_t memoryIndex);
+      Buffer AllocateStagingBuffer(const size_t size);
+
+      vk::CommandBuffer AllocateCmdBuffer(vk::CommandPool pool);
+      vk::CommandBuffer AllocateTransferCmdBuffer();
+
     private:
       vk::UniqueDevice m_Device;
 
@@ -72,6 +83,7 @@ namespace gapi::vulkan
       vk::Queue m_TransferQueue;
 
       vk::UniqueCommandPool m_GraphicsCmdPool;
+      vk::UniqueCommandPool m_TransferCmdPool;
 
       Utils::FixedPool<Buffer, 1024> m_AllocatedBuffers;
   };

@@ -219,15 +219,16 @@ namespace gapi
     size_t hash() const;
   };
 
-  enum class BufferUsage: uint8_t
+  enum class BufferUsage: uint32_t
   {
-    UniformTexel  = 4,
-    StorageTexel  = 8,
-    UniformBuffer = 10,
-    Storage       = 20,
-    Index         = 40,
-    Vertex        = 80,
-    Indirect      = 100
+    UniformTexel  = 0x4,
+    StorageTexel  = 0x8,
+    UniformBuffer = 0x10,
+    Storage       = 0x20,
+    Index         = 0x40,
+    Vertex        = 0x80,
+    Indirect      = 0x100,
+    Staging       = 0x10000
   };
 
   struct BufferAllocationDescription

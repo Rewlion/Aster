@@ -28,11 +28,13 @@ namespace spirv
     }
   }
 
-  vk::Format getIntegralFormat(const spirv_cross::SPIRType& type)
+  static bool IsVectorType(const spirv_cross::SPIRType& type)
   {
-    const bool isIntegral = spirv_cross::type_is_integral(type);
-    ASSERT(isIntegral);
+    return type.vecsize > 1;
+  }
 
+  static vk::Format GetOneElemFormat(const spirv_cross::SPIRType& type)
+  {
     using spirv_cross::SPIRType;
 
     switch(type.basetype)
@@ -65,9 +67,127 @@ namespace spirv
     }
   }
 
+  static vk::Format GetVectorType(const spirv_cross::SPIRType& type)
+  {
+    using spirv_cross::SPIRType;
+
+    switch(type.vecsize)
+    {
+      case 2:
+      {
+        switch(type.basetype)
+        {
+		      case SPIRType::BaseType::Int:
+          {
+            return vk::Format::eR32G32Sint;
+          }
+		      case SPIRType::BaseType::UInt:
+          {
+            return vk::Format::eR32G32Uint;
+          }
+		      case SPIRType::BaseType::Half:
+          {
+            return vk::Format::eR16G16Sfloat;
+          }
+		      case SPIRType::BaseType::Float:
+          {
+            return vk::Format::eR32G32Sfloat;
+          }
+		      case SPIRType::BaseType::Double:
+          {
+            return vk::Format::eR64G64Sfloat;
+          }
+          default:
+          {
+            ASSERT(!"unknown format");
+            return vk::Format::eUndefined;
+          }
+        }
+      }
+
+      case 3:
+      {
+        switch(type.basetype)
+        {
+		      case SPIRType::BaseType::Int:
+          {
+            return vk::Format::eR32G32B32Sint;
+          }
+		      case SPIRType::BaseType::UInt:
+          {
+            return vk::Format::eR32G32B32Uint;
+          }
+		      case SPIRType::BaseType::Half:
+          {
+            return vk::Format::eR16G16B16Sfloat;
+          }
+		      case SPIRType::BaseType::Float:
+          {
+            return vk::Format::eR32G32B32Sfloat;
+          }
+		      case SPIRType::BaseType::Double:
+          {
+            return vk::Format::eR64G64B64Sfloat;
+          }
+          default:
+          {
+            ASSERT(!"unknown format");
+            return vk::Format::eUndefined;
+          }
+        }
+      }
+
+      case 4:
+      {
+        switch(type.basetype)
+        {
+		      case SPIRType::BaseType::Int:
+          {
+            return vk::Format::eR32G32B32A32Sint;
+          }
+		      case SPIRType::BaseType::UInt:
+          {
+            return vk::Format::eR32G32B32A32Uint;
+          }
+		      case SPIRType::BaseType::Half:
+          {
+            return vk::Format::eR16G16B16A16Sfloat;
+          }
+		      case SPIRType::BaseType::Float:
+          {
+            return vk::Format::eR32G32B32A32Sfloat;
+          }
+		      case SPIRType::BaseType::Double:
+          {
+            return vk::Format::eR64G64B64A64Sfloat;
+          }
+          default:
+          {
+            ASSERT(!"unknown format");
+            return vk::Format::eUndefined;
+          }
+        }
+      }
+
+      default:
+      {
+        ASSERT(!"unknown format");
+        return vk::Format::eUndefined;
+      }
+    }
+  }
+
+  static vk::Format getFormat(const spirv_cross::SPIRType& type)
+  {
+    if (IsVectorType(type))
+      return GetVectorType(type);
+
+    return GetOneElemFormat(type);
+  }
+
   uint32_t getAttributeSize(const spirv_cross::SPIRType& type)
   {
-    return type.width * type.vecsize;
+    return type.width / 4;
   }
 
   ParsedSpirv::ParsedSpirv(const eastl::vector<char>& binary)
@@ -95,13 +215,15 @@ namespace spirv
         const spirv_cross::Resource& input = resources.stage_inputs[i];
         const spirv_cross::SPIRType& type = glsl.get_type(input.type_id);
 
-        vk::VertexInputAttributeDescription& attr = m_VertexAttributeDescriptions[i];
+        vk::VertexInputAttributeDescription attr;
         attr.location = glsl.get_decoration(input.id, spv::Decoration::DecorationLocation);
-        attr.format = getIntegralFormat(type);
+        attr.format = getFormat(type);
         attr.offset = attributeOffset;
         attr.binding = 0;
 
         attributeOffset += getAttributeSize(type);
+
+        m_VertexAttributeDescriptions.Push(attr);
       }
       m_VertexStride = attributeOffset;
 

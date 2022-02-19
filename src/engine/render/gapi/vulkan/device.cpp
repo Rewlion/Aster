@@ -3,6 +3,9 @@
 #include "gapi_to_vk.h"
 
 #include <engine/assert.h>
+#include <engine/log.h>
+
+#include <cstring>
 
 namespace gapi::vulkan
 {
@@ -26,17 +29,23 @@ namespace gapi::vulkan
     m_GraphicsQueue = m_Device->getQueue(ci.queueIndices.graphics, 0);
     m_TransferQueue = m_Device->getQueue(ci.queueIndices.transfer, 0);
 
-    const auto cmdPoolCreateInfo = vk::CommandPoolCreateInfo()
-      .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
-      .setQueueFamilyIndex(ci.queueIndices.graphics);
+    const auto createPool = [this](const uint32_t index)
+                            {
+                              const auto cmdPoolCreateInfo = vk::CommandPoolCreateInfo()
+                                .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
+                                .setQueueFamilyIndex(index);
 
-    m_GraphicsCmdPool = m_Device->createCommandPoolUnique(cmdPoolCreateInfo);
+                              return m_Device->createCommandPoolUnique(cmdPoolCreateInfo);
+                            };
+
+    m_GraphicsCmdPool = createPool(ci.queueIndices.graphics);
+    m_TransferCmdPool = createPool(ci.queueIndices.transfer);
   }
 
-  vk::CommandBuffer Device::allocateGraphicsCmdBuffer()
+  vk::CommandBuffer Device::AllocateCmdBuffer(vk::CommandPool pool)
   {
     const auto allocInfo = vk::CommandBufferAllocateInfo()
-      .setCommandPool(*m_GraphicsCmdPool)
+      .setCommandPool(pool)
       .setLevel(vk::CommandBufferLevel::ePrimary)
       .setCommandBufferCount(1);
 
@@ -48,6 +57,16 @@ namespace gapi::vulkan
     );
 
     return cmdBuf;
+  }
+
+  vk::CommandBuffer Device::AllocateGraphicsCmdBuffer()
+  {
+    return AllocateCmdBuffer(*m_GraphicsCmdPool);
+  }
+
+  vk::CommandBuffer Device::AllocateTransferCmdBuffer()
+  {
+    return AllocateCmdBuffer(*m_TransferCmdPool);
   }
 
   vk::Format Device::getTextureFormat(const TextureHandler handler)
@@ -93,7 +112,7 @@ namespace gapi::vulkan
 
   void Device::TransitSurfaceImageForPresent()
   {
-    auto cmdBuf = allocateGraphicsCmdBuffer();
+    auto cmdBuf = AllocateGraphicsCmdBuffer();
 
     vk::ImageSubresourceRange subresourceRange;
     subresourceRange.baseMipLevel = 0;
@@ -136,13 +155,18 @@ namespace gapi::vulkan
 
   BufferHandler Device::AllocateBuffer(const BufferAllocationDescription& allocDesc)
   {
+    Buffer buffer = AllocateBufferInternal(allocDesc, m_MemoryIndices.deviceLocalMemory);
+
+    size_t id = (size_t)(~0);
+    const bool allocated = m_AllocatedBuffers.Add(std::move(buffer), id);
+
+    ASSERT(allocated);
+    return (BufferHandler)id;
+  }
+
+  Buffer Device::AllocateBufferInternal(const BufferAllocationDescription& allocDesc, const uint32_t memoryIndex)
+  {
     Buffer b;
-
-    vk::MemoryAllocateInfo allocInfo;
-    allocInfo.allocationSize = allocDesc.size;
-    allocInfo.memoryTypeIndex = m_MemoryIndices.deviceLocalMemory;
-
-    b.memory = m_Device->allocateMemoryUnique(allocInfo);
 
     vk::BufferCreateInfo bufferCi;
     bufferCi.usage = GetBufferUsage(allocDesc.usage);
@@ -150,13 +174,69 @@ namespace gapi::vulkan
     bufferCi.sharingMode = vk::SharingMode::eExclusive;
 
     b.buffer = m_Device->createBufferUnique(bufferCi);
+    const vk::MemoryRequirements memRec = m_Device->getBufferMemoryRequirements(b.buffer.get());
 
-    size_t id = (size_t)(~0);
-    const bool allocated = m_AllocatedBuffers.Add(std::move(b), id);
+    vk::MemoryAllocateInfo allocInfo;
+    allocInfo.allocationSize = memRec.size;
+    allocInfo.memoryTypeIndex = memoryIndex;
+
+    b.memory = m_Device->allocateMemoryUnique(allocInfo);
 
     m_Device->bindBufferMemory(b.buffer.get(), b.memory.get(), 0);
 
-    ASSERT(allocated);
-    return (BufferHandler)id;
+    return b;
+  }
+
+  Buffer Device::AllocateStagingBuffer(const size_t size)
+  {
+    BufferAllocationDescription allocDesc;
+    allocDesc.size = size;
+    allocDesc.usage = gapi::BufferUsage::Staging;
+    return AllocateBufferInternal(allocDesc, m_MemoryIndices.stagingMemory);
+  }
+
+  void Device::CopyToBufferSync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer)
+  {
+    const size_t id = (size_t)buffer;
+    if (!m_AllocatedBuffers.Contains(id))
+    {
+      logerror("vulkan: CopyToBufferSync: buffer({}) not allocated", id);
+      return;
+    }
+
+    Buffer stagingBuf = AllocateStagingBuffer(size);
+    void* mappedMemory = nullptr;
+
+    ASSERT(vk::Result::eSuccess == m_Device->mapMemory(stagingBuf.memory.get(), 0, size, vk::MemoryMapFlagBits{}, &mappedMemory));
+    std::memcpy(mappedMemory, src, size);
+    m_Device->unmapMemory(stagingBuf.memory.get());
+
+    const Buffer& toBuf = m_AllocatedBuffers.Get(id);
+
+    const vk::CommandBuffer cmdBuf = AllocateTransferCmdBuffer();
+    vk::BufferCopy region;
+    region.size = size;
+    region.srcOffset = 0;
+    region.dstOffset = offset;
+    cmdBuf.copyBuffer(stagingBuf.buffer.get(), toBuf.buffer.get(), 1, &region);
+
+    cmdBuf.end();
+
+    vk::SubmitInfo submitInfo;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &cmdBuf;
+
+    vk::UniqueFence fence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
+    ASSERT(vk::Result::eSuccess == m_Device->resetFences(1, &fence.get()));
+
+    ASSERT(vk::Result::eSuccess == m_TransferQueue.submit(1, &submitInfo, fence.get()));
+
+    ASSERT(vk::Result::eSuccess == m_Device->waitForFences(1, &fence.get(), true, ~0));
+  }
+
+  vk::Buffer Device::GetBuffer(const BufferHandler buffer)
+  {
+    const size_t id = (size_t)buffer;
+    return m_AllocatedBuffers.Get(id).buffer.get();
   }
 }

@@ -9,6 +9,23 @@ namespace Engine::Render
 {
   WorldRender world_render;
 
+  void WorldRender::Init()
+  {
+    gapi::BufferAllocationDescription ad;
+    ad.size = sizeof(float2) * 4;
+    ad.usage = gapi::BufferUsage::Vertex;
+    m_TestBuffer = gapi::AllocateBuffer(ad);
+
+    float2 vertices[4] = {
+      float2(0,0),
+      float2(0,1),
+      float2(1,0),
+      float2(1,1),
+    };
+
+    gapi::CopyToBufferSync((void*)vertices, 0, ad.size, m_TestBuffer);
+  }
+
   void WorldRender::Render()
   {
     gapi::CommandList cmdList;
@@ -39,6 +56,10 @@ namespace Engine::Render
       .data = &color,
       .size = sizeof(color),
       .stage = gapi::ShaderStage::Fragment
+    });
+
+    cmdList.push_back(gapi::BindVertexBufferCmd{
+      .buffer = m_TestBuffer
     });
 
     cmdList.push_back(gapi::DrawCmd{

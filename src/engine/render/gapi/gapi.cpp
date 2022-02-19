@@ -12,6 +12,7 @@ namespace gapi
   TextureHandler (*gapiGetCurrentSurfaceRT)();
   DepthStencilStateHandler (*gapiCreateDepthStencilState)(const DepthStencilStateDescription& desc);
   BufferHandler (*gapiAllocateBuffer)(const BufferAllocationDescription&);
+  void (*gapiCopyToBufferSync)(const void* src, const size_t offset, const size_t size, const BufferHandler buffer);
 
   void init()
   {
@@ -40,5 +41,10 @@ namespace gapi
   BufferHandler AllocateBuffer(const BufferAllocationDescription& allocDesc)
   {
     return gapiAllocateBuffer(allocDesc);
+  }
+
+  void CopyToBufferSync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer)
+  {
+    gapiCopyToBufferSync(src, offset, size, buffer);
   }
 }

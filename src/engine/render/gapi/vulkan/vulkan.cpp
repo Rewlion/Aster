@@ -15,6 +15,7 @@ namespace gapi
   extern void (*gapiSubmitCommands)(CommandList&& cmds);
   extern TextureHandler (*gapiGetCurrentSurfaceRT)();
   extern BufferHandler (*gapiAllocateBuffer)(const BufferAllocationDescription&);
+  extern void (*gapiCopyToBufferSync)(const void* src, const size_t offset, const size_t size, const BufferHandler buffer);
 }
 
 namespace gapi::vulkan
@@ -55,10 +56,17 @@ namespace gapi::vulkan
     return device.AllocateBuffer(allocDesc);
   }
 
+  void CopyToBufferSync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer)
+  {
+    device.CopyToBufferSync(src, offset, size, buffer);
+  }
+
   void init()
   {
     gapiSubmitCommands = submitCommands;
     gapiGetCurrentSurfaceRT = getCurrentSurfaceRT;
+    gapiAllocateBuffer = AllocateBuffer;
+    gapiCopyToBufferSync = CopyToBufferSync;
 
     backend.Init();
     device = backend.CreateDevice();

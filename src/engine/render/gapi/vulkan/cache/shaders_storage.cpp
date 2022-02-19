@@ -156,8 +156,8 @@ namespace gapi::vulkan
 
     programInfo.vertexInput.vertexBindingDescriptionCount = vertexShaderModule->metadata.m_HasInput ? 1 : 0;
     programInfo.vertexInput.pVertexBindingDescriptions = &programInfo.inputBinding;
-    programInfo.vertexInput.vertexAttributeDescriptionCount = vertexShaderModule->metadata.m_VertexAttributesCount;
-    programInfo.vertexInput.pVertexAttributeDescriptions = vertexShaderModule->metadata.m_VertexAttributeDescriptions;
+    programInfo.vertexInput.vertexAttributeDescriptionCount = vertexShaderModule->metadata.m_VertexAttributeDescriptions.GetSize();
+    programInfo.vertexInput.pVertexAttributeDescriptions = vertexShaderModule->metadata.m_VertexAttributeDescriptions.GetData();
 
     const bool isEmptyLayout = stagesPushConstants.GetSize() == 0;
     const size_t programHash = isEmptyLayout ? EMPTY_PIPELINE_LAYOUT_HASH : HashShadersProgram(stages);

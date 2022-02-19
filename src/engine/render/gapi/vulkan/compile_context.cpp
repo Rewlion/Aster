@@ -10,7 +10,7 @@ namespace gapi::vulkan
 {
   void CompileContext::compileCommand(const BeginRenderPassCmd& cmd)
   {
-    m_CurrentCmdBuf = m_Device->allocateGraphicsCmdBuffer();
+    m_CurrentCmdBuf = m_Device->AllocateGraphicsCmdBuffer();
     UpdateViewport(cmd);
 
     vk::RenderPass rp = m_RenderPassStorage.GetRenderPass(cmd);
@@ -123,8 +123,21 @@ namespace gapi::vulkan
   void CompileContext::compileCommand(const PushConstantsCmd& cmd)
   {
     vk::PipelineLayout layout = m_PipelinesStorage.GetPipelineLayout(m_CurrentPipelineStages);
+    if (layout == vk::PipelineLayout{})
+    {
+      logerror("vulkan: can't push constants: pipeline layout not found.");
+      return;
+    }
+
     vk::ShaderStageFlagBits stages = GetShaderStage(cmd.stage);
     m_CurrentCmdBuf.pushConstants(layout, stages, 0 , cmd.size, cmd.data);
+  }
+
+  void CompileContext::compileCommand(const BindVertexBufferCmd& cmd)
+  {
+    const vk::Buffer buffer = m_Device->GetBuffer(cmd.buffer);
+    vk::DeviceSize offsets = {0};
+    m_CurrentCmdBuf.bindVertexBuffers(0, 1, &buffer, &offsets);
   }
 
   void CompileContext::NextFrame()

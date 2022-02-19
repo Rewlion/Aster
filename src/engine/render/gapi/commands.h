@@ -41,13 +41,19 @@ namespace gapi
     ShaderStage stage = ShaderStage::Vertex;
   };
 
+  struct BindVertexBufferCmd
+  {
+    BufferHandler buffer;
+  };
+
   using Command = std::variant<
     BeginRenderPassCmd,
     EndRenderPassCmd,
     BindGraphicsPipelineCmd,
     DrawCmd,
     PresentSurfaceImageCmd,
-    PushConstantsCmd
+    PushConstantsCmd,
+    BindVertexBufferCmd
   >;
   using CommandList = eastl::vector<Command>;
 

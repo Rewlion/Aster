@@ -38,6 +38,16 @@ namespace Utils
       return true;
     }
 
+    inline bool Contains(const size_t id)
+    {
+       return m_BitCapacity.IsSet(id);
+    }
+
+    inline T& Get(const size_t id)
+    {
+      return m_Values[id];
+    }
+
     private:
       inline size_t AcquireFreePosition()
       {

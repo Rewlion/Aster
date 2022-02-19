@@ -95,9 +95,24 @@ namespace gapi::vulkan
     return ret;
   }
 
-  inline vk::BufferUsageFlagBits GetBufferUsage(const BufferUsage usage)
+  inline vk::BufferUsageFlags GetBufferUsage(const BufferUsage usage)
   {
-    return static_cast<vk::BufferUsageFlagBits>(usage);
+    vk::BufferUsageFlags bits = static_cast<vk::BufferUsageFlagBits>(usage);
+    switch(usage)
+    {
+      case BufferUsage::Staging:
+      {
+        bits = vk::BufferUsageFlagBits::eTransferSrc;
+        break;
+      }
+      case BufferUsage::Vertex:
+      case BufferUsage::Index:
+      {
+        bits |= vk::BufferUsageFlagBits::eTransferDst;
+        break;
+      }
+    }
+    return bits;
   }
 
   inline vk::ShaderStageFlagBits GetShaderStage(const ShaderStage stage)

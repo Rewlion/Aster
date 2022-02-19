@@ -28,6 +28,8 @@ namespace Engine
 
     ECS::InitEcsFromSettings();
     LoadLevel( Engine::GetAppSettings()->GetText("init_level") );
+
+    Render::world_render.Init();
   }
 
   void StartTick()
