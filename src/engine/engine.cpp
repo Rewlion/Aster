@@ -1,5 +1,6 @@
 #include "engine.h"
 
+#include <engine/assets/assets_manager.h>
 #include <engine/ecs/archetype.h>
 #include <engine/ecs/components.h>
 #include <engine/ecs/components_accessor.h>
@@ -24,6 +25,7 @@ namespace Engine
     Window::InitWindow();
 
     gapi::init();
+    assets_manager.Init();
     Input::manager.Init();
 
     ECS::InitEcsFromSettings();
