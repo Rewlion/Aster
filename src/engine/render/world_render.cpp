@@ -1,8 +1,9 @@
 #include "world_render.h"
 
-#include <engine/render/gapi/gapi.h>
 #include <engine/algorithm/hash.h>
-
+#include <engine/assets/assets_manager.h>
+#include <engine/log.h>
+#include <engine/render/gapi/gapi.h>
 #include <engine/time.h>
 
 namespace Engine::Render
@@ -23,7 +24,7 @@ namespace Engine::Render
     };
 
     gapi::CopyToBufferSync((void*)vertices, 0, ad.size, m_TestBuffer);
-    
+
     ad = gapi::BufferAllocationDescription{};
     ad.size = sizeof(gapi::index_type) * 3;
     ad.usage = gapi::BufferUsage::Index;
@@ -65,21 +66,31 @@ namespace Engine::Render
       .stage = gapi::ShaderStage::Fragment
     });
 
-    cmdList.push_back(gapi::BindVertexBufferCmd{
-      .buffer = m_TestBuffer
-    });
+    StaticModelAsset asset;
+    if (!assets_manager.GetStaticModel(str_hash("bin/assets/cube/cube.gltf"), asset))
+    {
+      logerror("failed to get asset");
+      return;
+    }
 
-    cmdList.push_back(gapi::BindIndexBufferCmd{
-      .buffer = m_TestIndexBuffer
-    });
+    for(const auto& submesh: asset.submeshes)
+    {
+      cmdList.push_back(gapi::BindVertexBufferCmd{
+       .buffer = submesh.vertexBuffer
+      });
 
-    cmdList.push_back(gapi::DrawIndexedCmd{
-      .indexCount = 3,
-      .instanceCount = 1,
-      .firstIndex = 0,
-      .vertexOffset = 0,
-      .firstInstance = 0
-    });
+      cmdList.push_back(gapi::BindIndexBufferCmd{
+        .buffer = submesh.indexBuffer
+      });
+
+      cmdList.push_back(gapi::DrawIndexedCmd{
+        .indexCount = submesh.indexCount,
+        .instanceCount = 1,
+        .firstIndex = 0,
+        .vertexOffset = 0,
+        .firstInstance = 0
+      });
+    }
 
     cmdList.push_back(gapi::EndRenderPassCmd{});
     cmdList.push_back(gapi::PresentSurfaceImageCmd{});

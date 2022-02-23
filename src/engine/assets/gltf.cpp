@@ -2,7 +2,6 @@
 
 #include "assets_manager.h"
 
-#include <engine/algorithm/hash.h>
 #include <engine/assert.h>
 #include <engine/log.h>
 
@@ -264,6 +263,7 @@ namespace Engine
 
       gapi::CopyToBufferSync(vertices.data(), 0, vertices.size() * sizeof(vertices[0]), submesh.vertexBuffer);
       gapi::CopyToBufferSync(indices.data(), 0, indices.size() * sizeof(indices[0]), submesh.indexBuffer);
+      submesh.indexCount = indices.size();
 
       asset.submeshes.Push(submesh);
     }
@@ -271,15 +271,8 @@ namespace Engine
     return asset;
   }
 
-  void AssetsManager::LoadGltf(const string& file)
+  StaticModelAsset AssetsManager::LoadGltf(const string& file)
   {
-    const string_hash fileHash = str_hash(file.c_str());
-    if (m_StaticModels.find(fileHash) != m_StaticModels.end())
-    {
-      logerror("asset manager: failed to load new gltf asset. `{}:{}` has hash collision with already loaded file.", file.c_str(), fileHash);
-      return;
-    }
-
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
     string err;
@@ -297,10 +290,6 @@ namespace Engine
       ASSERT(!"asset manager: failed to load asset");
 
     StaticModelAsset asset = ProcessModel(model);
-
-    m_StaticModels.insert({
-      fileHash,
-      asset
-    });
+    return asset;
   }
 }

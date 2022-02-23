@@ -7,7 +7,10 @@ struct PushConstants
 
 struct VsInput
 {
-  float2 pos: POSITION0;
+  float3 pos: POSITION0;
+  float2 uv: TEXCOORD0;
+  float3 tan: TEXCOORD1;
+  float3 bitan: TEXCOORD2;
 };
 
 struct VsOutput
@@ -18,7 +21,7 @@ struct VsOutput
 VsOutput vs_main(VsInput input)
 {
   VsOutput output;
-  output.pos = float4(input.pos, 0.0, 1.0);
+  output.pos = float4(input.pos, 1.0);
 
   return output;
 }

@@ -12,6 +12,7 @@ namespace Engine
   {
     gapi::BufferHandler vertexBuffer;
     gapi::BufferHandler indexBuffer;
+    gapi::index_type    indexCount = 0;
   };
 
   struct StaticModelAsset
@@ -26,10 +27,12 @@ namespace Engine
     public:
       void Init();
 
+      bool GetStaticModel(const string_hash assetUri, StaticModelAsset& asset);
+
     private:
       void LoadAssetsFromFs();
       void LoadAsset(const string& file);
-      void LoadGltf(const string& file);
+      StaticModelAsset LoadGltf(const string& file);
     private:
       eastl::hash_map<string_hash, StaticModelAsset> m_StaticModels;
   };
