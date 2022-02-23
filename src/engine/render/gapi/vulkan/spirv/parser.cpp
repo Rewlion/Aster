@@ -187,7 +187,7 @@ namespace spirv
 
   uint32_t getAttributeSize(const spirv_cross::SPIRType& type)
   {
-    return type.width / 4;
+    return (type.width / 8) * type.vecsize * type.columns;
   }
 
   ParsedSpirv::ParsedSpirv(const eastl::vector<char>& binary)
