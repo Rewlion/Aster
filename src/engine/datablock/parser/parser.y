@@ -82,6 +82,7 @@
 %type <configNode> CONFIG;
 %type <paramListNode> PARAM_LIST;
 %type <paramListNode> ANNOTATED_PARAM;
+%type <sval> PARAM_NAME;
 %type <blockNode> BLOCK;
 %type <attributeNode> ATTRIBUTE;
 %type <f4val> ROW4;
@@ -107,12 +108,12 @@ PARAM_LIST
   ;
 
 ANNOTATED_PARAM
-  : NAME_VAL[name] "@" "(" TEXT_VAL[a] ")" BLOCK[block] {
+  : PARAM_NAME[name] "@" "(" TEXT_VAL[a] ")" BLOCK[block] {
     $$ = $block;
     $$->name = $name; free($name);
     $$->annotation = $a;
   }
-  | NAME_VAL[name] BLOCK[block] {
+  | PARAM_NAME[name] BLOCK[block] {
     $$ = $block;
     $$->name = $name; free($name);
   }
@@ -136,7 +137,7 @@ BLOCK
   ;
 
 ATTRIBUTE
-  : ATTRIBUTE_TYPE[type] NAME_VAL[name] "=" ATTRIBUTE_VALUE[value] {
+  : ATTRIBUTE_TYPE[type] PARAM_NAME[name] "=" ATTRIBUTE_VALUE[value] {
     auto valueType = $value->GetType();
     if ( $type == valueType )
     {
@@ -160,6 +161,11 @@ ATTRIBUTE
       yyerror(nullptr, buffer);
     }
   }
+  ;
+
+PARAM_NAME
+  : NAME_VAL[name] { $$ = $name; }
+  | TEXT_VAL[name] { $$ = $name; }
   ;
 
 ATTRIBUTE_TYPE
