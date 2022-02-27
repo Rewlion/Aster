@@ -1,4 +1,4 @@
-#include "parser.h"
+#include "spirv.h"
 
 #include <engine/log.h>
 #include <engine/assert.h>
@@ -190,10 +190,12 @@ namespace spirv
     return (type.width / 8) * type.vecsize * type.columns;
   }
 
-  ParsedSpirv::ParsedSpirv(const eastl::vector<char>& binary)
+  Reflection Reflect(const eastl::vector<char>& spirv)
   {
-    const uint32_t* code = reinterpret_cast<const uint32_t*>(binary.data());
-    const size_t wordsCount = binary.size() / sizeof(uint32_t);
+    Reflection ret;
+
+    const uint32_t* code = reinterpret_cast<const uint32_t*>(spirv.data());
+    const size_t wordsCount = spirv.size() / sizeof(uint32_t);
 
     spirv_cross::CompilerGLSL glsl{code, wordsCount};
 
@@ -202,12 +204,12 @@ namespace spirv
       logwarn("shader has more than one entry point, using the first one.");
 
     const spirv_cross::EntryPoint entryPoint = entryPoints[0];
-    m_EntryPoint = entryPoint.name;
-    m_Stage = getShaderStage(entryPoint);
+    std::snprintf(ret.entryName, SHADERS_STAGE_NAME_LEN, "%s", entryPoint.name.c_str());
+    ret.stage = getShaderStage(entryPoint);
 
     const spirv_cross::ShaderResources resources = glsl.get_shader_resources();
 
-    if (m_Stage == vk::ShaderStageFlagBits::eVertex)
+    if (ret.stage == vk::ShaderStageFlagBits::eVertex)
     {
       size_t attributeOffset = 0;
       for(size_t i = 0; i < resources.stage_inputs.size(); ++i)
@@ -223,11 +225,9 @@ namespace spirv
 
         attributeOffset += getAttributeSize(type);
 
-        m_VertexAttributeDescriptions.Push(attr);
+        ret.inputAssembly.attributes.Push(attr);
       }
-      m_VertexStride = attributeOffset;
-
-      m_HasInput = m_VertexStride > 0;
+      ret.inputAssembly.stride = attributeOffset;
     }
 
     if (!resources.push_constant_buffers.empty())
@@ -235,7 +235,9 @@ namespace spirv
       const spirv_cross::Resource& constants = resources.push_constant_buffers[0];
       const spirv_cross::SPIRType& type = glsl.get_type(constants.type_id);
 
-      m_PushConstantsSize = glsl.get_declared_struct_size(type);
+      ret.pushConstantsSize = glsl.get_declared_struct_size(type);
     }
+
+    return ret;
   }
 }

@@ -36,6 +36,20 @@ namespace gapi
     Mesh                   = 0x00000080
   };
 
+  static string ShaderStageToText(const ShaderStage stage)
+  {
+    switch (stage)
+    {
+      case ShaderStage::Vertex: return "Vertex";
+      case ShaderStage::Fragment:  return "Fragment";
+      case ShaderStage::TessellationControl:  return "TessellationControl";
+      case ShaderStage::TessellationEvaluation:  return "TessellationEvaluation";
+      case ShaderStage::Geometry:  return "Geometry";
+      case ShaderStage::Compute:  return "Compute";
+      default: return "";
+    }
+  }
+
   enum class TextureLoadOp
   {
     Load     = 0,

@@ -8,6 +8,8 @@
 
 namespace spirv
 {
+  constexpr uint64_t SHADERS_STAGE_NAME_LEN = 128;
+
   struct ParsedSpirv
   {
       ParsedSpirv() = default;
@@ -23,4 +25,20 @@ namespace spirv
 
       uint32_t m_PushConstantsSize = 0;
   };
+
+  struct InputAssembly
+  {
+    uint32_t stride;
+    Utils::FixedStack<vk::VertexInputAttributeDescription,32> attributes;
+  };
+
+  struct Reflection
+  {
+    char                    entryName[SHADERS_STAGE_NAME_LEN];
+    vk::ShaderStageFlagBits stage;
+    InputAssembly           inputAssembly;
+    uint32_t                pushConstantsSize = 0;
+  };
+
+  Reflection Reflect(const eastl::vector<char>& spirv);
 }

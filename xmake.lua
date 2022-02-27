@@ -24,13 +24,15 @@ add_includedirs(
   "deps/boost-1.77/include",
   "deps/vulkan-1.2.198.1/include",
   "deps/SPIRV-Cross-moltenvk_1.1.5/include",
-  "deps/tinygltf-2.5.0/include"
+  "deps/tinygltf-2.5.0/include",
+  "deps/dxc-1.7.0/include"
 )
 
 if is_arch("x64") and is_os("windows") then
     add_linkdirs(
       "deps/eastl-3.17.06/win64",
-      "deps/vulkan-1.2.198.1/win64"
+      "deps/vulkan-1.2.198.1/win64",
+      "deps/boost-1.77/win64"
     )
     add_defines("PLATFORM_WIN64")
 end
@@ -92,4 +94,11 @@ target("blk-test")
   set_kind("binary")
   add_deps("engine")
   add_files("src/test/datablock/main.cpp")
-  
+
+target("shaders_compiler")
+  set_kind("binary")
+  add_links("dxcompiler")
+  add_files("src/engine/shaders_compiler/*.cpp")
+  add_deps("engine")
+  set_suffixname("-$(mode)")
+  set_targetdir("/tools")

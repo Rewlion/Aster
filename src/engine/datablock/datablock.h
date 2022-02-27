@@ -82,6 +82,8 @@ public:
     return m_Attributes;
   }
 
+  bool IsEmpty() const;
+
 private:
   string m_Name;
   string m_Annotation;

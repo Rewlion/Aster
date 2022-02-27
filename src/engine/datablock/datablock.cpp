@@ -178,3 +178,8 @@ string DataBlock::GetText(const string& name, const string& def) const
 
   return def;
 }
+
+bool DataBlock::IsEmpty() const
+{
+  return this == &EMPTY_BLOCK;
+}
