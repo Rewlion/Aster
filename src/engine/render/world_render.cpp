@@ -3,8 +3,11 @@
 #include <engine/algorithm/hash.h>
 #include <engine/assets/assets_manager.h>
 #include <engine/log.h>
+#include <engine/math.h>
 #include <engine/render/gapi/gapi.h>
 #include <engine/time.h>
+
+#include <glm/gtx/transform.hpp>
 
 namespace Engine::Render
 {
@@ -56,14 +59,14 @@ namespace Engine::Render
       .description = pipeline
     });
 
-    static float4 color = {1.0,0, 0, 255};
-    color.g += Engine::Time::GetDt();
-    color.g = color.g > 1 ? 0 : color.g;
+    mat4 mvp = mat4{1};
+    mvp = glm::translate(mvp, float3{0,0, 5});
+    mvp = math::Perspective(90, 3.0f/4.0f, 0.1, 100) * mvp;
 
     cmdList.push_back(gapi::PushConstantsCmd{
-      .data = &color,
-      .size = sizeof(color),
-      .stage = gapi::ShaderStage::Fragment
+      .data = &mvp,
+      .size = sizeof(mvp),
+      .stage = gapi::ShaderStage::Vertex
     });
 
     StaticModelAsset asset;

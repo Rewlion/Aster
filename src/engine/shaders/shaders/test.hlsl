@@ -1,6 +1,6 @@
 struct PushConstants
 {
-  float4 color;
+  float4x4 mvp;
 };
 
 [[vk::push_constant]] PushConstants consts;
@@ -21,12 +21,12 @@ struct VsOutput
 VsOutput vs_main(VsInput input)
 {
   VsOutput output;
-  output.pos = float4(input.pos, 1.0);
+  output.pos = mul(consts.mvp, float4(input.pos, 1.0));
 
   return output;
 }
 
 float4 ps_main(VsOutput input): SV_Target0
 {
-  return consts.color;
+  return float4(1, 1, 0, 1);
 }
