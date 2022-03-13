@@ -14,7 +14,8 @@ namespace gapi::vulkan
   enum class TextureType: uint8_t
   {
     None      = 0,
-    SurfaceRT = 1
+    SurfaceRT = 1,
+    Allocated = 2
   };
 
   struct TextureHandlerInternal
@@ -56,6 +57,21 @@ namespace gapi::vulkan
   {
     vk::UniqueBuffer buffer;
     vk::UniqueDeviceMemory memory;
+  };
+
+  struct Texture
+  {
+    vk::UniqueImage img;
+    vk::UniqueDeviceMemory memory;
+    vk::UniqueImageView view;
+
+    vk::ImageLayout currentLayout = vk::ImageLayout::eUndefined;
+    int3 size = {0,0,0};
+  };
+
+  struct Sampler
+  {
+    vk::UniqueSampler sampler;
   };
 
   inline vk::AttachmentLoadOp loadOpToVk(const TextureLoadOp op)

@@ -35,6 +35,9 @@ namespace Engine::Render
 
     gapi::index_type indices[3] = {0,1,2};
     gapi::CopyToBufferSync(indices, 0,  ad.size, m_TestIndexBuffer);
+
+    gapi::SamplerAllocationDescription samplerAllocDesc;
+    m_TestSampler = gapi::AllocateSampler(samplerAllocDesc);
   }
 
   void WorldRender::Render()
@@ -75,6 +78,25 @@ namespace Engine::Render
       logerror("failed to get asset");
       return;
     }
+
+    TextureAsset texture;
+    if (!assets_manager.GetTexture(str_hash("bin/assets/cube/container.ktx"), texture))
+    {
+      logerror("failed to get asset");
+      return;
+    }
+
+    cmdList.push_back(gapi::BindTextureCmd{
+      .texture = texture.texture,
+      .argument = 0,
+      .binding = 0
+    });
+
+    cmdList.push_back(gapi::BindSamplerCmd{
+      .sampler = m_TestSampler,
+      .argument = 0,
+      .binding = 1
+    });
 
     for(const auto& submesh: asset.submeshes)
     {

@@ -119,4 +119,80 @@ namespace gapi::vulkan
   {
     return static_cast<vk::ShaderStageFlagBits>(stage);
   }
+
+  inline vk::Format GetImageFormat(const TextureFormat format)
+  {
+    switch (format)
+    {
+      case TextureFormat::R8G8B8A8_SNORM: return vk::Format::eR8G8B8A8Snorm;
+      case TextureFormat::R8G8B8A8_UNORM: return vk::Format::eR8G8B8A8Unorm;
+      default: return vk::Format::eUndefined;
+    }
+  }
+
+  inline vk::ImageUsageFlags GetTextureUsage(const TextureUsage usage)
+  {
+    vk::ImageUsageFlags bits;
+
+    bits |= vk::ImageUsageFlagBits::eTransferDst;
+
+    uint32_t usg = (uint32_t)(usage);
+
+    if (usg & (uint32_t)TextureUsage::DepthStencil)
+      bits |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
+
+    if (usg & (uint32_t)TextureUsage::RenderTarget)
+      bits |= vk::ImageUsageFlagBits::eColorAttachment;
+
+    if (usg & (uint32_t)TextureUsage::Uniform)
+    {
+      bits |= vk::ImageUsageFlagBits::eStorage;
+      bits |= vk::ImageUsageFlagBits::eSampled;
+    }
+
+    return bits;
+  }
+
+  inline vk::SampleCountFlagBits GetImageSampleCount(const TextureSamples samples)
+  {
+    switch(samples)
+    {
+      case TextureSamples::s1 : return vk::SampleCountFlagBits::e1;
+      case TextureSamples::s2 : return vk::SampleCountFlagBits::e2;
+      case TextureSamples::s4 : return vk::SampleCountFlagBits::e4;
+      case TextureSamples::s8 : return vk::SampleCountFlagBits::e8;
+      case TextureSamples::s16: return vk::SampleCountFlagBits::e16;
+      case TextureSamples::s32: return vk::SampleCountFlagBits::e32;
+      case TextureSamples::s64: return vk::SampleCountFlagBits::e64;
+
+      default: return vk::SampleCountFlagBits{};
+    }
+  }
+
+  inline vk::Filter GetFilter(const ImageFilter filter)
+  {
+    switch (filter)
+    {
+      case ImageFilter::Nearest: vk::Filter::eNearest;
+      case ImageFilter::Linear:  vk::Filter::eLinear;
+      case ImageFilter::Cubic:   vk::Filter::eCubicEXT;
+
+      default: return {};
+    }
+  }
+
+  inline vk::SamplerMipmapMode GetSamplerMimpmapMode(const SamplerMipmapMode mode)
+  {
+    return static_cast<vk::SamplerMipmapMode>(mode);
+  }
+
+  inline vk::SamplerAddressMode GetSamplerAddressMode(const SamplerAddressMode mode)
+  {
+    return static_cast<vk::SamplerAddressMode>(mode);
+  }
+
+  inline vk::BorderColor GetBorderColor(const BorderColor color)
+  {
+    return static_cast<vk::BorderColor>(color);
+  }
 }

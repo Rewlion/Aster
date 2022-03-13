@@ -26,7 +26,7 @@ namespace fs = std::filesystem;
 
 struct ShaderBlob
 {
-  char                shaderName[SHADERS_NAME_LEN];
+  char                shaderName[spirv::SHADERS_NAME_LEN];
   gapi::ShaderStage   stage;
   spirv::Reflection   reflection;
   eastl::vector<char> src;
@@ -66,6 +66,7 @@ class ShadersCompiler
     }
 
   private:
+
     bool Compile(const DataBlock& shader)
     {
       const string shaderFile = m_BlkDir + "/" + shader.GetName();
@@ -184,7 +185,7 @@ class ShadersCompiler
       result.stage = stage;
       result.reflection = spirv::Reflect(result.src);
 
-      std::snprintf(result.shaderName, SHADERS_NAME_LEN, "%s", shaderName.c_str() );
+      std::snprintf(result.shaderName, spirv::SHADERS_NAME_LEN, "%s", shaderName.c_str() );
 
       return true;
     }
@@ -193,7 +194,7 @@ class ShadersCompiler
     {
       uint64_t buf64 = 0;
 
-      buf64 = SHADERS_MAGIC;
+      buf64 = spirv::SHADERS_MAGIC;
       m_OutputFile.write((char*)&buf64, sizeof(buf64));
 
       buf64 = m_Shaders.size();
@@ -211,7 +212,7 @@ class ShadersCompiler
       const uint64_t stage = blob.stage;
       const uint64_t srcSize = blob.src.size();
 
-      m_OutputFile.write(blob.shaderName, SHADERS_NAME_LEN);
+      m_OutputFile.write(blob.shaderName, spirv::SHADERS_NAME_LEN);
 
       m_OutputFile.write((char*)&blob.reflection, sizeof(blob.reflection));
 

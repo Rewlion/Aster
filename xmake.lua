@@ -25,14 +25,16 @@ add_includedirs(
   "deps/vulkan-1.2.198.1/include",
   "deps/SPIRV-Cross-moltenvk_1.1.5/include",
   "deps/tinygltf-2.5.0/include",
-  "deps/dxc-1.7.0/include"
+  "deps/dxc-1.7.0/include",
+  "deps/ktx-4.0.0/include"
 )
 
 if is_arch("x64") and is_os("windows") then
     add_linkdirs(
       "deps/eastl-3.17.06/win64",
       "deps/vulkan-1.2.198.1/win64",
-      "deps/boost-1.77/win64"
+      "deps/boost-1.77/win64",
+      "deps/ktx-4.0.0/win64"
     )
     add_defines("PLATFORM_WIN64")
 end
@@ -85,7 +87,8 @@ target("engine")
   set_kind("static")
   add_links("user32",
             "EASTL",
-            "vulkan-1"
+            "vulkan-1",
+            "ktx"
            )
   add_deps("spirv-cross")
   add_files("src/engine/**.cpp")

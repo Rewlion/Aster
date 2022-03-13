@@ -57,6 +57,15 @@ namespace Engine
         asset
       });
     }
+    else if (Utils::CheckFileExt(file, "ktx"))
+    {
+      TextureAsset asset = LoadTexture(file);
+      m_Textures.insert({
+        fileHash,
+        asset
+      });
+    }
+
     else
     {
       logerror("asset manager: failed to load `{}` asset: unknown extension.", file);
@@ -67,6 +76,18 @@ namespace Engine
   {
     const auto it = m_StaticModels.find(assetUri);
     if (it != m_StaticModels.end())
+    {
+      asset = it->second;
+      return true;
+    }
+
+    return false;
+  }
+
+  bool AssetsManager::GetTexture(const string_hash assetUri, TextureAsset& asset)
+  {
+    const auto it = m_Textures.find(assetUri);
+    if (it != m_Textures.end())
     {
       asset = it->second;
       return true;

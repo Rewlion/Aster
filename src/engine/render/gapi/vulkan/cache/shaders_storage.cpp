@@ -20,7 +20,7 @@ namespace
 {
   struct ShaderBlob
   {
-    char shaderName[SHADERS_NAME_LEN];
+    char shaderName[spirv::SHADERS_NAME_LEN];
     const char* blob = nullptr;
     size_t blobSize = 0;
     spirv::Reflection reflection;
@@ -41,7 +41,7 @@ namespace
         m_Offset = 0;
 
         const uint64_t magic = Read64();
-        if (magic != SHADERS_MAGIC)
+        if (magic != spirv::SHADERS_MAGIC)
         {
           logerror("failed to read shaders bin file: wrong magic");
           return false;
@@ -66,7 +66,7 @@ namespace
         for(size_t i = 0; i < m_ShadersBlobsCount; ++i)
         {
           ShaderBlob blob;
-          ReadBuf(blob.shaderName, SHADERS_NAME_LEN);
+          ReadBuf(blob.shaderName, spirv::SHADERS_NAME_LEN);
           blob.reflection = Read<spirv::Reflection>();
           blob.blobSize = Read64();
           blob.blob = m_Bin.data() + m_Offset;
@@ -127,9 +127,11 @@ namespace gapi::vulkan
     ci.pPushConstantRanges = nullptr;
     ci.setLayoutCount = 0;
     ci.pushConstantRangeCount = 0;
+    PipelineLayout layout;
+    layout.pipelineLayout =  m_Device->m_Device->createPipelineLayoutUnique(ci);
     m_PipelineLayouts.insert({
       EMPTY_PIPELINE_LAYOUT_HASH,
-      m_Device->m_Device->createPipelineLayoutUnique(ci)
+      std::move(layout)
     });
   }
 
@@ -182,12 +184,12 @@ namespace gapi::vulkan
     return hash;
   }
 
-  vk::PipelineLayout ShadersStorage::GetPipelineLayout(const ShaderStagesNames& stages)
+  const PipelineLayout& ShadersStorage::GetPipelineLayout(const ShaderStagesNames& stages)
   {
     const size_t hash = HashShadersProgram(stages);
     const auto it = m_PipelineLayouts.find(hash);
     if (it != m_PipelineLayouts.end())
-      return it->second.get();
+      return it->second;
 
     string stageDump;
     for(const auto& stage: stages)
@@ -239,20 +241,103 @@ namespace gapi::vulkan
     const auto it = m_PipelineLayouts.find(programHash);
     if (it != m_PipelineLayouts.end())
     {
-      programInfo.layout = it->second.get();
+      programInfo.layout = it->second.pipelineLayout.get();
     }
     else
     {
+      spirv::ShaderArgument arguments[spirv::MAX_SETS_COUNT];
+
+      for (const auto& stage: stages)
+      {
+        const auto& shader = GetShaderModule(stage).metadata;
+
+        for (int nSet = 0; nSet < spirv::MAX_SETS_COUNT; ++nSet)
+          for (int nBinding = 0; nBinding < spirv::MAX_BINDING_COUNT; ++nBinding)
+          {
+            const auto& binding = shader.shaderArguments[nSet].bindings[nBinding];
+            auto& targetBinding = arguments[nSet].bindings[nBinding];
+
+            if (binding.type != spirv::BindingType::None)
+            {
+              std::snprintf(targetBinding.name, spirv::BINDING_NAME_LEN, "%s", binding.name);
+              targetBinding.type = binding.type;
+              targetBinding.stages = targetBinding.stages | shader.stage;
+            }
+          }
+      }
+
+      PipelineLayout layout;
+      vk::DescriptorSetLayout setLayouts[spirv::MAX_SETS_COUNT];
+      for (size_t nSet = 0; nSet < std::size(arguments); ++nSet )
+      {
+        Utils::FixedStack<vk::DescriptorSetLayoutBinding, spirv::MAX_BINDING_COUNT> bindings;
+        for (size_t nBinding = 0; nBinding < arguments[nSet].GetBindingsCount(); ++nBinding)
+        {
+          const spirv::Binding& binding = arguments[nSet].bindings[nBinding];
+
+          vk::DescriptorSetLayoutBinding bindingDesc;
+          switch(binding.type)
+          {
+            case spirv::BindingType::Texture2D:
+            {
+              bindingDesc.descriptorType = vk::DescriptorType::eSampledImage;
+              bindingDesc.descriptorCount = 1;
+              break;
+            }
+
+            case spirv::BindingType::Sampler:
+            {
+              bindingDesc.descriptorType = vk::DescriptorType::eSampler;
+              bindingDesc.descriptorCount = 1;
+              break;
+            }
+
+            default:
+            {
+              ASSERT(!"Unsupported binding type");
+            }
+          }
+          bindingDesc.stageFlags = binding.stages;
+          bindingDesc.binding = nBinding;
+          bindings.Push(bindingDesc);
+        }
+
+        ///
+       //vk::DescriptorSetLayoutBinding bindingDesc[2];
+       //bindingDesc[0].binding = 0;
+       //bindingDesc[0].descriptorCount = 1;
+       //bindingDesc[0].descriptorType = vk::DescriptorType::eSampledImage;
+       //bindingDesc[0].stageFlags = vk::ShaderStageFlagBits::eFragment;
+       //bindingDesc[1].binding = 1;
+       //bindingDesc[1].descriptorCount = 1;
+       //bindingDesc[1].descriptorType = vk::DescriptorType::eSampler;
+       //bindingDesc[1].stageFlags = vk::ShaderStageFlagBits::eFragment;
+        ///
+
+        vk::DescriptorSetLayoutCreateInfo ci;
+        ci.bindingCount = bindings.GetSize();
+        ci.pBindings = bindings.GetData();
+
+        //ci.bindingCount = 2;
+        //ci.pBindings = bindingDesc;
+
+        layout.descriptorSetLayouts[nSet] = m_Device->m_Device->createDescriptorSetLayoutUnique(ci);
+        setLayouts[nSet] = layout.descriptorSetLayouts[nSet].get();
+      }
+      std::memcpy(layout.sets, arguments, std::size(arguments) * sizeof(arguments[0]));
+
       vk::PipelineLayoutCreateInfo layoutCi;
       layoutCi.pushConstantRangeCount = stagesPushConstants.GetSize();
       layoutCi.pPushConstantRanges = stagesPushConstants.GetData();
+      layoutCi.pSetLayouts = setLayouts;
+      layoutCi.setLayoutCount = std::size(setLayouts);
 
-      vk::UniquePipelineLayout uniqueLayout = m_Device->m_Device->createPipelineLayoutUnique(layoutCi);
-      programInfo.layout = uniqueLayout.get();
+      layout.pipelineLayout = m_Device->m_Device->createPipelineLayoutUnique(layoutCi);
+      programInfo.layout = layout.pipelineLayout.get();
 
       m_PipelineLayouts.insert({
         programHash,
-        std::move(uniqueLayout)
+        std::move(layout)
       });
     }
   }

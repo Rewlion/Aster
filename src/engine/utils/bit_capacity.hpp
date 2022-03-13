@@ -15,7 +15,7 @@ namespace Utils
       inline void ResetAll()
       {
         for (size_t i = 0; i < batchesCount; ++i)
-          batches[i] = (BatchType)(~0);
+          batches[i] = (BatchType)(0);
       }
 
       inline void Set(const size_t i)
@@ -47,7 +47,7 @@ namespace Utils
     private:
       BatchType& GetBatch(const size_t i)
       {
-        const size_t batchId = (i+batchSize)/batchSize;
+        const size_t batchId = i/batchSize;
         return batches[batchId];
       }
 
@@ -57,6 +57,6 @@ namespace Utils
       }
 
     private:
-      BatchType batches[batchesCount];
+      BatchType batches[batchesCount] = {0};
   };
 }

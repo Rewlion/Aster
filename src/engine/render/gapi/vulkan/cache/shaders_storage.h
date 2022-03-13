@@ -2,6 +2,7 @@
 
 #include <engine/assert.h>
 #include <engine/render/gapi/resources.h>
+#include <engine/render/gapi/vulkan/pipeline_layout.h>
 #include <engine/shaders_compiler/spirv.h>
 #include <engine/types.h>
 #include <engine/utils/fixed_stack.hpp>
@@ -36,7 +37,7 @@ namespace gapi::vulkan
 
       const ShaderModule& GetShaderModule(const string_hash name);
 
-      vk::PipelineLayout GetPipelineLayout(const ShaderStagesNames& stages);
+      const PipelineLayout& GetPipelineLayout(const ShaderStagesNames& stages);
 
       void GetShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo);
 
@@ -48,7 +49,7 @@ namespace gapi::vulkan
       Device* m_Device;
 
       eastl::hash_map<string_hash, ShaderModule> m_ShaderModules;
-      eastl::hash_map<string_hash, vk::UniquePipelineLayout> m_PipelineLayouts;
+      eastl::hash_map<string_hash, PipelineLayout> m_PipelineLayouts;
   };
 
 };

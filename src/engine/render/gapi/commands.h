@@ -60,6 +60,20 @@ namespace gapi
     uint32_t firstInstance = 0;
   };
 
+  struct BindTextureCmd
+  {
+    TextureHandler texture  = TextureHandler::Invalid;
+    size_t         argument = 0;
+    size_t         binding  = 0;
+  };
+
+  struct BindSamplerCmd
+  {
+    SamplerHandler sampler  = SamplerHandler::Invalid;
+    size_t         argument = 0;
+    size_t         binding  = 0;
+  };
+
   using Command = std::variant<
     BeginRenderPassCmd,
     EndRenderPassCmd,
@@ -69,7 +83,9 @@ namespace gapi
     PushConstantsCmd,
     BindVertexBufferCmd,
     BindIndexBufferCmd,
-    DrawIndexedCmd
+    DrawIndexedCmd,
+    BindTextureCmd,
+    BindSamplerCmd
   >;
   using CommandList = eastl::vector<Command>;
 

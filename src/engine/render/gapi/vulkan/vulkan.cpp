@@ -12,10 +12,13 @@
 
 namespace gapi
 {
-  extern void (*gapiSubmitCommands)(CommandList&& cmds);
+  extern void           (*gapiSubmitCommands)(CommandList&& cmds);
   extern TextureHandler (*gapiGetCurrentSurfaceRT)();
-  extern BufferHandler (*gapiAllocateBuffer)(const BufferAllocationDescription&);
-  extern void (*gapiCopyToBufferSync)(const void* src, const size_t offset, const size_t size, const BufferHandler buffer);
+  extern BufferHandler  (*gapiAllocateBuffer)(const BufferAllocationDescription&);
+  extern void           (*gapiCopyToBufferSync)(const void* src, const size_t offset, const size_t size, const BufferHandler buffer);
+  extern TextureHandler (*gapiAllocateTexture)(const TextureAllocationDescription& allocDesc);
+  extern void           (*gapiCopyToTextureSync)(const void* src, const size_t size, const TextureHandler texture);
+  extern SamplerHandler (*gapiAllocateSampler)(const SamplerAllocationDescription& allocDesc);
 }
 
 namespace gapi::vulkan
@@ -61,12 +64,30 @@ namespace gapi::vulkan
     device.CopyToBufferSync(src, offset, size, buffer);
   }
 
+  TextureHandler AllocateTexture(const TextureAllocationDescription& allocDesc)
+  {
+    return device.AllocateTexture(allocDesc);
+  }
+
+  void CopyToTextureSync(const void* src, const size_t size, const TextureHandler texture)
+  {
+    device.CopyToTextureSync(src, size, texture);
+  }
+
+  SamplerHandler AllocateSampler(const SamplerAllocationDescription& allocDesc)
+  {
+    return device.AllocateSampler(allocDesc);
+  }
+
   void init()
   {
     gapiSubmitCommands = submitCommands;
     gapiGetCurrentSurfaceRT = getCurrentSurfaceRT;
     gapiAllocateBuffer = AllocateBuffer;
     gapiCopyToBufferSync = CopyToBufferSync;
+    gapiAllocateTexture = AllocateTexture;
+    gapiCopyToTextureSync = CopyToTextureSync;
+    gapiAllocateSampler = AllocateSampler;
 
     backend.Init();
     device = backend.CreateDevice();

@@ -20,6 +20,11 @@ namespace Engine
     Utils::FixedStack<Submesh, 32>  submeshes;
   };
 
+  struct TextureAsset
+  {
+    gapi::TextureHandler texture;
+  };
+
   enum class AssetHandler: uint64_t { Invalid = -1 };
 
   class AssetsManager
@@ -29,12 +34,16 @@ namespace Engine
 
       bool GetStaticModel(const string_hash assetUri, StaticModelAsset& asset);
 
+      bool GetTexture(const string_hash assetUri, TextureAsset& asset);
+
     private:
       void LoadAssetsFromFs();
       void LoadAsset(const string& file);
       StaticModelAsset LoadGltf(const string& file);
+      TextureAsset LoadTexture(const string& file);
     private:
       eastl::hash_map<string_hash, StaticModelAsset> m_StaticModels;
+      eastl::hash_map<string_hash, TextureAsset> m_Textures;
   };
 
   extern AssetsManager assets_manager;

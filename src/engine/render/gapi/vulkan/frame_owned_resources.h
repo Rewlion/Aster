@@ -1,5 +1,7 @@
 #pragma once
 
+#include "descriptors_set_manager.h"
+
 #include <EASTL/vector.h>
 #include <vulkan/vulkan.hpp>
 
@@ -10,8 +12,10 @@ namespace gapi::vulkan
     inline void Clear()
     {
       m_Framebuffers.clear();
+      m_DescriptorSetsManager.Reset();
     }
 
     eastl::vector<vk::UniqueFramebuffer> m_Framebuffers;
+    DescriptorsSetManager m_DescriptorSetsManager;
   };
 }

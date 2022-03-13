@@ -20,6 +20,7 @@ namespace gapi::vulkan
     friend class ShadersStorage;
     friend class PipelinesStorage;
     friend class PipelineLayoutsStorage;
+    friend class DescriptorsSetManager;
 
     public:
       struct CreateInfo
@@ -64,9 +65,21 @@ namespace gapi::vulkan
 
       vk::Buffer GetBuffer(const BufferHandler buffer);
 
+      TextureHandler AllocateTexture(const TextureAllocationDescription& allocDesc);
+
+      void CopyToTextureSync(const void* src, const size_t size, const TextureHandler texture);
+
+      void ImageBarrier(vk::CommandBuffer& cmdBuf, const TextureHandler handler, const vk::ImageLayout newLayout,
+                        const vk::PipelineStageFlagBits srcStage, const vk::PipelineStageFlagBits dstStage);
+
+      SamplerHandler AllocateSampler(const SamplerAllocationDescription& allocDesc);
+
+      vk::Sampler GetSampler(const SamplerHandler sampler);
+
     private:
       Buffer AllocateBufferInternal(const BufferAllocationDescription& allocDesc, const uint32_t memoryIndex);
       Buffer AllocateStagingBuffer(const size_t size);
+      Buffer AllocateStagingBuffer(const void* src, const size_t size);
 
       vk::CommandBuffer AllocateCmdBuffer(vk::CommandPool pool);
       vk::CommandBuffer AllocateTransferCmdBuffer();
@@ -86,5 +99,7 @@ namespace gapi::vulkan
       vk::UniqueCommandPool m_TransferCmdPool;
 
       Utils::FixedPool<Buffer, 1024> m_AllocatedBuffers;
+      Utils::FixedPool<Texture, 1024> m_AllocatedTextures;
+      Utils::FixedPool<Sampler, 64> m_AllocatedSamplers;
   };
 }

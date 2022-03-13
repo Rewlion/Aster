@@ -11,6 +11,7 @@ namespace gapi
   constexpr size_t MAX_RENDER_TARGETS = 8;
 
   enum class TextureHandler: uint64_t { Invalid = (uint64_t)-1 };
+  enum class SamplerHandler: uint64_t { Invalid = (uint64_t)-1 };
   enum class BufferHandler: uint64_t { Invalid = (uint64_t)-1 };
   enum class DepthStencilStateHandler: uint64_t { Invalid = (uint64_t)-1 };
 
@@ -247,10 +248,94 @@ namespace gapi
     Staging       = 0x10000
   };
 
+  enum class TextureSamples: uint32_t
+  {
+    s1  = 1,
+    s2  = 2,
+    s4  = 4,
+    s8  = 8,
+    s16 = 16,
+    s32 = 32,
+    s64 = 64
+  };
+
+  enum class TextureUsage: uint32_t
+  {
+    None         = 0,
+    Uniform      = 1,
+    DepthStencil = 1 << 2,
+    RenderTarget = 1 << 3
+  };
+
+  enum class TextureFormat: uint32_t
+  {
+    R8G8B8A8_SNORM = 1,
+    R8G8B8A8_UNORM = 2,
+  };
+
+  enum class ImageFilter
+  {
+    Nearest = 0,
+    Linear  = 1,
+    Cubic   = 2,
+  };
+
+  enum class SamplerMipmapMode
+  {
+    Nearest = 0,
+    Linear  = 1,
+  };
+
+  enum class SamplerAddressMode
+  {
+    Repeat         = 0,
+    MirroredRepeat = 1,
+    ClampToEdge    = 2,
+    ClampToBorder  = 3,
+  };
+
+  enum class BorderColor
+  {
+    FloatTransparentBlack = 0,
+    IntTransparentBlack   = 1,
+    FloatOpaqueBlack      = 2,
+    IntOpaqueBlack        = 3,
+    FloatOpaqueWhite      = 4,
+    IntOpaqueWhite        = 5,
+  };
+
+  struct SamplerAllocationDescription
+  {
+    ImageFilter        magFilter               = ImageFilter::Linear;
+    ImageFilter        minFilter               = ImageFilter::Linear;
+    SamplerMipmapMode  mipmapMode              = SamplerMipmapMode::Linear;
+    SamplerAddressMode addressModeU            = SamplerAddressMode::Repeat;
+    SamplerAddressMode addressModeV            = SamplerAddressMode::Repeat;;
+    SamplerAddressMode addressModeW            = SamplerAddressMode::Repeat;;
+    float              mipLodBias              = 0.0f;
+    bool               anisotropyEnable        = false;
+    float              maxAnisotropy           = 0.0f;
+    bool               compareEnable           = false;
+    CompareOp          compareOp               = CompareOp::Always;
+    float              minLod                  = 0.0f;
+    float              maxLod                  = 0.0f;
+    BorderColor        borderColor             = BorderColor::FloatOpaqueBlack;
+    bool               unnormalizedCoordinates = false;
+  };
+
   struct BufferAllocationDescription
   {
     size_t      size = 0;
     BufferUsage usage;
   };
 
+  struct TextureAllocationDescription
+  {
+    TextureFormat  format = TextureFormat::R8G8B8A8_UNORM;
+    int3           extent = {0,0,0};
+    uint32_t       mipLevels = 0;
+    uint32_t       arrayLayers = 0;
+    TextureSamples samplesPerPixel = TextureSamples::s1;
+    TextureUsage   usage = TextureUsage::None;
+  };
 }

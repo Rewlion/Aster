@@ -80,6 +80,16 @@ namespace Utils
           return false;
       }
 
+      inline T& Get(const size_t i)
+      {
+        return m_Values[i];
+      }
+
+      inline const T& Get(const size_t i) const
+      {
+        return const_cast<FixedStack*>(this)->Get(i);
+      }
+
     class ConstIterator
     {
       public:

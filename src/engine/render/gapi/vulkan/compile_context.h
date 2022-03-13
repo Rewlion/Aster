@@ -22,6 +22,11 @@ namespace gapi::vulkan
         m_Device = device;
         m_RenderPassStorage.Init(m_Device);
         m_PipelinesStorage.Init(m_Device);
+
+        for (size_t i = 0; i < std::size(m_FrameOwnedResources); ++i)
+        {
+          m_FrameOwnedResources->m_DescriptorSetsManager.Init(m_Device);
+        }
       }
 
       void compileCommand(const BeginRenderPassCmd& cmd);
@@ -33,6 +38,8 @@ namespace gapi::vulkan
       void compileCommand(const BindVertexBufferCmd& cmd);
       void compileCommand(const BindIndexBufferCmd& cmd);
       void compileCommand(const DrawIndexedCmd& cmd);
+      void compileCommand(const BindTextureCmd& cmd);
+      void compileCommand(const BindSamplerCmd& cmd);
 
     private:
       vk::UniqueFramebuffer createFramebuffer(const BeginRenderPassCmd& cmd, const vk::RenderPass& rp);

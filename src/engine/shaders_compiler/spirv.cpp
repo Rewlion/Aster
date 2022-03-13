@@ -190,6 +190,15 @@ namespace spirv
     return (type.width / 8) * type.vecsize * type.columns;
   }
 
+  BindingType GetTextureType(const spirv_cross::SPIRType& type)
+  {
+    switch(type.image.dim)
+    {
+      case spv::Dim::Dim2D: return BindingType::Texture2D;
+      default:              return BindingType::None;
+    }
+  }
+
   Reflection Reflect(const eastl::vector<char>& spirv)
   {
     Reflection ret;
@@ -236,6 +245,62 @@ namespace spirv
       const spirv_cross::SPIRType& type = glsl.get_type(constants.type_id);
 
       ret.pushConstantsSize = glsl.get_declared_struct_size(type);
+    }
+
+    for (size_t i = 0; i < resources.separate_images.size(); ++i)
+    {
+      const spirv_cross::Resource& texture = resources.separate_images[i];
+      const spirv_cross::SPIRType& type = glsl.get_type(texture.type_id);
+
+      const unsigned int nSet = glsl.get_decoration(texture.id, spv::Decoration::DecorationDescriptorSet);
+      const unsigned int nBinding = glsl.get_decoration(texture.id, spv::Decoration::DecorationBinding);
+
+      const auto validate = [&](const char* rangeName, const size_t val, const size_t max)
+                            {
+                              if (val > max)
+                              {
+                                logerror("(set:{} binding:{}) texture {}: has unsupported {} number. Max: {}",
+                                  nSet, nBinding, texture.name.c_str(), rangeName, max);
+                                return false;
+                              }
+                              return true;
+                            };
+
+      if (!validate("set", nSet, MAX_SETS_COUNT) || !validate("binding", nBinding, MAX_BINDING_COUNT))
+        continue;
+
+      Binding& binding = ret.shaderArguments[nSet].bindings[nBinding];
+      binding.type = GetTextureType(type);
+      binding.stages = ret.stage;
+      std::snprintf(binding.name, BINDING_NAME_LEN, "%s", texture.name.c_str());
+    }
+
+    for (size_t i = 0; i < resources.separate_samplers.size(); ++i)
+    {
+      const spirv_cross::Resource& sampler = resources.separate_samplers[i];
+      const spirv_cross::SPIRType& type = glsl.get_type(sampler.type_id);
+
+      const unsigned int nSet = glsl.get_decoration(sampler.id, spv::Decoration::DecorationDescriptorSet);
+      const unsigned int nBinding = glsl.get_decoration(sampler.id, spv::Decoration::DecorationBinding);
+
+      const auto validate = [&](const char* rangeName, const size_t val, const size_t max)
+                            {
+                              if (val > max)
+                              {
+                                logerror("(set:{} binding:{}) sampler {}: has unsupported {} number. Max: {}",
+                                  nSet, nBinding, sampler.name.c_str(), rangeName, max);
+                                return false;
+                              }
+                              return true;
+                            };
+
+      if (!validate("set", nSet, MAX_SETS_COUNT) || !validate("binding", nBinding, MAX_BINDING_COUNT))
+        continue;
+
+      Binding& binding = ret.shaderArguments[nSet].bindings[nBinding];
+      binding.type = BindingType::Sampler;
+      binding.stages = ret.stage;
+      std::snprintf(binding.name, BINDING_NAME_LEN, "%s", sampler.name.c_str());
     }
 
     return ret;

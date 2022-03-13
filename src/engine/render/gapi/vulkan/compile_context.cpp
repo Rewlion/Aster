@@ -108,10 +108,17 @@ namespace gapi::vulkan
     m_CurrentCmdBuf.setScissor(0, 1, &sc);
 
     m_CurrentPipelineStages = cmd.description.shaderNames;
+
+    const PipelineLayout* layout;
+    bool res = m_PipelinesStorage.GetPipelineLayout(m_CurrentPipelineStages, layout);
+    ASSERT(res);
+
+    GetCurrentFrameOwnedResources().m_DescriptorSetsManager.SetPipelineLayout(layout);
   }
 
   void CompileContext::compileCommand(const DrawCmd& cmd)
   {
+    GetCurrentFrameOwnedResources().m_DescriptorSetsManager.UpdateDescriptorSets(m_CurrentCmdBuf);
     m_CurrentCmdBuf.draw(cmd.vertexCount, cmd.instanceCount, cmd.firstVertex, cmd.firstInstance);
   }
 
@@ -122,15 +129,18 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const PushConstantsCmd& cmd)
   {
-    vk::PipelineLayout layout = m_PipelinesStorage.GetPipelineLayout(m_CurrentPipelineStages);
-    if (layout == vk::PipelineLayout{})
+    const PipelineLayout* layout;
+    bool res = m_PipelinesStorage.GetPipelineLayout(m_CurrentPipelineStages, layout);
+    ASSERT(res);
+
+    if (layout->pipelineLayout.get() == vk::PipelineLayout{})
     {
       logerror("vulkan: can't push constants: pipeline layout not found.");
       return;
     }
 
     vk::ShaderStageFlagBits stages = GetShaderStage(cmd.stage);
-    m_CurrentCmdBuf.pushConstants(layout, stages, 0 , cmd.size, cmd.data);
+    m_CurrentCmdBuf.pushConstants(layout->pipelineLayout.get(), stages, 0 , cmd.size, cmd.data);
   }
 
   void CompileContext::compileCommand(const BindVertexBufferCmd& cmd)
@@ -148,7 +158,33 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const DrawIndexedCmd& cmd)
   {
+    GetCurrentFrameOwnedResources().m_DescriptorSetsManager.UpdateDescriptorSets(m_CurrentCmdBuf);
     m_CurrentCmdBuf.drawIndexed(cmd.indexCount, cmd.instanceCount, cmd.firstIndex, cmd.vertexOffset, cmd.firstInstance);
+  }
+
+  void CompileContext::compileCommand(const BindTextureCmd& cmd)
+  {
+    auto& dsManager = GetCurrentFrameOwnedResources().m_DescriptorSetsManager;
+
+    if (cmd.texture != TextureHandler::Invalid)
+    {
+      //m_Device->ImageBarrier(m_CurrentCmdBuf, cmd.texture, vk::ImageLayout::eShaderReadOnlyOptimal,
+      //                       vk::PipelineStageFlagBits::eFragmentShader, vk::PipelineStageFlagBits::eFragmentShader);
+
+      vk::ImageView imgView = m_Device->getImageView(cmd.texture);
+      dsManager.SetImage(imgView, cmd.argument, cmd.binding);
+    }
+  }
+
+   void CompileContext::compileCommand(const BindSamplerCmd& cmd)
+  {
+    auto& dsManager = GetCurrentFrameOwnedResources().m_DescriptorSetsManager;
+
+    if (cmd.sampler != SamplerHandler::Invalid)
+    {
+      vk::Sampler sampler = m_Device->GetSampler(cmd.sampler);
+      dsManager.SetSampler(sampler, cmd.argument, cmd.binding);
+    }
   }
 
   void CompileContext::NextFrame()
