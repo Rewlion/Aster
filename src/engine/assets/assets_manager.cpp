@@ -65,11 +65,6 @@ namespace Engine
         asset
       });
     }
-
-    else
-    {
-      logerror("asset manager: failed to load `{}` asset: unknown extension.", file);
-    }
   }
 
   bool AssetsManager::GetStaticModel(const string_hash assetUri, StaticModelAsset& asset)
