@@ -20,7 +20,6 @@ namespace gapi::vulkan
     };
 
     vk::DescriptorPoolCreateInfo ci{};
-    ci.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
     ci.maxSets = 1024;
     ci.pPoolSizes = sizes;
     ci.poolSizeCount = std::size(sizes);

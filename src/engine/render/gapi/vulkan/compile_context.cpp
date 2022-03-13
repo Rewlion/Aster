@@ -13,31 +13,51 @@ namespace gapi::vulkan
     m_CurrentCmdBuf = m_Device->AllocateGraphicsCmdBuffer();
     UpdateViewport(cmd);
 
-    vk::RenderPass rp = m_RenderPassStorage.GetRenderPass(cmd);
-    vk::UniqueFramebuffer fbUnique = createFramebuffer(cmd, rp);
-    vk::Framebuffer fb = *fbUnique;
+    m_CurrentRenderPass = m_RenderPassStorage.GetRenderPass(cmd);
+    vk::UniqueFramebuffer fbUnique = createFramebuffer(cmd, m_CurrentRenderPass);
+    m_CurrentFramebuffer = *fbUnique;
 
+    m_CurrentClearValues.Clear();
     std::array<uint32_t,4> clearColor{0,0,0,0};
     Utils::FixedStack<vk::ClearValue, MAX_RENDER_TARGETS+1> clearValues;
     for (size_t i = 0; i < MAX_RENDER_TARGETS; ++i)
-      clearValues.Push(vk::ClearValue().setColor(vk::ClearColorValue(clearColor)));
+      m_CurrentClearValues.Push(vk::ClearValue().setColor(vk::ClearColorValue(clearColor)));
 
     if (cmd.depthStencil.texture != TextureHandler::Invalid)
-      clearValues.Push(vk::ClearValue().setDepthStencil(vk::ClearDepthStencilValue(0,0)));
+      m_CurrentClearValues.Push(vk::ClearValue().setDepthStencil(vk::ClearDepthStencilValue(0,0)));
 
+    BeginRenderPass();
+
+    GetCurrentFrameOwnedResources().m_Framebuffers.push_back(std::move(fbUnique));
+  }
+
+  void CompileContext::BeginRenderPass()
+  {
     auto rpBeginInfo = vk::RenderPassBeginInfo();
-    rpBeginInfo.renderPass = rp;
-    rpBeginInfo.framebuffer = fb;
-    rpBeginInfo.clearValueCount = clearValues.GetSize();
-    rpBeginInfo.pClearValues = clearValues.GetData();
+    rpBeginInfo.renderPass = m_CurrentRenderPass;
+    rpBeginInfo.framebuffer = m_CurrentFramebuffer;
+    rpBeginInfo.clearValueCount = m_CurrentClearValues.GetSize();
+    rpBeginInfo.pClearValues = m_CurrentClearValues.GetData();
     rpBeginInfo.renderArea = vk::Rect2D{ {0,0}, m_CurrentViewportDim };
 
     m_CurrentCmdBuf.beginRenderPass(rpBeginInfo, vk::SubpassContents::eInline);
-    m_CurrentRenderPass = rp;
     m_CurrentSubpass = 0;
+    m_HasActiveRp = true;
+  }
 
-    GetCurrentFrameOwnedResources().m_Framebuffers.push_back(std::move(fbUnique));
+  void CompileContext::EndRenderPass()
+  {
+    if (m_HasActiveRp)
+    {
+      m_CurrentCmdBuf.endRenderPass();
+      m_HasActiveRp = false;
+    }
+  }
 
+  void CompileContext::InsureActiveRenderPass()
+  {
+    if (!m_HasActiveRp)
+      BeginRenderPass();
   }
 
   vk::UniqueFramebuffer CompileContext::createFramebuffer(const BeginRenderPassCmd& cmd, const vk::RenderPass& rp)
@@ -85,7 +105,7 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const EndRenderPassCmd& cmd)
   {
-    m_CurrentCmdBuf.endRenderPass();
+    EndRenderPass();
     m_CurrentCmdBuf.end();
     m_Device->SubmitGraphicsCmdBuf(m_CurrentCmdBuf);
   }
@@ -118,6 +138,7 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const DrawCmd& cmd)
   {
+    InsureActiveRenderPass();
     GetCurrentFrameOwnedResources().m_DescriptorSetsManager.UpdateDescriptorSets(m_CurrentCmdBuf);
     m_CurrentCmdBuf.draw(cmd.vertexCount, cmd.instanceCount, cmd.firstVertex, cmd.firstInstance);
   }
@@ -158,6 +179,7 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const DrawIndexedCmd& cmd)
   {
+    InsureActiveRenderPass();
     GetCurrentFrameOwnedResources().m_DescriptorSetsManager.UpdateDescriptorSets(m_CurrentCmdBuf);
     m_CurrentCmdBuf.drawIndexed(cmd.indexCount, cmd.instanceCount, cmd.firstIndex, cmd.vertexOffset, cmd.firstInstance);
   }
@@ -168,8 +190,9 @@ namespace gapi::vulkan
 
     if (cmd.texture != TextureHandler::Invalid)
     {
-      //m_Device->ImageBarrier(m_CurrentCmdBuf, cmd.texture, vk::ImageLayout::eShaderReadOnlyOptimal,
-      //                       vk::PipelineStageFlagBits::eFragmentShader, vk::PipelineStageFlagBits::eFragmentShader);
+      EndRenderPass();
+      m_Device->ImageBarrier(m_CurrentCmdBuf, cmd.texture, vk::ImageLayout::eShaderReadOnlyOptimal,
+                             vk::PipelineStageFlagBits::eFragmentShader, vk::PipelineStageFlagBits::eFragmentShader);
 
       vk::ImageView imgView = m_Device->getImageView(cmd.texture);
       dsManager.SetImage(imgView, cmd.argument, cmd.binding);

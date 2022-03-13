@@ -378,7 +378,7 @@ namespace gapi::vulkan
     cmdBuf.copyBufferToImage(stagingBuf.buffer.get(), toTexture.img.get(), vk::ImageLayout::eTransferDstOptimal, 1, &copyDesc);
 
     layoutBarrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-    layoutBarrier.newLayout = vk::ImageLayout::eShaderReadOnlyOptimal; //TMP HACK
+    layoutBarrier.newLayout = currentLayout;
 
     cmdBuf.pipelineBarrier(
       vk::PipelineStageFlagBits::eFragmentShader,
@@ -431,7 +431,7 @@ namespace gapi::vulkan
 
     vk::ImageMemoryBarrier layoutBarrier;
     layoutBarrier.oldLayout = texture.currentLayout;
-    layoutBarrier.newLayout;
+    layoutBarrier.newLayout = newLayout;
     layoutBarrier.image = texture.img.get();
     layoutBarrier.subresourceRange = subresourceRange;
 

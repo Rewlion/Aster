@@ -90,6 +90,12 @@ namespace Utils
         return const_cast<FixedStack*>(this)->Get(i);
       }
 
+      inline void Clear()
+      {
+        for (size_t i = 0; i < m_Size; ++i)
+          Pop();
+      }
+
     class ConstIterator
     {
       public:

@@ -52,13 +52,15 @@ namespace gapi::vulkan
 
       void NextFrame();
 
+      void BeginRenderPass();
+      void EndRenderPass();
+      void InsureActiveRenderPass();
     private:
       Device* m_Device = nullptr;
       RenderPassStorage m_RenderPassStorage;
       PipelinesStorage m_PipelinesStorage;
 
       vk::CommandBuffer m_CurrentCmdBuf;
-      vk::UniqueCommandPool m_CurrentFramebuffer;
 
       FrameOwnedResources m_FrameOwnedResources[SWAPCHAIN_IMAGES_COUNT];
       size_t m_CurrentFrame = 0;
@@ -69,5 +71,9 @@ namespace gapi::vulkan
       vk::Extent2D m_CurrentViewportDim = {0,0};
 
       ShaderStagesNames m_CurrentPipelineStages;
+
+      bool m_HasActiveRp = false;
+      vk::Framebuffer m_CurrentFramebuffer;
+      Utils::FixedStack<vk::ClearValue, MAX_RENDER_TARGETS+1> m_CurrentClearValues;
   };
 }
