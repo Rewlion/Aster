@@ -29,6 +29,8 @@ namespace gapi::vulkan
 
       void Reset();
     private:
+      bool ValidateBinding(const size_t set, const size_t binding);
+
       vk::DescriptorSet AcquireSet(const size_t set);
 
       void AddPool();

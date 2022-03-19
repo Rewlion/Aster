@@ -45,12 +45,10 @@ namespace Engine::Render
     gapi::CommandList cmdList;
 
     gapi::BeginRenderPassCmd beginPass;
-    beginPass.renderTargets.Push({
-      .texture = gapi::getCurrentSurfaceRT(),
-      .loadOp = gapi::TextureLoadOp::Clear,
-      .storeOp = gapi::TextureStoreOp::Store
-    });
+    beginPass.renderTargets.Push({gapi::getCurrentSurfaceRT()});
     cmdList.push_back(beginPass);
+
+    cmdList.push_back(gapi::ClearCmd{gapi::CLEAR_RT});
 
     gapi::GraphicsPipelineDescription pipeline;
     pipeline.shaderNames.Push(str_hash("test_vs"));

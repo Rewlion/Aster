@@ -90,6 +90,33 @@ namespace Utils
         return const_cast<FixedStack*>(this)->Get(i);
       }
 
+      inline const FixedStack<T,N>& operator=(const FixedStack<T,N>& rvl)
+      {
+        Clear();
+        for(const auto& v: rvl)
+          Push(v);
+
+        return *this;
+      }
+
+      inline bool operator==(const FixedStack<T,N>& rvl)
+      {
+        if (rvl.m_Size == m_Size)
+        {
+          if (m_Size == 0)
+            return true;
+
+          for (size_t i = 0; i < m_Size; ++i)
+          {
+            if ( Get(i) != rvl.Get(i) )
+              break;
+
+            return true;
+          }
+        }
+        return false;
+      }
+
       inline void Clear()
       {
         for (size_t i = 0; i < m_Size; ++i)

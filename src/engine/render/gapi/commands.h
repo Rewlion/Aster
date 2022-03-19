@@ -6,13 +6,10 @@
 
 namespace gapi
 {
-
   struct BeginRenderPassCmd
   {
-    Utils::FixedStack<ColorAttachment, MAX_RENDER_TARGETS> renderTargets;
-    DepthStencilAttachment depthStencil;
-
-    size_t hash() const;
+    RenderTargets  renderTargets;
+    TextureHandler depthStencil = TextureHandler::Invalid;
   };
 
   struct EndRenderPassCmd
@@ -74,6 +71,11 @@ namespace gapi
     size_t         binding  = 0;
   };
 
+  struct ClearCmd
+  {
+    ClearState clearing = CLEAR_NONE;
+  };
+
   using Command = std::variant<
     BeginRenderPassCmd,
     EndRenderPassCmd,
@@ -85,7 +87,8 @@ namespace gapi
     BindIndexBufferCmd,
     DrawIndexedCmd,
     BindTextureCmd,
-    BindSamplerCmd
+    BindSamplerCmd,
+    ClearCmd
   >;
   using CommandList = eastl::vector<Command>;
 

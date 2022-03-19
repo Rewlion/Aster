@@ -66,4 +66,5 @@ namespace gapi
   {
     return gapiAllocateSampler(allocDesc);
   }
+
 }

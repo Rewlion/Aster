@@ -64,6 +64,14 @@ namespace gapi
     DontCare = 1
   };
 
+  enum ClearState
+  {
+    CLEAR_NONE    = 0,
+    CLEAR_RT      = 1,
+    CLEAR_DEPTH   = 1 << 2,
+    CLEAR_STENCIL = 1 << 3
+  };
+
   struct ColorAttachment
   {
     TextureHandler texture = TextureHandler::Invalid;
@@ -124,6 +132,11 @@ namespace gapi
     StencilOp stencilDepthFailOp    = StencilOp::Keep;
     CompareOp stencilCompareOp      = CompareOp::Never;
     uint32_t  stencilReferenceValue = 0;
+
+    inline bool operator==(const DepthStencilStateDescription& rvl)
+    {
+      return std::memcmp(this, &rvl, sizeof(*this));
+    }
 
     size_t hash() const;
   };
@@ -210,6 +223,11 @@ namespace gapi
     BlendFactor dstAlphaBlendFactor = BlendFactor::Zero;
     BlendOp     alphaBlendOp        = BlendOp::Add;
 
+    inline bool operator==(const AttachmentBlendState& rvl)
+    {
+      return std::memcmp(this, &rvl, sizeof(*this));
+    }
+
     size_t hash() const;
   };
 
@@ -220,6 +238,20 @@ namespace gapi
     size_t               attachmentsCount = 0;
     AttachmentBlendState attachments[MAX_RENDER_TARGETS];
     float4               blendConstants   = float4{0.0f , 0.0f, 0.0f, 0.0f};
+
+    bool operator==(const BlendState& rvl)
+    {
+      if (attachmentsCount != rvl.attachmentsCount)
+        return false;
+
+      for (size_t i = 0; i < attachmentsCount; ++i)
+        if (attachments[i] != rvl.attachments[i])
+          return false;
+
+      return logicOpEnabled == rvl.logicOpEnabled &&
+             logicOp        == rvl.logicOp        &&
+             blendConstants == rvl.blendConstants;
+    }
 
     size_t hash() const;
   };
@@ -338,4 +370,6 @@ namespace gapi
     TextureSamples samplesPerPixel = TextureSamples::s1;
     TextureUsage   usage = TextureUsage::None;
   };
+
+  using RenderTargets = Utils::FixedStack<TextureHandler, MAX_RENDER_TARGETS>;
 }

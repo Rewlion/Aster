@@ -45,12 +45,6 @@ namespace gapi::vulkan
 
   void DescriptorsSetManager::SetImage(const vk::ImageView imgView, const size_t set, const size_t binding)
   {
-    if (m_PipelineLayout->sets[set].bindings[binding].type != spirv::BindingType::Texture2D)
-    {
-      logerror("vulkan: can't set texture for [set:{}, binding:{}], pipeline hasn't declared such binding", set, binding);
-      return;
-    }
-
     m_Sets[set].bindings[binding].imgView = imgView;
     m_Sets[set].bindings[binding].type = vk::DescriptorType::eSampledImage;
     vk::DescriptorImageInfo imgInfo;
@@ -63,12 +57,6 @@ namespace gapi::vulkan
 
   void DescriptorsSetManager::SetSampler(const vk::Sampler sampler, const size_t set, const size_t binding)
   {
-    if (m_PipelineLayout->sets[set].bindings[binding].type != spirv::BindingType::Sampler)
-    {
-      logerror("vulkan: can't set sampler for [set:{}, binding:{}], pipeline hasn't declared such binding", set, binding);
-      return;
-    }
-
     m_Sets[set].bindings[binding].sampler = sampler;
     m_Sets[set].bindings[binding].type = vk::DescriptorType::eSampler;
     vk::DescriptorImageInfo imgInfo;
@@ -82,7 +70,33 @@ namespace gapi::vulkan
   {
     m_PipelineLayout = layout;
 
-    m_DirtySets.ResetAll();
+    //m_DirtySets.ResetAll();
+  }
+
+  bool DescriptorsSetManager::ValidateBinding(const size_t set, const size_t binding)
+  {
+    const spirv::BindingType pipelineBindingType = m_PipelineLayout->sets[set].bindings[binding].type;
+    const vk::DescriptorType currentBindingType = m_Sets[set].bindings[binding].type.value();
+
+    switch (pipelineBindingType)
+    {
+      case spirv::BindingType::Sampler:
+      {
+        if (currentBindingType == vk::DescriptorType::eSampler)
+          return true;
+        break;
+      }
+
+      case spirv::BindingType::Texture2D:
+      {
+        if (currentBindingType == vk::DescriptorType::eSampledImage)
+          return true;
+        break;
+      }
+    }
+
+    logerror("vulkan: can't set [set:{}, binding:{}], pipeline hasn't declared such binding", set, binding);
+    return false;
   }
 
   vk::DescriptorSet DescriptorsSetManager::AcquireSet(const size_t set)
@@ -147,6 +161,12 @@ namespace gapi::vulkan
           if (!m_Sets[set].bindings[binding].type.has_value())
             continue;
 
+          if (!ValidateBinding(set, binding))
+          {
+            m_Sets[set].bindings[binding].type = std::nullopt;
+            continue;
+          }
+
           const vk::WriteDescriptorSet write = AcquireWriteDescriptorSet(set, binding);
           writes.push_back(write);
         }
@@ -160,12 +180,15 @@ namespace gapi::vulkan
         }
     }
 
-    m_Device->m_Device->updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
-    
-    for (size_t set = 0; set < spirv::MAX_SETS_COUNT; ++set)
-      if (m_DirtySets.IsSet(set))
-        cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_PipelineLayout->pipelineLayout.get(),
-                                  set, 1, &m_ActiveDescriptorSets[set], 0, nullptr);
+    if (writes.size() > 0)
+    {
+      m_Device->m_Device->updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
+
+      for (size_t set = 0; set < spirv::MAX_SETS_COUNT; ++set)
+        if (m_DirtySets.IsSet(set))
+          cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_PipelineLayout->pipelineLayout.get(),
+                                    set, 1, &m_ActiveDescriptorSets[set], 0, nullptr);
+    }
 
     m_DirtySets.ResetAll();
   }

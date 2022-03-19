@@ -18,6 +18,12 @@ namespace Utils
           batches[i] = (BatchType)(0);
       }
 
+      inline void SetAll()
+      {
+        for (size_t i = 0; i < batchesCount; ++i)
+          batches[i] = (BatchType)(~0);
+      }
+
       inline void Set(const size_t i)
       {
         ASSERT(i < N);
