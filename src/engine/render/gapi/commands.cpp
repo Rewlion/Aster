@@ -13,20 +13,19 @@ namespace gapi
   }
 
   void BindGraphicsPipeline(CommandList& cmdList, const ShaderStagesNames& stages,
-                            const PrimitiveTopology topology,
                             const DepthStencilStateDescription& depthStencilState)
   {
     cmdList.push_back(BindGraphicsPipelineCmd{
       .shaderNames = stages,
-      .topology = topology,
       .depthStencilState = depthStencilState
     });
   }
 
-  void Draw(CommandList& cmdList, const uint32_t vertexCount,
+  void Draw(CommandList& cmdList, const PrimitiveTopology topology, const uint32_t vertexCount,
                const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
   {
     cmdList.push_back(DrawCmd{
+      .topology = topology,
       .vertexCount = vertexCount,
       .instanceCount = instanceCount,
       .firstVertex = firstVertex,
@@ -34,10 +33,11 @@ namespace gapi
     });
   }
 
-  void DrawIndexed(CommandList& cmdList, const uint32_t indexCount, uint32_t instanceCount,
+  void DrawIndexed(CommandList& cmdList, const PrimitiveTopology topology, const uint32_t indexCount, uint32_t instanceCount,
                       const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance)
   {
     cmdList.push_back(DrawIndexedCmd{
+      .topology = topology,
       .indexCount = indexCount,
       .instanceCount = instanceCount,
       .firstIndex = firstIndex,

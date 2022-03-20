@@ -15,16 +15,26 @@ namespace gapi
   struct BindGraphicsPipelineCmd
   {
     ShaderStagesNames            shaderNames;
-    PrimitiveTopology            topology;
     DepthStencilStateDescription depthStencilState;
   };
 
   struct DrawCmd
   {
-    uint32_t vertexCount = 0;
-    uint32_t instanceCount = 0;
-    uint32_t firstVertex = 0;
-    uint32_t firstInstance = 0;
+    const PrimitiveTopology topology = PrimitiveTopology::TriangleList;
+    uint32_t                vertexCount = 0;
+    uint32_t                instanceCount = 0;
+    uint32_t                firstVertex = 0;
+    uint32_t                firstInstance = 0;
+  };
+
+  struct DrawIndexedCmd
+  {
+    const PrimitiveTopology topology = PrimitiveTopology::TriangleList;
+    uint32_t                indexCount    = 0;
+    uint32_t                instanceCount = 0;
+    uint32_t                firstIndex    = 0;
+    uint32_t                vertexOffset  = 0;
+    uint32_t                firstInstance = 0;
   };
 
   struct PresentSurfaceImageCmd {};
@@ -44,15 +54,6 @@ namespace gapi
   struct BindIndexBufferCmd
   {
     BufferHandler buffer;
-  };
-
-  struct DrawIndexedCmd
-  {
-    uint32_t indexCount    = 0;
-    uint32_t instanceCount = 0;
-    uint32_t firstIndex    = 0;
-    uint32_t vertexOffset  = 0;
-    uint32_t firstInstance = 0;
   };
 
   struct BindTextureCmd
@@ -98,13 +99,12 @@ namespace gapi
   void BeginRenderPass(CommandList& cmdList, const RenderTargets& renderTargets, TextureHandler depthStencil = TextureHandler::Invalid);
 
   void BindGraphicsPipeline(CommandList& cmdList, const ShaderStagesNames& stages,
-                            const PrimitiveTopology topology,
                             const DepthStencilStateDescription& depthStencilState);
 
-  void Draw(CommandList& cmdList, const uint32_t vertexCount,
+  void Draw(CommandList& cmdList, const PrimitiveTopology topology, const uint32_t vertexCount,
                const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance);
 
-  void DrawIndexed(CommandList& cmdList, const uint32_t indexCount, uint32_t instanceCount,
+  void DrawIndexed(CommandList& cmdList, const PrimitiveTopology topology, const uint32_t indexCount, uint32_t instanceCount,
                       const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstace);
 
   void PresentSurfaceImage(CommandList& cmdList);

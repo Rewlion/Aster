@@ -46,7 +46,7 @@ namespace Engine::Render
 
     BeginRenderPass(cmdList, { gapi::getCurrentSurfaceRT() });
     Clear(cmdList, gapi::CLEAR_RT);
-    BindGraphicsPipeline(cmdList, {str_hash("test_vs"), str_hash("test_ps")}, gapi::PrimitiveTopology::TriangleList, {});
+    BindGraphicsPipeline(cmdList, {str_hash("test_vs"), str_hash("test_ps")}, {});
 
     mat4 mvp = mat4{1};
     mvp = glm::translate(mvp, float3{0,0, 5});
@@ -75,7 +75,7 @@ namespace Engine::Render
     {
       BindVertexBuffer(cmdList, submesh.vertexBuffer);
       BindIndexBuffer(cmdList, submesh.indexBuffer);
-      DrawIndexed(cmdList, submesh.indexCount, 1, 0, 0, 0);
+      DrawIndexed(cmdList, gapi::PrimitiveTopology::TriangleList, submesh.indexCount, 1, 0, 0, 0);
     }
 
     PresentSurfaceImage(cmdList);

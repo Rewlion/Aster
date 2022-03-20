@@ -133,18 +133,7 @@ namespace gapi::vulkan
   void CompileContext::compileCommand(const BindGraphicsPipelineCmd& cmd)
   {
     m_State.graphicsState.Set<GraphicsPipelineTSF, ShaderStagesNames>(cmd.shaderNames);
-    m_State.graphicsState.Set<GraphicsPipelineTSF, PrimitiveTopology>(cmd.topology);
     m_State.graphicsState.Set<GraphicsPipelineTSF, DepthStencilStateDescription>(cmd.depthStencilState);
-  }
-
-  void CompileContext::compileCommand(const DrawCmd& cmd)
-  {
-    m_State.graphicsState.Set<VertexBufferTSF, bool>(true);
-    m_State.graphicsState.Set<IndexBufferTSF, bool>(false);
-
-    FlushGraphicsState();
-
-    m_State.cmdBuffer.draw(cmd.vertexCount, cmd.instanceCount, cmd.firstVertex, cmd.firstInstance);
   }
 
   void CompileContext::compileCommand(const PresentSurfaceImageCmd& cmd)
@@ -178,8 +167,21 @@ namespace gapi::vulkan
     m_State.graphicsState.Set<IndexBufferTSF, vk::Buffer>(buffer);
   }
 
+  void CompileContext::compileCommand(const DrawCmd& cmd)
+  {
+    m_State.graphicsState.Set<GraphicsPipelineTSF, PrimitiveTopology>(cmd.topology);
+    m_State.graphicsState.Set<VertexBufferTSF, bool>(true);
+    m_State.graphicsState.Set<IndexBufferTSF, bool>(false);
+
+    InsureActiveCmd();
+    FlushGraphicsState();
+
+    m_State.cmdBuffer.draw(cmd.vertexCount, cmd.instanceCount, cmd.firstVertex, cmd.firstInstance);
+  }
+
   void CompileContext::compileCommand(const DrawIndexedCmd& cmd)
   {
+    m_State.graphicsState.Set<GraphicsPipelineTSF, PrimitiveTopology>(cmd.topology);
     m_State.graphicsState.Set<VertexBufferTSF, bool>(true);
     m_State.graphicsState.Set<IndexBufferTSF, bool>(true);
 
