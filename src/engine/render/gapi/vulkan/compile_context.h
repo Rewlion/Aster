@@ -42,6 +42,7 @@ namespace gapi::vulkan
       void compileCommand(const BindSamplerCmd& cmd);
       void compileCommand(const ClearCmd& cmd);
       void compileCommand(const SetBlendStateCmd& cmd);
+      void compileCommand(const SetDepthStencilStateCmd& cmd);
 
       vk::RenderPass GetRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing);
       vk::Framebuffer GetFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil);

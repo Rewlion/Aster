@@ -14,8 +14,7 @@ namespace gapi
 
   struct BindGraphicsPipelineCmd
   {
-    ShaderStagesNames            shaderNames;
-    DepthStencilStateDescription depthStencilState;
+    ShaderStagesNames shaderNames;
   };
 
   struct DrawCmd
@@ -80,6 +79,11 @@ namespace gapi
     BlendState blending;
   };
 
+  struct SetDepthStencilStateCmd
+  {
+    DepthStencilStateDescription ds;
+  };
+
   using Command = std::variant<
     BeginRenderPassCmd,
     BindGraphicsPipelineCmd,
@@ -92,14 +96,14 @@ namespace gapi
     BindTextureCmd,
     BindSamplerCmd,
     ClearCmd,
-    SetBlendStateCmd
+    SetBlendStateCmd,
+    SetDepthStencilStateCmd
   >;
   using CommandList = eastl::vector<Command>;
 
   void BeginRenderPass(CommandList& cmdList, const RenderTargets& renderTargets, TextureHandler depthStencil = TextureHandler::Invalid);
 
-  void BindGraphicsPipeline(CommandList& cmdList, const ShaderStagesNames& stages,
-                            const DepthStencilStateDescription& depthStencilState);
+  void BindGraphicsPipeline(CommandList& cmdList, const ShaderStagesNames& stages);
 
   void Draw(CommandList& cmdList, const PrimitiveTopology topology, const uint32_t vertexCount,
                const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance);
@@ -122,4 +126,6 @@ namespace gapi
   void Clear(CommandList& cmdList, const ClearState clearing);
 
   void SetBlendState(CommandList& cmdList, const BlendState& blending);
+
+  void SetDepthStencil(CommandList& cmdList, const DepthStencilStateDescription& ds);
 }

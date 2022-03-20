@@ -12,12 +12,10 @@ namespace gapi
     });
   }
 
-  void BindGraphicsPipeline(CommandList& cmdList, const ShaderStagesNames& stages,
-                            const DepthStencilStateDescription& depthStencilState)
+  void BindGraphicsPipeline(CommandList& cmdList, const ShaderStagesNames& stages)
   {
     cmdList.push_back(BindGraphicsPipelineCmd{
       .shaderNames = stages,
-      .depthStencilState = depthStencilState
     });
   }
 
@@ -103,6 +101,13 @@ namespace gapi
   {
     cmdList.push_back(SetBlendStateCmd{
       .blending = blending
+    });
+  }
+
+  void SetDepthStencil(CommandList& cmdList, const DepthStencilStateDescription& ds)
+  {
+    cmdList.push_back(SetDepthStencilStateCmd{
+      .ds = ds
     });
   }
 }

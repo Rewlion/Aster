@@ -133,7 +133,6 @@ namespace gapi::vulkan
   void CompileContext::compileCommand(const BindGraphicsPipelineCmd& cmd)
   {
     m_State.graphicsState.Set<GraphicsPipelineTSF, ShaderStagesNames>(cmd.shaderNames);
-    m_State.graphicsState.Set<GraphicsPipelineTSF, DepthStencilStateDescription>(cmd.depthStencilState);
   }
 
   void CompileContext::compileCommand(const PresentSurfaceImageCmd& cmd)
@@ -226,6 +225,11 @@ namespace gapi::vulkan
   void CompileContext::compileCommand(const ClearCmd& cmd)
   {
     m_State.renderPassState.Set<RenderPassTSF, ClearState>(cmd.clearing);
+  }
+
+  void CompileContext::compileCommand(const SetDepthStencilStateCmd& cmd)
+  {
+    m_State.graphicsState.Set<GraphicsPipelineTSF, DepthStencilStateDescription>(cmd.ds);
   }
 
   void CompileContext::NextFrame()
