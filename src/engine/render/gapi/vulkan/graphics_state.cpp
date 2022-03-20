@@ -11,8 +11,8 @@ namespace gapi::vulkan
     vk::Viewport vp;
     vp.x = 0;
     vp.y = 0;
-    vp.width =  dim.width;
-    vp.height = dim.height;
+    vp.width =  (float)dim.width;
+    vp.height = (float)dim.height;
     vp.minDepth = 0;
     vp.maxDepth = 1;
     state.cmdBuffer.setViewport(0, 1, &vp);

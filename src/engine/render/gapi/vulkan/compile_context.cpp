@@ -162,7 +162,7 @@ namespace gapi::vulkan
 
     m_State.graphicsState.Set<PushConstantTSF, vk::ShaderStageFlagBits>(stages);
     m_State.graphicsState.Set<PushConstantTSF, size_t>(cmd.size);
-    m_State.graphicsState.Set<PushConstantTSF, void*>(cmd.data);
+    m_State.graphicsState.Set<PushConstantTSF, const void*>(cmd.data);
 
     m_State.graphicsState.MarkDirty<PushConstantTSF>();
   }

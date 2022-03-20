@@ -6,6 +6,17 @@ namespace Utils
   class FixedStack
   {
     public:
+      template<class... Args>
+      FixedStack(Args... args)
+      {
+        static_assert(sizeof...(args) <= N);
+        (Push(args), ...);
+      }
+
+      FixedStack()
+      {
+      }
+
       inline T* GetData()
       {
         return m_Values;

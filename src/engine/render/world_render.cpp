@@ -18,7 +18,7 @@ namespace Engine::Render
     gapi::BufferAllocationDescription ad;
     ad.size = sizeof(float2) * 3;
     ad.usage = gapi::BufferUsage::Vertex;
-    m_TestBuffer = gapi::AllocateBuffer(ad);
+    m_TestBuffer = AllocateBuffer(ad);
 
     float2 vertices[3] = {
       float2(0,0),
@@ -26,7 +26,7 @@ namespace Engine::Render
       float2(1,0)
     };
 
-    gapi::CopyToBufferSync((void*)vertices, 0, ad.size, m_TestBuffer);
+    CopyToBufferSync((void*)vertices, 0, ad.size, m_TestBuffer);
 
     ad = gapi::BufferAllocationDescription{};
     ad.size = sizeof(gapi::index_type) * 3;
@@ -34,41 +34,25 @@ namespace Engine::Render
     m_TestIndexBuffer = gapi::AllocateBuffer(ad);
 
     gapi::index_type indices[3] = {0,1,2};
-    gapi::CopyToBufferSync(indices, 0,  ad.size, m_TestIndexBuffer);
+    CopyToBufferSync(indices, 0,  ad.size, m_TestIndexBuffer);
 
     gapi::SamplerAllocationDescription samplerAllocDesc;
-    m_TestSampler = gapi::AllocateSampler(samplerAllocDesc);
+    m_TestSampler = AllocateSampler(samplerAllocDesc);
   }
 
   void WorldRender::Render()
   {
     gapi::CommandList cmdList;
 
-    gapi::BeginRenderPassCmd beginPass;
-    beginPass.renderTargets.Push({gapi::getCurrentSurfaceRT()});
-    cmdList.push_back(beginPass);
-
-    cmdList.push_back(gapi::ClearCmd{gapi::CLEAR_RT});
-
-    gapi::GraphicsPipelineDescription pipeline;
-    pipeline.shaderNames.Push(str_hash("test_vs"));
-    pipeline.shaderNames.Push(str_hash("test_ps"));
-    pipeline.topology = gapi::PrimitiveTopology::TriangleList;
-    pipeline.blendState.attachmentsCount = 1;
-
-    cmdList.push_back(gapi::BindGraphicsPipelineCmd{
-      .description = pipeline
-    });
+    BeginRenderPass(cmdList, { gapi::getCurrentSurfaceRT() });
+    Clear(cmdList, gapi::CLEAR_RT);
+    BindGraphicsPipeline(cmdList, {str_hash("test_vs"), str_hash("test_ps")}, gapi::PrimitiveTopology::TriangleList, {}, {.attachmentsCount=1});
 
     mat4 mvp = mat4{1};
     mvp = glm::translate(mvp, float3{0,0, 5});
-    mvp = math::Perspective(90, 3.0f/4.0f, 0.1, 100) * mvp;
+    mvp = math::Perspective(90.0, 3.0f/4.0f, 0.1, 100.0) * mvp;
 
-    cmdList.push_back(gapi::PushConstantsCmd{
-      .data = &mvp,
-      .size = sizeof(mvp),
-      .stage = gapi::ShaderStage::Vertex
-    });
+    PushConstants(cmdList, &mvp, sizeof(mvp), gapi::ShaderStage::Vertex);
 
     StaticModelAsset asset;
     if (!assets_manager.GetStaticModel(str_hash("bin/assets/cube/cube.gltf"), asset))
@@ -84,40 +68,18 @@ namespace Engine::Render
       return;
     }
 
-    cmdList.push_back(gapi::BindTextureCmd{
-      .texture = texture.texture,
-      .argument = 0,
-      .binding = 0
-    });
-
-    cmdList.push_back(gapi::BindSamplerCmd{
-      .sampler = m_TestSampler,
-      .argument = 0,
-      .binding = 1
-    });
+    BindTexture(cmdList, texture.texture, 0, 0);
+    BindSampler(cmdList, m_TestSampler, 0, 1);
 
     for(const auto& submesh: asset.submeshes)
     {
-      cmdList.push_back(gapi::BindVertexBufferCmd{
-       .buffer = submesh.vertexBuffer
-      });
-
-      cmdList.push_back(gapi::BindIndexBufferCmd{
-        .buffer = submesh.indexBuffer
-      });
-
-      cmdList.push_back(gapi::DrawIndexedCmd{
-        .indexCount = submesh.indexCount,
-        .instanceCount = 1,
-        .firstIndex = 0,
-        .vertexOffset = 0,
-        .firstInstance = 0
-      });
+      BindVertexBuffer(cmdList, submesh.vertexBuffer);
+      BindIndexBuffer(cmdList, submesh.indexBuffer);
+      DrawIndexed(cmdList, submesh.indexCount, 1, 0, 0, 0);
     }
 
-    cmdList.push_back(gapi::PresentSurfaceImageCmd{});
-
-    gapi::submitCommands(std::move(cmdList));
+    PresentSurfaceImage(cmdList);
+    submitCommands(std::move(cmdList));
   }
 
 }

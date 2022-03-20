@@ -29,7 +29,7 @@ namespace gapi
 
   struct PushConstantsCmd
   {
-    void*       data = nullptr;
+    const void* data = nullptr;
     size_t      size = 0;
     ShaderStage stage = ShaderStage::Vertex;
   };
@@ -76,15 +76,41 @@ namespace gapi
     BeginRenderPassCmd,
     BindGraphicsPipelineCmd,
     DrawCmd,
+    DrawIndexedCmd,
     PresentSurfaceImageCmd,
     PushConstantsCmd,
     BindVertexBufferCmd,
     BindIndexBufferCmd,
-    DrawIndexedCmd,
     BindTextureCmd,
     BindSamplerCmd,
     ClearCmd
   >;
   using CommandList = eastl::vector<Command>;
 
+  void BeginRenderPass(CommandList& cmdList, const RenderTargets& renderTargets, TextureHandler depthStencil = TextureHandler::Invalid);
+
+  void BindGraphicsPipeline(CommandList& cmdList, const ShaderStagesNames& stages,
+                            const PrimitiveTopology topology,
+                            const DepthStencilStateDescription& depthStencilState,
+                            const BlendState& blendState);
+
+  void Draw(CommandList& cmdList, const uint32_t vertexCount,
+               const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance);
+
+  void DrawIndexed(CommandList& cmdList, const uint32_t indexCount, uint32_t instanceCount,
+                      const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstace);
+
+  void PresentSurfaceImage(CommandList& cmdList);
+
+  void PushConstants(CommandList& cmdList, const void* data, const size_t size, const ShaderStage stage);
+
+  void BindVertexBuffer(CommandList& cmdList, const BufferHandler buffer);
+
+  void BindIndexBuffer(CommandList& cmdList, const BufferHandler buffer);
+
+  void BindTexture(CommandList& cmdList, const TextureHandler texture, const size_t argument, const size_t binding);
+
+  void BindSampler(CommandList& cmdList, const SamplerHandler sampler, const size_t argument, const size_t binding);
+
+  void Clear(CommandList& cmdList, const ClearState clearing);
 }
