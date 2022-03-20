@@ -31,7 +31,6 @@ namespace gapi::vulkan
       }
 
       void compileCommand(const BeginRenderPassCmd& cmd);
-      void compileCommand(const EndRenderPassCmd& cmd);
       void compileCommand(const BindGraphicsPipelineCmd& cmd);
       void compileCommand(const DrawCmd& cmd);
       void compileCommand(const PresentSurfaceImageCmd& cmd);

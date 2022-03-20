@@ -115,7 +115,6 @@ namespace Engine::Render
       });
     }
 
-    cmdList.push_back(gapi::EndRenderPassCmd{});
     cmdList.push_back(gapi::PresentSurfaceImageCmd{});
 
     gapi::submitCommands(std::move(cmdList));

@@ -12,10 +12,6 @@ namespace gapi
     TextureHandler depthStencil = TextureHandler::Invalid;
   };
 
-  struct EndRenderPassCmd
-  {
-  };
-
   struct BindGraphicsPipelineCmd
   {
     GraphicsPipelineDescription description;
@@ -78,7 +74,6 @@ namespace gapi
 
   using Command = std::variant<
     BeginRenderPassCmd,
-    EndRenderPassCmd,
     BindGraphicsPipelineCmd,
     DrawCmd,
     PresentSurfaceImageCmd,
