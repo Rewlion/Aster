@@ -233,24 +233,18 @@ namespace gapi
 
   struct BlendState
   {
-    bool                 logicOpEnabled   = false;
-    LogicOp              logicOp          = LogicOp::Clear;
-    size_t               attachmentsCount = 0;
-    AttachmentBlendState attachments[MAX_RENDER_TARGETS];
-    float4               blendConstants   = float4{0.0f , 0.0f, 0.0f, 0.0f};
+    bool                                    logicOpEnabled   = false;
+    LogicOp                                 logicOp          = LogicOp::Clear;
+    Utils::FixedStack<AttachmentBlendState,
+                     MAX_RENDER_TARGETS>    attachments;
+    float4                                  blendConstants   = float4{0.0f , 0.0f, 0.0f, 0.0f};
 
     bool operator==(const BlendState& rvl)
     {
-      if (attachmentsCount != rvl.attachmentsCount)
-        return false;
-
-      for (size_t i = 0; i < attachmentsCount; ++i)
-        if (attachments[i] != rvl.attachments[i])
-          return false;
-
-      return logicOpEnabled == rvl.logicOpEnabled &&
-             logicOp        == rvl.logicOp        &&
-             blendConstants == rvl.blendConstants;
+      return rvl.attachments == attachments        &&
+             logicOpEnabled  == rvl.logicOpEnabled &&
+             logicOp         == rvl.logicOp        &&
+             blendConstants  == rvl.blendConstants;
     }
 
     size_t hash() const;

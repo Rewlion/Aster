@@ -14,7 +14,9 @@ namespace gapi
 
   struct BindGraphicsPipelineCmd
   {
-    GraphicsPipelineDescription description;
+    ShaderStagesNames            shaderNames;
+    PrimitiveTopology            topology;
+    DepthStencilStateDescription depthStencilState;
   };
 
   struct DrawCmd
@@ -72,6 +74,11 @@ namespace gapi
     ClearState clearing = CLEAR_NONE;
   };
 
+  struct SetBlendStateCmd
+  {
+    BlendState blending;
+  };
+
   using Command = std::variant<
     BeginRenderPassCmd,
     BindGraphicsPipelineCmd,
@@ -83,7 +90,8 @@ namespace gapi
     BindIndexBufferCmd,
     BindTextureCmd,
     BindSamplerCmd,
-    ClearCmd
+    ClearCmd,
+    SetBlendStateCmd
   >;
   using CommandList = eastl::vector<Command>;
 
@@ -91,8 +99,7 @@ namespace gapi
 
   void BindGraphicsPipeline(CommandList& cmdList, const ShaderStagesNames& stages,
                             const PrimitiveTopology topology,
-                            const DepthStencilStateDescription& depthStencilState,
-                            const BlendState& blendState);
+                            const DepthStencilStateDescription& depthStencilState);
 
   void Draw(CommandList& cmdList, const uint32_t vertexCount,
                const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance);
@@ -113,4 +120,6 @@ namespace gapi
   void BindSampler(CommandList& cmdList, const SamplerHandler sampler, const size_t argument, const size_t binding);
 
   void Clear(CommandList& cmdList, const ClearState clearing);
+
+  void SetBlendState(CommandList& cmdList, const BlendState& blending);
 }

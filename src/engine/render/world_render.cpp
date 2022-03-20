@@ -46,7 +46,7 @@ namespace Engine::Render
 
     BeginRenderPass(cmdList, { gapi::getCurrentSurfaceRT() });
     Clear(cmdList, gapi::CLEAR_RT);
-    BindGraphicsPipeline(cmdList, {str_hash("test_vs"), str_hash("test_ps")}, gapi::PrimitiveTopology::TriangleList, {}, {.attachmentsCount=1});
+    BindGraphicsPipeline(cmdList, {str_hash("test_vs"), str_hash("test_ps")}, gapi::PrimitiveTopology::TriangleList, {});
 
     mat4 mvp = mat4{1};
     mvp = glm::translate(mvp, float3{0,0, 5});

@@ -87,10 +87,10 @@ namespace gapi::vulkan
     ret.blendConstants[2] = state.blendConstants[2];
     ret.blendConstants[3] = state.blendConstants[3];
 
-    ret.attachmentCount = state.attachmentsCount;
-    for (size_t i = 0; i < state.attachmentsCount; ++i)
-      attachmentStates[i] = GetAttachmentBlendState(state.attachments[i]);
+    for (size_t i = 0; i < state.attachments.GetSize(); ++i)
+      attachmentStates[i] = GetAttachmentBlendState(state.attachments.Get(i));
     ret.pAttachments = attachmentStates;
+    ret.attachmentCount = state.attachments.GetSize();
 
     return ret;
   }

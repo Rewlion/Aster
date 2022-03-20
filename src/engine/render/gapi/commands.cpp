@@ -14,16 +14,12 @@ namespace gapi
 
   void BindGraphicsPipeline(CommandList& cmdList, const ShaderStagesNames& stages,
                             const PrimitiveTopology topology,
-                            const DepthStencilStateDescription& depthStencilState,
-                            const BlendState& blendState)
+                            const DepthStencilStateDescription& depthStencilState)
   {
     cmdList.push_back(BindGraphicsPipelineCmd{
-      .description = GraphicsPipelineDescription{
-        .shaderNames = stages,
-        .topology = topology,
-        .depthStencilState = depthStencilState,
-        .blendState = blendState
-      }
+      .shaderNames = stages,
+      .topology = topology,
+      .depthStencilState = depthStencilState
     });
   }
 
@@ -100,6 +96,13 @@ namespace gapi
   {
     cmdList.push_back(ClearCmd{
       .clearing = clearing
+    });
+  }
+
+  void SetBlendState(CommandList& cmdList, const BlendState& blending)
+  {
+    cmdList.push_back(SetBlendStateCmd{
+      .blending = blending
     });
   }
 }

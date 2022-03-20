@@ -92,5 +92,10 @@ namespace gapi::vulkan
     state.cmdBuffer.beginRenderPass(rpBeginInfo, vk::SubpassContents::eInline);
 
     state.graphicsState.Set<ViewportTSF, vk::Extent2D>(renderArea.extent);
+
+    BlendState blendState;
+    for (const auto& rt: renderTargets)
+      blendState.attachments.Push( {} );
+    state.graphicsState.Set<GraphicsPipelineTSF, BlendState>(blendState);
   }
 }

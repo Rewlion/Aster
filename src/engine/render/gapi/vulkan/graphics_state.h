@@ -61,7 +61,7 @@ namespace gapi::vulkan
   {
     TRACKED_STATE_FIELD_ATTR(vk::ShaderStageFlagBits, stage);
     TRACKED_STATE_FIELD_ATTR(size_t, size);
-    TRACKED_STATE_FIELD_ATTR_PTR(const void*, data);///////////// copy?
+    TRACKED_STATE_FIELD_ATTR_PTR(void*, data);///////////// copy?
 
     void Apply(CompileContext& ctx, BackendState& state);
   };
@@ -95,5 +95,6 @@ namespace gapi::vulkan
     vk::RenderPass         renderPass;
     vk::Framebuffer        framebuffer;
     const PipelineLayout*  layout;
+    size_t                 renderTargetsCount;
   };
 }

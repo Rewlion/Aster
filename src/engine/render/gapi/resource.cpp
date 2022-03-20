@@ -65,8 +65,8 @@ namespace gapi
     hash_combine(hash, blendConstants[2]);
     hash_combine(hash, blendConstants[3]);
 
-    for(size_t i = 0; i < attachmentsCount; ++i)
-      hash_combine(hash, attachments[i].hash());
+    for (const auto& attachment: attachments)
+      hash_combine(hash, attachment.hash());
 
     return hash;
   }

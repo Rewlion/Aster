@@ -132,10 +132,9 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const BindGraphicsPipelineCmd& cmd)
   {
-    m_State.graphicsState.Set<GraphicsPipelineTSF, ShaderStagesNames>(cmd.description.shaderNames);
-    m_State.graphicsState.Set<GraphicsPipelineTSF, PrimitiveTopology>(cmd.description.topology);
-    m_State.graphicsState.Set<GraphicsPipelineTSF, DepthStencilStateDescription>(cmd.description.depthStencilState);
-    m_State.graphicsState.Set<GraphicsPipelineTSF, BlendState>(cmd.description.blendState);
+    m_State.graphicsState.Set<GraphicsPipelineTSF, ShaderStagesNames>(cmd.shaderNames);
+    m_State.graphicsState.Set<GraphicsPipelineTSF, PrimitiveTopology>(cmd.topology);
+    m_State.graphicsState.Set<GraphicsPipelineTSF, DepthStencilStateDescription>(cmd.depthStencilState);
   }
 
   void CompileContext::compileCommand(const DrawCmd& cmd)
@@ -231,5 +230,10 @@ namespace gapi::vulkan
   {
     m_CurrentFrame = (m_CurrentFrame + 1) % SWAPCHAIN_IMAGES_COUNT;
     GetCurrentFrameOwnedResources().Clear();
+  }
+
+  void CompileContext::compileCommand(const SetBlendStateCmd& cmd)
+  {
+    m_State.graphicsState.Set<GraphicsPipelineTSF, BlendState>(cmd.blending);
   }
 }
