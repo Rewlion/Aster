@@ -13,6 +13,16 @@
   inline void Set(const type fieldName) {this->fieldName = fieldName;}  \
   inline bool HasDiff(const type fieldName) { return this->fieldName != fieldName; }
 
+#define TRACKED_STATE_FIELD_ATTR_MANAGED_PTR(type, fieldName) \
+  const type  fieldName = nullptr;                            \
+  inline void Set(const type fieldName)                       \
+  {                                                           \
+    if (this->fieldName != nullptr)                           \
+      delete[] this->fieldName;                               \
+    this->fieldName = fieldName;                              \
+  }                                                           \
+  inline bool HasDiff(const type fieldName) { return this->fieldName != fieldName; }
+
 namespace gapi::vulkan
 {
   class CompileContext;

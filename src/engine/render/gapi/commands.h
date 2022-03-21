@@ -12,7 +12,7 @@ namespace gapi
     TextureHandler depthStencil = TextureHandler::Invalid;
   };
 
-  struct BindGraphicsPipelineCmd
+  struct BindGraphicsShadersCmd
   {
     ShaderStagesNames shaderNames;
   };
@@ -86,7 +86,7 @@ namespace gapi
 
   using Command = std::variant<
     BeginRenderPassCmd,
-    BindGraphicsPipelineCmd,
+    BindGraphicsShadersCmd,
     DrawCmd,
     DrawIndexedCmd,
     PresentSurfaceImageCmd,
@@ -103,7 +103,7 @@ namespace gapi
 
   void BeginRenderPass(CommandList& cmdList, const RenderTargets& renderTargets, TextureHandler depthStencil = TextureHandler::Invalid);
 
-  void BindGraphicsPipeline(CommandList& cmdList, const ShaderStagesNames& stages);
+  void BindGraphicsShaders(CommandList& cmdList, const ShaderStagesNames& stages);
 
   void Draw(CommandList& cmdList, const PrimitiveTopology topology, const uint32_t vertexCount,
                const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance);

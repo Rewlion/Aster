@@ -12,9 +12,9 @@ namespace gapi
     });
   }
 
-  void BindGraphicsPipeline(CommandList& cmdList, const ShaderStagesNames& stages)
+  void BindGraphicsShaders(CommandList& cmdList, const ShaderStagesNames& stages)
   {
-    cmdList.push_back(BindGraphicsPipelineCmd{
+    cmdList.push_back(BindGraphicsShadersCmd{
       .shaderNames = stages,
     });
   }
@@ -51,8 +51,11 @@ namespace gapi
 
   void PushConstants(CommandList& cmdList, const void* data, const size_t size, const ShaderStage stage)
   {
+    void* managedData = new char[size];
+    std::memcpy(managedData, data, size);
+
     cmdList.push_back(PushConstantsCmd{
-      .data = data,
+      .data = managedData,
       .size = size,
       .stage = stage
     });

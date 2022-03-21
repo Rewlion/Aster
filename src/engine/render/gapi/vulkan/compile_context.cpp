@@ -130,7 +130,7 @@ namespace gapi::vulkan
     return min;
   }
 
-  void CompileContext::compileCommand(const BindGraphicsPipelineCmd& cmd)
+  void CompileContext::compileCommand(const BindGraphicsShadersCmd& cmd)
   {
     m_State.graphicsState.Set<GraphicsPipelineTSF, ShaderStagesNames>(cmd.shaderNames);
   }
