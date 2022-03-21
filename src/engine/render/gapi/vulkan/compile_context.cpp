@@ -196,11 +196,13 @@ namespace gapi::vulkan
 
     if (cmd.texture != TextureHandler::Invalid)
     {
-      InsureActiveCmd();
-      EndRenderPass("Bind texture");
-
-      m_Device->ImageBarrier(m_State.cmdBuffer, cmd.texture, vk::ImageLayout::eShaderReadOnlyOptimal,
-                             vk::PipelineStageFlagBits::eFragmentShader, vk::PipelineStageFlagBits::eFragmentShader);
+      if (m_Device->GetImageLayout(cmd.texture) != vk::ImageLayout::eShaderReadOnlyOptimal)
+      {
+        EndRenderPass("Bind texture");
+        ImageBarrier(cmd.texture, vk::ImageLayout::eShaderReadOnlyOptimal,
+                     vk::PipelineStageFlagBits::eFragmentShader,
+                     vk::PipelineStageFlagBits::eFragmentShader);
+      }
 
       vk::ImageView imgView = m_Device->getImageView(cmd.texture);
       dsManager.SetImage(imgView, cmd.argument, cmd.binding);
@@ -241,5 +243,48 @@ namespace gapi::vulkan
   void CompileContext::compileCommand(const SetBlendStateCmd& cmd)
   {
     m_State.graphicsState.Set<GraphicsPipelineTSF, BlendState>(cmd.blending);
+  }
+
+  void CompileContext::ImageBarrier(const TextureHandler handler, const vk::ImageLayout newLayout,
+                        const vk::PipelineStageFlagBits srcStage, const vk::PipelineStageFlagBits dstStage)
+  {
+    InsureActiveCmd();
+    
+    TextureHandlerInternal h{handler};
+    if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
+    {
+      logerror("vulkan: unable to set image barrier for swapchain image");
+      return;
+    }
+
+    if (h.as.typed.type != (uint64_t)TextureType::Allocated)
+    {
+      ASSERT(!"Unsupported");
+    }
+
+    const vk::ImageLayout currentLayout = m_Device->GetImageLayout(handler);
+
+    vk::ImageSubresourceRange subresourceRange;
+    subresourceRange.baseMipLevel = 0;
+    subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+    subresourceRange.baseArrayLayer = 0;
+    subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+    subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+
+    vk::ImageMemoryBarrier layoutBarrier;
+    layoutBarrier.oldLayout = currentLayout;
+    layoutBarrier.newLayout = newLayout;
+    layoutBarrier.image = m_Device->GetImage(handler);
+    layoutBarrier.subresourceRange = subresourceRange;
+
+    m_State.cmdBuffer.pipelineBarrier(
+      srcStage,
+      dstStage,
+      vk::DependencyFlagBits{},
+      0, nullptr,
+      0, nullptr,
+      1, &layoutBarrier);
+
+    m_Device->SetImageLayout(handler, newLayout);
   }
 }

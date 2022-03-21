@@ -95,6 +95,17 @@ namespace gapi::vulkan
     return vk::ImageView{};
   }
 
+  vk::Image Device::GetImage(const TextureHandler handler)
+  {
+    TextureHandlerInternal h{handler};
+    if (h.as.typed.type != (uint64_t)TextureType::Allocated)
+    {
+      ASSERT(!"Can't get not allocated image");
+    }
+
+     return m_AllocatedTextures.Get(h.as.typed.id).img.get();
+  }
+
   vk::Extent3D Device::GetImageDim(const TextureHandler handler)
   {
     TextureHandlerInternal h{handler};
@@ -402,50 +413,6 @@ namespace gapi::vulkan
     ASSERT(vk::Result::eSuccess == m_Device->waitForFences(1, &fence.get(), true, ~0));
   }
 
-  void Device::ImageBarrier(vk::CommandBuffer& cmdBuf, const TextureHandler handler, const vk::ImageLayout newLayout,
-                            const vk::PipelineStageFlagBits srcStage, const vk::PipelineStageFlagBits dstStage)
-  {
-    TextureHandlerInternal h{handler};
-    if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
-    {
-      logerror("vulkan: unable to set image barrier for swapchain image");
-      return;
-    }
-
-    if (h.as.typed.type != (uint64_t)TextureType::Allocated)
-    {
-      ASSERT(!"Unsupported");
-    }
-
-    Texture& texture = m_AllocatedTextures.Get(h.as.typed.id);
-
-    if (texture.currentLayout == newLayout)
-      return;
-
-    vk::ImageSubresourceRange subresourceRange;
-    subresourceRange.baseMipLevel = 0;
-    subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
-    subresourceRange.baseArrayLayer = 0;
-    subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-    subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-
-    vk::ImageMemoryBarrier layoutBarrier;
-    layoutBarrier.oldLayout = texture.currentLayout;
-    layoutBarrier.newLayout = newLayout;
-    layoutBarrier.image = texture.img.get();
-    layoutBarrier.subresourceRange = subresourceRange;
-
-    cmdBuf.pipelineBarrier(
-      srcStage,
-      dstStage,
-      vk::DependencyFlagBits{},
-      0, nullptr,
-      0, nullptr,
-      1, &layoutBarrier);
-
-    texture.currentLayout = newLayout;
-  }
-
   SamplerHandler Device::AllocateSampler(const SamplerAllocationDescription& allocDesc)
   {
     vk::SamplerCreateInfo samplerCi;
@@ -486,5 +453,27 @@ namespace gapi::vulkan
     }
 
     return m_AllocatedSamplers.Get(id).sampler.get();
+  }
+
+  vk::ImageLayout Device::GetImageLayout(const TextureHandler handler)
+  {
+    TextureHandlerInternal h{handler};
+    if (h.as.typed.type != (uint64_t)TextureType::Allocated)
+    {
+      ASSERT(!"Can't get image layout for not allocated texture");
+    }
+
+    return m_AllocatedTextures.Get(h.as.typed.id).currentLayout;
+  }
+
+  void Device::SetImageLayout(const TextureHandler handler, const vk::ImageLayout layout)
+  {
+    TextureHandlerInternal h{handler};
+    if (h.as.typed.type != (uint64_t)TextureType::Allocated)
+    {
+      ASSERT(!"Can't set image layout for not allocated texture");
+    }
+
+    m_AllocatedTextures.Get(h.as.typed.id).currentLayout = layout;
   }
 }

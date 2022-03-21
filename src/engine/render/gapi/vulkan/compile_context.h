@@ -65,6 +65,9 @@ namespace gapi::vulkan
       void NextFrame();
       void FlushGraphicsState();
 
+      void ImageBarrier(const TextureHandler handler, const vk::ImageLayout newLayout,
+                        const vk::PipelineStageFlagBits srcStage, const vk::PipelineStageFlagBits dstStage);
+
     private:
       Device* m_Device = nullptr;
       RenderPassStorage m_RenderPassStorage;

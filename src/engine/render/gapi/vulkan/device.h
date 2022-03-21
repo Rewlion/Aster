@@ -52,6 +52,8 @@ namespace gapi::vulkan
 
       vk::ImageView getImageView(const TextureHandler handler);
 
+      vk::Image GetImage(const TextureHandler handler);
+
       vk::Extent3D GetImageDim(const TextureHandler handler);
 
       void SubmitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf);
@@ -69,12 +71,13 @@ namespace gapi::vulkan
 
       void CopyToTextureSync(const void* src, const size_t size, const TextureHandler texture);
 
-      void ImageBarrier(vk::CommandBuffer& cmdBuf, const TextureHandler handler, const vk::ImageLayout newLayout,
-                        const vk::PipelineStageFlagBits srcStage, const vk::PipelineStageFlagBits dstStage);
-
       SamplerHandler AllocateSampler(const SamplerAllocationDescription& allocDesc);
 
       vk::Sampler GetSampler(const SamplerHandler sampler);
+
+      vk::ImageLayout GetImageLayout(const TextureHandler handler);
+
+      void SetImageLayout(const TextureHandler handler, const vk::ImageLayout layout);
 
     private:
       Buffer AllocateBufferInternal(const BufferAllocationDescription& allocDesc, const uint32_t memoryIndex);
