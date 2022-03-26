@@ -8,19 +8,19 @@ namespace gapi::vulkan
   {
     m_Device = ci.device;
     m_PresentQueue = ci.presentQueue;
-    m_SurfaceFormat = GetSuitableSurfaceFormat(ci.surfaceFormats);
-    m_SurfaceExtent = GetSwapchainExtent(ci.surfaceCapabilities, ci.swapchainImageExtent);
-    m_Swapchain = CreateSwapchain(ci, m_SurfaceFormat, m_SurfaceExtent);
-    SetSwapchainResources();
-    AcquireSurfaceImage();
+    m_SurfaceFormat = getSuitableSurfaceFormat(ci.surfaceFormats);
+    m_SurfaceExtent = getSwapchainExtent(ci.surfaceCapabilities, ci.swapchainImageExtent);
+    m_Swapchain = createSwapchain(ci, m_SurfaceFormat, m_SurfaceExtent);
+    setSwapchainResources();
+    acquireSurfaceImage();
   }
 
-  vk::UniqueSwapchainKHR Swapchain::CreateSwapchain(
+  vk::UniqueSwapchainKHR Swapchain::createSwapchain(
     const CreateInfo& ci,
     const vk::SurfaceFormatKHR& surfaceFormat,
     const vk::Extent2D& surfaceExtent) const
   {
-    const auto swapchainPresentMode = GetSwapchainPresentMode(ci.surfacePresentModes, vk::PresentModeKHR::eFifo);
+    const auto swapchainPresentMode = getSwapchainPresentMode(ci.surfacePresentModes, vk::PresentModeKHR::eFifo);
     const auto swapchainCreateInfo = vk::SwapchainCreateInfoKHR()
           .setSurface(ci.surface)
           .setMinImageCount(SWAPCHAIN_IMAGES_COUNT)
@@ -38,12 +38,12 @@ namespace gapi::vulkan
     return ci.device.createSwapchainKHRUnique(swapchainCreateInfo);
   }
 
-  vk::SurfaceFormatKHR Swapchain::GetSuitableSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) const
+  vk::SurfaceFormatKHR Swapchain::getSuitableSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) const
   {
     return { vk::Format::eB8G8R8A8Srgb, vk::ColorSpaceKHR::eSrgbNonlinear };
   }
 
-  vk::PresentModeKHR Swapchain::GetSwapchainPresentMode(
+  vk::PresentModeKHR Swapchain::getSwapchainPresentMode(
         const std::vector<vk::PresentModeKHR>& availablePresentModes,
         const vk::PresentModeKHR& preferredMode) const
   {
@@ -63,7 +63,7 @@ namespace gapi::vulkan
     return vk::PresentModeKHR::eFifo;
   }
 
-  vk::Extent2D Swapchain::GetSwapchainExtent(const vk::SurfaceCapabilitiesKHR& capabilities, const vk::Extent2D& windowSize) const
+  vk::Extent2D Swapchain::getSwapchainExtent(const vk::SurfaceCapabilitiesKHR& capabilities, const vk::Extent2D& windowSize) const
   {
     if (capabilities.currentExtent.width != uint32_t(-1))
     {
@@ -78,7 +78,7 @@ namespace gapi::vulkan
     }
   }
 
-  void Swapchain::SetSwapchainResources()
+  void Swapchain::setSwapchainResources()
   {
     std::vector<vk::Image> images = m_Device.getSwapchainImagesKHR(*m_Swapchain);
     for (size_t i = 0; i < images.size(); ++i)
@@ -114,7 +114,7 @@ namespace gapi::vulkan
     }
   }
 
-  void Swapchain::AcquireSurfaceImage()
+  void Swapchain::acquireSurfaceImage()
   {
     vk::Fence fence = m_SwapchainResources.imageAcquiredFence.get();
     frameId = m_Device.acquireNextImageKHR(*m_Swapchain, -1, {}, fence).value;
@@ -133,11 +133,11 @@ namespace gapi::vulkan
       .setPImageIndices(&frameId)
       .setPResults(nullptr)
       .setWaitSemaphoreCount(1)
-      .setPWaitSemaphores(GetWaitForRenderFinishedSemaphore());
+      .setPWaitSemaphores(getWaitForRenderFinishedSemaphore());
 
     const vk::Result r = m_PresentQueue.presentKHR(presentInfo);
     ASSERT(r == vk::Result::eSuccess);
 
-    AcquireSurfaceImage();
+    acquireSurfaceImage();
   }
 }

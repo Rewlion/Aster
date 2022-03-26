@@ -8,7 +8,7 @@
 
 namespace spirv
 {
-  static vk::ShaderStageFlagBits getShaderStage(const spirv_cross::EntryPoint& ep)
+  static vk::ShaderStageFlagBits get_shader_stage(const spirv_cross::EntryPoint& ep)
   {
     switch (ep.execution_model)
     {
@@ -28,12 +28,12 @@ namespace spirv
     }
   }
 
-  static bool IsVectorType(const spirv_cross::SPIRType& type)
+  static bool is_vector_type(const spirv_cross::SPIRType& type)
   {
     return type.vecsize > 1;
   }
 
-  static vk::Format GetOneElemFormat(const spirv_cross::SPIRType& type)
+  static vk::Format get_one_elem_format(const spirv_cross::SPIRType& type)
   {
     using spirv_cross::SPIRType;
 
@@ -67,7 +67,7 @@ namespace spirv
     }
   }
 
-  static vk::Format GetVectorType(const spirv_cross::SPIRType& type)
+  static vk::Format get_vector_type(const spirv_cross::SPIRType& type)
   {
     using spirv_cross::SPIRType;
 
@@ -177,20 +177,20 @@ namespace spirv
     }
   }
 
-  static vk::Format getFormat(const spirv_cross::SPIRType& type)
+  static vk::Format get_format(const spirv_cross::SPIRType& type)
   {
-    if (IsVectorType(type))
-      return GetVectorType(type);
+    if (is_vector_type(type))
+      return get_vector_type(type);
 
-    return GetOneElemFormat(type);
+    return get_one_elem_format(type);
   }
 
-  uint32_t getAttributeSize(const spirv_cross::SPIRType& type)
+  uint32_t get_attribute_size(const spirv_cross::SPIRType& type)
   {
     return (type.width / 8) * type.vecsize * type.columns;
   }
 
-  BindingType GetTextureType(const spirv_cross::SPIRType& type)
+  BindingType get_texture_type(const spirv_cross::SPIRType& type)
   {
     switch(type.image.dim)
     {
@@ -199,7 +199,7 @@ namespace spirv
     }
   }
 
-  Reflection Reflect(const eastl::vector<char>& spirv)
+  Reflection reflect(const eastl::vector<char>& spirv)
   {
     Reflection ret;
 
@@ -214,7 +214,7 @@ namespace spirv
 
     const spirv_cross::EntryPoint entryPoint = entryPoints[0];
     std::snprintf(ret.entryName, SHADERS_STAGE_NAME_LEN, "%s", entryPoint.name.c_str());
-    ret.stage = getShaderStage(entryPoint);
+    ret.stage = get_shader_stage(entryPoint);
 
     const spirv_cross::ShaderResources resources = glsl.get_shader_resources();
 
@@ -228,13 +228,13 @@ namespace spirv
 
         vk::VertexInputAttributeDescription attr;
         attr.location = glsl.get_decoration(input.id, spv::Decoration::DecorationLocation);
-        attr.format = getFormat(type);
+        attr.format = get_format(type);
         attr.offset = attributeOffset;
         attr.binding = 0;
 
-        attributeOffset += getAttributeSize(type);
+        attributeOffset += get_attribute_size(type);
 
-        ret.inputAssembly.attributes.Push(attr);
+        ret.inputAssembly.attributes.push(attr);
       }
       ret.inputAssembly.stride = attributeOffset;
     }
@@ -270,7 +270,7 @@ namespace spirv
         continue;
 
       Binding& binding = ret.shaderArguments[nSet].bindings[nBinding];
-      binding.type = GetTextureType(type);
+      binding.type = get_texture_type(type);
       binding.stages = ret.stage;
       std::snprintf(binding.name, BINDING_NAME_LEN, "%s", texture.name.c_str());
     }

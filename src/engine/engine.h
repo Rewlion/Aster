@@ -2,6 +2,6 @@
 
 namespace Engine
 {
-  void Init();
-  void StartTick();
+  void init();
+  void start_tick();
 }

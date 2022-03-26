@@ -10,18 +10,18 @@ namespace Engine::ECS
 {
   Engine::ECS::Registry manager;
 
-  archetype_id Registry::get_archetype(const eastl::vector<ComponentDescription>& desc)
+  archetype_id Registry::getArchetype(const eastl::vector<ComponentDescription>& desc)
   {
     for (size_t i = 0; i < m_Archetypes.size(); ++i)
-      if (m_Archetypes[i].has_components(desc))
+      if (m_Archetypes[i].hasComponents(desc))
         return (archetype_id)i;
 
     return INVALID_ARCHETYPE_ID;
   }
 
-  void Registry::add_template(const template_name_id& templateId, const eastl::vector<ComponentDescription>& desc)
+  void Registry::addTemplate(const template_name_id& templateId, const eastl::vector<ComponentDescription>& desc)
   {
-    archetype_id archetypeId = get_archetype(desc);
+    archetype_id archetypeId = getArchetype(desc);
     if (archetypeId == INVALID_ARCHETYPE_ID)
     {
       archetypeId = (archetype_id)m_Archetypes.size();
@@ -30,20 +30,20 @@ namespace Engine::ECS
     m_TemplateToArhetypeMap.insert({templateId, archetypeId});
   }
 
-  void Registry::create_entity(const template_name_id templateNameId, CreationCb cb)
+  void Registry::createEntity(const template_name_id templateNameId, CreationCb cb)
   {
     const auto it = m_TemplateToArhetypeMap.find(templateNameId);
     ASSERT(it != m_TemplateToArhetypeMap.end());
     archetype_id archetypeId = it->second;
-    EntityId eid = get_free_entity();
+    EntityId eid = getFreeEntity();
 
     Archetype& archetype = m_Archetypes[archetypeId];
-    EntityInitializer init = archetype.get_new_entity_initializer();
+    EntityInitializer init = archetype.getNewEntityInitializer();
     cb(eid, init);
 
     uint16_t blockId = 0, chunkId = 0;
 
-    archetype.m_CompStorage.add_entity(init.m_Data, init.m_ComponentMap.size(), init.m_Offsets, init.m_Sizes, chunkId, blockId);
+    archetype.m_CompStorage.addEntity(init.m_Data, init.m_ComponentMap.size(), init.m_Offsets, init.m_Sizes, chunkId, blockId);
 
     const EntityInfo eInfo{
       .eid = eid,
@@ -58,7 +58,7 @@ namespace Engine::ECS
     });
   }
 
-  bool Registry::destroy_entity(const EntityId eid)
+  bool Registry::destroyEntity(const EntityId eid)
   {
     auto it = m_EntitiesInfo.find(eid.id);
     if (it == m_EntitiesInfo.end())
@@ -71,7 +71,7 @@ namespace Engine::ECS
     Archetype& archetype = m_Archetypes[eInfo.archetypeId];
 
     block_id replacedBlock = INVALID_BLOCK_ID;
-    archetype.m_CompStorage.destroy_entity(archetype.m_ComponentsMap, eInfo.chunkId, eInfo.blockId, replacedBlock);
+    archetype.m_CompStorage.destroyEntity(archetype.m_ComponentsMap, eInfo.chunkId, eInfo.blockId, replacedBlock);
 
     eInfo.eid.generation += 1;
 
@@ -86,7 +86,7 @@ namespace Engine::ECS
     return true;
   }
 
-  DesiredArchetypes Registry::find_desired_archetypes(const QueryComponents& queryComponents)
+  DesiredArchetypes Registry::findDesiredArchetypes(const QueryComponents& queryComponents)
   {
     DesiredArchetypes desiredArchetypes;
     if (queryComponents.empty())
@@ -115,19 +115,19 @@ namespace Engine::ECS
     return desiredArchetypes;
   }
 
-  void Registry::register_cpp_queries()
+  void Registry::registerCppQueries()
   {
-    const auto& cppQueries = get_cpp_query_descriptions();
+    const auto& cppQueries = getCppQueryDescriptions();
     for(const QueryDescription& desc: cppQueries)
-      register_query(desc);
+      registerQuery(desc);
 
-    for(DirectQuery& query: get_direct_queries())
-      query.desiredArchetypes = find_desired_archetypes(query.components);
+    for(DirectQuery& query: getDirectQueries())
+      query.desiredArchetypes = findDesiredArchetypes(query.components);
   }
 
-  void Registry::register_query(const QueryDescription& queryDesc)
+  void Registry::registerQuery(const QueryDescription& queryDesc)
   {
-    DesiredArchetypes desiredArchetypes = find_desired_archetypes(queryDesc.components);
+    DesiredArchetypes desiredArchetypes = findDesiredArchetypes(queryDesc.components);
 
     if (queryDesc.event != INVALID_HASH)
     {
@@ -146,12 +146,12 @@ namespace Engine::ECS
 
   void Registry::query(const query_id queryId, DirectQueryCb cb)
   {
-    DirectQuery& directQuery = get_direct_queries()[queryId];
+    DirectQuery& directQuery = getDirectQueries()[queryId];
     for (archetype_id archetypeId: directQuery.desiredArchetypes)
-      query_archetype(archetypeId, cb);
+      queryArchetype(archetypeId, cb);
   }
 
-  EntityId Registry::get_free_entity()
+  EntityId Registry::getFreeEntity()
   {
     EntityId eid(m_NextEntityId++);
     return eid;
@@ -159,16 +159,16 @@ namespace Engine::ECS
 
   void Registry::tick()
   {
-    process_events();
+    processEvents();
 
     for(const RegisteredQueryInfo& query: m_RegisteredQueues)
       for(const archetype_id archetypeId: query.archetypes)
-        query_archetype(archetypeId, query.cb);
+        queryArchetype(archetypeId, query.cb);
   }
 
-  void Registry::process_events()
+  void Registry::processEvents()
   {
-    while (Event* event = m_EventsQueue.pop_event())
+    while (Event* event = m_EventsQueue.popEvent())
     {
       eastl::vector<RegisteredEventQueryInfo>& queries = m_EventHandleQueries[event->eventNameHash];
 
@@ -177,46 +177,46 @@ namespace Engine::ECS
         if (!query.archetypes.empty())
         {
           for(const archetype_id archetypeId: query.archetypes)
-            query_archetype_by_event(event, archetypeId, query.eventCb);
+            queryArchetypeByEvent(event, archetypeId, query.eventCb);
         }
         else
-          process_event_without_archetypes(event, query.eventCb);
+          processEventWithoutArchetypes(event, query.eventCb);
       }
 
       event->_destr(event);
     }
   }
 
-  void InitEcsFromSettings()
+  void init_ecs_from_settings()
   {
     log("initialization of ECS");
-    DataBlock* settings = GetAppSettings();
+    DataBlock* settings = get_app_settings();
 
     log("init events");
-    DataBlock* events = settings->GetChildBlock("events");
-    for(const auto& attr: events->GetAttributes())
+    DataBlock* events = settings->getChildBlock("events");
+    for(const auto& attr: events->getAttributes())
     {
       if (attr.name == "event")
       {
         const string eventName = std::get<string>(attr.as);
-        manager.register_event(str_hash(eventName.c_str()));
+        manager.registerEvent(str_hash(eventName.c_str()));
         log("registered event `{}`", eventName);
       }
     }
 
     log("init templates");
-    DataBlock* templates = settings->GetChildBlock("entity_templates");
-    for(const auto& attr: templates->GetAttributes())
+    DataBlock* templates = settings->getChildBlock("entity_templates");
+    for(const auto& attr: templates->getAttributes())
     {
       if (attr.type == DataBlock::ValueType::Text)
       {
         const string blkWithTemplates = std::get<string>(attr.as);
         log("reading templates from {}", blkWithTemplates);
 
-        AddTemplatesFromBlk(manager, blkWithTemplates);
+        add_templates_from_blk(manager, blkWithTemplates);
       }
     }
 
-    manager.register_cpp_queries();
+    manager.registerCppQueries();
   }
 }

@@ -10,11 +10,11 @@ namespace Utils
   {
     public:
 
-    inline bool Add(T&& v, size_t& id)
+    inline bool add(T&& v, size_t& id)
     {
       if (m_Size < N)
       {
-        const size_t i = AcquireFreePosition();
+        const size_t i = acquireFreePosition();
         m_Values[i] = std::forward<T>(v);
 
         id = i;
@@ -24,38 +24,38 @@ namespace Utils
         return false;
     }
 
-    inline bool Remove(const size_t id)
+    inline bool remove(const size_t id)
     {
       ASSERT(id < N);
 
       m_Values[id].~T();
-      const bool indexSaved = m_FreeIndices.Push(id);
+      const bool indexSaved = m_FreeIndices.push(id);
       ASSERT(indexSaved);
 
-      ASSERT(m_BitCapacity.IsSet(id));
-      m_BitCapacity.Reset(id);
+      ASSERT(m_BitCapacity.isSet(id));
+      m_BitCapacity.reset(id);
 
       return true;
     }
 
-    inline bool Contains(const size_t id)
+    inline bool contains(const size_t id)
     {
-       return m_BitCapacity.IsSet(id);
+       return m_BitCapacity.isSet(id);
     }
 
-    inline T& Get(const size_t id)
+    inline T& get(const size_t id)
     {
       return m_Values[id];
     }
 
     private:
-      inline size_t AcquireFreePosition()
+      inline size_t acquireFreePosition()
       {
         size_t i = -1;
-        if (m_FreeIndices.HasAny())
+        if (m_FreeIndices.hasAny())
         {
-          i = m_FreeIndices.GetLast();
-          m_FreeIndices.Pop();
+          i = m_FreeIndices.getLast();
+          m_FreeIndices.pop();
         }
         else
         {
@@ -63,7 +63,7 @@ namespace Utils
         }
 
         m_Size += 1;
-        m_BitCapacity.Set(i);
+        m_BitCapacity.set(i);
 
         return i;
       }

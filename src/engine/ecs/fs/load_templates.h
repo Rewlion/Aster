@@ -6,5 +6,5 @@ namespace Engine::ECS
 {
   class Registry;
 
-  void AddTemplatesFromBlk(Registry& manager, const string& blk);
+  void add_templates_from_blk(Registry& manager, const string& blk);
 }

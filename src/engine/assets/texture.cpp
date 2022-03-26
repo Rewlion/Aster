@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-  TextureAsset AssetsManager::LoadTexture(const string& file)
+  TextureAsset AssetsManager::loadTexture(const string& file)
   {
     ktxTexture* texture;
 
@@ -24,7 +24,7 @@ namespace Engine
     }
 
     TextureAsset asset;
-    asset.texture = gapi::AllocateTexture(
+    asset.texture = allocate_texture(
       gapi::TextureAllocationDescription{
         .format = gapi::TextureFormat::R8G8B8A8_UNORM,
         .extent = int3{texture->baseWidth, texture->baseHeight, 1},
@@ -35,7 +35,7 @@ namespace Engine
       }
     );
 
-    gapi::CopyToTextureSync(texture->pData, texture->dataSize, asset.texture);
+    copy_to_texture_sync(texture->pData, texture->dataSize, asset.texture);
 
     ktxTexture_Destroy(texture);
 

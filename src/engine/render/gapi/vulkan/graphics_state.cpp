@@ -6,7 +6,7 @@
 
 namespace gapi::vulkan
 {
-  void ViewportTSF::Apply(CompileContext& ctx, BackendState& state)
+  void ViewportTSF::apply(CompileContext& ctx, BackendState& state)
   {
     vk::Viewport vp;
     vp.x = 0;
@@ -21,7 +21,7 @@ namespace gapi::vulkan
     state.cmdBuffer.setScissor(0, 1, &sc);
   }
 
-  void GraphicsPipelineTSF::Apply(CompileContext& ctx, BackendState& state)
+  void GraphicsPipelineTSF::apply(CompileContext& ctx, BackendState& state)
   {
     GraphicsPipelineDescription desc;
     desc.shaderNames = shaderNames;
@@ -29,16 +29,16 @@ namespace gapi::vulkan
     desc.depthStencilState = depthStencilState;
     desc.blendState = blendState;
 
-    pipeline = ctx.GetPipeline(desc);
+    pipeline = ctx.getPipeline(desc);
 
-    bool hasLayout = ctx.GetPipelineLayout(shaderNames, state.layout);
+    bool hasLayout = ctx.getPipelineLayout(shaderNames, state.layout);
     ASSERT(hasLayout);
 
     state.cmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
-    state.graphicsState.MarkDirty<ViewportTSF>();
+    state.graphicsState.markDirty<ViewportTSF>();
   }
 
-  void VertexBufferTSF::Apply(CompileContext& ctx, BackendState& state)
+  void VertexBufferTSF::apply(CompileContext& ctx, BackendState& state)
   {
     if (inUse)
     {
@@ -47,7 +47,7 @@ namespace gapi::vulkan
     }
   }
 
-  void IndexBufferTSF::Apply(CompileContext& ctx, BackendState& state)
+  void IndexBufferTSF::apply(CompileContext& ctx, BackendState& state)
   {
     if (inUse)
     {
@@ -55,7 +55,7 @@ namespace gapi::vulkan
     }
   }
 
-  void PushConstantTSF::Apply(CompileContext& ctx, BackendState& state)
+  void PushConstantTSF::apply(CompileContext& ctx, BackendState& state)
   {
     const vk::PipelineLayout layout = state.layout->pipelineLayout.get();
     ASSERT(layout != vk::PipelineLayout{});
@@ -63,15 +63,15 @@ namespace gapi::vulkan
     state.cmdBuffer.pushConstants(layout, stage, 0 , size, data);
   }
 
-  void FlushDescriptorSetsTSF::Apply(CompileContext& ctx, BackendState&)
+  void FlushDescriptorSetsTSF::apply(CompileContext& ctx, BackendState&)
   {
-    ctx.UpdateDescriptorSets();
+    ctx.updateDescriptorSets();
   }
 
-  void RenderPassTSF::Apply(CompileContext& ctx, BackendState& state)
+  void RenderPassTSF::apply(CompileContext& ctx, BackendState& state)
   {
-    state.renderPass = ctx.GetRenderPass(renderTargets, depthStencil, clearing);
-    state.framebuffer = ctx.GetFramebuffer(renderArea.extent, renderTargets, depthStencil);
+    state.renderPass = ctx.getRenderPass(renderTargets, depthStencil, clearing);
+    state.framebuffer = ctx.getFramebuffer(renderArea.extent, renderTargets, depthStencil);
 
     std::array<uint32_t,4> clearColor{0,0,0,0};
     vk::ClearValue clearValue;
@@ -91,11 +91,11 @@ namespace gapi::vulkan
 
     state.cmdBuffer.beginRenderPass(rpBeginInfo, vk::SubpassContents::eInline);
 
-    state.graphicsState.Set<ViewportTSF, vk::Extent2D>(renderArea.extent);
+    state.graphicsState.set<ViewportTSF, vk::Extent2D>(renderArea.extent);
 
     BlendState blendState;
     for (const auto& rt: renderTargets)
-      blendState.attachments.Push( {} );
-    state.graphicsState.Set<GraphicsPipelineTSF, BlendState>(blendState);
+      blendState.attachments.push( {} );
+    state.graphicsState.set<GraphicsPipelineTSF, BlendState>(blendState);
   }
 }

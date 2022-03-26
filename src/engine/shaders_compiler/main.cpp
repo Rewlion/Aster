@@ -35,7 +35,7 @@ struct ShaderBlob
 class ShadersCompiler
 {
   public:
-    void CompileShaders(const DataBlock& shaders, const string& blkDir, const string& outputDir)
+    void compileShaders(const DataBlock& shaders, const string& blkDir, const string& outputDir)
     {
       m_BlkDir = blkDir;
 
@@ -58,21 +58,21 @@ class ShadersCompiler
         return;
       }
 
-      for (const auto& shader: shaders.GetChildBlocks())
+      for (const auto& shader: shaders.getChildBlocks())
         if (!Compile(shader))
           return;
 
-      WriteShadersFile();
+      writeShadersFile();
     }
 
   private:
 
     bool Compile(const DataBlock& shader)
     {
-      const string shaderFile = m_BlkDir + "/" + shader.GetName();
+      const string shaderFile = m_BlkDir + "/" + shader.getName();
       log("compiling `{}`", shaderFile);
 
-      const auto shaderData = Utils::ReadFile(shaderFile);
+      const auto shaderData = Utils::read_file(shaderFile);
       if (shaderData.size() == 0)
       {
         logerror("failed to read shader data");
@@ -81,14 +81,14 @@ class ShadersCompiler
 
       const auto compileShader = [&](const char* blkName, const char* entry, const gapi::ShaderStage stage)
       {
-        const DataBlock* stageBlk = shader.GetChildBlock(blkName);
-        if (!stageBlk->IsEmpty())
+        const DataBlock* stageBlk = shader.getChildBlock(blkName);
+        if (!stageBlk->isEmpty())
         {
-          const string name = stageBlk->GetText("name");
-          const string entry = stageBlk->GetText("entry");
+          const string name = stageBlk->getText("name");
+          const string entry = stageBlk->getText("entry");
 
           ShaderBlob blob;
-          if (CompileShaderStage(blob, shaderData, stage, name, entry))
+          if (compileShaderStage(blob, shaderData, stage, name, entry))
           {
             m_Shaders.push_back(std::move(blob));
             return true;
@@ -107,7 +107,7 @@ class ShadersCompiler
       return true;
     }
 
-    inline const wchar_t* GetShaderTarget(const gapi::ShaderStage stage) const
+    inline const wchar_t* getShaderTarget(const gapi::ShaderStage stage) const
     {
       switch(stage)
       {
@@ -123,7 +123,7 @@ class ShadersCompiler
       }
     }
 
-    bool CompileShaderStage(ShaderBlob& result, const eastl::vector<char>& shaderData, const gapi::ShaderStage stage, const string& shaderName, const string& entryName)
+    bool compileShaderStage(ShaderBlob& result, const eastl::vector<char>& shaderData, const gapi::ShaderStage stage, const string& shaderName, const string& entryName)
     {
       log("compiling stage: {}, entry:{}, shader:{}", gapi::ShaderStageToText(stage), entryName, shaderName);
 
@@ -147,7 +147,7 @@ class ShadersCompiler
       args.push_back(L"-E");
       args.push_back(entry.c_str());
       args.push_back(L"-T");
-      args.push_back(GetShaderTarget(stage));
+      args.push_back(getShaderTarget(stage));
 
       DxcBuffer dxcSrc;
       dxcSrc.Ptr = pSource->GetBufferPointer();
@@ -183,14 +183,14 @@ class ShadersCompiler
       std::memcpy(result.src.data(), blob->GetBufferPointer(), blob->GetBufferSize());
 
       result.stage = stage;
-      result.reflection = spirv::Reflect(result.src);
+      result.reflection = spirv::reflect(result.src);
 
       std::snprintf(result.shaderName, spirv::SHADERS_NAME_LEN, "%s", shaderName.c_str() );
 
       return true;
     }
 
-    void WriteShadersFile()
+    void writeShadersFile()
     {
       uint64_t buf64 = 0;
 
@@ -201,12 +201,12 @@ class ShadersCompiler
       m_OutputFile.write((char*)&buf64, sizeof(buf64));
 
       for(const auto& blob: m_Shaders)
-        WriteShadersBlobToFile(blob);
+        writeShadersBlobToFile(blob);
 
       log("saved bin file");
     }
 
-    void WriteShadersBlobToFile(const ShaderBlob& blob)
+    void writeShadersBlobToFile(const ShaderBlob& blob)
     {
       uint64_t buf64 = 0;
       const uint64_t stage = blob.stage;
@@ -253,19 +253,19 @@ int main(int argc, char** argv)
   Engine::InitLog();
 
   DataBlock shadersBlk;
-  if (!LoadBlkFromFile(&shadersBlk, blk.c_str()))
+  if (!load_blk_from_file(&shadersBlk, blk.c_str()))
   {
     logerror("failed to load shaders from `{}`", blk);
     return -1;
   }
 
-  DataBlock* shadersList = shadersBlk.GetChildBlock("shaders_list");
+  DataBlock* shadersList = shadersBlk.getChildBlock("shaders_list");
   ShadersCompiler compiler;
 
   try
   {
     const string blkDir = fs::path(blk).parent_path().string();
-    compiler.CompileShaders(*shadersList, blkDir, outputDir);
+    compiler.compileShaders(*shadersList, blkDir, outputDir);
   }
   catch(std::exception& e)
   {

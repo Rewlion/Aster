@@ -10,13 +10,13 @@ namespace Engine::Input
   class InputManager
   {
     public:
-      void Init();
-      void ProcessInput();
-      void SetActionset(const string_hash actionSet);
+      void init();
+      void processInput();
+      void setActionSet(const string_hash actionSet);
 
     private:
-      void LoadRegisteredActions(const DataBlock& inputSettings);
-      void LoadControllerMappings(const DataBlock& controllerMappings);
+      void loadRegisteredActions(const DataBlock& inputSettings);
+      void loadControllerMappings(const DataBlock& controllerMappings);
 
     private:
       eastl::vector_map<string_hash, ActionSet> m_ActionSets;

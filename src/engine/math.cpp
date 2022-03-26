@@ -5,14 +5,14 @@
 
 namespace math
 {
-  float Radians(float degree)
+  float radians(float degree)
   {
     return degree * float(M_PI) / 180.0f;
   }
 
-  mat4 Perspective(float fov, float aspect, float zNear, float zFar)
+  mat4 perspective(float fov, float aspect, float zNear, float zFar)
   {
-    const float tanA = std::tanf(Radians(fov) / 2.0);
+    const float tanA = std::tanf(radians(fov) / 2.0);
 
     glm::mat4 m(0);
     m[0][0] = 1 / (aspect * tanA);

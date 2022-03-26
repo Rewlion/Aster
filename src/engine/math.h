@@ -4,6 +4,6 @@
 
 namespace math
 {
-  float Radians(float degree);
-  mat4 Perspective(float fov, float aspect, float zNear, float zFar);
+  float radians(float degree);
+  mat4 perspective(float fov, float aspect, float zNear, float zFar);
 }

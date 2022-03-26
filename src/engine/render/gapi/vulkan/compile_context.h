@@ -21,12 +21,12 @@ namespace gapi::vulkan
       inline void init(Device* device)
       {
         m_Device = device;
-        m_RenderPassStorage.Init(m_Device);
-        m_PipelinesStorage.Init(m_Device);
+        m_RenderPassStorage.init(m_Device);
+        m_PipelinesStorage.init(m_Device);
 
         for (size_t i = 0; i < std::size(m_FrameOwnedResources); ++i)
         {
-          m_FrameOwnedResources->m_DescriptorSetsManager.Init(m_Device);
+          m_FrameOwnedResources->m_DescriptorSetsManager.init(m_Device);
         }
       }
 
@@ -44,28 +44,28 @@ namespace gapi::vulkan
       void compileCommand(const SetBlendStateCmd& cmd);
       void compileCommand(const SetDepthStencilStateCmd& cmd);
 
-      vk::RenderPass GetRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing);
-      vk::Framebuffer GetFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil);
-      void UpdateDescriptorSets();
-      void EndRenderPass(const char* why);
-      void InsureActiveCmd();
-      vk::Pipeline GetPipeline(const GraphicsPipelineDescription& desc);
-      bool GetPipelineLayout(const ShaderStagesNames& stageNames, PipelineLayout const *& layout);
-      void SubmitGraphicsCmd();
+      vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing);
+      vk::Framebuffer getFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil);
+      void updateDescriptorSets();
+      void endRenderPass(const char* why);
+      void insureActiveCmd();
+      vk::Pipeline getPipeline(const GraphicsPipelineDescription& desc);
+      bool getPipelineLayout(const ShaderStagesNames& stageNames, PipelineLayout const *& layout);
+      void submitGraphicsCmd();
 
     private:
-      vk::UniqueFramebuffer CreateFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil);
-      inline FrameOwnedResources& GetCurrentFrameOwnedResources()
+      vk::UniqueFramebuffer createFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil);
+      inline FrameOwnedResources& getCurrentFrameOwnedResources()
       {
         return m_FrameOwnedResources[m_CurrentFrame];
       }
 
-      vk::Extent2D GetMinRenderSize(const RenderTargets& renderTargets, const TextureHandler depthStencil);
+      vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const TextureHandler depthStencil);
 
-      void NextFrame();
-      void FlushGraphicsState();
+      void nextFrame();
+      void flushGraphicsState();
 
-      void ImageBarrier(const TextureHandler handler, const vk::ImageLayout newLayout,
+      void imageBarrier(const TextureHandler handler, const vk::ImageLayout newLayout,
                         const vk::PipelineStageFlagBits srcStage, const vk::PipelineStageFlagBits dstStage);
 
     private:

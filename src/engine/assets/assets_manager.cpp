@@ -11,12 +11,12 @@ namespace Engine
 {
   AssetsManager assets_manager;
 
-  void AssetsManager::Init()
+  void AssetsManager::init()
   {
-    LoadAssetsFromFs();
+    loadAssetsFromFs();
   }
 
-  void AssetsManager::LoadAssetsFromFs()
+  void AssetsManager::loadAssetsFromFs()
   {
       const std::filesystem::path assetsDir{"bin/assets"};
 
@@ -34,12 +34,12 @@ namespace Engine
           std::replace(file.begin(), file.end(), '\\', '/');
 
           log("asset manager: loading asset `{}`", file);
-          LoadAsset(file);
+          loadAsset(file);
         }
       }
   }
 
-  void AssetsManager::LoadAsset(const string& file)
+  void AssetsManager::loadAsset(const string& file)
   {
     const string_hash fileHash = str_hash(file.c_str());
     if (m_StaticModels.find(fileHash) != m_StaticModels.end())
@@ -48,18 +48,18 @@ namespace Engine
       return;
     }
 
-    if (Utils::CheckFileExt(file, "gltf"))
+    if (Utils::check_file_ext(file, "gltf"))
     {
-      StaticModelAsset asset = LoadGltf(file);
+      StaticModelAsset asset = loadGltf(file);
 
       m_StaticModels.insert({
         fileHash,
         asset
       });
     }
-    else if (Utils::CheckFileExt(file, "ktx"))
+    else if (Utils::check_file_ext(file, "ktx"))
     {
-      TextureAsset asset = LoadTexture(file);
+      TextureAsset asset = loadTexture(file);
       m_Textures.insert({
         fileHash,
         asset
@@ -67,7 +67,7 @@ namespace Engine
     }
   }
 
-  bool AssetsManager::GetStaticModel(const string_hash assetUri, StaticModelAsset& asset)
+  bool AssetsManager::getStaticModel(const string_hash assetUri, StaticModelAsset& asset)
   {
     const auto it = m_StaticModels.find(assetUri);
     if (it != m_StaticModels.end())
@@ -79,7 +79,7 @@ namespace Engine
     return false;
   }
 
-  bool AssetsManager::GetTexture(const string_hash assetUri, TextureAsset& asset)
+  bool AssetsManager::getTexture(const string_hash assetUri, TextureAsset& asset)
   {
     const auto it = m_Textures.find(assetUri);
     if (it != m_Textures.end())

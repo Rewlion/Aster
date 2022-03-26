@@ -33,17 +33,17 @@ namespace gapi::vulkan
   {
 
     public:
-      void Init(Device* device);
+      void init(Device* device);
 
-      const ShaderModule& GetShaderModule(const string_hash name);
+      const ShaderModule& getShaderModule(const string_hash name);
 
-      const PipelineLayout& GetPipelineLayout(const ShaderStagesNames& stages);
+      const PipelineLayout& getPipelineLayout(const ShaderStagesNames& stages);
 
-      void GetShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo);
+      void getShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo);
 
     private:
-      void CreateEmptyPipelineLayout();
-      void CreateShaderModules();
+      void createEmptyPipelineLayout();
+      void createShaderModules();
 
     private:
       Device* m_Device;

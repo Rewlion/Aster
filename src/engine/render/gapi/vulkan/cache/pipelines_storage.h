@@ -14,9 +14,9 @@ namespace gapi::vulkan
   class PipelinesStorage
   {
     public:
-      void Init(Device* device);
-      vk::Pipeline GetPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass);
-      bool GetPipelineLayout(const ShaderStagesNames& stageNames, PipelineLayout const *& layout);
+      void init(Device* device);
+      vk::Pipeline getPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass);
+      bool getPipelineLayout(const ShaderStagesNames& stageNames, PipelineLayout const *& layout);
 
     private:
 

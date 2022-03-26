@@ -12,13 +12,13 @@
 
 namespace gapi
 {
-  extern void           (*gapiSubmitCommands)(CommandList&& cmds);
-  extern TextureHandler (*gapiGetCurrentSurfaceRT)();
-  extern BufferHandler  (*gapiAllocateBuffer)(const BufferAllocationDescription&);
-  extern void           (*gapiCopyToBufferSync)(const void* src, const size_t offset, const size_t size, const BufferHandler buffer);
-  extern TextureHandler (*gapiAllocateTexture)(const TextureAllocationDescription& allocDesc);
-  extern void           (*gapiCopyToTextureSync)(const void* src, const size_t size, const TextureHandler texture);
-  extern SamplerHandler (*gapiAllocateSampler)(const SamplerAllocationDescription& allocDesc);
+  extern void           (*gapi_submit_commands)(CommandList&& cmds);
+  extern TextureHandler (*gapi_get_backbuffer)();
+  extern BufferHandler  (*gapi_allocate_buffer)(const BufferAllocationDescription&);
+  extern void           (*gapi_copy_to_buffer_sync)(const void* src, const size_t offset, const size_t size, const BufferHandler buffer);
+  extern TextureHandler (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
+  extern void           (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
+  extern SamplerHandler (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
 }
 
 namespace gapi::vulkan
@@ -27,7 +27,7 @@ namespace gapi::vulkan
   static Device device;
   static CompileContext compileContext;
 
-  void submitCommands(CommandList&& cmds)
+  void submit_commands(CommandList&& cmds)
   {
     for(const Command& cmd: cmds)
     {
@@ -40,57 +40,57 @@ namespace gapi::vulkan
     }
   }
 
-  TextureHandler getCurrentSurfaceRT()
+  TextureHandler get_backbuffer()
   {
     TextureHandlerInternal h;
-    h.as.typed.id = device.getSurfaceRtId();
+    h.as.typed.id = device.getBackbufferId();
     h.as.typed.type = (uint64_t)TextureType::SurfaceRT;
 
     return h;
   }
 
-  void PresentSurfaceImage()
+  void present_surface_image()
   {
-    device.PresentSurfaceImage();
+    device.presentSurfaceImage();
   }
 
-  BufferHandler AllocateBuffer(const BufferAllocationDescription& allocDesc)
+  BufferHandler allocate_buffer(const BufferAllocationDescription& allocDesc)
   {
-    return device.AllocateBuffer(allocDesc);
+    return device.allocateBuffer(allocDesc);
   }
 
-  void CopyToBufferSync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer)
+  void copy_to_buffer_sync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer)
   {
-    device.CopyToBufferSync(src, offset, size, buffer);
+    device.copyToBufferSync(src, offset, size, buffer);
   }
 
-  TextureHandler AllocateTexture(const TextureAllocationDescription& allocDesc)
+  TextureHandler allocate_texture(const TextureAllocationDescription& allocDesc)
   {
-    return device.AllocateTexture(allocDesc);
+    return device.allocateTexture(allocDesc);
   }
 
-  void CopyToTextureSync(const void* src, const size_t size, const TextureHandler texture)
+  void copy_to_texture_sync(const void* src, const size_t size, const TextureHandler texture)
   {
-    device.CopyToTextureSync(src, size, texture);
+    device.copyToTextureSync(src, size, texture);
   }
 
-  SamplerHandler AllocateSampler(const SamplerAllocationDescription& allocDesc)
+  SamplerHandler allocate_sampler(const SamplerAllocationDescription& allocDesc)
   {
-    return device.AllocateSampler(allocDesc);
+    return device.allocateSampler(allocDesc);
   }
 
   void init()
   {
-    gapiSubmitCommands = submitCommands;
-    gapiGetCurrentSurfaceRT = getCurrentSurfaceRT;
-    gapiAllocateBuffer = AllocateBuffer;
-    gapiCopyToBufferSync = CopyToBufferSync;
-    gapiAllocateTexture = AllocateTexture;
-    gapiCopyToTextureSync = CopyToTextureSync;
-    gapiAllocateSampler = AllocateSampler;
+    gapi_submit_commands = submit_commands;
+    gapi_get_backbuffer = get_backbuffer;
+    gapi_allocate_buffer = allocate_buffer;
+    gapi_copy_to_buffer_sync = copy_to_buffer_sync;
+    gapi_allocate_texture = allocate_texture;
+    gapi_copy_to_texture_sync = copy_to_texture_sync;
+    gapi_allocate_sampler = allocate_sampler;
 
-    backend.Init();
-    device = backend.CreateDevice();
+    backend.init();
+    device = backend.createDevice();
     compileContext.init(&device);
   }
 

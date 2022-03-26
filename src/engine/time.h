@@ -4,11 +4,11 @@
 
 namespace Engine::Time
 {
-  bool InitClock();
+  bool init_clock();
 
-  void Tick();
+  void tick();
 
-  uint64_t GetTimeSinceStart();
+  uint64_t get_time_since_start();
 
-  float GetDt();
+  float get_dt();
 }

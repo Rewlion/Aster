@@ -27,62 +27,61 @@ namespace gapi::vulkan
 
       void Present();
 
-      inline uint8_t GetSurfaceRtId() const
+      inline uint8_t getBackbufferId() const
       {
         return frameId;
       }
 
-      inline vk::Extent2D GetSurfaceExtent() const
+      inline vk::Extent2D getSurfaceExtent() const
       {
         return m_SurfaceExtent;
       };
 
-      inline vk::Format GetSurfaceFormat() const
+      inline vk::Format getSurfaceFormat() const
       {
         return m_SurfaceFormat.format;
       }
 
-      inline vk::ImageView GetSurfaceImageView() const
+      inline vk::ImageView getSurfaceImageView() const
       {
         return m_SwapchainResources.views[frameId].get();
       }
 
-      inline vk::Image GetSurfaceImage() const
+      inline vk::Image getSurfaceImage() const
       {
         return m_SwapchainResources.images[frameId];
       }
 
-      inline vk::Extent2D GetSurfaceDim() const
+      inline vk::Extent2D getSurfaceDim() const
       {
         return m_SurfaceExtent;
       }
 
-      inline const vk::Semaphore* GetWaitForRenderFinishedSemaphore() const
+      inline const vk::Semaphore* getWaitForRenderFinishedSemaphore() const
       {
         return &m_SwapchainResources.waitForRenderFinishedSemaphores[frameId].get();
       }
 
     private:
-      
-      void AcquireSurfaceImage();
+      void acquireSurfaceImage();
 
-      vk::UniqueSwapchainKHR CreateSwapchain(
+      vk::UniqueSwapchainKHR createSwapchain(
         const CreateInfo& ci,
         const vk::SurfaceFormatKHR& surfaceFormat,
         const vk::Extent2D& surfaceExtent) const;
 
-      vk::SurfaceFormatKHR GetSuitableSurfaceFormat(
+      vk::SurfaceFormatKHR getSuitableSurfaceFormat(
         const std::vector<vk::SurfaceFormatKHR>& availableFormats) const;
 
-      vk::PresentModeKHR GetSwapchainPresentMode(
+      vk::PresentModeKHR getSwapchainPresentMode(
         const std::vector<vk::PresentModeKHR>& availablePresentModes,
         const vk::PresentModeKHR& preferredMode) const;
 
-      vk::Extent2D GetSwapchainExtent(
+      vk::Extent2D getSwapchainExtent(
         const vk::SurfaceCapabilitiesKHR& capabilities,
         const vk::Extent2D& windowSize) const;
 
-      void SetSwapchainResources();
+      void setSwapchainResources();
 
     private:
       vk::Device m_Device;

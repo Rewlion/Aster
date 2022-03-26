@@ -8,7 +8,7 @@
 
 using namespace Engine::ECS;
 
-  const static query_id query_queryId = Registry::register_direct_query(
+  const static query_id query_queryId = Registry::registerDirectQuery(
     DirectQueryDescription{
       .components = {
          DESCRIBE_QUERY_COMPONENT("test_float2", float2)
@@ -21,7 +21,7 @@ using namespace Engine::ECS;
   {
     Engine::ECS::manager.query(query_queryId, [&](ComponentsAccessor& accessor)
     {
-       const float2& test_float2 = accessor.Get<float2>(str_hash("test_float2")) ;
+       const float2& test_float2 = accessor.get<float2>(str_hash("test_float2")) ;
       cb(test_float2);
     });
   }
@@ -30,12 +30,12 @@ using namespace Engine::ECS;
 static void event_system_internal(Event* event, ComponentsAccessor& accessor)
 {
   TestEvent* casted_event = reinterpret_cast<TestEvent*>(event);
-   const string& test_str = accessor.Get<string>(str_hash("test_str")) ;
+   const string& test_str = accessor.get<string>(str_hash("test_str")) ;
   event_system(*casted_event , test_str);
 }
   
 
-static const bool event_system_desc = Registry::register_cpp_query(
+static const bool event_system_desc = Registry::registerCppQuery(
   QueryDescription{
     .components = {
        DESCRIBE_QUERY_COMPONENT("test_str", string)
@@ -48,12 +48,12 @@ static const bool event_system_desc = Registry::register_cpp_query(
 
 static void system_test_internal(ComponentsAccessor& accessor)
 {
-   const float& test_float = accessor.Get<float>(str_hash("test_float")) ;
+   const float& test_float = accessor.get<float>(str_hash("test_float")) ;
   system_test(test_float);
 }
   
 
-static const bool system_test_desc = Registry::register_cpp_query(
+static const bool system_test_desc = Registry::registerCppQuery(
   QueryDescription{
     .cb = system_test_internal,
     .components = {
@@ -65,12 +65,12 @@ static const bool system_test_desc = Registry::register_cpp_query(
 
 static void system_with_query_internal(ComponentsAccessor& accessor)
 {
-   const float& test_float = accessor.Get<float>(str_hash("test_float")) ;
+   const float& test_float = accessor.get<float>(str_hash("test_float")) ;
   system_with_query(test_float);
 }
   
 
-static const bool system_with_query_desc = Registry::register_cpp_query(
+static const bool system_with_query_desc = Registry::registerCppQuery(
   QueryDescription{
     .cb = system_with_query_internal,
     .components = {
@@ -88,7 +88,7 @@ static void input_handler_internal(Event* event, ComponentsAccessor& accessor)
 }
   
 
-static const bool input_handler_desc = Registry::register_cpp_query(
+static const bool input_handler_desc = Registry::registerCppQuery(
   QueryDescription{
     .components = {
       

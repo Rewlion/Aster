@@ -6,28 +6,28 @@
 
 namespace gapi::vulkan
 {
-  inline vk::CompareOp getCompareOp(const CompareOp op)
+  inline vk::CompareOp get_compare_op(const CompareOp op)
   {
     return static_cast<vk::CompareOp>(op);
   }
 
-  inline vk::StencilOp getStencilOp(const StencilOp op)
+  inline vk::StencilOp get_stencil_op(const StencilOp op)
   {
     return static_cast<vk::StencilOp>(op);
   }
 
-  inline vk::PrimitiveTopology GetPrimitiveTopology(const PrimitiveTopology topology)
+  inline vk::PrimitiveTopology get_primitive_topology(const PrimitiveTopology topology)
   {
     return static_cast<vk::PrimitiveTopology>(topology);
   }
 
-  inline vk::PipelineDepthStencilStateCreateInfo GetDepthStencilState(const DepthStencilStateDescription& state)
+  inline vk::PipelineDepthStencilStateCreateInfo get_depth_stencil_state(const DepthStencilStateDescription& state)
   {
     vk::StencilOpState stencilOpState;
-    stencilOpState.failOp = getStencilOp(state.stencilFailOp);
-    stencilOpState.passOp = getStencilOp(state.stencilPassOp);
-    stencilOpState.depthFailOp = getStencilOp(state.stencilDepthFailOp);
-    stencilOpState.compareOp = getCompareOp(state.stencilCompareOp);
+    stencilOpState.failOp = get_stencil_op(state.stencilFailOp);
+    stencilOpState.passOp = get_stencil_op(state.stencilPassOp);
+    stencilOpState.depthFailOp = get_stencil_op(state.stencilDepthFailOp);
+    stencilOpState.compareOp = get_compare_op(state.stencilCompareOp);
     stencilOpState.compareMask = (uint32_t)-1;
     stencilOpState.writeMask = (uint32_t)-1;
     stencilOpState.reference = state.stencilReferenceValue;
@@ -35,7 +35,7 @@ namespace gapi::vulkan
     vk::PipelineDepthStencilStateCreateInfo s;
     s.depthTestEnable = state.depthTestEnabled;
     s.depthWriteEnable = state.depthWriteEnabled;
-    s.depthCompareOp = getCompareOp(state.depthOp);
+    s.depthCompareOp = get_compare_op(state.depthOp);
     s.depthBoundsTestEnable = false;
     s.stencilTestEnable = state.stencilTestEnabled;
     s.front = stencilOpState;
@@ -46,56 +46,56 @@ namespace gapi::vulkan
     return s;
   }
 
-  inline vk::LogicOp GetLogicOp(const LogicOp op)
+  inline vk::LogicOp get_logic_op(const LogicOp op)
   {
     return static_cast<vk::LogicOp>(op);
   }
 
-  inline vk::BlendFactor GetBlendFactor(const BlendFactor f)
+  inline vk::BlendFactor get_blend_factor(const BlendFactor f)
   {
     return static_cast<vk::BlendFactor>(f);
   }
 
-  inline vk::BlendOp GetBlendOp(const BlendOp op)
+  inline vk::BlendOp get_blend_op(const BlendOp op)
   {
     return static_cast<vk::BlendOp>(op);
   }
 
-  inline vk::PipelineColorBlendAttachmentState GetAttachmentBlendState(const AttachmentBlendState& state)
+  inline vk::PipelineColorBlendAttachmentState get_attachment_blend_state(const AttachmentBlendState& state)
   {
     vk::PipelineColorBlendAttachmentState ret;
     ret.blendEnable = state.blendEnabled;
-    ret.srcColorBlendFactor = GetBlendFactor(state.srcColorBlendFactor);
-    ret.dstColorBlendFactor = GetBlendFactor(state.dstColorBlendFactor);
-    ret.colorBlendOp = GetBlendOp(state.colorBlendOp);
-    ret.srcAlphaBlendFactor = GetBlendFactor(state.srcAlphaBlendFactor);
-    ret.dstAlphaBlendFactor = GetBlendFactor(state.dstAlphaBlendFactor);
-    ret.alphaBlendOp = GetBlendOp(state.alphaBlendOp);
+    ret.srcColorBlendFactor = get_blend_factor(state.srcColorBlendFactor);
+    ret.dstColorBlendFactor = get_blend_factor(state.dstColorBlendFactor);
+    ret.colorBlendOp = get_blend_op(state.colorBlendOp);
+    ret.srcAlphaBlendFactor = get_blend_factor(state.srcAlphaBlendFactor);
+    ret.dstAlphaBlendFactor = get_blend_factor(state.dstAlphaBlendFactor);
+    ret.alphaBlendOp = get_blend_op(state.alphaBlendOp);
     ret.colorWriteMask = vk::ColorComponentFlagBits::eA | vk::ColorComponentFlagBits::eR
                        | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB;
 
     return ret;
   }
 
-  inline vk::PipelineColorBlendStateCreateInfo GetBlendState(const BlendState& state, vk::PipelineColorBlendAttachmentState attachmentStates[MAX_RENDER_TARGETS])
+  inline vk::PipelineColorBlendStateCreateInfo get_blend_state(const BlendState& state, vk::PipelineColorBlendAttachmentState attachmentStates[MAX_RENDER_TARGETS])
   {
     vk::PipelineColorBlendStateCreateInfo ret;
     ret.logicOpEnable = state.logicOpEnabled;
-    ret.logicOp = GetLogicOp(state.logicOp);
+    ret.logicOp = get_logic_op(state.logicOp);
     ret.blendConstants[0] = state.blendConstants[0];
     ret.blendConstants[1] = state.blendConstants[1];
     ret.blendConstants[2] = state.blendConstants[2];
     ret.blendConstants[3] = state.blendConstants[3];
 
-    for (size_t i = 0; i < state.attachments.GetSize(); ++i)
-      attachmentStates[i] = GetAttachmentBlendState(state.attachments.Get(i));
+    for (size_t i = 0; i < state.attachments.getSize(); ++i)
+      attachmentStates[i] = get_attachment_blend_state(state.attachments.get(i));
     ret.pAttachments = attachmentStates;
-    ret.attachmentCount = state.attachments.GetSize();
+    ret.attachmentCount = state.attachments.getSize();
 
     return ret;
   }
 
-  inline vk::BufferUsageFlags GetBufferUsage(const BufferUsage usage)
+  inline vk::BufferUsageFlags get_buffer_usage(const BufferUsage usage)
   {
     vk::BufferUsageFlags bits = static_cast<vk::BufferUsageFlagBits>(usage);
     switch(usage)
@@ -115,12 +115,12 @@ namespace gapi::vulkan
     return bits;
   }
 
-  inline vk::ShaderStageFlagBits GetShaderStage(const ShaderStage stage)
+  inline vk::ShaderStageFlagBits get_shader_stage(const ShaderStage stage)
   {
     return static_cast<vk::ShaderStageFlagBits>(stage);
   }
 
-  inline vk::Format GetImageFormat(const TextureFormat format)
+  inline vk::Format get_image_format(const TextureFormat format)
   {
     switch (format)
     {
@@ -130,7 +130,7 @@ namespace gapi::vulkan
     }
   }
 
-  inline vk::ImageUsageFlags GetTextureUsage(const TextureUsage usage)
+  inline vk::ImageUsageFlags get_texture_usage(const TextureUsage usage)
   {
     vk::ImageUsageFlags bits;
 
@@ -153,7 +153,7 @@ namespace gapi::vulkan
     return bits;
   }
 
-  inline vk::SampleCountFlagBits GetImageSampleCount(const TextureSamples samples)
+  inline vk::SampleCountFlagBits get_image_sample_count(const TextureSamples samples)
   {
     switch(samples)
     {
@@ -169,7 +169,7 @@ namespace gapi::vulkan
     }
   }
 
-  inline vk::Filter GetFilter(const ImageFilter filter)
+  inline vk::Filter get_filter(const ImageFilter filter)
   {
     switch (filter)
     {
@@ -181,17 +181,17 @@ namespace gapi::vulkan
     }
   }
 
-  inline vk::SamplerMipmapMode GetSamplerMimpmapMode(const SamplerMipmapMode mode)
+  inline vk::SamplerMipmapMode get_sampler_mimpmap_mode(const SamplerMipmapMode mode)
   {
     return static_cast<vk::SamplerMipmapMode>(mode);
   }
 
-  inline vk::SamplerAddressMode GetSamplerAddressMode(const SamplerAddressMode mode)
+  inline vk::SamplerAddressMode get_sampler_address_mode(const SamplerAddressMode mode)
   {
     return static_cast<vk::SamplerAddressMode>(mode);
   }
 
-  inline vk::BorderColor GetBorderColor(const BorderColor color)
+  inline vk::BorderColor get_border_color(const BorderColor color)
   {
     return static_cast<vk::BorderColor>(color);
   }

@@ -4,11 +4,11 @@
 
 namespace Engine::Window
 {
-  void InitWindow();
+  void init_window();
 
-  void PollWndMessages();
+  void poll_wnd_messages();
 
-  void* GetHwnd();
+  void* get_hwnd();
 
-  int2 GetWindowSize();
+  int2 get_window_size();
 }

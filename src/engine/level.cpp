@@ -16,7 +16,7 @@ namespace
 
       void operator()(const EntityId& eid, Engine::ECS::EntityInitializer& init)
       {
-        for(const auto& attr: m_Entity.GetAttributes())
+        for(const auto& attr: m_Entity.getAttributes())
         {
           const string_hash componentName = str_hash(attr.name.c_str());
 
@@ -105,33 +105,33 @@ namespace
 
 namespace Engine
 {
-  static void AddEntity(const DataBlock& entityBlk)
+  static void add_entity(const DataBlock& entityBlk)
   {
-    const string tmpl = entityBlk.GetAnnotation();
+    const string tmpl = entityBlk.getAnnotation();
     if (tmpl != "")
     {
       const auto tmplHash = str_hash(tmpl.c_str());
-      ECS::manager.create_entity(tmplHash, From(entityBlk));
+      ECS::manager.createEntity(tmplHash, From(entityBlk));
     }
     else
     {
-      logerror("entity `{}` doesn't have template", entityBlk.GetName());
+      logerror("entity `{}` doesn't have template", entityBlk.getName());
       return;
     }
   }
 
-  void LoadLevel(const string& levelBlk)
+  void load_level(const string& levelBlk)
   {
     DataBlock blk;
-    const bool levelLoaded = LoadBlkFromFile(&blk, levelBlk.c_str());
+    const bool levelLoaded = load_blk_from_file(&blk, levelBlk.c_str());
     ASSERT(levelLoaded);
 
-    for(const DataBlock& entityBlk: blk.GetChildBlocks())
-      if (entityBlk.GetName() == "entity")
-        AddEntity(entityBlk);
+    for(const DataBlock& entityBlk: blk.getChildBlocks())
+      if (entityBlk.getName() == "entity")
+        add_entity(entityBlk);
 
-    const string actionSet = blk.GetText("input.initial_action_set");
-    Input::manager.SetActionset(str_hash(actionSet.c_str()));
+    const string actionSet = blk.getText("input.initial_action_set");
+    Input::manager.setActionSet(str_hash(actionSet.c_str()));
   }
 
 }

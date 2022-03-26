@@ -7,7 +7,7 @@
 
 namespace gapi::vulkan
 {
-  static size_t HashRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing)
+  static size_t hash_renderpass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing)
   {
     using boost::hash_combine;
     size_t hash = 0;
@@ -21,15 +21,15 @@ namespace gapi::vulkan
     return hash;
   }
 
-  vk::RenderPass RenderPassStorage::GetRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing)
+  vk::RenderPass RenderPassStorage::getRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing)
   {
-    const size_t hash = HashRenderPass(renderTargets, depthStencil, clearing);
+    const size_t hash = hash_renderpass(renderTargets, depthStencil, clearing);
 
     const auto it = m_RenderPasses.find(hash);
     if (it != m_RenderPasses.end())
       return it->second.get();
 
-    auto rpUnique = CreateRenderPass(renderTargets, depthStencil, clearing);
+    auto rpUnique = createRenderPass(renderTargets, depthStencil, clearing);
     auto rp = rpUnique.get();
     m_RenderPasses.insert({
       hash,
@@ -39,7 +39,7 @@ namespace gapi::vulkan
     return rp;
   }
 
-   vk::UniqueRenderPass RenderPassStorage::CreateRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing)
+   vk::UniqueRenderPass RenderPassStorage::createRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing)
   {
     Utils::FixedStack<vk::AttachmentDescription, MAX_RENDER_TARGETS + 1> attachments;
     Utils::FixedStack<vk::AttachmentReference, MAX_RENDER_TARGETS + 1> attachmentsRef;
@@ -51,7 +51,7 @@ namespace gapi::vulkan
     size_t attachmentsCount = 0;
     for(const auto& rt: renderTargets)
     {
-      attachments.Push(vk::AttachmentDescription{}
+      attachments.push(vk::AttachmentDescription{}
         .setFormat( m_Device->getTextureFormat(rt) )
         .setLoadOp( rtLoad )
         .setStoreOp( vk::AttachmentStoreOp::eStore )
@@ -59,7 +59,7 @@ namespace gapi::vulkan
         .setFinalLayout( vk::ImageLayout::eColorAttachmentOptimal )
       );
 
-      attachmentsRef.Push(vk::AttachmentReference{}
+      attachmentsRef.push(vk::AttachmentReference{}
         .setAttachment(attachmentsCount)
         .setLayout(vk::ImageLayout::eColorAttachmentOptimal)
       );
@@ -89,10 +89,10 @@ namespace gapi::vulkan
     //
     //  attachments.Push(vk::AttachmentDescription{}
     //    .setFormat( m_Device->getTextureFormat(att.texture) )
-    //    .setLoadOp( loadOpToVk(att.depthLoadOp) )
-    //    .setStoreOp( storeOpToVk(att.depthStoreOp) )
-    //    .setStencilLoadOp( loadOpToVk(att.stencilLoadOp) )
-    //    .setStencilStoreOp( storeOpToVk(att.stencilStoreOp) )
+    //    .setLoadOp( load_op_to_vk(att.depthLoadOp) )
+    //    .setStoreOp( store_op_to_vk(att.depthStoreOp) )
+    //    .setStencilLoadOp( load_op_to_vk(att.stencilLoadOp) )
+    //    .setStencilStoreOp( store_op_to_vk(att.stencilStoreOp) )
     //    .setInitialLayout( layout )
     //    .setFinalLayout( layout )
     //  );
@@ -101,14 +101,14 @@ namespace gapi::vulkan
     auto subpassDesc = vk::SubpassDescription()
       .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics);
     subpassDesc.colorAttachmentCount = rtCount;
-    subpassDesc.pColorAttachments = attachmentsRef.GetData();
+    subpassDesc.pColorAttachments = attachmentsRef.getData();
 
     if (depthStencil !=  TextureHandler::Invalid)
-      subpassDesc.pDepthStencilAttachment = &attachmentsRef.GetLast();
+      subpassDesc.pDepthStencilAttachment = &attachmentsRef.getLast();
 
     auto rpCi = vk::RenderPassCreateInfo{};
     rpCi.attachmentCount = attachmentsCount;
-    rpCi.pAttachments = attachments.GetData();
+    rpCi.pAttachments = attachments.getData();
     rpCi.subpassCount = 1;
     rpCi.pSubpasses = &subpassDesc;
 

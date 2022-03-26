@@ -74,7 +74,7 @@ namespace gapi::vulkan
     vk::UniqueSampler sampler;
   };
 
-  inline vk::AttachmentLoadOp loadOpToVk(const TextureLoadOp op)
+  inline vk::AttachmentLoadOp load_op_to_vk(const TextureLoadOp op)
   {
     switch (op)
     {
@@ -85,7 +85,7 @@ namespace gapi::vulkan
     }
   }
 
-  inline vk::AttachmentStoreOp storeOpToVk(const TextureStoreOp op)
+  inline vk::AttachmentStoreOp store_op_to_vk(const TextureStoreOp op)
   {
     switch (op)
     {

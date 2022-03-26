@@ -48,9 +48,9 @@ namespace Engine::ECS
       {
       }
 
-      bool add_entity(const uint8_t* data, const size_t nComps, const uint16_t* offsets, const uint16_t* sizes, chunk_id& chunkId, block_id& blockId);
+      bool addEntity(const uint8_t* data, const size_t nComps, const uint16_t* offsets, const uint16_t* sizes, chunk_id& chunkId, block_id& blockId);
 
-      void destroy_entity(const ComponentMap& compMap, const chunk_id chunkId, const block_id blockId, block_id& replacedBlockId);
+      void destroyEntity(const ComponentMap& compMap, const chunk_id chunkId, const block_id blockId, block_id& replacedBlockId);
 
       inline void init(const size_t blockSize)
       {
@@ -58,13 +58,13 @@ namespace Engine::ECS
         m_BlockSize = blockSize;
       }
 
-      inline size_t get_block_size() const
+      inline size_t getBlockSize() const
       {
         return m_BlockSize;
       }
 
     private:
-      bool get_free_chunk(chunk_id& chunkId, block_id& blockId);
+      bool getFreeChunk(chunk_id& chunkId, block_id& blockId);
 
     private:
       eastl::fixed_vector<Chunk, 16, true> m_Chunks;
@@ -79,18 +79,18 @@ namespace Engine::ECS
     public:
       Archetype(const eastl::vector<ComponentDescription>& desc);
 
-      bool has_components(const eastl::vector<ComponentDescription>& desc) const;
+      bool hasComponents(const eastl::vector<ComponentDescription>& desc) const;
 
-      bool has_component(const component_type_id typeId, const component_name_id nameId) const;
+      bool hasComponent(const component_type_id typeId, const component_name_id nameId) const;
 
-      inline const ComponentMap get_component_map() const
+      inline const ComponentMap getComponentMap() const
       {
         return m_ComponentsMap;
       }
 
-      inline EntityInitializer get_new_entity_initializer() const
+      inline EntityInitializer getNewEntityInitializer() const
       {
-        return EntityInitializer(m_ComponentsMap, m_CompStorage.get_block_size());
+        return EntityInitializer(m_ComponentsMap, m_CompStorage.getBlockSize());
       }
 
     private:

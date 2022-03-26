@@ -18,24 +18,24 @@ namespace gapi::vulkan
   class DescriptorsSetManager
   {
     public:
-      void Init(Device* device);
+      void init(Device* device);
 
-      void SetPipelineLayout(const PipelineLayout* layout);
+      void setPipelineLayout(const PipelineLayout* layout);
 
-      void SetImage(const vk::ImageView imgView, const size_t set, const size_t binding);
-      void SetSampler(const vk::Sampler sampler, const size_t set, const size_t binding);
+      void setImage(const vk::ImageView imgView, const size_t set, const size_t binding);
+      void setSampler(const vk::Sampler sampler, const size_t set, const size_t binding);
 
-      void UpdateDescriptorSets(vk::CommandBuffer& cmdBuf);
+      void updateDescriptorSets(vk::CommandBuffer& cmdBuf);
 
-      void Reset();
+      void reset();
     private:
-      bool ValidateBinding(const size_t set, const size_t binding);
+      bool validateBinding(const size_t set, const size_t binding);
 
-      vk::DescriptorSet AcquireSet(const size_t set);
+      vk::DescriptorSet acquireSet(const size_t set);
 
-      void AddPool();
+      void addPool();
 
-      vk::DescriptorPool& AcquirePool();
+      vk::DescriptorPool& acquirePool();
 
       struct Binding
       {
@@ -50,7 +50,7 @@ namespace gapi::vulkan
       {
         Binding bindings[spirv::MAX_BINDING_COUNT];
 
-        inline size_t GetBindingsCount() const
+        inline size_t getBindingsCount() const
         {
           size_t size = 0;
           for (size_t i = 0; i < spirv::MAX_BINDING_COUNT; ++i)
@@ -60,7 +60,7 @@ namespace gapi::vulkan
         }
       };
 
-      vk::WriteDescriptorSet AcquireWriteDescriptorSet(const size_t nSet, const size_t nBinding);
+      vk::WriteDescriptorSet acquireWriteDescriptorSet(const size_t nSet, const size_t nBinding);
 
     private:
       Device* m_Device = nullptr;

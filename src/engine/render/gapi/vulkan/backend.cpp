@@ -26,16 +26,16 @@ namespace gapi::vulkan
     return VK_FALSE;
   }
 
-  eastl::vector<const char*> Backend::GetValidationLayers()
+  eastl::vector<const char*> Backend::getValidationLayers()
   {
     eastl::vector<const char*> validationLayers;
-    if (Engine::GetAppSettings()->GetChildBlock("vulkan")->GetBool("validation", false))
+    if (Engine::get_app_settings()->getChildBlock("vulkan")->getBool("validation", false))
       validationLayers.emplace_back("VK_LAYER_KHRONOS_validation");
 
     return validationLayers;
   }
 
-  UniqueDynamicDbgUtilsMessenger Backend::CreateDebugMessenger()
+  UniqueDynamicDbgUtilsMessenger Backend::createDebugMessenger()
   {
     vk::DebugUtilsMessengerCreateInfoEXT ci;
     ci.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
@@ -45,10 +45,10 @@ namespace gapi::vulkan
     return m_Instance->createDebugUtilsMessengerEXTUnique(ci, nullptr, m_Loader);
   }
 
-  vk::UniqueInstance Backend::CreateInstance()
+  vk::UniqueInstance Backend::createInstance()
   {
-    eastl::vector<const char*> validationLayers = GetValidationLayers();
-    const auto appName = Engine::GetAppSettings()->GetText("app_name");
+    eastl::vector<const char*> validationLayers = getValidationLayers();
+    const auto appName = Engine::get_app_settings()->getText("app_name");
 
     const auto appInfo = vk::ApplicationInfo()
       .setPApplicationName(appName.c_str())
@@ -74,18 +74,18 @@ namespace gapi::vulkan
     return vk::createInstanceUnique(instanceCreateInfo);
   }
 
-  void Backend::Init()
+  void Backend::init()
   {
-    m_Instance = CreateInstance();
+    m_Instance = createInstance();
     m_Loader = vk::DispatchLoaderDynamic(m_Instance.get(), vkGetInstanceProcAddr);
-    m_DebugMessenger = CreateDebugMessenger();
-    m_PhysicalDevice = GetSuitablePhysicalDevice();
+    m_DebugMessenger = createDebugMessenger();
+    m_PhysicalDevice = getSuitablePhysicalDevice();
     m_Surface = createPlatformSurface(*m_Instance);
-    m_QueueIndices = GetQueueIndices();
-    m_MemoryIndices = GetMemoryIndices();
+    m_QueueIndices = getQueueIndices();
+    m_MemoryIndices = getMemoryIndices();
   }
 
-  vk::PhysicalDevice Backend::GetSuitablePhysicalDevice() const
+  vk::PhysicalDevice Backend::getSuitablePhysicalDevice() const
   {
     vk::PhysicalDevice physicalDevice = nullptr;
     for (const vk::PhysicalDevice& device : m_Instance->enumeratePhysicalDevices())
@@ -104,7 +104,7 @@ namespace gapi::vulkan
     return physicalDevice;
   }
 
-  QueueIndices Backend::GetQueueIndices()
+  QueueIndices Backend::getQueueIndices()
   {
     std::vector<vk::QueueFamilyProperties> queueFamilies = m_PhysicalDevice.getQueueFamilyProperties();
     QueueIndices indices;
@@ -135,7 +135,7 @@ namespace gapi::vulkan
     return indices;
   }
 
-  MemoryIndices Backend::GetMemoryIndices()
+  MemoryIndices Backend::getMemoryIndices()
   {
     vk::PhysicalDeviceMemoryProperties memoryProperties = m_PhysicalDevice.getMemoryProperties();
     MemoryIndices memoryIndices;
@@ -159,7 +159,7 @@ namespace gapi::vulkan
     return memoryIndices;
   }
 
-  Device Backend::CreateDevice()
+  Device Backend::createDevice()
   {
     eastl::vector_set<size_t> uniqueQueueFamilyIndices = { m_QueueIndices.graphics, m_QueueIndices.present, m_QueueIndices.transfer };
 
@@ -187,7 +187,7 @@ namespace gapi::vulkan
 
     vk::UniqueDevice device =  m_PhysicalDevice.createDeviceUnique(deviceCreateInfo);
 
-    const int2 wndSize = Engine::Window::GetWindowSize();
+    const int2 wndSize = Engine::Window::get_window_size();
 
     Device::CreateInfo deviceCi{
       .instance = *m_Instance,

@@ -7,8 +7,8 @@ namespace Engine::Render
   class WorldRender
   {
     public:
-      void Init();
-      void Render();
+      void init();
+      void render();
 
     private:
       gapi::BufferHandler m_TestBuffer;

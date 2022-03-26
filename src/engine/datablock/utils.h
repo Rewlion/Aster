@@ -2,4 +2,4 @@
 
 #include <engine/datablock/datablock.h>
 
-bool LoadBlkFromFile(DataBlock* blk, const char* path);
+bool load_blk_from_file(DataBlock* blk, const char* path);

@@ -10,96 +10,96 @@ namespace gapi::vulkan
 {
   void CompileContext::compileCommand(const BeginRenderPassCmd& cmd)
   {
-    const vk::Extent2D min = GetMinRenderSize(cmd.renderTargets, cmd.depthStencil);
+    const vk::Extent2D min = getMinRenderSize(cmd.renderTargets, cmd.depthStencil);
     const vk::Rect2D renderArea = vk::Rect2D{{0,0}, min};
 
-    m_State.renderPassState.Set<RenderPassTSF, RenderTargets>(cmd.renderTargets);
-    m_State.renderPassState.Set<RenderPassTSF, TextureHandler>(cmd.depthStencil);
-    m_State.renderPassState.Set<RenderPassTSF, vk::Rect2D>(renderArea);
+    m_State.renderPassState.set<RenderPassTSF, RenderTargets>(cmd.renderTargets);
+    m_State.renderPassState.set<RenderPassTSF, TextureHandler>(cmd.depthStencil);
+    m_State.renderPassState.set<RenderPassTSF, vk::Rect2D>(renderArea);
   }
 
-  vk::RenderPass CompileContext::GetRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing)
+  vk::RenderPass CompileContext::getRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing)
   {
-    return m_RenderPassStorage.GetRenderPass(renderTargets, depthStencil, clearing);
+    return m_RenderPassStorage.getRenderPass(renderTargets, depthStencil, clearing);
   }
 
-  vk::Framebuffer CompileContext::GetFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil)
+  vk::Framebuffer CompileContext::getFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil)
   {
-    vk::UniqueFramebuffer fb = CreateFramebuffer(renderArea, renderTargets, depthStencil);
+    vk::UniqueFramebuffer fb = createFramebuffer(renderArea, renderTargets, depthStencil);
     const auto framebuffer = fb.get();
-    GetCurrentFrameOwnedResources().m_Framebuffers.push_back(std::move(fb));
+    getCurrentFrameOwnedResources().m_Framebuffers.push_back(std::move(fb));
 
     return framebuffer;
   }
 
-  vk::Pipeline CompileContext::GetPipeline(const GraphicsPipelineDescription& desc)
+  vk::Pipeline CompileContext::getPipeline(const GraphicsPipelineDescription& desc)
   {
-    return m_PipelinesStorage.GetPipeline(desc, m_State.renderPass, 0);
+    return m_PipelinesStorage.getPipeline(desc, m_State.renderPass, 0);
   }
 
-  bool CompileContext::GetPipelineLayout(const ShaderStagesNames& stageNames, PipelineLayout const *& layout)
+  bool CompileContext::getPipelineLayout(const ShaderStagesNames& stageNames, PipelineLayout const *& layout)
   {
-    return m_PipelinesStorage.GetPipelineLayout(stageNames, layout);
+    return m_PipelinesStorage.getPipelineLayout(stageNames, layout);
   }
 
-  void CompileContext::UpdateDescriptorSets()
+  void CompileContext::updateDescriptorSets()
   {
-    InsureActiveCmd();
-    GetCurrentFrameOwnedResources().m_DescriptorSetsManager.SetPipelineLayout(m_State.layout);
-    GetCurrentFrameOwnedResources().m_DescriptorSetsManager.UpdateDescriptorSets(m_State.cmdBuffer);
+    insureActiveCmd();
+    getCurrentFrameOwnedResources().m_DescriptorSetsManager.setPipelineLayout(m_State.layout);
+    getCurrentFrameOwnedResources().m_DescriptorSetsManager.updateDescriptorSets(m_State.cmdBuffer);
   }
 
-  void CompileContext::EndRenderPass(const char* why)
+  void CompileContext::endRenderPass(const char* why)
   {
     if (m_State.renderPass != vk::RenderPass{})
     {
       m_State.cmdBuffer.endRenderPass();
-      SubmitGraphicsCmd();
+      submitGraphicsCmd();
       m_State.renderPass = vk::RenderPass{};
 
-      m_State.renderPassState.MarkDirty<RenderPassTSF>();
-      m_State.graphicsState.MarkDirty<GraphicsPipelineTSF>();
-      m_State.graphicsState.MarkDirty<VertexBufferTSF>();
-      m_State.graphicsState.MarkDirty<IndexBufferTSF>();
-      m_State.graphicsState.MarkDirty<PushConstantTSF>();
+      m_State.renderPassState.markDirty<RenderPassTSF>();
+      m_State.graphicsState.markDirty<GraphicsPipelineTSF>();
+      m_State.graphicsState.markDirty<VertexBufferTSF>();
+      m_State.graphicsState.markDirty<IndexBufferTSF>();
+      m_State.graphicsState.markDirty<PushConstantTSF>();
     }
   }
 
-  void CompileContext::SubmitGraphicsCmd()
+  void CompileContext::submitGraphicsCmd()
   {
     m_State.cmdBuffer.end();
-    m_Device->SubmitGraphicsCmdBuf(m_State.cmdBuffer);
+    m_Device->submitGraphicsCmdBuf(m_State.cmdBuffer);
 
     m_State.cmdBuffer = vk::CommandBuffer{};
   }
 
-  void CompileContext::InsureActiveCmd()
+  void CompileContext::insureActiveCmd()
   {
     if (m_State.cmdBuffer == vk::CommandBuffer{})
-      m_State.cmdBuffer = m_Device->AllocateGraphicsCmdBuffer();
+      m_State.cmdBuffer = m_Device->allocateGraphicsCmdBuffer();
   }
 
-  void CompileContext::FlushGraphicsState()
+  void CompileContext::flushGraphicsState()
   {
-    m_State.renderPassState.Apply(*this, m_State);
-    m_State.graphicsState.Apply(*this, m_State);
+    m_State.renderPassState.apply(*this, m_State);
+    m_State.graphicsState.apply(*this, m_State);
   }
 
-  vk::UniqueFramebuffer CompileContext::CreateFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil)
+  vk::UniqueFramebuffer CompileContext::createFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil)
   {
     Utils::FixedStack<vk::ImageView, MAX_RENDER_TARGETS + 1> attachments;
     size_t attachmentsCount = 0;
 
     for(const auto& rt: renderTargets)
-      attachments.Push(m_Device->getImageView(rt));
+      attachments.push(m_Device->getImageView(rt));
 
     if (depthStencil != TextureHandler::Invalid)
-      attachments.Push(m_Device->getImageView(depthStencil));
+      attachments.push(m_Device->getImageView(depthStencil));
 
     auto fbCi = vk::FramebufferCreateInfo();
     fbCi.renderPass = m_State.renderPass;
-    fbCi.attachmentCount = attachments.GetSize();
-    fbCi.pAttachments = attachments.GetData();
+    fbCi.attachmentCount = attachments.getSize();
+    fbCi.pAttachments = attachments.getData();
     fbCi.setWidth(renderArea.width);
     fbCi.setHeight(renderArea.height);
     fbCi.layers = 1;
@@ -107,14 +107,14 @@ namespace gapi::vulkan
     return m_Device->m_Device->createFramebufferUnique(fbCi);
   }
 
-  vk::Extent2D CompileContext::GetMinRenderSize(const RenderTargets& renderTargets, const TextureHandler depthStencil)
+  vk::Extent2D CompileContext::getMinRenderSize(const RenderTargets& renderTargets, const TextureHandler depthStencil)
   {
     vk::Extent2D min = {(uint32_t)~(0), (uint32_t)~(0)};
     for(const auto& rt: renderTargets)
     {
       if (rt!= TextureHandler::Invalid)
       {
-        vk::Extent3D dim = m_Device->GetImageDim(rt);
+        vk::Extent3D dim = m_Device->getImageDim(rt);
         min.width  = dim.width  < min.width  ? dim.width  : min.width;
         min.height = dim.height < min.height ? dim.height : min.height;
       }
@@ -122,7 +122,7 @@ namespace gapi::vulkan
 
     if ((min != vk::Extent2D{0,0}) && (depthStencil != TextureHandler::Invalid))
     {
-      vk::Extent3D dim = m_Device->GetImageDim(depthStencil);
+      vk::Extent3D dim = m_Device->getImageDim(depthStencil);
       min.width  = dim.width  < min.width  ? dim.width  : min.width;
       min.height = dim.height < min.height ? dim.height : min.height;
     }
@@ -132,123 +132,123 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const BindGraphicsShadersCmd& cmd)
   {
-    m_State.graphicsState.Set<GraphicsPipelineTSF, ShaderStagesNames>(cmd.shaderNames);
+    m_State.graphicsState.set<GraphicsPipelineTSF, ShaderStagesNames>(cmd.shaderNames);
   }
 
   void CompileContext::compileCommand(const PresentSurfaceImageCmd& cmd)
   {
-    InsureActiveCmd();
-    EndRenderPass("Swap backbuffer");
+    insureActiveCmd();
+    endRenderPass("Swap backbuffer");
 
-    m_Device->PresentSurfaceImage();
+    m_Device->presentSurfaceImage();
   }
 
   void CompileContext::compileCommand(const PushConstantsCmd& cmd)
   {
-    vk::ShaderStageFlagBits stages = GetShaderStage(cmd.stage);
+    vk::ShaderStageFlagBits stages = get_shader_stage(cmd.stage);
 
-    m_State.graphicsState.Set<PushConstantTSF, vk::ShaderStageFlagBits>(stages);
-    m_State.graphicsState.Set<PushConstantTSF, size_t>(cmd.size);
-    m_State.graphicsState.Set<PushConstantTSF, const void*>(cmd.data);
+    m_State.graphicsState.set<PushConstantTSF, vk::ShaderStageFlagBits>(stages);
+    m_State.graphicsState.set<PushConstantTSF, size_t>(cmd.size);
+    m_State.graphicsState.set<PushConstantTSF, const void*>(cmd.data);
 
-    m_State.graphicsState.MarkDirty<PushConstantTSF>();
+    m_State.graphicsState.markDirty<PushConstantTSF>();
   }
 
   void CompileContext::compileCommand(const BindVertexBufferCmd& cmd)
   {
-    const vk::Buffer buffer = m_Device->GetBuffer(cmd.buffer);
-    m_State.graphicsState.Set<VertexBufferTSF, vk::Buffer>(buffer);
+    const vk::Buffer buffer = m_Device->getBuffer(cmd.buffer);
+    m_State.graphicsState.set<VertexBufferTSF, vk::Buffer>(buffer);
   }
 
   void CompileContext::compileCommand(const BindIndexBufferCmd& cmd)
   {
-    const vk::Buffer buffer = m_Device->GetBuffer(cmd.buffer);
-    m_State.graphicsState.Set<IndexBufferTSF, vk::Buffer>(buffer);
+    const vk::Buffer buffer = m_Device->getBuffer(cmd.buffer);
+    m_State.graphicsState.set<IndexBufferTSF, vk::Buffer>(buffer);
   }
 
   void CompileContext::compileCommand(const DrawCmd& cmd)
   {
-    m_State.graphicsState.Set<GraphicsPipelineTSF, PrimitiveTopology>(cmd.topology);
-    m_State.graphicsState.Set<VertexBufferTSF, bool>(true);
-    m_State.graphicsState.Set<IndexBufferTSF, bool>(false);
+    m_State.graphicsState.set<GraphicsPipelineTSF, PrimitiveTopology>(cmd.topology);
+    m_State.graphicsState.set<VertexBufferTSF, bool>(true);
+    m_State.graphicsState.set<IndexBufferTSF, bool>(false);
 
-    InsureActiveCmd();
-    FlushGraphicsState();
+    insureActiveCmd();
+    flushGraphicsState();
 
     m_State.cmdBuffer.draw(cmd.vertexCount, cmd.instanceCount, cmd.firstVertex, cmd.firstInstance);
   }
 
   void CompileContext::compileCommand(const DrawIndexedCmd& cmd)
   {
-    m_State.graphicsState.Set<GraphicsPipelineTSF, PrimitiveTopology>(cmd.topology);
-    m_State.graphicsState.Set<VertexBufferTSF, bool>(true);
-    m_State.graphicsState.Set<IndexBufferTSF, bool>(true);
+    m_State.graphicsState.set<GraphicsPipelineTSF, PrimitiveTopology>(cmd.topology);
+    m_State.graphicsState.set<VertexBufferTSF, bool>(true);
+    m_State.graphicsState.set<IndexBufferTSF, bool>(true);
 
-    InsureActiveCmd();
-    FlushGraphicsState();
+    insureActiveCmd();
+    flushGraphicsState();
 
     m_State.cmdBuffer.drawIndexed(cmd.indexCount, cmd.instanceCount, cmd.firstIndex, cmd.vertexOffset, cmd.firstInstance);
   }
 
   void CompileContext::compileCommand(const BindTextureCmd& cmd)
   {
-    auto& dsManager = GetCurrentFrameOwnedResources().m_DescriptorSetsManager;
+    auto& dsManager = getCurrentFrameOwnedResources().m_DescriptorSetsManager;
 
     if (cmd.texture != TextureHandler::Invalid)
     {
-      if (m_Device->GetImageLayout(cmd.texture) != vk::ImageLayout::eShaderReadOnlyOptimal)
+      if (m_Device->getImageLayout(cmd.texture) != vk::ImageLayout::eShaderReadOnlyOptimal)
       {
-        EndRenderPass("Bind texture");
-        ImageBarrier(cmd.texture, vk::ImageLayout::eShaderReadOnlyOptimal,
+        endRenderPass("Bind texture");
+        imageBarrier(cmd.texture, vk::ImageLayout::eShaderReadOnlyOptimal,
                      vk::PipelineStageFlagBits::eFragmentShader,
                      vk::PipelineStageFlagBits::eFragmentShader);
       }
 
       vk::ImageView imgView = m_Device->getImageView(cmd.texture);
-      dsManager.SetImage(imgView, cmd.argument, cmd.binding);
+      dsManager.setImage(imgView, cmd.argument, cmd.binding);
 
-      m_State.graphicsState.MarkDirty<FlushDescriptorSetsTSF>();
+      m_State.graphicsState.markDirty<FlushDescriptorSetsTSF>();
     }
   }
 
   void CompileContext::compileCommand(const BindSamplerCmd& cmd)
   {
-    auto& dsManager = GetCurrentFrameOwnedResources().m_DescriptorSetsManager;
+    auto& dsManager = getCurrentFrameOwnedResources().m_DescriptorSetsManager;
 
     if (cmd.sampler != SamplerHandler::Invalid)
     {
-      vk::Sampler sampler = m_Device->GetSampler(cmd.sampler);
-      dsManager.SetSampler(sampler, cmd.argument, cmd.binding);
+      vk::Sampler sampler = m_Device->getSampler(cmd.sampler);
+      dsManager.setSampler(sampler, cmd.argument, cmd.binding);
 
-      m_State.graphicsState.MarkDirty<FlushDescriptorSetsTSF>();
+      m_State.graphicsState.markDirty<FlushDescriptorSetsTSF>();
     }
   }
 
   void CompileContext::compileCommand(const ClearCmd& cmd)
   {
-    m_State.renderPassState.Set<RenderPassTSF, ClearState>(cmd.clearing);
+    m_State.renderPassState.set<RenderPassTSF, ClearState>(cmd.clearing);
   }
 
   void CompileContext::compileCommand(const SetDepthStencilStateCmd& cmd)
   {
-    m_State.graphicsState.Set<GraphicsPipelineTSF, DepthStencilStateDescription>(cmd.ds);
+    m_State.graphicsState.set<GraphicsPipelineTSF, DepthStencilStateDescription>(cmd.ds);
   }
 
-  void CompileContext::NextFrame()
+  void CompileContext::nextFrame()
   {
     m_CurrentFrame = (m_CurrentFrame + 1) % SWAPCHAIN_IMAGES_COUNT;
-    GetCurrentFrameOwnedResources().Clear();
+    getCurrentFrameOwnedResources().Clear();
   }
 
   void CompileContext::compileCommand(const SetBlendStateCmd& cmd)
   {
-    m_State.graphicsState.Set<GraphicsPipelineTSF, BlendState>(cmd.blending);
+    m_State.graphicsState.set<GraphicsPipelineTSF, BlendState>(cmd.blending);
   }
 
-  void CompileContext::ImageBarrier(const TextureHandler handler, const vk::ImageLayout newLayout,
+  void CompileContext::imageBarrier(const TextureHandler handler, const vk::ImageLayout newLayout,
                         const vk::PipelineStageFlagBits srcStage, const vk::PipelineStageFlagBits dstStage)
   {
-    InsureActiveCmd();
+    insureActiveCmd();
     
     TextureHandlerInternal h{handler};
     if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
@@ -262,7 +262,7 @@ namespace gapi::vulkan
       ASSERT(!"Unsupported");
     }
 
-    const vk::ImageLayout currentLayout = m_Device->GetImageLayout(handler);
+    const vk::ImageLayout currentLayout = m_Device->getImageLayout(handler);
 
     vk::ImageSubresourceRange subresourceRange;
     subresourceRange.baseMipLevel = 0;
@@ -274,7 +274,7 @@ namespace gapi::vulkan
     vk::ImageMemoryBarrier layoutBarrier;
     layoutBarrier.oldLayout = currentLayout;
     layoutBarrier.newLayout = newLayout;
-    layoutBarrier.image = m_Device->GetImage(handler);
+    layoutBarrier.image = m_Device->getImage(handler);
     layoutBarrier.subresourceRange = subresourceRange;
 
     m_State.cmdBuffer.pipelineBarrier(
@@ -285,6 +285,6 @@ namespace gapi::vulkan
       0, nullptr,
       1, &layoutBarrier);
 
-    m_Device->SetImageLayout(handler, newLayout);
+    m_Device->setImageLayout(handler, newLayout);
   }
 }

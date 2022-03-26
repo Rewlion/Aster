@@ -28,19 +28,19 @@ namespace Utils
   template<size_t id, class Target, class First, class... Rest>
   struct TypeIdx<id, Target, TypeUnpack<First, Rest...>>
   {
-    constexpr static size_t Get()
+    constexpr static size_t get()
     {
       if constexpr ( std::is_same<Target, First>::value )
         return id;
       else
-        return TypeIdx<id+1, Target, TypeUnpack<Rest...>>::Get();
+        return TypeIdx<id+1, Target, TypeUnpack<Rest...>>::get();
     }
   };
 
   template<size_t id, class Target, class Last>
   struct TypeIdx<id, Target, TypeUnpack<Last>>
   {
-    constexpr static size_t Get()
+    constexpr static size_t get()
     {
       if constexpr ( std::is_same<Target, Last>::value )
         return id;
@@ -50,9 +50,9 @@ namespace Utils
   };
 
   template<class Target, class... Types>
-  constexpr size_t GetTypeId()
+  constexpr size_t get_type_Id()
   {
-    return TypeIdx<0, Target, TypeUnpack<Types...>>::Get();
+    return TypeIdx<0, Target, TypeUnpack<Types...>>::get();
   }
 
   template<class... T>
@@ -74,33 +74,33 @@ namespace Utils
         {
         }
 
-      First& GetFirst()
+      First& getFirst()
       {
         return m_First;
       }
 
-      TypesArray<Rest...>& GetRest()
+      TypesArray<Rest...>& getRest()
       {
         return m_Rest;
       }
 
       template<size_t id>
-      decltype(auto) Get()
+      decltype(auto) get()
       {
-        return GetType<id>(*this);
+        return getType<id>(*this);
       }
 
       template<class RequiredType>
-      decltype(auto) Get()
+      decltype(auto) get()
       {
-        return DoGet<RequiredType, First, Rest...>();
+        return doGet<RequiredType, First, Rest...>();
       }
 
     private:
       template<class RequiredType, class... Types>
-      decltype(auto) DoGet()
+      decltype(auto) doGet()
       {
-        return GetType<RequiredType, Types...>(*this);
+        return getType<RequiredType, Types...>(*this);
       }
 
       template<size_t id, class T>
@@ -109,38 +109,38 @@ namespace Utils
       template<class First, class... Rest>
       struct TypeGetter<0, TypesArray<First, Rest...>>
       {
-        static decltype(auto) Get(TypesArray<First, Rest...>& data)
+        static decltype(auto) get(TypesArray<First, Rest...>& data)
         {
-          return data.GetFirst();
+          return data.getFirst();
         }
       };
 
       template<size_t id, class First, class... Rest>
       struct TypeGetter<id, TypesArray<First, Rest...>>
       {
-        static decltype(auto) Get(TypesArray<First, Rest...>& data)
+        static decltype(auto) get(TypesArray<First, Rest...>& data)
         {
-          return TypeGetter<id-1,  TypesArray<Rest...>>::Get(data.GetRest());
+          return TypeGetter<id-1,  TypesArray<Rest...>>::get(data.getRest());
         }
       };
 
       template<class... T>
-      decltype(auto) GetType(TypesArray<T...>& data)
+      decltype(auto) getType(TypesArray<T...>& data)
       {
         static_assert(!"unknown type");
       }
 
       template<size_t id, class First, class... Rest>
-      decltype(auto) GetType(TypesArray<First, Rest...>& data)
+      decltype(auto) getType(TypesArray<First, Rest...>& data)
       {
-        return TypeGetter<id, TypesArray<First, Rest...>>::Get(data);
+        return TypeGetter<id, TypesArray<First, Rest...>>::get(data);
       }
 
       template<class RequiredType, class... Rest>
-      decltype(auto) GetType(TypesArray<Rest...>& data)
+      decltype(auto) getType(TypesArray<Rest...>& data)
       {
-        constexpr size_t id = TypeIdx<0, RequiredType, TypeUnpack<Rest...>>::Get();
-        return GetType<id>(data);
+        constexpr size_t id = TypeIdx<0, RequiredType, TypeUnpack<Rest...>>::get();
+        return getType<id>(data);
       }
 
     private:

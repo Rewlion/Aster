@@ -16,7 +16,7 @@ namespace Engine::ECS
       }
 
       template<class T>
-      T& Get(const component_name_id component)
+      T& get(const component_name_id component)
       {
         const auto it = m_ComponentMap.find(component);
         ASSERT(it != m_ComponentMap.end());
@@ -29,7 +29,7 @@ namespace Engine::ECS
       }
 
       template<class T>
-      T& Get(const component_name_id component, T& defValue)
+      T& get(const component_name_id component, T& defValue)
       {
         const auto it = m_ComponentMap.find(it);
         if (it != m_ComponentMap.end())

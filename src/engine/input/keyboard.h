@@ -13,16 +13,16 @@ namespace Engine::Input
   class Keyboard
   {
     public:
-      void Init(const eastl::vector_map<string_hash, ActionSet>& registeredActions, const DataBlock& keyboardMappings);
-      void ProcessInput();
-      void SetActionset(const string_hash actionSet);
+      void init(const eastl::vector_map<string_hash, ActionSet>& registeredActions, const DataBlock& keyboardMappings);
+      void processInput();
+      void setActionSet(const string_hash actionSet);
 
     private:
       using ButtonMappings = eastl::fixed_vector<ButtonMapping, 256>;
       using HandledActionSet = eastl::vector_map<string_hash, ButtonMappings>;
 
     private:
-      void DumpButtonMappings();
+      void dumpButtonMappings();
 
     private:
       HandledActionSet m_ActionSets;

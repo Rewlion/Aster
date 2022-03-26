@@ -32,8 +32,8 @@ namespace Engine
     console_sink->set_level(spdlog::level::trace);
     console_sink->set_pattern("[%^%l%$] %v");
 
-    DataBlock* settingsBlk = Engine::GetAppSettings();
-    const string appName = settingsBlk->GetText("app_name");
+    DataBlock* settingsBlk = Engine::get_app_settings();
+    const string appName = settingsBlk->getText("app_name");
     const string timeStr = GetTimeString();
     const string logFile = fmt::format("logs_{}/{}.log.txt", appName,timeStr);
 

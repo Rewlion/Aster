@@ -6,9 +6,9 @@
 
 namespace Engine::ECS
 {
-  bool ComponentsStorage::add_entity(const uint8_t* data, const size_t nComps, const uint16_t* offsets, const uint16_t* sizes, chunk_id& chunkId, block_id& blockId)
+  bool ComponentsStorage::addEntity(const uint8_t* data, const size_t nComps, const uint16_t* offsets, const uint16_t* sizes, chunk_id& chunkId, block_id& blockId)
   {
-    if (!get_free_chunk(chunkId, blockId))
+    if (!getFreeChunk(chunkId, blockId))
       return false;
   
     uint8_t* block = m_Chunks[chunkId].data + blockId * m_BlockSize;
@@ -22,12 +22,12 @@ namespace Engine::ECS
     return true;
   }
   
-  void ComponentsStorage::destroy_entity(const ComponentMap& compMap, const chunk_id chunkId, const block_id blockId, block_id& replacedBlockId)
+  void ComponentsStorage::destroyEntity(const ComponentMap& compMap, const chunk_id chunkId, const block_id blockId, block_id& replacedBlockId)
   {
     Chunk& chunk = m_Chunks[chunkId];
   
     uint8_t* destroingData = chunk.data + blockId * m_BlockSize;
-    EntityDestroyer{compMap}.destroy_entity(destroingData);
+    EntityDestroyer{compMap}.destroyEntity(destroingData);
   
     const block_id lastBlockInUse = chunk.usedBlocks;
   
@@ -44,7 +44,7 @@ namespace Engine::ECS
     chunk.usedBlocks -=1 ;
   }
   
-  bool ComponentsStorage::get_free_chunk(chunk_id& chunkId, block_id& blockId)
+  bool ComponentsStorage::getFreeChunk(chunk_id& chunkId, block_id& blockId)
   {
     for(size_t i = 0; i < m_Chunks.size(); ++i)
     {
@@ -83,14 +83,14 @@ namespace Engine::ECS
       });
   
       blockOffset += d.size;
-      Sys::Align(blockOffset);
+      Sys::align(blockOffset);
     }
   
     const size_t blockSize = blockOffset;
     m_CompStorage.init(blockSize);
   }
   
-  bool Archetype::has_components(const eastl::vector<ComponentDescription>& desc) const
+  bool Archetype::hasComponents(const eastl::vector<ComponentDescription>& desc) const
   {
     for(const auto& comp: desc)
     {
@@ -100,7 +100,7 @@ namespace Engine::ECS
     return true;
   }
   
-  bool Archetype::has_component(const component_type_id typeId, const component_name_id nameId) const
+  bool Archetype::hasComponent(const component_type_id typeId, const component_name_id nameId) const
   {
     const auto it = m_ComponentsMap.find(nameId);
     if (it != m_ComponentsMap.end() && it->second.typeId == typeId)

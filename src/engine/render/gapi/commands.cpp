@@ -4,7 +4,7 @@
 
 namespace gapi
 {
-  void BeginRenderPass(CommandList& cmdList, const RenderTargets& renderTargets, TextureHandler depthStencil)
+  void begin_renderpass(CommandList& cmdList, const RenderTargets& renderTargets, TextureHandler depthStencil)
   {
     cmdList.push_back(BeginRenderPassCmd{
       .renderTargets = renderTargets,
@@ -12,14 +12,14 @@ namespace gapi
     });
   }
 
-  void BindGraphicsShaders(CommandList& cmdList, const ShaderStagesNames& stages)
+  void bind_graphics_shaders(CommandList& cmdList, const ShaderStagesNames& stages)
   {
     cmdList.push_back(BindGraphicsShadersCmd{
       .shaderNames = stages,
     });
   }
 
-  void Draw(CommandList& cmdList, const PrimitiveTopology topology, const uint32_t vertexCount,
+  void draw(CommandList& cmdList, const PrimitiveTopology topology, const uint32_t vertexCount,
                const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance)
   {
     cmdList.push_back(DrawCmd{
@@ -31,7 +31,7 @@ namespace gapi
     });
   }
 
-  void DrawIndexed(CommandList& cmdList, const PrimitiveTopology topology, const uint32_t indexCount, uint32_t instanceCount,
+  void draw_indexed(CommandList& cmdList, const PrimitiveTopology topology, const uint32_t indexCount, uint32_t instanceCount,
                       const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstance)
   {
     cmdList.push_back(DrawIndexedCmd{
@@ -44,12 +44,12 @@ namespace gapi
     });
   }
 
-  void PresentSurfaceImage(CommandList& cmdList)
+  void present(CommandList& cmdList)
   {
     cmdList.push_back(PresentSurfaceImageCmd{});
   }
 
-  void PushConstants(CommandList& cmdList, const void* data, const size_t size, const ShaderStage stage)
+  void push_constants(CommandList& cmdList, const void* data, const size_t size, const ShaderStage stage)
   {
     void* managedData = new char[size];
     std::memcpy(managedData, data, size);
@@ -61,21 +61,21 @@ namespace gapi
     });
   }
 
-  void BindVertexBuffer(CommandList& cmdList, const BufferHandler buffer)
+  void bind_vertex_buffer(CommandList& cmdList, const BufferHandler buffer)
   {
     cmdList.push_back(BindVertexBufferCmd{
       .buffer = buffer
     });
   }
 
-  void BindIndexBuffer(CommandList& cmdList, const BufferHandler buffer)
+  void bind_index_buffer(CommandList& cmdList, const BufferHandler buffer)
   {
     cmdList.push_back(BindIndexBufferCmd{
       .buffer = buffer
     });
   }
 
-  void BindTexture(CommandList& cmdList, const TextureHandler texture, const size_t argument, const size_t binding)
+  void bind_texture(CommandList& cmdList, const TextureHandler texture, const size_t argument, const size_t binding)
   {
     cmdList.push_back(BindTextureCmd{
       .texture = texture,
@@ -84,7 +84,7 @@ namespace gapi
     });
   }
 
-  void BindSampler(CommandList& cmdList, const SamplerHandler sampler, const size_t argument, const size_t binding)
+  void bind_sampler(CommandList& cmdList, const SamplerHandler sampler, const size_t argument, const size_t binding)
   {
     cmdList.push_back(BindSamplerCmd{
       .sampler = sampler,
@@ -93,21 +93,21 @@ namespace gapi
     });
   }
 
-  void Clear(CommandList& cmdList, const ClearState clearing)
+  void clear(CommandList& cmdList, const ClearState clearing)
   {
     cmdList.push_back(ClearCmd{
       .clearing = clearing
     });
   }
 
-  void SetBlendState(CommandList& cmdList, const BlendState& blending)
+  void set_blend_state(CommandList& cmdList, const BlendState& blending)
   {
     cmdList.push_back(SetBlendStateCmd{
       .blending = blending
     });
   }
 
-  void SetDepthStencil(CommandList& cmdList, const DepthStencilStateDescription& ds)
+  void set_depth_stencil(CommandList& cmdList, const DepthStencilStateDescription& ds)
   {
     cmdList.push_back(SetDepthStencilStateCmd{
       .ds = ds

@@ -4,6 +4,6 @@
 
 int main()
 {
-  Engine::Init();
-  Engine::StartTick();
+  Engine::init();
+  Engine::start_tick();
 }

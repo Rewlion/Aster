@@ -35,7 +35,7 @@ namespace spirv
   {
     Binding bindings[MAX_BINDING_COUNT];
 
-    inline size_t GetBindingsCount() const
+    inline size_t getBindingsCount() const
     {
       size_t size = 0;
       for (size_t i = 0; i < std::size(bindings); ++i)
@@ -54,5 +54,5 @@ namespace spirv
     ShaderArgument          shaderArguments[MAX_SETS_COUNT];
   };
 
-  Reflection Reflect(const eastl::vector<char>& spirv);
+  Reflection reflect(const eastl::vector<char>& spirv);
 }

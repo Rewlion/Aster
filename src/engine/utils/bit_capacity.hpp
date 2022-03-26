@@ -12,52 +12,52 @@ namespace Utils
     using BatchType = uint64_t;
 
     public:
-      inline void ResetAll()
+      inline void resetAll()
       {
         for (size_t i = 0; i < batchesCount; ++i)
           batches[i] = (BatchType)(0);
       }
 
-      inline void SetAll()
+      inline void setAll()
       {
         for (size_t i = 0; i < batchesCount; ++i)
           batches[i] = (BatchType)(~0);
       }
 
-      inline void Set(const size_t i)
+      inline void set(const size_t i)
       {
         ASSERT(i < N);
-        BatchType& batch = GetBatch(i);
-        const size_t j = GetPosInBatch(i);
+        BatchType& batch = getBatch(i);
+        const size_t j = getPosInBatch(i);
         batch |= 0x1ull << j;
       }
 
-      inline void Reset(const size_t i)
+      inline void reset(const size_t i)
       {
         ASSERT(i < N);
-        BatchType& batch = GetBatch(i);
-        const size_t j = GetPosInBatch(i);
+        BatchType& batch = getBatch(i);
+        const size_t j = getPosInBatch(i);
         batch &= ~(0x1ull << j);
       }
 
-      inline bool IsSet(const size_t i)
+      inline bool isSet(const size_t i)
       {
         ASSERT(i < N);
-        BatchType& batch = GetBatch(i);
-        const size_t j = GetPosInBatch(i);
+        BatchType& batch = getBatch(i);
+        const size_t j = getPosInBatch(i);
         size_t bit = 0x1ull & (batch >> j);
 
         return bit == 1;
       }
 
     private:
-      BatchType& GetBatch(const size_t i)
+      BatchType& getBatch(const size_t i)
       {
         const size_t batchId = i/batchSize;
         return batches[batchId];
       }
 
-      size_t GetPosInBatch(const size_t i)
+      size_t getPosInBatch(const size_t i)
       {
         return i % batchSize;
       }

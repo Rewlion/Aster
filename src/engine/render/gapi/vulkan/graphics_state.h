@@ -17,7 +17,7 @@ namespace gapi::vulkan
   {
     TRACKED_STATE_FIELD_ATTR(vk::Extent2D, dim);
 
-    void Apply(CompileContext& ctx, BackendState& state);
+    void apply(CompileContext& ctx, BackendState& state);
   };
 
   struct VertexBufferTSF
@@ -25,7 +25,7 @@ namespace gapi::vulkan
     TRACKED_STATE_FIELD_ATTR(vk::Buffer, buffer);
     TRACKED_STATE_FIELD_ATTR(bool, inUse);
 
-    void Apply(CompileContext& ctx, BackendState& state);
+    void apply(CompileContext& ctx, BackendState& state);
   };
 
   struct IndexBufferTSF
@@ -33,7 +33,7 @@ namespace gapi::vulkan
     TRACKED_STATE_FIELD_ATTR(vk::Buffer, buffer);
     TRACKED_STATE_FIELD_ATTR(bool, inUse);
 
-    void Apply(CompileContext& ctx, BackendState& state);
+    void apply(CompileContext& ctx, BackendState& state);
   };
 
   struct GraphicsPipelineTSF
@@ -44,7 +44,7 @@ namespace gapi::vulkan
     TRACKED_STATE_FIELD_ATTR(BlendState, blendState);
     TRACKED_STATE_FIELD_ATTR(vk::Pipeline, pipeline);
 
-    void Apply(CompileContext& ctx, BackendState& state);
+    void apply(CompileContext& ctx, BackendState& state);
   };
 
   struct RenderPassTSF
@@ -54,7 +54,7 @@ namespace gapi::vulkan
     TRACKED_STATE_FIELD_ATTR(ClearState, clearing);
     TRACKED_STATE_FIELD_ATTR(vk::Rect2D, renderArea);
 
-    void Apply(CompileContext& ctx, BackendState& state);
+    void apply(CompileContext& ctx, BackendState& state);
   };
 
   struct PushConstantTSF
@@ -63,12 +63,12 @@ namespace gapi::vulkan
     TRACKED_STATE_FIELD_ATTR(size_t, size);
     TRACKED_STATE_FIELD_ATTR_MANAGED_PTR(void*, data);
 
-    void Apply(CompileContext& ctx, BackendState& state);
+    void apply(CompileContext& ctx, BackendState& state);
   };
 
   struct FlushDescriptorSetsTSF
   {
-    void Apply(CompileContext& ctx, BackendState& state);
+    void apply(CompileContext& ctx, BackendState& state);
   };
 
   class GraphicsState: public TrackedState<

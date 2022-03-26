@@ -8,11 +8,11 @@
 
 namespace Engine::ECS
 {
-  static void AddTemplate(Registry& manager, const DataBlock& tmpl)
+  static void add_template(Registry& manager, const DataBlock& tmpl)
   {
     eastl::vector<ComponentDescription> templateDesc;
 
-    for(auto& attr: tmpl.GetAttributes())
+    for(auto& attr: tmpl.getAttributes())
     {
       switch(attr.type)
       {
@@ -69,33 +69,33 @@ namespace Engine::ECS
         }
         default:
           logwarn("manager: template {}: can't add template's attribute {}: unknown type {}",
-            tmpl.GetName(), attr.name, attr.type, attr.GetTypeStr());
+            tmpl.getName(), attr.name, attr.type, attr.getTypeStr());
       }
     }
 
-    string templateDump = tmpl.GetName();
+    string templateDump = tmpl.getName();
     for(auto& comp: templateDesc)
     {
       templateDump = templateDump + "\n" + "component:" + comp.name;
     }
     log("added template {}", templateDump);
 
-    manager.add_template(str_hash(tmpl.GetName().c_str()), templateDesc);
+    manager.addTemplate(str_hash(tmpl.getName().c_str()), templateDesc);
   }
 
-  void AddTemplatesFromBlk(Registry& manager, const string& blkPath)
+  void add_templates_from_blk(Registry& manager, const string& blkPath)
   {
     DataBlock blk;
-    if (!LoadBlkFromFile(&blk, blkPath.c_str()))
+    if (!load_blk_from_file(&blk, blkPath.c_str()))
     {
       logerror("failed to load templates from {}", blkPath);
       return;
     }
 
-    for(const auto& tmpl: blk.GetChildBlocks())
+    for(const auto& tmpl: blk.getChildBlocks())
     {
-      if (tmpl.GetAnnotation() == "entity_template")
-        AddTemplate(manager, tmpl);
+      if (tmpl.getAnnotation() == "entity_template")
+        add_template(manager, tmpl);
     }
   }
 }

@@ -14,7 +14,7 @@ namespace gapi::vulkan
   #ifdef PLATFORM_WIN64
     {
       HINSTANCE hInstance = GetModuleHandle(0);
-      HWND* hwnd = (HWND*)Engine::Window::GetHwnd();
+      HWND* hwnd = (HWND*)Engine::Window::get_hwnd();
 
       const auto surfaceCreateInfo = vk::Win32SurfaceCreateInfoKHR()
         .setHwnd(*hwnd)

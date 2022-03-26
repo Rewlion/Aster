@@ -42,50 +42,50 @@ namespace gapi::vulkan
       Device() = default;
       Device(CreateInfo&&);
 
-      inline uint8_t getSurfaceRtId() const { return m_Swapchain.GetSurfaceRtId(); }
+      inline uint8_t getBackbufferId() const { return m_Swapchain.getBackbufferId(); }
 
-      inline vk::Extent2D getSurfaceExtent() const { return m_Swapchain.GetSurfaceExtent(); };
+      inline vk::Extent2D getSurfaceExtent() const { return m_Swapchain.getSurfaceExtent(); };
 
-      vk::CommandBuffer AllocateGraphicsCmdBuffer();
+      vk::CommandBuffer allocateGraphicsCmdBuffer();
 
       vk::Format getTextureFormat(const TextureHandler handler);
 
       vk::ImageView getImageView(const TextureHandler handler);
 
-      vk::Image GetImage(const TextureHandler handler);
+      vk::Image getImage(const TextureHandler handler);
 
-      vk::Extent3D GetImageDim(const TextureHandler handler);
+      vk::Extent3D getImageDim(const TextureHandler handler);
 
-      void SubmitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf);
+      void submitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf);
 
-      void TransitSurfaceImageForPresent();
-      void PresentSurfaceImage();
+      void transitSurfaceImageForPresent();
+      void presentSurfaceImage();
 
-      BufferHandler AllocateBuffer(const BufferAllocationDescription& allocDesc);
+      BufferHandler allocateBuffer(const BufferAllocationDescription& allocDesc);
 
-      void CopyToBufferSync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer);
+      void copyToBufferSync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer);
 
-      vk::Buffer GetBuffer(const BufferHandler buffer);
+      vk::Buffer getBuffer(const BufferHandler buffer);
 
-      TextureHandler AllocateTexture(const TextureAllocationDescription& allocDesc);
+      TextureHandler allocateTexture(const TextureAllocationDescription& allocDesc);
 
-      void CopyToTextureSync(const void* src, const size_t size, const TextureHandler texture);
+      void copyToTextureSync(const void* src, const size_t size, const TextureHandler texture);
 
-      SamplerHandler AllocateSampler(const SamplerAllocationDescription& allocDesc);
+      SamplerHandler allocateSampler(const SamplerAllocationDescription& allocDesc);
 
-      vk::Sampler GetSampler(const SamplerHandler sampler);
+      vk::Sampler getSampler(const SamplerHandler sampler);
 
-      vk::ImageLayout GetImageLayout(const TextureHandler handler);
+      vk::ImageLayout getImageLayout(const TextureHandler handler);
 
-      void SetImageLayout(const TextureHandler handler, const vk::ImageLayout layout);
+      void setImageLayout(const TextureHandler handler, const vk::ImageLayout layout);
 
     private:
-      Buffer AllocateBufferInternal(const BufferAllocationDescription& allocDesc, const uint32_t memoryIndex);
-      Buffer AllocateStagingBuffer(const size_t size);
-      Buffer AllocateStagingBuffer(const void* src, const size_t size);
+      Buffer allocateBufferInternal(const BufferAllocationDescription& allocDesc, const uint32_t memoryIndex);
+      Buffer allocateStagingBuffer(const size_t size);
+      Buffer allocateStagingBuffer(const void* src, const size_t size);
 
-      vk::CommandBuffer AllocateCmdBuffer(vk::CommandPool pool);
-      vk::CommandBuffer AllocateTransferCmdBuffer();
+      vk::CommandBuffer allocateCmdBuffer(vk::CommandPool pool);
+      vk::CommandBuffer allocateTransferCmdBuffer();
 
     private:
       vk::UniqueDevice m_Device;

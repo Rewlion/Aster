@@ -23,7 +23,7 @@ namespace
     Normal
   };
 
-  inline string GetTypeString(const AttributeType type)
+  inline string get_type_string(const AttributeType type)
   {
     switch (type)
     {
@@ -48,7 +48,7 @@ namespace
     {
       const int accessorIndex = type == AttributeType::Index
         ? primitive.indices
-        : primitive.attributes.at(GetTypeString(type));
+        : primitive.attributes.at(get_type_string(type));
 
       const tinygltf::Accessor& accessor = model.accessors[accessorIndex];
 
@@ -79,7 +79,7 @@ namespace
     {
     }
 
-    inline int GetCount() const
+    inline int getCount() const
     {
       return count;
     }
@@ -146,7 +146,7 @@ namespace
   };
 
   std::tuple<std::vector<MeshVertex>, std::vector<gapi::index_type>>
-    GatherVertices(const tinygltf::Model& model, const tinygltf::Mesh& mesh)
+    gather_vertices(const tinygltf::Model& model, const tinygltf::Mesh& mesh)
   {
     std::vector<MeshVertex> vertices;
     std::vector<gapi::index_type> indices;
@@ -158,7 +158,7 @@ namespace
         throw std::runtime_error("unsupported primitive type.");
 
       AttributeAccessor posAccessor(model, primitive, AttributeType::Position);
-      verticesCount += posAccessor.GetCount();
+      verticesCount += posAccessor.getCount();
     }
 
     vertices.reserve(verticesCount);
@@ -170,7 +170,7 @@ namespace
       AttributeAccessor uvAccessor(model, primitive, AttributeType::UV);
       AttributeAccessor indexAccessor(model, primitive, AttributeType::Index);
 
-      for (int i = 0; i < posAccessor.GetCount(); ++i)
+      for (int i = 0; i < posAccessor.getCount(); ++i)
       {
         MeshVertex vertex;
         vertex.pos = posAccessor++;
@@ -179,7 +179,7 @@ namespace
         vertices.push_back(vertex);
       }
 
-      for (int i = 0; i < indexAccessor.GetCount(); ++i)
+      for (int i = 0; i < indexAccessor.getCount(); ++i)
         indices.push_back(indexAccessor++);
     }
 
@@ -189,7 +189,7 @@ namespace
 
 namespace Engine
 {
-  static void GenerateTBVectors(std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices)
+  static void generate_tb_vectors(std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices)
   {
     for (size_t i = 0; i < indices.size(); i += 3)
     {
@@ -240,14 +240,14 @@ namespace Engine
     }
   }
 
-  static StaticModelAsset ProcessModel(const tinygltf::Model& model)
+  static StaticModelAsset process_model(const tinygltf::Model& model)
   {
     StaticModelAsset asset;
 
     for (tinygltf::Mesh mesh : model.meshes)
     {
-      auto [vertices, indices] = GatherVertices(model, mesh);
-      GenerateTBVectors(vertices, indices);
+      auto [vertices, indices] = gather_vertices(model, mesh);
+      generate_tb_vectors(vertices, indices);
 
       gapi::BufferAllocationDescription vbAlloc;
       vbAlloc.size = vertices.size() * sizeof(vertices[0]);
@@ -258,20 +258,20 @@ namespace Engine
       ibAlloc.usage = gapi::BufferUsage::Index;
 
       Submesh submesh;
-      submesh.vertexBuffer = gapi::AllocateBuffer(vbAlloc);
-      submesh.indexBuffer  = gapi::AllocateBuffer(ibAlloc);
+      submesh.vertexBuffer = allocate_buffer(vbAlloc);
+      submesh.indexBuffer  = allocate_buffer(ibAlloc);
 
-      gapi::CopyToBufferSync(vertices.data(), 0, vertices.size() * sizeof(vertices[0]), submesh.vertexBuffer);
-      gapi::CopyToBufferSync(indices.data(), 0, indices.size() * sizeof(indices[0]), submesh.indexBuffer);
+      copy_to_buffer_sync(vertices.data(), 0, vertices.size() * sizeof(vertices[0]), submesh.vertexBuffer);
+      copy_to_buffer_sync(indices.data(), 0, indices.size() * sizeof(indices[0]), submesh.indexBuffer);
       submesh.indexCount = indices.size();
 
-      asset.submeshes.Push(submesh);
+      asset.submeshes.push(submesh);
     }
 
     return asset;
   }
 
-  StaticModelAsset AssetsManager::LoadGltf(const string& file)
+  StaticModelAsset AssetsManager::loadGltf(const string& file)
   {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -289,7 +289,7 @@ namespace Engine
     if (!ret)
       ASSERT(!"asset manager: failed to load asset");
 
-    StaticModelAsset asset = ProcessModel(model);
+    StaticModelAsset asset = process_model(model);
     return asset;
   }
 }

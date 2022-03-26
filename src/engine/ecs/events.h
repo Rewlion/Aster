@@ -61,11 +61,11 @@ namespace Engine::ECS
   {
     public:
       template<class T>
-      inline void push_event(T&& event)
+      inline void pushEvent(T&& event)
       {
         const size_t storageBegin = m_NextEventOffset;
         size_t storageEnd = storageBegin + event.eventSize;
-        Sys::Align(storageEnd);
+        Sys::align(storageEnd);
 
         ASSERT(storageEnd < EVENTS_QUEUE_BUFFER_SIZE);
 
@@ -84,7 +84,7 @@ namespace Engine::ECS
         ++m_EventsCount;
       }
 
-      inline Event* pop_event()
+      inline Event* popEvent()
       {
         Event* e = nullptr;
 

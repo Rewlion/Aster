@@ -23,24 +23,24 @@ namespace Engine::ECS
 
     public:
 
-      void add_template(const template_name_id& templateId, const eastl::vector<ComponentDescription>& desc);
+      void addTemplate(const template_name_id& templateId, const eastl::vector<ComponentDescription>& desc);
 
-      void create_entity(const template_name_id templateNameId, CreationCb);
-      bool destroy_entity(const EntityId eid);
+      void createEntity(const template_name_id templateNameId, CreationCb);
+      bool destroyEntity(const EntityId eid);
 
-      void register_cpp_queries();
-      void register_query(const QueryDescription& queryDesc);
+      void registerCppQueries();
+      void registerQuery(const QueryDescription& queryDesc);
 
       template<class T>
-      void broadcast_event(T&& event)
+      void broadcastEvent(T&& event)
       {
         if (m_EventHandleQueries.find(event.eventNameHash) != m_EventHandleQueries.end())
-          m_EventsQueue.push_event(eastl::forward<T>(event));
+          m_EventsQueue.pushEvent(eastl::forward<T>(event));
         else
           logerror("can't broadcast event `{}`, it is not registered.");
       }
 
-      inline void register_event(const event_hash_name event)
+      inline void registerEvent(const event_hash_name event)
       {
         m_EventHandleQueries.insert({
           event,
@@ -48,29 +48,29 @@ namespace Engine::ECS
         });
       }
 
-      inline static bool register_cpp_query(QueryDescription&& desc)
+      inline static bool registerCppQuery(QueryDescription&& desc)
       {
-        get_cpp_query_descriptions().emplace_back(std::move(desc));
+        getCppQueryDescriptions().emplace_back(std::move(desc));
         return true;
       }
 
-      inline static query_id register_direct_query(const DirectQueryDescription& queryDesc)
+      inline static query_id registerDirectQuery(const DirectQueryDescription& queryDesc)
       {
         DirectQuery query;
         query.components = queryDesc.components;
-        auto& directQueries = get_direct_queries();
+        auto& directQueries = getDirectQueries();
         directQueries.push_back(query);
 
         return (query_id)(directQueries.size() - 1);
       }
 
-      inline static eastl::vector<DirectQuery>& get_direct_queries()
+      inline static eastl::vector<DirectQuery>& getDirectQueries()
       {
         static eastl::vector<DirectQuery> m_DirectQueries = eastl::vector<DirectQuery>{};
         return m_DirectQueries;
       }
 
-      inline static eastl::vector<QueryDescription>& get_cpp_query_descriptions()
+      inline static eastl::vector<QueryDescription>& getCppQueryDescriptions()
       {
         static eastl::vector<QueryDescription> m_CppQueries;
         return m_CppQueries;
@@ -90,16 +90,16 @@ namespace Engine::ECS
       };
 
     private:
-      void process_events();
+      void processEvents();
 
-      DesiredArchetypes find_desired_archetypes(const QueryComponents& queryComponents);
+      DesiredArchetypes findDesiredArchetypes(const QueryComponents& queryComponents);
 
-      archetype_id get_archetype(const eastl::vector<ComponentDescription>& desc);
+      archetype_id getArchetype(const eastl::vector<ComponentDescription>& desc);
 
-      EntityId get_free_entity();
+      EntityId getFreeEntity();
 
       template<class Cb>
-      void query_archetype(const archetype_id archetypeId, Cb cb)
+      void queryArchetype(const archetype_id archetypeId, Cb cb)
       {
         Archetype& archetype = m_Archetypes[archetypeId];
         for(Chunk& chunk: archetype.m_CompStorage.m_Chunks)
@@ -112,7 +112,7 @@ namespace Engine::ECS
       }
 
       template<class Cb>
-      void query_archetype_by_event(Event* event, const archetype_id archetypeId, Cb cb)
+      void queryArchetypeByEvent(Event* event, const archetype_id archetypeId, Cb cb)
       {
         Archetype& archetype = m_Archetypes[archetypeId];
         for(Chunk& chunk: archetype.m_CompStorage.m_Chunks)
@@ -125,7 +125,7 @@ namespace Engine::ECS
       }
 
       template<class Cb>
-      void process_event_without_archetypes(Event* event, Cb cb)
+      void processEventWithoutArchetypes(Event* event, Cb cb)
       {
          ComponentMap emptyCompMap;
          ComponentsAccessor compAccessor(nullptr, emptyCompMap);
@@ -145,6 +145,6 @@ namespace Engine::ECS
       EventsQueue m_EventsQueue;
   };
 
-  void InitEcsFromSettings();
+  void init_ecs_from_settings();
   extern Engine::ECS::Registry manager;
 }

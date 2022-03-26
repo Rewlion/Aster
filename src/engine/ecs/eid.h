@@ -31,8 +31,8 @@ class EntityId
       return *this;
     }
 
-    inline uint64_t get_id() const { return id; }
-    inline uint64_t get_generation() const { return generation; }
+    inline uint64_t getId() const { return id; }
+    inline uint64_t getGeneration() const { return generation; }
 
   private:
     uint64_t id:48, generation:16;

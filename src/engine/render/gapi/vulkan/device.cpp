@@ -42,7 +42,7 @@ namespace gapi::vulkan
     m_TransferCmdPool = createPool(ci.queueIndices.transfer);
   }
 
-  vk::CommandBuffer Device::AllocateCmdBuffer(vk::CommandPool pool)
+  vk::CommandBuffer Device::allocateCmdBuffer(vk::CommandPool pool)
   {
     const auto allocInfo = vk::CommandBufferAllocateInfo()
       .setCommandPool(pool)
@@ -59,21 +59,21 @@ namespace gapi::vulkan
     return cmdBuf;
   }
 
-  vk::CommandBuffer Device::AllocateGraphicsCmdBuffer()
+  vk::CommandBuffer Device::allocateGraphicsCmdBuffer()
   {
-    return AllocateCmdBuffer(*m_GraphicsCmdPool);
+    return allocateCmdBuffer(*m_GraphicsCmdPool);
   }
 
-  vk::CommandBuffer Device::AllocateTransferCmdBuffer()
+  vk::CommandBuffer Device::allocateTransferCmdBuffer()
   {
-    return AllocateCmdBuffer(*m_TransferCmdPool);
+    return allocateCmdBuffer(*m_TransferCmdPool);
   }
 
   vk::Format Device::getTextureFormat(const TextureHandler handler)
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
-      return m_Swapchain.GetSurfaceFormat();
+      return m_Swapchain.getSurfaceFormat();
 
     ASSERT(!"UNSUPPORTED");
     return vk::Format::eUndefined;
@@ -83,19 +83,19 @@ namespace gapi::vulkan
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
-      return m_Swapchain.GetSurfaceImageView();
+      return m_Swapchain.getSurfaceImageView();
 
     if (h.as.typed.type == (uint64_t)TextureType::Allocated)
     {
-      ASSERT(m_AllocatedTextures.Contains(h.as.typed.id));
-      return m_AllocatedTextures.Get(h.as.typed.id).view.get();
+      ASSERT(m_AllocatedTextures.contains(h.as.typed.id));
+      return m_AllocatedTextures.get(h.as.typed.id).view.get();
     }
 
     ASSERT(!"UNSUPPORTED");
     return vk::ImageView{};
   }
 
-  vk::Image Device::GetImage(const TextureHandler handler)
+  vk::Image Device::getImage(const TextureHandler handler)
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type != (uint64_t)TextureType::Allocated)
@@ -103,15 +103,15 @@ namespace gapi::vulkan
       ASSERT(!"Can't get not allocated image");
     }
 
-     return m_AllocatedTextures.Get(h.as.typed.id).img.get();
+     return m_AllocatedTextures.get(h.as.typed.id).img.get();
   }
 
-  vk::Extent3D Device::GetImageDim(const TextureHandler handler)
+  vk::Extent3D Device::getImageDim(const TextureHandler handler)
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
     {
-      auto dim = m_Swapchain.GetSurfaceExtent();
+      auto dim = m_Swapchain.getSurfaceExtent();
       return {dim.width, dim.height, 0};
     }
 
@@ -119,7 +119,7 @@ namespace gapi::vulkan
     return {0,0,0};
   }
 
-  void Device::SubmitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf)
+  void Device::submitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf)
   {
     vk::SubmitInfo submit;
     submit.pCommandBuffers = &cmdBuf;
@@ -127,9 +127,9 @@ namespace gapi::vulkan
     m_GraphicsQueue.submit(submit);
   }
 
-  void Device::TransitSurfaceImageForPresent()
+  void Device::transitSurfaceImageForPresent()
   {
-    auto cmdBuf = AllocateGraphicsCmdBuffer();
+    auto cmdBuf = allocateGraphicsCmdBuffer();
 
     vk::ImageSubresourceRange subresourceRange;
     subresourceRange.baseMipLevel = 0;
@@ -141,7 +141,7 @@ namespace gapi::vulkan
     const auto layoutBarrier = vk::ImageMemoryBarrier()
       .setOldLayout(vk::ImageLayout::eUndefined)
       .setNewLayout(vk::ImageLayout::ePresentSrcKHR)
-      .setImage(m_Swapchain.GetSurfaceImage())
+      .setImage(m_Swapchain.getSurfaceImage())
       .setSubresourceRange(subresourceRange);
 
     cmdBuf.pipelineBarrier(
@@ -154,7 +154,7 @@ namespace gapi::vulkan
 
     cmdBuf.end();
 
-    const auto* renderFinishedSemaphore = m_Swapchain.GetWaitForRenderFinishedSemaphore();
+    const auto* renderFinishedSemaphore = m_Swapchain.getWaitForRenderFinishedSemaphore();
     const auto submitInfo = vk::SubmitInfo()
       .setPCommandBuffers(&cmdBuf)
       .setCommandBufferCount(1)
@@ -164,29 +164,29 @@ namespace gapi::vulkan
     m_GraphicsQueue.submit(submitInfo);
   }
 
-  void Device::PresentSurfaceImage()
+  void Device::presentSurfaceImage()
   {
-    TransitSurfaceImageForPresent();
+    transitSurfaceImageForPresent();
     m_Swapchain.Present();
   }
 
-  BufferHandler Device::AllocateBuffer(const BufferAllocationDescription& allocDesc)
+  BufferHandler Device::allocateBuffer(const BufferAllocationDescription& allocDesc)
   {
-    Buffer buffer = AllocateBufferInternal(allocDesc, m_MemoryIndices.deviceLocalMemory);
+    Buffer buffer = allocateBufferInternal(allocDesc, m_MemoryIndices.deviceLocalMemory);
 
     size_t id = (size_t)(~0);
-    const bool allocated = m_AllocatedBuffers.Add(std::move(buffer), id);
+    const bool allocated = m_AllocatedBuffers.add(std::move(buffer), id);
 
     ASSERT(allocated);
     return (BufferHandler)id;
   }
 
-  Buffer Device::AllocateBufferInternal(const BufferAllocationDescription& allocDesc, const uint32_t memoryIndex)
+  Buffer Device::allocateBufferInternal(const BufferAllocationDescription& allocDesc, const uint32_t memoryIndex)
   {
     Buffer b;
 
     vk::BufferCreateInfo bufferCi;
-    bufferCi.usage = GetBufferUsage(allocDesc.usage);
+    bufferCi.usage = get_buffer_usage(allocDesc.usage);
     bufferCi.size = allocDesc.size;
     bufferCi.sharingMode = vk::SharingMode::eExclusive;
 
@@ -204,17 +204,17 @@ namespace gapi::vulkan
     return b;
   }
 
-  Buffer Device::AllocateStagingBuffer(const size_t size)
+  Buffer Device::allocateStagingBuffer(const size_t size)
   {
     BufferAllocationDescription allocDesc;
     allocDesc.size = size;
     allocDesc.usage = gapi::BufferUsage::Staging;
-    return AllocateBufferInternal(allocDesc, m_MemoryIndices.stagingMemory);
+    return allocateBufferInternal(allocDesc, m_MemoryIndices.stagingMemory);
   }
 
-  Buffer Device::AllocateStagingBuffer(const void* src, const size_t size)
+  Buffer Device::allocateStagingBuffer(const void* src, const size_t size)
   {
-    Buffer stagingBuf = AllocateStagingBuffer(size);
+    Buffer stagingBuf = allocateStagingBuffer(size);
     void* mappedMemory = nullptr;
 
     ASSERT(vk::Result::eSuccess == m_Device->mapMemory(stagingBuf.memory.get(), 0, size, vk::MemoryMapFlagBits{}, &mappedMemory));
@@ -224,25 +224,25 @@ namespace gapi::vulkan
     return stagingBuf;
   }
 
-  void Device::CopyToBufferSync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer)
+  void Device::copyToBufferSync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer)
   {
     const size_t id = (size_t)buffer;
-    if (!m_AllocatedBuffers.Contains(id))
+    if (!m_AllocatedBuffers.contains(id))
     {
-      logerror("vulkan: CopyToBufferSync: buffer({}) not allocated", id);
+      logerror("vulkan: copyToBufferSync: buffer({}) not allocated", id);
       return;
     }
 
-    Buffer stagingBuf = AllocateStagingBuffer(size);
+    Buffer stagingBuf = allocateStagingBuffer(size);
     void* mappedMemory = nullptr;
 
     ASSERT(vk::Result::eSuccess == m_Device->mapMemory(stagingBuf.memory.get(), 0, size, vk::MemoryMapFlagBits{}, &mappedMemory));
     std::memcpy(mappedMemory, src, size);
     m_Device->unmapMemory(stagingBuf.memory.get());
 
-    const Buffer& toBuf = m_AllocatedBuffers.Get(id);
+    const Buffer& toBuf = m_AllocatedBuffers.get(id);
 
-    const vk::CommandBuffer cmdBuf = AllocateTransferCmdBuffer();
+    const vk::CommandBuffer cmdBuf = allocateTransferCmdBuffer();
     vk::BufferCopy region;
     region.size = size;
     region.srcOffset = 0;
@@ -263,13 +263,13 @@ namespace gapi::vulkan
     ASSERT(vk::Result::eSuccess == m_Device->waitForFences(1, &fence.get(), true, ~0));
   }
 
-  vk::Buffer Device::GetBuffer(const BufferHandler buffer)
+  vk::Buffer Device::getBuffer(const BufferHandler buffer)
   {
     const size_t id = (size_t)buffer;
-    return m_AllocatedBuffers.Get(id).buffer.get();
+    return m_AllocatedBuffers.get(id).buffer.get();
   }
 
-  TextureHandler Device::AllocateTexture(const TextureAllocationDescription& allocDesc)
+  TextureHandler Device::allocateTexture(const TextureAllocationDescription& allocDesc)
   {
     Texture resource;
     resource.size = allocDesc.extent;
@@ -282,13 +282,13 @@ namespace gapi::vulkan
                     ? vk::ImageType::e2D
                     : vk::ImageType::e3D;
 
-    ci.format = GetImageFormat(allocDesc.format);
+    ci.format = get_image_format(allocDesc.format);
     ci.extent = vk::Extent3D{(uint32_t)allocDesc.extent.x, (uint32_t)allocDesc.extent.y, (uint32_t)allocDesc.extent.z};
     ci.mipLevels = allocDesc.mipLevels;
     ci.arrayLayers = allocDesc.arrayLayers;
-    ci.samples = GetImageSampleCount(allocDesc.samplesPerPixel);
+    ci.samples = get_image_sample_count(allocDesc.samplesPerPixel);
     ci.tiling = vk::ImageTiling::eOptimal;
-    ci.usage = GetTextureUsage(allocDesc.usage);
+    ci.usage = get_texture_usage(allocDesc.usage);
     ci.sharingMode = vk::SharingMode::eExclusive;
 
     uint32_t indices = m_QueueIndices.graphics;
@@ -326,7 +326,7 @@ namespace gapi::vulkan
     resource.view = m_Device->createImageViewUnique(viewCi);
 
     size_t id = ~0;
-    m_AllocatedTextures.Add(std::move(resource), id);
+    m_AllocatedTextures.add(std::move(resource), id);
 
     TextureHandlerInternal handler;
     handler.as.typed.id = id;
@@ -335,24 +335,24 @@ namespace gapi::vulkan
     return handler;
   }
 
-  void Device::CopyToTextureSync(const void* src, const size_t size, const TextureHandler texture)
+  void Device::copyToTextureSync(const void* src, const size_t size, const TextureHandler texture)
   {
     TextureHandlerInternal handler;
     handler.as.handler = uint64_t(texture);
     uint32_t textureId = handler.as.typed.id;
 
-    if (!m_AllocatedTextures.Contains(textureId))
+    if (!m_AllocatedTextures.contains(textureId))
     {
-      logerror("vulkan: CopyToTextureSync: texture({}) not allocated", textureId);
+      logerror("vulkan: copy_to_texture_sync: texture({}) not allocated", textureId);
       return;
     }
 
-    Buffer stagingBuf = AllocateStagingBuffer(src, size);
-    const Texture& toTexture = m_AllocatedTextures.Get(textureId);
+    Buffer stagingBuf = allocateStagingBuffer(src, size);
+    const Texture& toTexture = m_AllocatedTextures.get(textureId);
 
     vk::ImageLayout currentLayout = toTexture.currentLayout;
 
-    const vk::CommandBuffer cmdBuf = AllocateTransferCmdBuffer();
+    const vk::CommandBuffer cmdBuf = allocateTransferCmdBuffer();
 
     vk::ImageSubresourceRange subresourceRange;
     subresourceRange.baseMipLevel = 0;
@@ -413,49 +413,49 @@ namespace gapi::vulkan
     ASSERT(vk::Result::eSuccess == m_Device->waitForFences(1, &fence.get(), true, ~0));
   }
 
-  SamplerHandler Device::AllocateSampler(const SamplerAllocationDescription& allocDesc)
+  SamplerHandler Device::allocateSampler(const SamplerAllocationDescription& allocDesc)
   {
     vk::SamplerCreateInfo samplerCi;
-    samplerCi.magFilter = GetFilter(allocDesc.magFilter);
-    samplerCi.minFilter = GetFilter(allocDesc.minFilter);
-    samplerCi.mipmapMode = GetSamplerMimpmapMode(allocDesc.mipmapMode);
-    samplerCi.addressModeU = GetSamplerAddressMode(allocDesc.addressModeU);
-    samplerCi.addressModeV = GetSamplerAddressMode(allocDesc.addressModeV);
-    samplerCi.addressModeW = GetSamplerAddressMode(allocDesc.addressModeW);
+    samplerCi.magFilter = get_filter(allocDesc.magFilter);
+    samplerCi.minFilter = get_filter(allocDesc.minFilter);
+    samplerCi.mipmapMode = get_sampler_mimpmap_mode(allocDesc.mipmapMode);
+    samplerCi.addressModeU = get_sampler_address_mode(allocDesc.addressModeU);
+    samplerCi.addressModeV = get_sampler_address_mode(allocDesc.addressModeV);
+    samplerCi.addressModeW = get_sampler_address_mode(allocDesc.addressModeW);
     samplerCi.mipLodBias = allocDesc.mipLodBias;
     samplerCi.anisotropyEnable = allocDesc.anisotropyEnable;
     samplerCi.maxAnisotropy = allocDesc.maxAnisotropy;
     samplerCi.compareEnable = allocDesc.compareEnable;
-    samplerCi.compareOp = getCompareOp(allocDesc.compareOp);
+    samplerCi.compareOp = get_compare_op(allocDesc.compareOp);
     samplerCi.minLod = allocDesc.minLod;
     samplerCi.maxLod = allocDesc.maxLod;
-    samplerCi.borderColor = GetBorderColor(allocDesc.borderColor);
+    samplerCi.borderColor = get_border_color(allocDesc.borderColor);
     samplerCi.unnormalizedCoordinates = allocDesc.unnormalizedCoordinates;
 
     Sampler sampler;
     sampler.sampler = m_Device->createSamplerUnique(samplerCi);
 
     size_t id = (size_t)(~0);
-    const bool allocated = m_AllocatedSamplers.Add(std::move(sampler), id);
+    const bool allocated = m_AllocatedSamplers.add(std::move(sampler), id);
 
     ASSERT(allocated);
 
     return SamplerHandler(id);
   }
 
-  vk::Sampler Device::GetSampler(const SamplerHandler sampler)
+  vk::Sampler Device::getSampler(const SamplerHandler sampler)
   {
     const size_t id = static_cast<size_t>(sampler);
-    if (!m_AllocatedSamplers.Contains(id))
+    if (!m_AllocatedSamplers.contains(id))
     {
       ASSERT(!"Failed to get sampler: not allocated");
       return {};
     }
 
-    return m_AllocatedSamplers.Get(id).sampler.get();
+    return m_AllocatedSamplers.get(id).sampler.get();
   }
 
-  vk::ImageLayout Device::GetImageLayout(const TextureHandler handler)
+  vk::ImageLayout Device::getImageLayout(const TextureHandler handler)
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type != (uint64_t)TextureType::Allocated)
@@ -463,10 +463,10 @@ namespace gapi::vulkan
       ASSERT(!"Can't get image layout for not allocated texture");
     }
 
-    return m_AllocatedTextures.Get(h.as.typed.id).currentLayout;
+    return m_AllocatedTextures.get(h.as.typed.id).currentLayout;
   }
 
-  void Device::SetImageLayout(const TextureHandler handler, const vk::ImageLayout layout)
+  void Device::setImageLayout(const TextureHandler handler, const vk::ImageLayout layout)
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type != (uint64_t)TextureType::Allocated)
@@ -474,6 +474,6 @@ namespace gapi::vulkan
       ASSERT(!"Can't set image layout for not allocated texture");
     }
 
-    m_AllocatedTextures.Get(h.as.typed.id).currentLayout = layout;
+    m_AllocatedTextures.get(h.as.typed.id).currentLayout = layout;
   }
 }

@@ -18,7 +18,7 @@ namespace Engine::ECS
       {
       }
 
-      inline void destroy_entity(uint8_t* data)
+      inline void destroyEntity(uint8_t* data)
       {
         for(auto& [_, comp]: m_ComponentsMap)
         {

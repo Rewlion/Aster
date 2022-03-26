@@ -8,63 +8,63 @@
 
 namespace gapi
 {
-  void (*gapiSubmitCommands)(CommandList&& cmds);
-  TextureHandler (*gapiGetCurrentSurfaceRT)();
-  DepthStencilStateHandler (*gapiCreateDepthStencilState)(const DepthStencilStateDescription& desc);
-  BufferHandler (*gapiAllocateBuffer)(const BufferAllocationDescription&);
-  void (*gapiCopyToBufferSync)(const void* src, const size_t offset, const size_t size, const BufferHandler buffer);
-  TextureHandler (*gapiAllocateTexture)(const TextureAllocationDescription& allocDesc);
-  void (*gapiCopyToTextureSync)(const void* src, const size_t size, const TextureHandler texture);
-  void (*gapiBindTexture)(const TextureHandler texture, const size_t set, const size_t binding);
-  SamplerHandler (*gapiAllocateSampler)(const SamplerAllocationDescription& allocDesc);
+  void                     (*gapi_submit_commands)(CommandList&& cmds);
+  TextureHandler           (*gapi_get_backbuffer)();
+  DepthStencilStateHandler (*gapi_create_depth_stencil_state)(const DepthStencilStateDescription& desc);
+  BufferHandler            (*gapi_allocate_buffer)(const BufferAllocationDescription&);
+  void                     (*gapi_copy_to_buffer_sync)(const void* src, const size_t offset, const size_t size, const BufferHandler buffer);
+  TextureHandler           (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
+  void                     (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
+  void                     (*gapi_bind_texture)(const TextureHandler texture, const size_t set, const size_t binding);
+  SamplerHandler           (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
 
   void init()
   {
-    const string& api = Engine::GetAppSettings()->GetText("gapi", "vulkan");
+    const string& api = Engine::get_app_settings()->getText("gapi", "vulkan");
     if (api == "vulkan")
       vulkan::init();
     else
       ASSERT(!"unknown graphics api");
   }
 
-  void submitCommands(CommandList&& cmds)
+  void submit_commands(CommandList&& cmds)
   {
-    gapiSubmitCommands(std::move(cmds));
+    gapi_submit_commands(std::move(cmds));
   }
 
-  TextureHandler getCurrentSurfaceRT()
+  TextureHandler get_backbuffer()
   {
-    return gapiGetCurrentSurfaceRT();
+    return gapi_get_backbuffer();
   }
 
-  DepthStencilStateHandler createDepthStencilState(const DepthStencilStateDescription& desc)
+  DepthStencilStateHandler create_depth_stencil_state(const DepthStencilStateDescription& desc)
   {
-    return gapiCreateDepthStencilState(desc);
+    return gapi_create_depth_stencil_state(desc);
   }
 
-  BufferHandler AllocateBuffer(const BufferAllocationDescription& allocDesc)
+  BufferHandler allocate_buffer(const BufferAllocationDescription& allocDesc)
   {
-    return gapiAllocateBuffer(allocDesc);
+    return gapi_allocate_buffer(allocDesc);
   }
 
-  void CopyToBufferSync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer)
+  void copy_to_buffer_sync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer)
   {
-    gapiCopyToBufferSync(src, offset, size, buffer);
+    gapi_copy_to_buffer_sync(src, offset, size, buffer);
   }
 
-  TextureHandler AllocateTexture(const TextureAllocationDescription& allocDesc)
+  TextureHandler allocate_texture(const TextureAllocationDescription& allocDesc)
   {
-    return gapiAllocateTexture(allocDesc);
+    return gapi_allocate_texture(allocDesc);
   }
 
-  void CopyToTextureSync(const void* src, const size_t size, const TextureHandler texture)
+  void copy_to_texture_sync(const void* src, const size_t size, const TextureHandler texture)
   {
-    gapiCopyToTextureSync(src, size, texture);
+    gapi_copy_to_texture_sync(src, size, texture);
   }
 
-  SamplerHandler AllocateSampler(const SamplerAllocationDescription& allocDesc)
+  SamplerHandler allocate_sampler(const SamplerAllocationDescription& allocDesc)
   {
-    return gapiAllocateSampler(allocDesc);
+    return gapi_allocate_sampler(allocDesc);
   }
 
 }

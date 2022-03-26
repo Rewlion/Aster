@@ -8,7 +8,7 @@ namespace Sys
     constexpr size_t alignment = 4;
   #endif
 
-  inline static void Align(size_t& v)
+  inline static void align(size_t& v)
   {
     const size_t r = v % Sys::alignment;
     if (r > 0)

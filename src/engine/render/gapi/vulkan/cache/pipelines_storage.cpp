@@ -21,13 +21,13 @@ namespace boost
 
 namespace gapi::vulkan
 {
-  void PipelinesStorage::Init(Device* device)
+  void PipelinesStorage::init(Device* device)
   {
     m_Device = device;
-    m_ShadersStorage.Init(device);
+    m_ShadersStorage.init(device);
   }
 
-  vk::Pipeline PipelinesStorage::GetPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass)
+  vk::Pipeline PipelinesStorage::getPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass)
   {
     using boost::hash_combine;
     size_t pipelineHash = description.hash();
@@ -41,10 +41,10 @@ namespace gapi::vulkan
     vk::GraphicsPipelineCreateInfo ci;
 
     ShaderProgramInfo programInfo;
-    m_ShadersStorage.GetShaderProgramInfo(description.shaderNames, programInfo);
+    m_ShadersStorage.getShaderProgramInfo(description.shaderNames, programInfo);
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCi;
-    inputAssemblyCi.topology = GetPrimitiveTopology(description.topology);
+    inputAssemblyCi.topology = get_primitive_topology(description.topology);
 
     vk::PipelineViewportStateCreateInfo viewportCi;
     viewportCi.scissorCount = 1;
@@ -64,18 +64,18 @@ namespace gapi::vulkan
     multisampleCi.sampleShadingEnable = false;
     multisampleCi.rasterizationSamples = vk::SampleCountFlagBits::e1;
 
-    vk::PipelineDepthStencilStateCreateInfo depthStencilCi = GetDepthStencilState(description.depthStencilState);
+    vk::PipelineDepthStencilStateCreateInfo depthStencilCi = get_depth_stencil_state(description.depthStencilState);
 
     vk::PipelineColorBlendAttachmentState attachmentStates[MAX_RENDER_TARGETS];
-    vk::PipelineColorBlendStateCreateInfo blendingCi = GetBlendState(description.blendState, attachmentStates);
+    vk::PipelineColorBlendStateCreateInfo blendingCi = get_blend_state(description.blendState, attachmentStates);
 
     vk::PipelineDynamicStateCreateInfo dynamicStateCi;
     vk::DynamicState dynamicStates[] = { vk::DynamicState::eViewport, vk::DynamicState::eScissor};
     dynamicStateCi.pDynamicStates = dynamicStates;
     dynamicStateCi.dynamicStateCount = std::size(dynamicStates);
 
-    ci.stageCount = programInfo.stages.GetSize();
-    ci.pStages = programInfo.stages.GetData();
+    ci.stageCount = programInfo.stages.getSize();
+    ci.pStages = programInfo.stages.getData();
     ci.pVertexInputState = &programInfo.vertexInput;
     ci.pInputAssemblyState = &inputAssemblyCi;
     ci.pTessellationState = nullptr;
@@ -103,9 +103,9 @@ namespace gapi::vulkan
     return pipeline;
   }
 
-  bool PipelinesStorage::GetPipelineLayout(const ShaderStagesNames& stageNames, PipelineLayout const *& layout)
+  bool PipelinesStorage::getPipelineLayout(const ShaderStagesNames& stageNames, PipelineLayout const *& layout)
   {
-    layout = &m_ShadersStorage.GetPipelineLayout(stageNames);
+    layout = &m_ShadersStorage.getPipelineLayout(stageNames);
     return true;
   }
 }

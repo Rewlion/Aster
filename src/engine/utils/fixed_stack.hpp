@@ -10,54 +10,54 @@ namespace Utils
       FixedStack(Args... args)
       {
         static_assert(sizeof...(args) <= N);
-        (Push(args), ...);
+        (push(args), ...);
       }
 
       FixedStack()
       {
       }
 
-      inline T* GetData()
+      inline T* getData()
       {
         return m_Values;
       }
 
-      inline const T* GetData() const
+      inline const T* getData() const
       {
         return m_Values;
       }
 
-      inline size_t GetSize() const
+      inline size_t getSize() const
       {
         return m_Size;
       }
 
-      inline size_t HasAny() const
+      inline size_t hasAny() const
       {
         return m_Size != 0;
       }
 
-      inline T& GetLast()
+      inline T& getLast()
       {
         return m_Values[m_Size-1];
       }
 
-      inline const T& GetLast() const
+      inline const T& getLast() const
       {
-        return const_cast<FixedStack*>(this)->GetLast();
+        return const_cast<FixedStack*>(this)->getLast();
       }
 
-      inline T& GetFirst()
+      inline T& getFirst()
       {
         return m_Values[0];
       }
 
-      inline const T& GetFirst() const
+      inline const T& getFirst() const
       {
-        return const_cast<FixedStack*>(this)->GetFirst();
+        return const_cast<FixedStack*>(this)->getFirst();
       }
 
-      bool Push(T&& v)
+      bool push(T&& v)
       {
         if (m_Size < N)
         {
@@ -68,7 +68,7 @@ namespace Utils
           return false;
       }
 
-      bool Push(const T& v)
+      bool push(const T& v)
       {
         if (m_Size < N)
         {
@@ -79,11 +79,11 @@ namespace Utils
           return false;
       }
 
-      bool Pop()
+      bool pop()
       {
         if (m_Size > 0)
         {
-          GetLast().~T();
+          getLast().~T();
           --m_Size;
           return true;
         }
@@ -91,21 +91,21 @@ namespace Utils
           return false;
       }
 
-      inline T& Get(const size_t i)
+      inline T& get(const size_t i)
       {
         return m_Values[i];
       }
 
-      inline const T& Get(const size_t i) const
+      inline const T& get(const size_t i) const
       {
-        return const_cast<FixedStack*>(this)->Get(i);
+        return const_cast<FixedStack*>(this)->get(i);
       }
 
       inline const FixedStack<T,N>& operator=(const FixedStack<T,N>& rvl)
       {
-        Clear();
+        clear();
         for(const auto& v: rvl)
-          Push(v);
+          push(v);
 
         return *this;
       }
@@ -119,7 +119,7 @@ namespace Utils
 
           for (size_t i = 0; i < m_Size; ++i)
           {
-            if ( Get(i) != rvl.Get(i) )
+            if ( get(i) != rvl.get(i) )
               break;
 
             return true;
@@ -128,10 +128,10 @@ namespace Utils
         return false;
       }
 
-      inline void Clear()
+      inline void clear()
       {
         for (size_t i = 0; i < m_Size; ++i)
-          Pop();
+          pop();
       }
 
     class ConstIterator

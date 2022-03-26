@@ -115,7 +115,7 @@ def gen_query(parsedQuery):
 
   queryIdName = "{}_queryId".format(parsedQuery['name'])
   queryIdDeclaration = """
-  const static query_id {query_id_name} = Registry::register_direct_query(
+  const static query_id {query_id_name} = Registry::registerDirectQuery(
     DirectQueryDescription{{
       .components = {{
         {query_components}
@@ -138,7 +138,7 @@ def gen_query(parsedQuery):
     )
   functorParams = functorParams[:-1]
 
-  componentAccessTemplate = """{is_const} {param_type}{is_ref} {param_name} = accessor.Get<{param_type}>(str_hash("{param_name}")) """
+  componentAccessTemplate = """{is_const} {param_type}{is_ref} {param_name} = accessor.get<{param_type}>(str_hash("{param_name}")) """
   componentsAccessors = ""
   for p in queryParamsInfo:
     componentsAccessors = "{} {};\n".format(
@@ -216,7 +216,7 @@ def gen_event_system(parsedFunction):
   funcParamsInfo = parsedFunction['function_params']
   eventName = parsedFunction['event_name']
 
-  componentAccessTemplate = """{is_const} {param_type}{is_ref} {param_name} = accessor.Get<{param_type}>(str_hash("{param_name}")) """
+  componentAccessTemplate = """{is_const} {param_type}{is_ref} {param_name} = accessor.get<{param_type}>(str_hash("{param_name}")) """
   componentsAccessors = ""
   for p in funcParamsInfo:
     componentsAccessors = "{} {};\n".format(
@@ -263,7 +263,7 @@ static void {system_name}_internal(Event* event, ComponentsAccessor& accessor)
   queryComponents = queryComponents[:-1]
 
   systemRegistration = """
-static const bool {system_name}_desc = Registry::register_cpp_query(
+static const bool {system_name}_desc = Registry::registerCppQuery(
   QueryDescription{{
     .components = {{
       {components_descriptions}
@@ -283,7 +283,7 @@ static const bool {system_name}_desc = Registry::register_cpp_query(
 def gen_system(parsedFunction):
   funcParamsInfo = parsedFunction['function_params']
 
-  componentAccessTemplate = """{is_const} {param_type}{is_ref} {param_name} = accessor.Get<{param_type}>(str_hash("{param_name}")) """
+  componentAccessTemplate = """{is_const} {param_type}{is_ref} {param_name} = accessor.get<{param_type}>(str_hash("{param_name}")) """
   componentsAccessors = ""
   for p in funcParamsInfo:
     componentsAccessors = "{} {};\n".format(
@@ -325,7 +325,7 @@ static void {system_name}_internal(ComponentsAccessor& accessor)
   queryComponents = queryComponents[:-1]
 
   systemRegistration = """
-static const bool {system_name}_desc = Registry::register_cpp_query(
+static const bool {system_name}_desc = Registry::registerCppQuery(
   QueryDescription{{
     .cb = {system_name}_internal,
     .components = {{

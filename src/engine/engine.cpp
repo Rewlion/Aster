@@ -16,36 +16,36 @@
 
 namespace Engine
 {
-  void Init()
+  void init()
   {
-    Time::InitClock();
+    Time::init_clock();
 
-    LoadAppSettings("game_data/settings.blk");
+    load_app_settings("game_data/settings.blk");
     InitLog();
-    Window::InitWindow();
+    Window::init_window();
 
     gapi::init();
-    assets_manager.Init();
-    Input::manager.Init();
+    assets_manager.init();
+    Input::manager.init();
 
-    ECS::InitEcsFromSettings();
-    LoadLevel( Engine::GetAppSettings()->GetText("init_level") );
+    ECS::init_ecs_from_settings();
+    load_level( Engine::get_app_settings()->getText("init_level") );
 
-    Render::world_render.Init();
+    Render::world_render.init();
   }
 
-  void StartTick()
+  void start_tick()
   {
     for(;;)
     {
-      Time::Tick();
+      Time::tick();
 
-      Window::PollWndMessages();
-      Input::manager.ProcessInput();
+      Window::poll_wnd_messages();
+      Input::manager.processInput();
 
       ECS::manager.tick();
 
-      Render::world_render.Render();
+      Render::world_render.render();
     }
   }
 }

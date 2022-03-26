@@ -31,7 +31,7 @@ namespace
     public:
       bool Open(const char* file)
       {
-        m_Bin = Utils::ReadFile(file);
+        m_Bin = Utils::read_file(file);
         if (m_Bin.size() == 0)
         {
           logerror("failed to read shaders bin file: {}", file);
@@ -112,15 +112,15 @@ namespace gapi::vulkan
 {
   constexpr size_t EMPTY_PIPELINE_LAYOUT_HASH = 0;
 
-  void ShadersStorage::Init(Device* device)
+  void ShadersStorage::init(Device* device)
   {
     m_Device = device;
 
-    CreateEmptyPipelineLayout();
-    CreateShaderModules();
+    createEmptyPipelineLayout();
+    createShaderModules();
   }
 
-  void ShadersStorage::CreateEmptyPipelineLayout()
+  void ShadersStorage::createEmptyPipelineLayout()
   {
     vk::PipelineLayoutCreateInfo ci;
     ci.pSetLayouts = nullptr;
@@ -135,7 +135,7 @@ namespace gapi::vulkan
     });
   }
 
-  void ShadersStorage::CreateShaderModules()
+  void ShadersStorage::createShaderModules()
   {
     const char* shadersBin = "bin/shaders_spirv.bin";
     log("reading shader modules from {}", shadersBin);
@@ -164,7 +164,7 @@ namespace gapi::vulkan
     });
   }
 
-  const ShaderModule& ShadersStorage::GetShaderModule(const string_hash name)
+  const ShaderModule& ShadersStorage::getShaderModule(const string_hash name)
   {
     const auto it = m_ShaderModules.find(name);
     if (it != m_ShaderModules.end())
@@ -184,7 +184,7 @@ namespace gapi::vulkan
     return hash;
   }
 
-  const PipelineLayout& ShadersStorage::GetPipelineLayout(const ShaderStagesNames& stages)
+  const PipelineLayout& ShadersStorage::getPipelineLayout(const ShaderStagesNames& stages)
   {
     const size_t hash = HashShadersProgram(stages);
     const auto it = m_PipelineLayouts.find(hash);
@@ -199,7 +199,7 @@ namespace gapi::vulkan
     return {};
   }
 
-  void ShadersStorage::GetShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo)
+  void ShadersStorage::getShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo)
   {
     const ShaderModule* vertexShaderModule = nullptr;
 
@@ -207,12 +207,12 @@ namespace gapi::vulkan
 
     for (const auto& shaderName: stages)
     {
-      const ShaderModule& sm = GetShaderModule(shaderName);
+      const ShaderModule& sm = getShaderModule(shaderName);
       vk::PipelineShaderStageCreateInfo stage;
       stage.stage = sm.metadata.stage;
       stage.module = sm.module.get();
       stage.pName = sm.metadata.entryName;
-      programInfo.stages.Push(stage);
+      programInfo.stages.push(stage);
 
       if (sm.metadata.stage == vk::ShaderStageFlagBits::eVertex)
         vertexShaderModule = &sm;
@@ -223,7 +223,7 @@ namespace gapi::vulkan
         pushConstant.offset = 0;
         pushConstant.size = sm.metadata.pushConstantsSize;
         pushConstant.stageFlags = sm.metadata.stage;
-        stagesPushConstants.Push(pushConstant);
+        stagesPushConstants.push(pushConstant);
       }
     }
 
@@ -231,12 +231,12 @@ namespace gapi::vulkan
     programInfo.inputBinding.stride = vertexShaderModule->metadata.inputAssembly.stride;
     programInfo.inputBinding.inputRate = vk::VertexInputRate::eVertex;
 
-    programInfo.vertexInput.vertexBindingDescriptionCount = vertexShaderModule->metadata.inputAssembly.attributes.GetSize() != 0 ? 1 : 0;
+    programInfo.vertexInput.vertexBindingDescriptionCount = vertexShaderModule->metadata.inputAssembly.attributes.getSize() != 0 ? 1 : 0;
     programInfo.vertexInput.pVertexBindingDescriptions = &programInfo.inputBinding;
-    programInfo.vertexInput.vertexAttributeDescriptionCount = vertexShaderModule->metadata.inputAssembly.attributes.GetSize();
-    programInfo.vertexInput.pVertexAttributeDescriptions = vertexShaderModule->metadata.inputAssembly.attributes.GetData();
+    programInfo.vertexInput.vertexAttributeDescriptionCount = vertexShaderModule->metadata.inputAssembly.attributes.getSize();
+    programInfo.vertexInput.pVertexAttributeDescriptions = vertexShaderModule->metadata.inputAssembly.attributes.getData();
 
-    const bool isEmptyLayout = stagesPushConstants.GetSize() == 0;
+    const bool isEmptyLayout = stagesPushConstants.getSize() == 0;
     const size_t programHash = isEmptyLayout ? EMPTY_PIPELINE_LAYOUT_HASH : HashShadersProgram(stages);
     const auto it = m_PipelineLayouts.find(programHash);
     if (it != m_PipelineLayouts.end())
@@ -249,7 +249,7 @@ namespace gapi::vulkan
 
       for (const auto& stage: stages)
       {
-        const auto& shader = GetShaderModule(stage).metadata;
+        const auto& shader = getShaderModule(stage).metadata;
 
         for (int nSet = 0; nSet < spirv::MAX_SETS_COUNT; ++nSet)
           for (int nBinding = 0; nBinding < spirv::MAX_BINDING_COUNT; ++nBinding)
@@ -271,7 +271,7 @@ namespace gapi::vulkan
       for (size_t nSet = 0; nSet < std::size(arguments); ++nSet )
       {
         Utils::FixedStack<vk::DescriptorSetLayoutBinding, spirv::MAX_BINDING_COUNT> bindings;
-        for (size_t nBinding = 0; nBinding < arguments[nSet].GetBindingsCount(); ++nBinding)
+        for (size_t nBinding = 0; nBinding < arguments[nSet].getBindingsCount(); ++nBinding)
         {
           const spirv::Binding& binding = arguments[nSet].bindings[nBinding];
 
@@ -299,7 +299,7 @@ namespace gapi::vulkan
           }
           bindingDesc.stageFlags = binding.stages;
           bindingDesc.binding = nBinding;
-          bindings.Push(bindingDesc);
+          bindings.push(bindingDesc);
         }
 
         ///
@@ -315,8 +315,8 @@ namespace gapi::vulkan
         ///
 
         vk::DescriptorSetLayoutCreateInfo ci;
-        ci.bindingCount = bindings.GetSize();
-        ci.pBindings = bindings.GetData();
+        ci.bindingCount = bindings.getSize();
+        ci.pBindings = bindings.getData();
 
         //ci.bindingCount = 2;
         //ci.pBindings = bindingDesc;
@@ -327,8 +327,8 @@ namespace gapi::vulkan
       std::memcpy(layout.sets, arguments, std::size(arguments) * sizeof(arguments[0]));
 
       vk::PipelineLayoutCreateInfo layoutCi;
-      layoutCi.pushConstantRangeCount = stagesPushConstants.GetSize();
-      layoutCi.pPushConstantRanges = stagesPushConstants.GetData();
+      layoutCi.pushConstantRangeCount = stagesPushConstants.getSize();
+      layoutCi.pPushConstantRanges = stagesPushConstants.getData();
       layoutCi.pSetLayouts = setLayouts;
       layoutCi.setLayoutCount = std::size(setLayouts);
 

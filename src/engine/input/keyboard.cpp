@@ -9,13 +9,13 @@
 
 namespace Engine::Input
 {
-  void Keyboard::Init(const eastl::vector_map<string_hash, ActionSet>& registeredActions, const DataBlock& keyboardMappings)
+  void Keyboard::init(const eastl::vector_map<string_hash, ActionSet>& registeredActions, const DataBlock& keyboardMappings)
   {
     log("Init keyboard mappings");
 
-    for(const auto& actionSet: keyboardMappings.GetChildBlocks())
+    for(const auto& actionSet: keyboardMappings.getChildBlocks())
     {
-      const string& setName = actionSet.GetName();
+      const string& setName = actionSet.getName();
       if (registeredActions.end() == registeredActions.find(str_hash(setName.c_str())))
       {
         logerror("Keyboard mapping error: button action `{}` is not registered by the game", setName);
@@ -23,8 +23,8 @@ namespace Engine::Input
       }
 
       ButtonMappings buttonMappings;
-      const DataBlock* buttons = actionSet.GetChildBlock("Button");
-      for (const auto& action: buttons->GetAttributes())
+      const DataBlock* buttons = actionSet.getChildBlock("Button");
+      for (const auto& action: buttons->getAttributes())
       {
         if (action.type != DataBlock::ValueType::Int)
           continue;
@@ -42,10 +42,10 @@ namespace Engine::Input
       });
     }
 
-    DumpButtonMappings();
+    dumpButtonMappings();
   }
 
-  void Keyboard::DumpButtonMappings()
+  void Keyboard::dumpButtonMappings()
   {
     string dmp = "keyboard handled actions:\n";
 
@@ -61,7 +61,7 @@ namespace Engine::Input
     log(dmp);
   }
 
-  void Keyboard::ProcessInput()
+  void Keyboard::processInput()
   {
     if (!m_ActiveSet)
       return;
@@ -76,7 +76,7 @@ namespace Engine::Input
                                    auto inputEvent = ButtonActionInputEvent{};
                                    inputEvent.action = action;
                                    inputEvent.status = status;
-                                   ECS::manager.broadcast_event<ButtonActionInputEvent>(eastl::move(inputEvent));
+                                   ECS::manager.broadcastEvent<ButtonActionInputEvent>(eastl::move(inputEvent));
                                  };
 
       for (auto& mapping: mappings)
@@ -98,7 +98,7 @@ namespace Engine::Input
     }
   }
 
-  void Keyboard::SetActionset(const string_hash actionSet)
+  void Keyboard::setActionSet(const string_hash actionSet)
   {
     if (m_ActionSets.end() != m_ActionSets.find(actionSet))
     {

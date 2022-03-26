@@ -10,12 +10,12 @@ namespace Engine::Window
   HWND CURRENT_WINDOW_HANDLER = 0;
   int2 window_size = {0,0};
 
-  void* GetHwnd()
+  void* get_hwnd()
   {
     return reinterpret_cast<void*>(&CURRENT_WINDOW_HANDLER);
   }
 
-  int2 GetWindowSize()
+  int2 get_window_size()
   {
     return window_size;
   }
@@ -90,11 +90,11 @@ namespace Engine::Window
     ShowWindow(CURRENT_WINDOW_HANDLER, SW_SHOWDEFAULT);
   }
 
-  void InitWindow()
+  void init_window()
   {
-    DataBlock* blk = Engine::GetAppSettings();
-    DataBlock* graphicsBlk = blk->GetChildBlock("graphics");
-    const string resolution = graphicsBlk->GetText("resolution");
+    DataBlock* blk = Engine::get_app_settings();
+    DataBlock* graphicsBlk = blk->getChildBlock("graphics");
+    const string resolution = graphicsBlk->getText("resolution");
     unsigned int width = 0;
     unsigned int height = 0;
 
@@ -105,7 +105,7 @@ namespace Engine::Window
     window_size = int2{width, height};
   }
 
-  void PollWndMessages()
+  void poll_wnd_messages()
   {
     MSG msg = { };
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))

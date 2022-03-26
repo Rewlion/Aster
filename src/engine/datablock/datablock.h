@@ -27,7 +27,7 @@ public:
     ValueType type = ValueType::None;
     Value as;
 
-    inline const char* GetTypeStr() const
+    inline const char* getTypeStr() const
     {
       return Ast::GetAttributeTypeStr(type);
     }
@@ -37,52 +37,52 @@ public:
   typedef std::vector<Attribute> AttributesArray;
 
 public:
-  inline const string& GetName() const
+  inline const string& getName() const
   {
     return m_Name;
   }
-  inline const  string& GetAnnotation() const
+  inline const  string& getAnnotation() const
   {
     return m_Annotation;
   }
 
-  DataBlock* GetChildBlock(const  string& path);
-  const DataBlock* GetChildBlock(const  string& path) const;
+  DataBlock* getChildBlock(const  string& path);
+  const DataBlock* getChildBlock(const  string& path) const;
 
-  size_t AddAttribute(const Attribute& attribute);
-  int GetInt(const  string& name) const;
-  int2 GetInt2(const  string& name) const;
-  int3 GetInt3(const  string& name) const;
-  int4 GetInt4(const  string& name) const;
-  float GetFloat(const  string& name) const;
-  float2 GetFloat2(const  string& name) const;
-  float3 GetFloat3(const  string& name) const;
-  float4 GetFloat4(const  string& name) const;
-  bool GetBool(const  string& name) const;
-  string GetText(const  string& name) const;
+  size_t addAttribute(const Attribute& attribute);
+  int    getInt(const string& name) const;
+  int2   getInt2(const string& name) const;
+  int3   getInt3(const string& name) const;
+  int4   getInt4(const string& name) const;
+  float  getFloat(const string& name) const;
+  float2 getFloat2(const string& name) const;
+  float3 getFloat3(const string& name) const;
+  float4 getFloat4(const string& name) const;
+  bool   getBool(const string& name) const;
+  string getText(const string& name) const;
 
-  int GetInt(const string& name, const int def) const;
-  int2 GetInt2(const string& name, const int2& def) const;
-  int3 GetInt3(const string& name, const int3& def) const;
-  int4 GetInt4(const string& name, const int4& def) const;
-  float GetFloat(const string& name, const float def) const;
-  float2 GetFloat2(const string& name, const float2 def) const;
-  float3 GetFloat3(const string& name, const float3 def) const;
-  float4 GetFloat4(const string& name, const float4 def) const;
-  bool GetBool(const string& name, const bool def) const;
-  string GetText(const string& name, const string& def) const;
+  int    getInt(const string& name, const int def) const;
+  int2   getInt2(const string& name, const int2& def) const;
+  int3   getInt3(const string& name, const int3& def) const;
+  int4   getInt4(const string& name, const int4& def) const;
+  float  getFloat(const string& name, const float def) const;
+  float2 getFloat2(const string& name, const float2 def) const;
+  float3 getFloat3(const string& name, const float3 def) const;
+  float4 getFloat4(const string& name, const float4 def) const;
+  bool   getBool(const string& name, const bool def) const;
+  string getText(const string& name, const string& def) const;
 
-  inline const BlocksArray& GetChildBlocks() const
+  inline const BlocksArray& getChildBlocks() const
   {
     return m_ChildBlocks;
   }
 
-  inline const AttributesArray& GetAttributes() const
+  inline const AttributesArray& getAttributes() const
   {
     return m_Attributes;
   }
 
-  bool IsEmpty() const;
+  bool isEmpty() const;
 
 private:
   string m_Name;

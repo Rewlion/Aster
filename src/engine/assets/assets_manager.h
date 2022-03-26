@@ -30,17 +30,17 @@ namespace Engine
   class AssetsManager
   {
     public:
-      void Init();
+      void init();
 
-      bool GetStaticModel(const string_hash assetUri, StaticModelAsset& asset);
+      bool getStaticModel(const string_hash assetUri, StaticModelAsset& asset);
 
-      bool GetTexture(const string_hash assetUri, TextureAsset& asset);
+      bool getTexture(const string_hash assetUri, TextureAsset& asset);
 
     private:
-      void LoadAssetsFromFs();
-      void LoadAsset(const string& file);
-      StaticModelAsset LoadGltf(const string& file);
-      TextureAsset LoadTexture(const string& file);
+      void loadAssetsFromFs();
+      void loadAsset(const string& file);
+      StaticModelAsset loadGltf(const string& file);
+      TextureAsset loadTexture(const string& file);
     private:
       eastl::hash_map<string_hash, StaticModelAsset> m_StaticModels;
       eastl::hash_map<string_hash, TextureAsset> m_Textures;

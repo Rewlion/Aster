@@ -4,6 +4,6 @@
 
 namespace Engine
 {
-  void LoadAppSettings(const char* path);
-  DataBlock* GetAppSettings();
+  void load_app_settings(const char* path);
+  DataBlock* get_app_settings();
 }
