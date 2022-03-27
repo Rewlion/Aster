@@ -250,19 +250,15 @@ namespace Engine
       generate_tb_vectors(vertices, indices);
 
       gapi::BufferAllocationDescription vbAlloc;
-      vbAlloc.size = vertices.size() * sizeof(vertices[0]);
-      vbAlloc.usage = gapi::BufferUsage::Vertex;
-
-      gapi::BufferAllocationDescription ibAlloc;
-      ibAlloc.size = indices.size() * sizeof(indices[0]);
-      ibAlloc.usage = gapi::BufferUsage::Index;
+      const size_t verticesSize = vertices.size() * sizeof(vertices[0]);
+      const size_t indicesSize = indices.size() * sizeof(indices[0]);
 
       Submesh submesh;
-      submesh.vertexBuffer = allocate_buffer(vbAlloc);
-      submesh.indexBuffer  = allocate_buffer(ibAlloc);
+      submesh.vertexBuffer = gapi::allocate_buffer(verticesSize, gapi::BF_GpuVisible | gapi::BF_BindVertex);
+      submesh.indexBuffer  = gapi::allocate_buffer(indicesSize,  gapi::BF_GpuVisible | gapi::BF_BindIndex);
 
-      copy_to_buffer_sync(vertices.data(), 0, vertices.size() * sizeof(vertices[0]), submesh.vertexBuffer);
-      copy_to_buffer_sync(indices.data(), 0, indices.size() * sizeof(indices[0]), submesh.indexBuffer);
+      write_buffer(submesh.vertexBuffer, vertices.data(), 0, verticesSize);
+      write_buffer(submesh.indexBuffer, indices.data(), 0, indicesSize);
       submesh.indexCount = indices.size();
 
       asset.submeshes.push(submesh);

@@ -57,6 +57,7 @@ namespace gapi::vulkan
   {
     vk::UniqueBuffer buffer;
     vk::UniqueDeviceMemory memory;
+    int usage = 0;
   };
 
   struct Texture

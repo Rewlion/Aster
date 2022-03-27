@@ -1,6 +1,7 @@
 #include "device.h"
-#include "resources.h"
 #include "gapi_to_vk.h"
+#include "resources.h"
+#include "result.h"
 
 #include <engine/assert.h>
 #include <engine/log.h>
@@ -170,9 +171,9 @@ namespace gapi::vulkan
     m_Swapchain.Present();
   }
 
-  BufferHandler Device::allocateBuffer(const BufferAllocationDescription& allocDesc)
+  BufferHandler Device::allocateBuffer(const size_t size, const int usage)
   {
-    Buffer buffer = allocateBufferInternal(allocDesc, m_MemoryIndices.deviceLocalMemory);
+    Buffer buffer = allocateBufferInternal(size, usage);
 
     size_t id = (size_t)(~0);
     const bool allocated = m_AllocatedBuffers.add(std::move(buffer), id);
@@ -181,13 +182,52 @@ namespace gapi::vulkan
     return (BufferHandler)id;
   }
 
-  Buffer Device::allocateBufferInternal(const BufferAllocationDescription& allocDesc, const uint32_t memoryIndex)
+  void* Device::mapBuffer(const BufferHandler buffer, const size_t offset, const size_t size)
+  {
+    Buffer* b = getAllocatedBuffer(buffer);
+    if (!(b->usage & BF_CpuVisible))
+    {
+      ASSERT(!"can't map not cpu visible buffer");
+      return nullptr;
+    }
+
+    return mapBuffer(*b, offset, size);
+  }
+
+  void* Device::mapBuffer(const Buffer& buffer, const size_t offset, const size_t size)
+  {
+    void* mem = nullptr;
+    VK_CHECK(m_Device->mapMemory(buffer.memory.get(), offset, size, vk::MemoryMapFlagBits{}, &mem));
+
+    return mem;
+  }
+
+  void Device::unmapBuffer(const BufferHandler buffer)
+  {
+    Buffer* b = getAllocatedBuffer(buffer);
+    if (!(b->usage & BF_CpuVisible))
+    {
+      ASSERT(!"can't unmap not cpu visible buffer");
+      return;
+    }
+
+    unmapBuffer(*b);
+  }
+
+  void Device::unmapBuffer(const Buffer& buffer)
+  {
+    m_Device->unmapMemory(buffer.memory.get());
+  }
+
+  Buffer Device::allocateBufferInternal(const size_t size, const int usage)
   {
     Buffer b;
 
+    b.usage = usage;
+
     vk::BufferCreateInfo bufferCi;
-    bufferCi.usage = get_buffer_usage(allocDesc.usage);
-    bufferCi.size = allocDesc.size;
+    bufferCi.usage = get_buffer_usage(usage);
+    bufferCi.size = size;
     bufferCi.sharingMode = vk::SharingMode::eExclusive;
 
     b.buffer = m_Device->createBufferUnique(bufferCi);
@@ -195,7 +235,7 @@ namespace gapi::vulkan
 
     vk::MemoryAllocateInfo allocInfo;
     allocInfo.allocationSize = memRec.size;
-    allocInfo.memoryTypeIndex = memoryIndex;
+    allocInfo.memoryTypeIndex = get_memory_index(m_MemoryIndices, usage);
 
     b.memory = m_Device->allocateMemoryUnique(allocInfo);
 
@@ -204,17 +244,9 @@ namespace gapi::vulkan
     return b;
   }
 
-  Buffer Device::allocateStagingBuffer(const size_t size)
-  {
-    BufferAllocationDescription allocDesc;
-    allocDesc.size = size;
-    allocDesc.usage = gapi::BufferUsage::Staging;
-    return allocateBufferInternal(allocDesc, m_MemoryIndices.stagingMemory);
-  }
-
   Buffer Device::allocateStagingBuffer(const void* src, const size_t size)
   {
-    Buffer stagingBuf = allocateStagingBuffer(size);
+    Buffer stagingBuf = allocateBufferInternal(size, BF_CpuVisible);
     void* mappedMemory = nullptr;
 
     ASSERT(vk::Result::eSuccess == m_Device->mapMemory(stagingBuf.memory.get(), 0, size, vk::MemoryMapFlagBits{}, &mappedMemory));
@@ -224,30 +256,39 @@ namespace gapi::vulkan
     return stagingBuf;
   }
 
-  void Device::copyToBufferSync(const void* src, const size_t offset, const size_t size, const BufferHandler buffer)
+  Buffer* Device::getAllocatedBuffer(const BufferHandler handler)
   {
-    const size_t id = (size_t)buffer;
+    const size_t id = (size_t)handler;
     if (!m_AllocatedBuffers.contains(id))
     {
-      logerror("vulkan: copyToBufferSync: buffer({}) not allocated", id);
-      return;
+      logerror("vulkan: getAllocatedBuffer: buffer({}) not allocated", id);
+      ASSERT(!"failed to get allocated buffer");
+      return nullptr;
     }
 
-    Buffer stagingBuf = allocateStagingBuffer(size);
-    void* mappedMemory = nullptr;
+    return &m_AllocatedBuffers.get(id);
+  }
 
-    ASSERT(vk::Result::eSuccess == m_Device->mapMemory(stagingBuf.memory.get(), 0, size, vk::MemoryMapFlagBits{}, &mappedMemory));
-    std::memcpy(mappedMemory, src, size);
-    m_Device->unmapMemory(stagingBuf.memory.get());
+  void Device::copyBuffersSync(const BufferHandler src, const size_t srcOffset,
+                               const BufferHandler dst, const size_t dstOffset,
+                               const size_t size)
+  {
+    const vk::Buffer srcBuf = getBuffer(src);
+    const vk::Buffer dstBuf = getBuffer(dst);
 
-    const Buffer& toBuf = m_AllocatedBuffers.get(id);
+    copyBuffersSync(srcBuf, srcOffset, dstBuf, dstOffset, size);
+  }
 
+  void Device::copyBuffersSync(const vk::Buffer src, const size_t srcOffset,
+                               const vk::Buffer dst, const size_t dstOffset,
+                               const size_t size)
+  {
     const vk::CommandBuffer cmdBuf = allocateTransferCmdBuffer();
     vk::BufferCopy region;
     region.size = size;
-    region.srcOffset = 0;
-    region.dstOffset = offset;
-    cmdBuf.copyBuffer(stagingBuf.buffer.get(), toBuf.buffer.get(), 1, &region);
+    region.srcOffset = srcOffset;
+    region.dstOffset = dstOffset;
+    cmdBuf.copyBuffer(src, dst, 1, &region);
 
     cmdBuf.end();
 
@@ -256,11 +297,34 @@ namespace gapi::vulkan
     submitInfo.pCommandBuffers = &cmdBuf;
 
     vk::UniqueFence fence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
-    ASSERT(vk::Result::eSuccess == m_Device->resetFences(1, &fence.get()));
+    VK_CHECK(m_Device->resetFences(1, &fence.get()));
+    VK_CHECK(m_TransferQueue.submit(1, &submitInfo, fence.get()));
+    VK_CHECK(m_Device->waitForFences(1, &fence.get(), true, ~0));
+  }
 
-    ASSERT(vk::Result::eSuccess == m_TransferQueue.submit(1, &submitInfo, fence.get()));
+  void Device::writeToStagingBuffer(const Buffer& buffer, const void* src, const size_t offset, const size_t size)
+  {
+    void* dst = mapBuffer(buffer, offset, size);
+    std::memcpy(dst, src, size);
+    unmapBuffer(buffer);
+  }
 
-    ASSERT(vk::Result::eSuccess == m_Device->waitForFences(1, &fence.get(), true, ~0));
+  void Device::writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size)
+  {
+    Buffer* b = getAllocatedBuffer(buffer);
+
+    if (b->usage & BF_CpuVisible)
+    {
+      writeToStagingBuffer(*b, src, offset, size);
+    }
+    else if (b->usage & BF_GpuVisible)
+    {
+      Buffer staging = allocateBufferInternal(size, BF_CpuVisible);
+      writeToStagingBuffer(staging, src, 0, size);
+      copyBuffersSync(staging.buffer.get(), 0, b->buffer.get(), offset, size);
+    }
+    else
+      ASSERT(!"writeBuffer dst buffer don't have memory set");
   }
 
   vk::Buffer Device::getBuffer(const BufferHandler buffer)

@@ -262,16 +262,13 @@ namespace gapi
     size_t hash() const;
   };
 
-  enum class BufferUsage: uint32_t
+  enum BufferUsage
   {
-    UniformTexel  = 0x4,
-    StorageTexel  = 0x8,
-    UniformBuffer = 0x10,
-    Storage       = 0x20,
-    Index         = 0x40,
-    Vertex        = 0x80,
-    Indirect      = 0x100,
-    Staging       = 0x10000
+    BF_CpuVisible = 1,
+    BF_GpuVisible = 1 << 2,
+
+    BF_BindVertex = 1 << 3,
+    BF_BindIndex = 1 << 4
   };
 
   enum class TextureSamples: uint32_t

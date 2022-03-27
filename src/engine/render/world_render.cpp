@@ -15,26 +15,20 @@ namespace Engine::Render
 
   void WorldRender::init()
   {
-    gapi::BufferAllocationDescription ad;
-    ad.size = sizeof(float2) * 3;
-    ad.usage = gapi::BufferUsage::Vertex;
-    m_TestBuffer = allocate_buffer(ad);
+    m_TestBuffer = gapi::allocate_buffer(sizeof(float2) * 3, gapi::BF_GpuVisible | gapi::BF_BindVertex);
 
     float2 vertices[3] = {
       float2(0,0),
       float2(0,1),
       float2(1,0)
     };
+    write_buffer(m_TestBuffer, (void*)vertices, 0, sizeof(float2) * 3);
 
-    copy_to_buffer_sync((void*)vertices, 0, ad.size, m_TestBuffer);
-
-    ad = gapi::BufferAllocationDescription{};
-    ad.size = sizeof(gapi::index_type) * 3;
-    ad.usage = gapi::BufferUsage::Index;
-    m_TestIndexBuffer = allocate_buffer(ad);
+    m_TestIndexBuffer = gapi::allocate_buffer(sizeof(gapi::index_type) * 3,
+                                              gapi::BF_GpuVisible | gapi::BF_BindIndex);
 
     gapi::index_type indices[3] = {0,1,2};
-    copy_to_buffer_sync(indices, 0,  ad.size, m_TestIndexBuffer);
+    write_buffer(m_TestIndexBuffer, indices, 0, sizeof(gapi::index_type) * 3);
 
     gapi::SamplerAllocationDescription samplerAllocDesc;
     m_TestSampler = allocate_sampler(samplerAllocDesc);

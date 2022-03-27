@@ -95,24 +95,32 @@ namespace gapi::vulkan
     return ret;
   }
 
-  inline vk::BufferUsageFlags get_buffer_usage(const BufferUsage usage)
+  inline vk::BufferUsageFlags get_buffer_usage(const int usage)
   {
     vk::BufferUsageFlags bits = static_cast<vk::BufferUsageFlagBits>(usage);
-    switch(usage)
-    {
-      case BufferUsage::Staging:
-      {
-        bits = vk::BufferUsageFlagBits::eTransferSrc;
-        break;
-      }
-      case BufferUsage::Vertex:
-      case BufferUsage::Index:
-      {
-        bits |= vk::BufferUsageFlagBits::eTransferDst;
-        break;
-      }
-    }
+
+    bits |=  vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eTransferDst;
+
+    if (usage & BufferUsage::BF_BindIndex)
+      bits |= vk::BufferUsageFlagBits::eIndexBuffer;
+
+    if (usage & BufferUsage::BF_BindVertex)
+      bits |= vk::BufferUsageFlagBits::eVertexBuffer;
+
     return bits;
+  }
+
+  inline uint32_t get_memory_index(const MemoryIndices memoryIndices, const int bufferUsage)
+  {
+    if (bufferUsage & BF_GpuVisible)
+      return memoryIndices.deviceLocalMemory;
+
+    if (bufferUsage & BF_CpuVisible)
+      return memoryIndices.stagingMemory;
+
+    ASSERT(!"buffer usage has to specify memory storage");
+
+    return 0;
   }
 
   inline vk::ShaderStageFlagBits get_shader_stage(const ShaderStage stage)
