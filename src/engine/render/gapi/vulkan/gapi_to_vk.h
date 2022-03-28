@@ -107,6 +107,9 @@ namespace gapi::vulkan
     if (usage & BufferUsage::BF_BindVertex)
       bits |= vk::BufferUsageFlagBits::eVertexBuffer;
 
+    if (usage & BufferUsage::BF_BindConstant)
+      bits |= vk::BufferUsageFlagBits::eUniformBuffer;
+
     return bits;
   }
 

@@ -32,6 +32,10 @@ namespace Engine::Render
 
     gapi::SamplerAllocationDescription samplerAllocDesc;
     m_TestSampler = allocate_sampler(samplerAllocDesc);
+
+    float4 color{1.0, 1.0, 0.6, 1.0};
+    m_TestConstBuffer = gapi::allocate_buffer(sizeof(float4), gapi::BF_CpuVisible | gapi::BF_BindConstant);
+    gapi::write_buffer(m_TestConstBuffer, &color, 0, sizeof(color));
   }
 
   void WorldRender::render()
@@ -64,6 +68,7 @@ namespace Engine::Render
 
     bind_texture(cmdList, texture.texture, 0, 0);
     bind_sampler(cmdList, m_TestSampler, 0, 1);
+    bind_const_buffer(cmdList, m_TestConstBuffer, 0, 2);
 
     for(const auto& submesh: asset.submeshes)
     {

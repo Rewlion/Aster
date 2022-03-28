@@ -303,6 +303,34 @@ namespace spirv
       std::snprintf(binding.name, BINDING_NAME_LEN, "%s", sampler.name.c_str());
     }
 
+    for (size_t i = 0; i < resources.uniform_buffers.size(); ++i)
+    {
+      const spirv_cross::Resource& uniform = resources.uniform_buffers[i];
+      const spirv_cross::SPIRType& type = glsl.get_type(uniform.type_id);
+
+      const unsigned int nSet = glsl.get_decoration(uniform.id, spv::Decoration::DecorationDescriptorSet);
+      const unsigned int nBinding = glsl.get_decoration(uniform.id, spv::Decoration::DecorationBinding);
+
+      const auto validate = [&](const char* rangeName, const size_t val, const size_t max)
+                            {
+                              if (val > max)
+                              {
+                                logerror("(set:{} binding:{}) uniform {}: has unsupported {} number. Max: {}",
+                                  nSet, nBinding, uniform.name.c_str(), rangeName, max);
+                                return false;
+                              }
+                              return true;
+                            };
+
+      if (!validate("set", nSet, MAX_SETS_COUNT) || !validate("binding", nBinding, MAX_BINDING_COUNT))
+        continue;
+
+      Binding& binding = ret.shaderArguments[nSet].bindings[nBinding];
+      binding.type = BindingType::Uniform;
+      binding.stages = ret.stage;
+      std::snprintf(binding.name, BINDING_NAME_LEN, "%s", uniform.name.c_str());
+    }
+
     return ret;
   }
 }

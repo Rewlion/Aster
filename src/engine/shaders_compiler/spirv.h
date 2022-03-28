@@ -21,7 +21,8 @@ namespace spirv
   {
     None      = 0,
     Texture2D = 1,
-    Sampler   = 2
+    Sampler   = 2,
+    Uniform   = 3
   };
 
   struct Binding

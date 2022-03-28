@@ -55,6 +55,13 @@ namespace gapi
     BufferHandler buffer;
   };
 
+  struct BindConstantBufferCmd
+  {
+    BufferHandler buffer;
+    size_t        argument = 0;
+    size_t        binding  = 0;
+  };
+
   struct BindTextureCmd
   {
     TextureHandler texture  = TextureHandler::Invalid;
@@ -93,6 +100,7 @@ namespace gapi
     PushConstantsCmd,
     BindVertexBufferCmd,
     BindIndexBufferCmd,
+    BindConstantBufferCmd,
     BindTextureCmd,
     BindSamplerCmd,
     ClearCmd,
@@ -118,6 +126,8 @@ namespace gapi
   void bind_vertex_buffer(CommandList& cmdList, const BufferHandler buffer);
 
   void bind_index_buffer(CommandList& cmdList, const BufferHandler buffer);
+
+  void bind_const_buffer(CommandList& cmdList, const BufferHandler buffer, const size_t argument, const size_t binding);
 
   void bind_texture(CommandList& cmdList, const TextureHandler texture, const size_t argument, const size_t binding);
 

@@ -38,6 +38,7 @@ namespace gapi::vulkan
       void compileCommand(const BindVertexBufferCmd& cmd);
       void compileCommand(const BindIndexBufferCmd& cmd);
       void compileCommand(const DrawIndexedCmd& cmd);
+      void compileCommand(const BindConstantBufferCmd& cmd);
       void compileCommand(const BindTextureCmd& cmd);
       void compileCommand(const BindSamplerCmd& cmd);
       void compileCommand(const ClearCmd& cmd);

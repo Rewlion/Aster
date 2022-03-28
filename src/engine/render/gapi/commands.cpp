@@ -75,6 +75,15 @@ namespace gapi
     });
   }
 
+  void bind_const_buffer(CommandList& cmdList, const BufferHandler buffer, const size_t argument, const size_t binding)
+  {
+    cmdList.push_back(BindConstantBufferCmd{
+      .buffer = buffer,
+      .argument = argument,
+      .binding = binding
+    });
+  }
+
   void bind_texture(CommandList& cmdList, const TextureHandler texture, const size_t argument, const size_t binding)
   {
     cmdList.push_back(BindTextureCmd{

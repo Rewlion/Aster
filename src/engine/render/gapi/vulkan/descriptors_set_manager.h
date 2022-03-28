@@ -24,6 +24,7 @@ namespace gapi::vulkan
 
       void setImage(const vk::ImageView imgView, const size_t set, const size_t binding);
       void setSampler(const vk::Sampler sampler, const size_t set, const size_t binding);
+      void setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding);
 
       void updateDescriptorSets(vk::CommandBuffer& cmdBuf);
 
@@ -43,7 +44,10 @@ namespace gapi::vulkan
 
         vk::ImageView imgView;
         vk::Sampler sampler;
+        vk::Buffer buffer;
+
         vk::DescriptorImageInfo imgInfo;
+        vk::DescriptorBufferInfo bufInfo;
       };
 
       struct Set

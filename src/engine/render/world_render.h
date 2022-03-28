@@ -14,6 +14,7 @@ namespace Engine::Render
       gapi::BufferHandler m_TestBuffer;
       gapi::BufferHandler m_TestIndexBuffer;
       gapi::SamplerHandler m_TestSampler;
+      gapi::BufferHandler m_TestConstBuffer;
   };
 
   extern WorldRender world_render;

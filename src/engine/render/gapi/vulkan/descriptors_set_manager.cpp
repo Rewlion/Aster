@@ -66,6 +66,19 @@ namespace gapi::vulkan
     m_DirtySets.set(set);
   }
 
+  void DescriptorsSetManager::setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding)
+  {
+    m_Sets[set].bindings[binding].buffer = buffer;
+    m_Sets[set].bindings[binding].type = vk::DescriptorType::eUniformBuffer;
+    vk::DescriptorBufferInfo bufInfo;
+    bufInfo.buffer = buffer;
+    bufInfo.offset = 0;
+    bufInfo.range = VK_WHOLE_SIZE;
+    m_Sets[set].bindings[binding].bufInfo = bufInfo;
+
+    m_DirtySets.set(set);
+  }
+
   void DescriptorsSetManager::setPipelineLayout(const PipelineLayout* layout)
   {
     m_PipelineLayout = layout;
@@ -90,6 +103,13 @@ namespace gapi::vulkan
       case spirv::BindingType::Texture2D:
       {
         if (currentBindingType == vk::DescriptorType::eSampledImage)
+          return true;
+        break;
+      }
+
+      case spirv::BindingType::Uniform:
+      {
+        if (currentBindingType == vk::DescriptorType::eUniformBuffer)
           return true;
         break;
       }
@@ -137,6 +157,12 @@ namespace gapi::vulkan
       case vk::DescriptorType::eSampledImage:
       {
         write.pImageInfo = &binding.imgInfo;
+        break;
+      }
+
+      case vk::DescriptorType::eUniformBuffer:
+      {
+        write.pBufferInfo = &binding.bufInfo;
         break;
       }
 

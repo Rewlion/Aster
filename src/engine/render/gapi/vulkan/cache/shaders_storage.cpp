@@ -292,6 +292,13 @@ namespace gapi::vulkan
               break;
             }
 
+            case spirv::BindingType::Uniform:
+            {
+              bindingDesc.descriptorType = vk::DescriptorType::eUniformBuffer;
+              bindingDesc.descriptorCount = 1;
+              break;
+            }
+
             default:
             {
               ASSERT(!"Unsupported binding type");
@@ -302,24 +309,9 @@ namespace gapi::vulkan
           bindings.push(bindingDesc);
         }
 
-        ///
-       //vk::DescriptorSetLayoutBinding bindingDesc[2];
-       //bindingDesc[0].binding = 0;
-       //bindingDesc[0].descriptorCount = 1;
-       //bindingDesc[0].descriptorType = vk::DescriptorType::eSampledImage;
-       //bindingDesc[0].stageFlags = vk::ShaderStageFlagBits::eFragment;
-       //bindingDesc[1].binding = 1;
-       //bindingDesc[1].descriptorCount = 1;
-       //bindingDesc[1].descriptorType = vk::DescriptorType::eSampler;
-       //bindingDesc[1].stageFlags = vk::ShaderStageFlagBits::eFragment;
-        ///
-
         vk::DescriptorSetLayoutCreateInfo ci;
         ci.bindingCount = bindings.getSize();
         ci.pBindings = bindings.getData();
-
-        //ci.bindingCount = 2;
-        //ci.pBindings = bindingDesc;
 
         layout.descriptorSetLayouts[nSet] = m_Device->m_Device->createDescriptorSetLayoutUnique(ci);
         setLayouts[nSet] = layout.descriptorSetLayouts[nSet].get();

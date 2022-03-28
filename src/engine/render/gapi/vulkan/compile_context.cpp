@@ -190,6 +190,19 @@ namespace gapi::vulkan
     m_State.cmdBuffer.drawIndexed(cmd.indexCount, cmd.instanceCount, cmd.firstIndex, cmd.vertexOffset, cmd.firstInstance);
   }
 
+  void CompileContext::compileCommand(const BindConstantBufferCmd& cmd)
+  {
+    auto& dsManager = getCurrentFrameOwnedResources().m_DescriptorSetsManager;
+
+    if (cmd.buffer != BufferHandler::Invalid)
+    {
+      vk::Buffer buffer = m_Device->getBuffer(cmd.buffer);
+      dsManager.setUniformBuffer(buffer, cmd.argument, cmd.binding);
+
+      m_State.graphicsState.markDirty<FlushDescriptorSetsTSF>();
+    }
+  }
+
   void CompileContext::compileCommand(const BindTextureCmd& cmd)
   {
     auto& dsManager = getCurrentFrameOwnedResources().m_DescriptorSetsManager;
