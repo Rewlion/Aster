@@ -197,7 +197,7 @@ namespace gapi::vulkan
     if (cmd.buffer != BufferHandler::Invalid)
     {
       vk::Buffer buffer = m_Device->getBuffer(cmd.buffer);
-      dsManager.setUniformBuffer(buffer, cmd.argument, cmd.binding);
+      dsManager.setUniformBuffer(buffer, cmd.argument, cmd.binding, 0, 0);
 
       m_State.graphicsState.markDirty<FlushDescriptorSetsTSF>();
     }

@@ -326,7 +326,7 @@ namespace spirv
         continue;
 
       Binding& binding = ret.shaderArguments[nSet].bindings[nBinding];
-      binding.type = BindingType::Uniform;
+      binding.type = BindingType::UniformBufferDynamic;
       binding.stages = ret.stage;
       std::snprintf(binding.name, BINDING_NAME_LEN, "%s", uniform.name.c_str());
     }

@@ -24,7 +24,7 @@ namespace gapi::vulkan
 
       void setImage(const vk::ImageView imgView, const size_t set, const size_t binding);
       void setSampler(const vk::Sampler sampler, const size_t set, const size_t binding);
-      void setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding);
+      void setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding, const size_t constOffset, const size_t dynamicOffset);
 
       void updateDescriptorSets(vk::CommandBuffer& cmdBuf);
 
@@ -48,6 +48,7 @@ namespace gapi::vulkan
 
         vk::DescriptorImageInfo imgInfo;
         vk::DescriptorBufferInfo bufInfo;
+        size_t dynamicOffset = 0;
       };
 
       struct Set
@@ -65,6 +66,8 @@ namespace gapi::vulkan
       };
 
       vk::WriteDescriptorSet acquireWriteDescriptorSet(const size_t nSet, const size_t nBinding);
+
+      Utils::FixedStack<uint32_t, spirv::MAX_BINDING_COUNT> acquireDynamicOffsets(const size_t nSet);
 
     private:
       Device* m_Device = nullptr;

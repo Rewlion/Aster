@@ -292,9 +292,9 @@ namespace gapi::vulkan
               break;
             }
 
-            case spirv::BindingType::Uniform:
+            case spirv::BindingType::UniformBufferDynamic:
             {
-              bindingDesc.descriptorType = vk::DescriptorType::eUniformBuffer;
+              bindingDesc.descriptorType = vk::DescriptorType::eUniformBufferDynamic;
               bindingDesc.descriptorCount = 1;
               break;
             }

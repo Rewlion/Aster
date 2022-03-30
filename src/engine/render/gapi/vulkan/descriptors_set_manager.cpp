@@ -66,13 +66,14 @@ namespace gapi::vulkan
     m_DirtySets.set(set);
   }
 
-  void DescriptorsSetManager::setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding)
+  void DescriptorsSetManager::setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding, const size_t constOffset, const size_t dynamicOffset)
   {
     m_Sets[set].bindings[binding].buffer = buffer;
-    m_Sets[set].bindings[binding].type = vk::DescriptorType::eUniformBuffer;
+    m_Sets[set].bindings[binding].type = vk::DescriptorType::eUniformBufferDynamic;
+    m_Sets[set].bindings[binding].dynamicOffset = dynamicOffset;
     vk::DescriptorBufferInfo bufInfo;
     bufInfo.buffer = buffer;
-    bufInfo.offset = 0;
+    bufInfo.offset = constOffset;
     bufInfo.range = VK_WHOLE_SIZE;
     m_Sets[set].bindings[binding].bufInfo = bufInfo;
 
@@ -107,9 +108,9 @@ namespace gapi::vulkan
         break;
       }
 
-      case spirv::BindingType::Uniform:
+      case spirv::BindingType::UniformBufferDynamic:
       {
-        if (currentBindingType == vk::DescriptorType::eUniformBuffer)
+        if (currentBindingType == vk::DescriptorType::eUniformBufferDynamic)
           return true;
         break;
       }
@@ -160,7 +161,7 @@ namespace gapi::vulkan
         break;
       }
 
-      case vk::DescriptorType::eUniformBuffer:
+      case vk::DescriptorType::eUniformBufferDynamic:
       {
         write.pBufferInfo = &binding.bufInfo;
         break;
@@ -212,11 +213,32 @@ namespace gapi::vulkan
 
       for (size_t set = 0; set < spirv::MAX_SETS_COUNT; ++set)
         if (m_DirtySets.isSet(set))
+        {
+          const auto dynamicOffsets = acquireDynamicOffsets(set);
           cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_PipelineLayout->pipelineLayout.get(),
-                                    set, 1, &m_ActiveDescriptorSets[set], 0, nullptr);
+                                    set, 1, &m_ActiveDescriptorSets[set], dynamicOffsets.getSize(), dynamicOffsets.getData());
+        }
     }
 
     m_DirtySets.resetAll();
+  }
+
+  Utils::FixedStack<uint32_t, spirv::MAX_BINDING_COUNT> DescriptorsSetManager::acquireDynamicOffsets(const size_t nSet)
+  {
+    Utils::FixedStack<uint32_t, spirv::MAX_BINDING_COUNT> dynamicOffsets;
+
+    const auto setDescription = m_Sets[nSet];
+    for (size_t i = 0; i < std::size(setDescription.bindings); ++i)
+    {
+      const auto& bindingDescription = setDescription.bindings[i];
+      if (bindingDescription.type.has_value() &&
+        (bindingDescription.type.value() == vk::DescriptorType::eUniformBufferDynamic))
+      {
+        dynamicOffsets.push(bindingDescription.dynamicOffset);
+      }
+    }
+
+    return dynamicOffsets;
   }
 
   void DescriptorsSetManager::reset()
