@@ -14,13 +14,16 @@
 namespace gapi::vulkan
 {
   class Device;
+  class FrameGarbageCollector;
 
   class CompileContext
   {
     public:
-      inline void init(Device* device)
+      inline void init(Device* device, FrameGarbageCollector* frameGc)
       {
         m_Device = device;
+        m_FrameGc = frameGc;
+
         m_RenderPassStorage.init(m_Device);
         m_PipelinesStorage.init(m_Device);
 
@@ -71,6 +74,7 @@ namespace gapi::vulkan
 
     private:
       Device* m_Device = nullptr;
+      FrameGarbageCollector* m_FrameGc = nullptr;
       RenderPassStorage m_RenderPassStorage;
       PipelinesStorage m_PipelinesStorage;
 

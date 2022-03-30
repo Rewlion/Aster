@@ -13,6 +13,8 @@
 
 namespace gapi::vulkan
 {
+  class FrameGarbageCollector;
+
   class Device
   {
     friend class RenderPassStorage;
@@ -40,7 +42,7 @@ namespace gapi::vulkan
 
     public:
       Device() = default;
-      Device(CreateInfo&&);
+      Device(CreateInfo&&, FrameGarbageCollector*);
 
       inline uint8_t getBackbufferId() const { return m_Swapchain.getBackbufferId(); }
 
@@ -68,9 +70,10 @@ namespace gapi::vulkan
 
       void copyBuffersSync(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size);
 
-      void writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size);
+      void writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags);
 
-      vk::Buffer getBuffer(const BufferHandler buffer);
+      Buffer& getBuffer(const BufferHandler buffer);
+      const Buffer& getBuffer(const BufferHandler buffer) const;
 
       TextureHandler allocateTexture(const TextureAllocationDescription& allocDesc);
 
@@ -85,6 +88,7 @@ namespace gapi::vulkan
       void setImageLayout(const TextureHandler handler, const vk::ImageLayout layout);
 
     private:
+      void discardBuffer(Buffer& buffer);
       void copyBuffersSync(const vk::Buffer src, const size_t srcOffset, const vk::Buffer dst, const size_t dstOffset, const size_t size);
       void writeToStagingBuffer(const Buffer& buffer, const void* src, const size_t offset, const size_t size);
       Buffer* getAllocatedBuffer(const BufferHandler handler);
@@ -98,6 +102,7 @@ namespace gapi::vulkan
       vk::CommandBuffer allocateTransferCmdBuffer();
 
     private:
+      FrameGarbageCollector* m_FrameGc;
       vk::UniqueDevice m_Device;
 
       Swapchain m_Swapchain;

@@ -1,6 +1,7 @@
 #include "compile_context.h"
 
 #include "device.h"
+#include "frame_gc.h"
 #include "gapi_to_vk.h"
 #include "resources.h"
 
@@ -141,6 +142,7 @@ namespace gapi::vulkan
     endRenderPass("Swap backbuffer");
 
     m_Device->presentSurfaceImage();
+    //nextFrame();
   }
 
   void CompileContext::compileCommand(const PushConstantsCmd& cmd)
@@ -156,14 +158,14 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const BindVertexBufferCmd& cmd)
   {
-    const vk::Buffer buffer = m_Device->getBuffer(cmd.buffer);
-    m_State.graphicsState.set<VertexBufferTSF, vk::Buffer>(buffer);
+    const Buffer& buffer = m_Device->getBuffer(cmd.buffer);
+    m_State.graphicsState.set<VertexBufferTSF, vk::Buffer>(buffer.buffer.get());
   }
 
   void CompileContext::compileCommand(const BindIndexBufferCmd& cmd)
   {
-    const vk::Buffer buffer = m_Device->getBuffer(cmd.buffer);
-    m_State.graphicsState.set<IndexBufferTSF, vk::Buffer>(buffer);
+    const Buffer& buffer = m_Device->getBuffer(cmd.buffer);
+    m_State.graphicsState.set<IndexBufferTSF, vk::Buffer>(buffer.buffer.get());
   }
 
   void CompileContext::compileCommand(const DrawCmd& cmd)
@@ -196,8 +198,8 @@ namespace gapi::vulkan
 
     if (cmd.buffer != BufferHandler::Invalid)
     {
-      vk::Buffer buffer = m_Device->getBuffer(cmd.buffer);
-      dsManager.setUniformBuffer(buffer, cmd.argument, cmd.binding, 0, 0);
+      const Buffer& buffer = m_Device->getBuffer(cmd.buffer);
+      dsManager.setUniformBuffer(buffer.buffer.get(), cmd.argument, cmd.binding, 0, 0);
 
       m_State.graphicsState.markDirty<FlushDescriptorSetsTSF>();
     }
@@ -251,6 +253,7 @@ namespace gapi::vulkan
   {
     m_CurrentFrame = (m_CurrentFrame + 1) % SWAPCHAIN_IMAGES_COUNT;
     getCurrentFrameOwnedResources().Clear();
+    m_FrameGc->nextFrame();
   }
 
   void CompileContext::compileCommand(const SetBlendStateCmd& cmd)

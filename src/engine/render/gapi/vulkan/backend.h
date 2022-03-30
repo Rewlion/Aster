@@ -9,11 +9,13 @@ using UniqueDynamicDbgUtilsMessenger = vk::UniqueHandle<vk::DebugUtilsMessengerE
 
 namespace gapi::vulkan
 {
+  class FrameGarbageCollector;
+
   class Backend
   {
     public:
       void init();
-      Device createDevice();
+      Device createDevice(FrameGarbageCollector* frameGc);
 
     private:
       eastl::vector<const char*> getValidationLayers();

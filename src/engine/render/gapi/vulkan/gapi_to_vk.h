@@ -113,6 +113,14 @@ namespace gapi::vulkan
     return bits;
   }
 
+  inline uint32_t get_buffer_discards_count(const int usage)
+  {
+    if (usage & BF_BindConstant)
+      return 3;
+
+    return 1;
+  }
+
   inline uint32_t get_memory_index(const MemoryIndices memoryIndices, const int bufferUsage)
   {
     if (bufferUsage & BF_GpuVisible)

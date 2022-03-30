@@ -15,7 +15,7 @@ namespace gapi
   void*                    (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size);
   void                     (*gapi_unmap_buffer)(const BufferHandler buffer);
   void                     (*gapi_copy_buffers_sync)(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size);
-  void                     (*gapi_write_buffer)(const BufferHandler buffer, const void* src, const size_t offset, const size_t size);
+  void                     (*gapi_write_buffer)(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags);
   TextureHandler           (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
   void                     (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
   void                     (*gapi_bind_texture)(const TextureHandler texture, const size_t set, const size_t binding);
@@ -65,9 +65,9 @@ namespace gapi
     gapi_copy_buffers_sync(src, srcOffset, dst, dstOffset, size);
   }
 
-  void write_buffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size)
+  void write_buffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags)
   {
-    gapi_write_buffer(buffer, src, offset, size);
+    gapi_write_buffer(buffer, src, offset, size, flags);
   }
 
   TextureHandler allocate_texture(const TextureAllocationDescription& allocDesc)

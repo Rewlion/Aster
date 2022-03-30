@@ -272,6 +272,11 @@ namespace gapi
     BF_BindConstant = 1 << 5
   };
 
+  enum WriteFlags
+  {
+    WR_DISCARD = 1
+  };
+
   enum class TextureSamples: uint32_t
   {
     s1  = 1,

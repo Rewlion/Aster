@@ -48,6 +48,11 @@ namespace Utils
       return m_Values[id];
     }
 
+    inline const T& get(const size_t id) const
+    {
+      return const_cast<FixedPool*>(this)->get(id);
+    }
+
     private:
       inline size_t acquireFreePosition()
       {

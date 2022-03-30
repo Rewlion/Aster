@@ -1,4 +1,5 @@
 #include "device.h"
+#include "frame_gc.h"
 #include "gapi_to_vk.h"
 #include "resources.h"
 #include "result.h"
@@ -10,8 +11,9 @@
 
 namespace gapi::vulkan
 {
-  Device::Device(CreateInfo&& ci)
-    : m_Device(std::move(ci.device))
+  Device::Device(CreateInfo&& ci, FrameGarbageCollector* frameGc)
+    : m_FrameGc(frameGc)
+    , m_Device(std::move(ci.device))
     , m_QueueIndices(ci.queueIndices)
     , m_MemoryIndices(ci.memoryIndices)
   {
@@ -197,7 +199,8 @@ namespace gapi::vulkan
   void* Device::mapBuffer(const Buffer& buffer, const size_t offset, const size_t size)
   {
     void* mem = nullptr;
-    VK_CHECK(m_Device->mapMemory(buffer.memory.get(), offset, size, vk::MemoryMapFlagBits{}, &mem));
+
+    VK_CHECK(m_Device->mapMemory(buffer.memory.get(), buffer.getAbsOffset(offset), size, vk::MemoryMapFlagBits{}, &mem));
 
     return mem;
   }
@@ -224,10 +227,12 @@ namespace gapi::vulkan
     Buffer b;
 
     b.usage = usage;
+    b.blockSize = size;
+    b.maxDiscards = get_buffer_discards_count(usage);
 
     vk::BufferCreateInfo bufferCi;
     bufferCi.usage = get_buffer_usage(usage);
-    bufferCi.size = size;
+    bufferCi.size = b.blockSize * b.maxDiscards;
     bufferCi.sharingMode = vk::SharingMode::eExclusive;
 
     b.buffer = m_Device->createBufferUnique(bufferCi);
@@ -247,11 +252,10 @@ namespace gapi::vulkan
   Buffer Device::allocateStagingBuffer(const void* src, const size_t size)
   {
     Buffer stagingBuf = allocateBufferInternal(size, BF_CpuVisible);
-    void* mappedMemory = nullptr;
 
-    ASSERT(vk::Result::eSuccess == m_Device->mapMemory(stagingBuf.memory.get(), 0, size, vk::MemoryMapFlagBits{}, &mappedMemory));
+    void* mappedMemory = mapBuffer(stagingBuf, 0, size);
     std::memcpy(mappedMemory, src, size);
-    m_Device->unmapMemory(stagingBuf.memory.get());
+    unmapBuffer(stagingBuf);
 
     return stagingBuf;
   }
@@ -269,14 +273,33 @@ namespace gapi::vulkan
     return &m_AllocatedBuffers.get(id);
   }
 
+  void Device::discardBuffer(Buffer& buffer)
+  {
+    if (buffer.isFirstDiscard)
+    {
+      buffer.isFirstDiscard = false;
+      return;
+    }
+
+    buffer.discards++;
+    if (buffer.discards == buffer.maxDiscards)
+    {
+      m_FrameGc->addBuffer(std::move(buffer.buffer));
+      m_FrameGc->addMemory(std::move(buffer.memory));
+
+      buffer = allocateBufferInternal(buffer.blockSize, buffer.usage);
+    }
+  }
+
   void Device::copyBuffersSync(const BufferHandler src, const size_t srcOffset,
                                const BufferHandler dst, const size_t dstOffset,
                                const size_t size)
   {
-    const vk::Buffer srcBuf = getBuffer(src);
-    const vk::Buffer dstBuf = getBuffer(dst);
+    const Buffer* srcBuf = getAllocatedBuffer(src);
+    const Buffer* dstBuf = getAllocatedBuffer(dst);
 
-    copyBuffersSync(srcBuf, srcOffset, dstBuf, dstOffset, size);
+    copyBuffersSync(srcBuf->buffer.get(), srcBuf->getAbsOffset(srcOffset),
+                    dstBuf->buffer.get(), dstBuf->getAbsOffset(dstOffset), size);
   }
 
   void Device::copyBuffersSync(const vk::Buffer src, const size_t srcOffset,
@@ -309,9 +332,15 @@ namespace gapi::vulkan
     unmapBuffer(buffer);
   }
 
-  void Device::writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size)
+  void Device::writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags)
   {
     Buffer* b = getAllocatedBuffer(buffer);
+
+    if ( !(b->usage & BF_CpuVisible | b->usage & BF_GpuVisible) )
+      ASSERT(!"writeBuffer dst buffer don't have memory set");
+
+    if (flags & WR_DISCARD)
+      discardBuffer(*b);
 
     if (b->usage & BF_CpuVisible)
     {
@@ -323,14 +352,17 @@ namespace gapi::vulkan
       writeToStagingBuffer(staging, src, 0, size);
       copyBuffersSync(staging.buffer.get(), 0, b->buffer.get(), offset, size);
     }
-    else
-      ASSERT(!"writeBuffer dst buffer don't have memory set");
   }
 
-  vk::Buffer Device::getBuffer(const BufferHandler buffer)
+  Buffer& Device::getBuffer(const BufferHandler buffer)
   {
     const size_t id = (size_t)buffer;
-    return m_AllocatedBuffers.get(id).buffer.get();
+    return m_AllocatedBuffers.get(id);
+  }
+
+  const Buffer& Device::getBuffer(const BufferHandler buffer) const
+  {
+    return const_cast<Device*>(this)->getBuffer(buffer);
   }
 
   TextureHandler Device::allocateTexture(const TextureAllocationDescription& allocDesc)

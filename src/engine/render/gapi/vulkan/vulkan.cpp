@@ -1,9 +1,10 @@
 #pragma once
 
-#include "vulkan.h"
 #include "backend.h"
 #include "compile_context.h"
+#include "frame_gc.h"
 #include "resources.h"
+#include "vulkan.h"
 
 #include <engine/render/gapi/vulkan/cache/pipelines_storage.h>
 #include <engine/render/gapi/gapi.h>
@@ -18,7 +19,7 @@ namespace gapi
   extern void*          (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size);
   extern void           (*gapi_unmap_buffer)(const BufferHandler buffer);
   extern void           (*gapi_copy_buffers_sync)(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size);
-  extern void           (*gapi_write_buffer)(const BufferHandler buffer, const void* src, const size_t offset, const size_t size);
+  extern void           (*gapi_write_buffer)(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags);
   extern TextureHandler (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
   extern void           (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
   extern SamplerHandler (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
@@ -29,6 +30,7 @@ namespace gapi::vulkan
   static Backend backend;
   static Device device;
   static CompileContext compileContext;
+  static FrameGarbageCollector frameGc;
 
   void submit_commands(CommandList&& cmds)
   {
@@ -77,9 +79,9 @@ namespace gapi::vulkan
     device.copyBuffersSync(src, srcOffset, dst, dstOffset, size);
   }
 
-  void write_buffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size)
+  void write_buffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags)
   {
-    device.writeBuffer(buffer, src, offset, size);
+    device.writeBuffer(buffer, src, offset, size, flags);
   }
 
   TextureHandler allocate_texture(const TextureAllocationDescription& allocDesc)
@@ -111,8 +113,8 @@ namespace gapi::vulkan
     gapi_write_buffer = write_buffer;
 
     backend.init();
-    device = backend.createDevice();
-    compileContext.init(&device);
+    device = backend.createDevice(&frameGc);
+    compileContext.init(&device, &frameGc);
   }
 
 }

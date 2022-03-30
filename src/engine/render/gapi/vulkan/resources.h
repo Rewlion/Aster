@@ -58,6 +58,21 @@ namespace gapi::vulkan
     vk::UniqueBuffer buffer;
     vk::UniqueDeviceMemory memory;
     int usage = 0;
+
+    size_t blockSize = 0;
+    size_t maxDiscards = 0;
+    size_t discards = 0;
+    bool isFirstDiscard = true;
+
+    inline size_t getConstOffset() const
+    {
+      return blockSize * discards;
+    }
+
+    inline size_t getAbsOffset(const size_t localOffset) const
+    {
+      return getConstOffset() + localOffset;
+    }
   };
 
   struct Texture
