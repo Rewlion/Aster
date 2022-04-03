@@ -25,7 +25,7 @@ namespace gapi::vulkan
       Swapchain() = default;
       Swapchain(const CreateInfo& ci);
 
-      void Present();
+      void present();
 
       inline uint8_t getBackbufferId() const
       {
@@ -57,13 +57,9 @@ namespace gapi::vulkan
         return m_SurfaceExtent;
       }
 
-      inline const vk::Semaphore* getWaitForRenderFinishedSemaphore() const
-      {
-        return &m_SwapchainResources.waitForRenderFinishedSemaphores[frameId].get();
-      }
+      void acquireSurfaceImage(const vk::Semaphore waitSemaphore);
 
     private:
-      void acquireSurfaceImage();
 
       vk::UniqueSwapchainKHR createSwapchain(
         const CreateInfo& ci,
@@ -94,8 +90,6 @@ namespace gapi::vulkan
       {
         vk::Image images[SWAPCHAIN_IMAGES_COUNT];
         vk::UniqueImageView views[SWAPCHAIN_IMAGES_COUNT];
-        vk::UniqueSemaphore waitForRenderFinishedSemaphores[SWAPCHAIN_IMAGES_COUNT];
-        vk::UniqueFence imageAcquiredFence;
       };
       SwapchainResources m_SwapchainResources;
       uint32_t frameId = 0;

@@ -1,4 +1,6 @@
 #include "swapchain.h"
+#include "result.h"
+
 
 #include <engine/assert.h>
 
@@ -12,7 +14,6 @@ namespace gapi::vulkan
     m_SurfaceExtent = getSwapchainExtent(ci.surfaceCapabilities, ci.swapchainImageExtent);
     m_Swapchain = createSwapchain(ci, m_SurfaceFormat, m_SurfaceExtent);
     setSwapchainResources();
-    acquireSurfaceImage();
   }
 
   vk::UniqueSwapchainKHR Swapchain::createSwapchain(
@@ -100,31 +101,15 @@ namespace gapi::vulkan
         .setComponents(compMap)
         .setSubresourceRange(subresourceRange);
       m_SwapchainResources.views[i] = m_Device.createImageViewUnique(imgViewCi);
-
-      m_SwapchainResources.imageAcquiredFence = m_Device.createFenceUnique(vk::FenceCreateInfo{});
-
-      const auto semaphoreTypeCi = vk::SemaphoreTypeCreateInfo()
-        .setInitialValue(0)
-        .setSemaphoreType(vk::SemaphoreType::eBinary);
-
-      const auto semaphoreCi = vk::SemaphoreCreateInfo()
-        .setPNext(&semaphoreTypeCi);
-
-      m_SwapchainResources.waitForRenderFinishedSemaphores[i] = m_Device.createSemaphoreUnique(semaphoreCi);
     }
   }
 
-  void Swapchain::acquireSurfaceImage()
+  void Swapchain::acquireSurfaceImage(const vk::Semaphore waitSemaphore)
   {
-    vk::Fence fence = m_SwapchainResources.imageAcquiredFence.get();
-    frameId = m_Device.acquireNextImageKHR(*m_Swapchain, -1, {}, fence).value;
-
-    ASSERT(vk::Result::eSuccess == m_Device.waitForFences(1, &fence, true, -1));
-
-    ASSERT(vk::Result::eSuccess == m_Device.resetFences(1, &fence));
+    frameId = m_Device.acquireNextImageKHR(*m_Swapchain, -1, waitSemaphore, {}).value;
   }
 
-  void Swapchain::Present()
+  void Swapchain::present()
   {
     vk::SwapchainKHR swapchains[] {m_Swapchain.get()};
     const auto presentInfo = vk::PresentInfoKHR()
@@ -132,12 +117,9 @@ namespace gapi::vulkan
       .setPSwapchains(swapchains)
       .setPImageIndices(&frameId)
       .setPResults(nullptr)
-      .setWaitSemaphoreCount(1)
-      .setPWaitSemaphores(getWaitForRenderFinishedSemaphore());
+      .setWaitSemaphoreCount(0)
+      .setPWaitSemaphores(nullptr);
 
-    const vk::Result r = m_PresentQueue.presentKHR(presentInfo);
-    ASSERT(r == vk::Result::eSuccess);
-
-    acquireSurfaceImage();
+    VK_CHECK(m_PresentQueue.presentKHR(presentInfo));
   }
 }

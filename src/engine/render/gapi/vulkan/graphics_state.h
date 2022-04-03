@@ -88,13 +88,13 @@ namespace gapi::vulkan
 
   struct BackendState
   {
-    GraphicsState          graphicsState;
-    RenderPassState        renderPassState;
+    GraphicsState         graphicsState;
+    RenderPassState       renderPassState;
 
-    vk::CommandBuffer      cmdBuffer;
-    vk::RenderPass         renderPass;
-    vk::Framebuffer        framebuffer;
-    const PipelineLayout*  layout;
-    size_t                 renderTargetsCount;
+    vk::CommandBuffer     cmdBuffer;
+    vk::RenderPass        renderPass;
+    vk::Framebuffer       framebuffer;
+    const PipelineLayout* layout;
+    size_t                renderTargetsCount;
   };
 }

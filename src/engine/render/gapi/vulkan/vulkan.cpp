@@ -32,6 +32,11 @@ namespace gapi::vulkan
   static CompileContext compileContext;
   static FrameGarbageCollector frameGc;
 
+  vk::Device& get_device()
+  {
+    return device.getDevice();
+  }
+
   void submit_commands(CommandList&& cmds)
   {
     for(const Command& cmd: cmds)
@@ -47,16 +52,7 @@ namespace gapi::vulkan
 
   TextureHandler get_backbuffer()
   {
-    TextureHandlerInternal h;
-    h.as.typed.id = device.getBackbufferId();
-    h.as.typed.type = (uint64_t)TextureType::SurfaceRT;
-
-    return h;
-  }
-
-  void present_surface_image()
-  {
-    device.presentSurfaceImage();
+    return device.getBackbuffer();
   }
 
   BufferHandler allocate_buffer(const size_t size, const int usage)

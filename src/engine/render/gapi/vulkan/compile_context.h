@@ -29,8 +29,10 @@ namespace gapi::vulkan
 
         for (size_t i = 0; i < std::size(m_FrameOwnedResources); ++i)
         {
-          m_FrameOwnedResources->m_DescriptorSetsManager.init(m_Device);
+          m_FrameOwnedResources[i].m_DescriptorSetsManager.init(m_Device);
         }
+
+       acquireBackbuffer();
       }
 
       void compileCommand(const BeginRenderPassCmd& cmd);
@@ -55,7 +57,6 @@ namespace gapi::vulkan
       void insureActiveCmd();
       vk::Pipeline getPipeline(const GraphicsPipelineDescription& desc);
       bool getPipelineLayout(const ShaderStagesNames& stageNames, PipelineLayout const *& layout);
-      void submitGraphicsCmd();
 
     private:
       vk::UniqueFramebuffer createFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil);
@@ -66,11 +67,17 @@ namespace gapi::vulkan
 
       vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const TextureHandler depthStencil);
 
+      void prepareBackbufferForPresent();
+
+      void queueGraphicsCmd();
+      void submitGraphicsCmds();
       void nextFrame();
       void flushGraphicsState();
 
       void imageBarrier(const TextureHandler handler, const vk::ImageLayout newLayout,
                         const vk::PipelineStageFlagBits srcStage, const vk::PipelineStageFlagBits dstStage);
+
+      void acquireBackbuffer();
 
     private:
       Device* m_Device = nullptr;
@@ -86,5 +93,9 @@ namespace gapi::vulkan
       Utils::FixedStack<vk::ClearValue, MAX_RENDER_TARGETS+1> m_CurrentClearValues;
 
       BackendState m_State;
+
+      eastl::vector<vk::CommandBuffer> m_QueuedGraphicsCommands;
+      eastl::vector<vk::Fence> m_RenderJobWaitFences[SWAPCHAIN_IMAGES_COUNT];
+      vk::Semaphore m_BackbufferReadySemaphore;
   };
 }

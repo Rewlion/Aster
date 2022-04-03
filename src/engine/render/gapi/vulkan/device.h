@@ -45,6 +45,14 @@ namespace gapi::vulkan
       Device(CreateInfo&&, FrameGarbageCollector*);
 
       inline uint8_t getBackbufferId() const { return m_Swapchain.getBackbufferId(); }
+      inline TextureHandler getBackbuffer() const
+      {
+        TextureHandlerInternal h;
+        h.as.typed.id = getBackbufferId();
+        h.as.typed.type = (uint64_t)TextureType::SurfaceRT;
+
+        return h;
+      }
 
       inline vk::Extent2D getSurfaceExtent() const { return m_Swapchain.getSurfaceExtent(); };
 
@@ -58,9 +66,9 @@ namespace gapi::vulkan
 
       vk::Extent3D getImageDim(const TextureHandler handler);
 
-      void submitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf);
+      vk::UniqueFence submitGraphicsCmds(vk::CommandBuffer* cmdBuf, const size_t count,
+                                         const vk::Semaphore* waitSemaphores, const size_t waitSemaphoresCount);
 
-      void transitSurfaceImageForPresent();
       void presentSurfaceImage();
 
       BufferHandler allocateBuffer(const size_t size, const int usage);
@@ -86,6 +94,18 @@ namespace gapi::vulkan
       vk::ImageLayout getImageLayout(const TextureHandler handler);
 
       void setImageLayout(const TextureHandler handler, const vk::ImageLayout layout);
+
+      inline vk::Device& getDevice()
+      {
+        return m_Device.get();
+      }
+
+      vk::UniqueSemaphore createSemaphore();
+
+      inline void acquireBackbuffer(const vk::Semaphore waitSemaphore)
+      {
+        m_Swapchain.acquireSurfaceImage(waitSemaphore);
+      }
 
     private:
       void discardBuffer(Buffer& buffer);

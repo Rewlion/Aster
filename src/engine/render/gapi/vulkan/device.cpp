@@ -52,14 +52,17 @@ namespace gapi::vulkan
       .setLevel(vk::CommandBufferLevel::ePrimary)
       .setCommandBufferCount(1);
 
-    vk::CommandBuffer cmdBuf = m_Device->allocateCommandBuffers(allocInfo)[0];
+    auto cmdBuf = std::move(m_Device->allocateCommandBuffersUnique(allocInfo)[0]);
 
-    cmdBuf.begin(
+    cmdBuf->begin(
       vk::CommandBufferBeginInfo()
       .setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
     );
 
-    return cmdBuf;
+    const auto ret = cmdBuf.get();
+    m_FrameGc->addCmdBuffer(std::move(cmdBuf));
+
+    return ret;
   }
 
   vk::CommandBuffer Device::allocateGraphicsCmdBuffer()
@@ -101,12 +104,14 @@ namespace gapi::vulkan
   vk::Image Device::getImage(const TextureHandler handler)
   {
     TextureHandlerInternal h{handler};
-    if (h.as.typed.type != (uint64_t)TextureType::Allocated)
-    {
-      ASSERT(!"Can't get not allocated image");
-    }
-
+    if (h.as.typed.type == (uint64_t)TextureType::Allocated)
      return m_AllocatedTextures.get(h.as.typed.id).img.get();
+
+    if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
+      return m_Swapchain.getSurfaceImage();
+
+    ASSERT(!"unsupported image type");
+    return {};
   }
 
   vk::Extent3D Device::getImageDim(const TextureHandler handler)
@@ -122,55 +127,27 @@ namespace gapi::vulkan
     return {0,0,0};
   }
 
-  void Device::submitGraphicsCmdBuf(const vk::CommandBuffer& cmdBuf)
+  vk::UniqueFence Device::submitGraphicsCmds(vk::CommandBuffer* cmdBuf, const size_t count,
+                                             const vk::Semaphore* waitSemaphores, const size_t waitSemaphoresCount)
   {
+    vk::UniqueFence renderJobWaitFence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
+
+    const vk::PipelineStageFlags waitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+
     vk::SubmitInfo submit;
-    submit.pCommandBuffers = &cmdBuf;
-    submit.commandBufferCount = 1;
-    m_GraphicsQueue.submit(submit);
-  }
+    submit.pCommandBuffers = cmdBuf;
+    submit.commandBufferCount = count;
+    submit.pWaitSemaphores = waitSemaphores;
+    submit.waitSemaphoreCount = waitSemaphoresCount;
+    submit.pWaitDstStageMask = &waitStage;
+    m_GraphicsQueue.submit(submit, renderJobWaitFence.get());
 
-  void Device::transitSurfaceImageForPresent()
-  {
-    auto cmdBuf = allocateGraphicsCmdBuffer();
-
-    vk::ImageSubresourceRange subresourceRange;
-    subresourceRange.baseMipLevel = 0;
-    subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
-    subresourceRange.baseArrayLayer = 0;
-    subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-    subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-
-    const auto layoutBarrier = vk::ImageMemoryBarrier()
-      .setOldLayout(vk::ImageLayout::eUndefined)
-      .setNewLayout(vk::ImageLayout::ePresentSrcKHR)
-      .setImage(m_Swapchain.getSurfaceImage())
-      .setSubresourceRange(subresourceRange);
-
-    cmdBuf.pipelineBarrier(
-      vk::PipelineStageFlagBits::eAllCommands,
-      vk::PipelineStageFlagBits::eAllCommands,
-      vk::DependencyFlagBits{},
-      0, nullptr,
-      0, nullptr,
-      1, &layoutBarrier);
-
-    cmdBuf.end();
-
-    const auto* renderFinishedSemaphore = m_Swapchain.getWaitForRenderFinishedSemaphore();
-    const auto submitInfo = vk::SubmitInfo()
-      .setPCommandBuffers(&cmdBuf)
-      .setCommandBufferCount(1)
-      .setPSignalSemaphores(renderFinishedSemaphore)
-      .setSignalSemaphoreCount(1);
-
-    m_GraphicsQueue.submit(submitInfo);
+    return renderJobWaitFence;
   }
 
   void Device::presentSurfaceImage()
   {
-    transitSurfaceImageForPresent();
-    m_Swapchain.Present();
+    m_Swapchain.present();
   }
 
   BufferHandler Device::allocateBuffer(const size_t size, const int usage)
@@ -306,7 +283,7 @@ namespace gapi::vulkan
                                const vk::Buffer dst, const size_t dstOffset,
                                const size_t size)
   {
-    const vk::CommandBuffer cmdBuf = allocateTransferCmdBuffer();
+    const auto cmdBuf = allocateTransferCmdBuffer();
     vk::BufferCopy region;
     region.size = size;
     region.srcOffset = srcOffset;
@@ -448,7 +425,7 @@ namespace gapi::vulkan
 
     vk::ImageLayout currentLayout = toTexture.currentLayout;
 
-    const vk::CommandBuffer cmdBuf = allocateTransferCmdBuffer();
+    const auto cmdBuf = allocateTransferCmdBuffer();
 
     vk::ImageSubresourceRange subresourceRange;
     subresourceRange.baseMipLevel = 0;
@@ -554,22 +531,33 @@ namespace gapi::vulkan
   vk::ImageLayout Device::getImageLayout(const TextureHandler handler)
   {
     TextureHandlerInternal h{handler};
-    if (h.as.typed.type != (uint64_t)TextureType::Allocated)
-    {
-      ASSERT(!"Can't get image layout for not allocated texture");
-    }
 
-    return m_AllocatedTextures.get(h.as.typed.id).currentLayout;
+    if (h.as.typed.type == (uint64_t)TextureType::Allocated)
+      return m_AllocatedTextures.get(h.as.typed.id).currentLayout;
+
+    ASSERT(!"Unsupported image type");
+    return {};
   }
 
   void Device::setImageLayout(const TextureHandler handler, const vk::ImageLayout layout)
   {
     TextureHandlerInternal h{handler};
-    if (h.as.typed.type != (uint64_t)TextureType::Allocated)
-    {
-      ASSERT(!"Can't set image layout for not allocated texture");
-    }
 
-    m_AllocatedTextures.get(h.as.typed.id).currentLayout = layout;
+    if (h.as.typed.type == (uint64_t)TextureType::Allocated)
+      m_AllocatedTextures.get(h.as.typed.id).currentLayout = layout;
+    else
+      ASSERT(!"Unsupported image type");
+  }
+
+  vk::UniqueSemaphore Device::createSemaphore()
+  {
+    const auto semaphoreTypeCi = vk::SemaphoreTypeCreateInfo()
+      .setInitialValue(0)
+      .setSemaphoreType(vk::SemaphoreType::eBinary);
+
+    const auto semaphoreCi = vk::SemaphoreCreateInfo()
+      .setPNext(&semaphoreTypeCi);
+
+    return m_Device->createSemaphoreUnique(semaphoreCi);
   }
 }

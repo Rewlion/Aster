@@ -55,7 +55,7 @@ namespace gapi::vulkan
     if (m_State.renderPass != vk::RenderPass{})
     {
       m_State.cmdBuffer.endRenderPass();
-      submitGraphicsCmd();
+      queueGraphicsCmd();
       m_State.renderPass = vk::RenderPass{};
 
       m_State.renderPassState.markDirty<RenderPassTSF>();
@@ -66,11 +66,10 @@ namespace gapi::vulkan
     }
   }
 
-  void CompileContext::submitGraphicsCmd()
+  void CompileContext::queueGraphicsCmd()
   {
     m_State.cmdBuffer.end();
-    m_Device->submitGraphicsCmdBuf(m_State.cmdBuffer);
-
+    m_QueuedGraphicsCommands.push_back(m_State.cmdBuffer);
     m_State.cmdBuffer = vk::CommandBuffer{};
   }
 
@@ -141,8 +140,13 @@ namespace gapi::vulkan
     insureActiveCmd();
     endRenderPass("Swap backbuffer");
 
+    prepareBackbufferForPresent();
+    queueGraphicsCmd();
+    submitGraphicsCmds();
+
     m_Device->presentSurfaceImage();
-    //nextFrame();
+
+    nextFrame();
   }
 
   void CompileContext::compileCommand(const PushConstantsCmd& cmd)
@@ -249,11 +253,60 @@ namespace gapi::vulkan
     m_State.graphicsState.set<GraphicsPipelineTSF, DepthStencilStateDescription>(cmd.ds);
   }
 
+  void CompileContext::prepareBackbufferForPresent()
+  {
+    insureActiveCmd();
+
+    vk::ImageSubresourceRange subresourceRange;
+    subresourceRange.baseMipLevel = 0;
+    subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+    subresourceRange.baseArrayLayer = 0;
+    subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+    subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+
+    const auto layoutBarrier = vk::ImageMemoryBarrier()
+      .setOldLayout(vk::ImageLayout::eColorAttachmentOptimal)
+      .setNewLayout(vk::ImageLayout::ePresentSrcKHR)
+      .setImage(m_Device->getImage(m_Device->getBackbuffer()))
+      .setSubresourceRange(subresourceRange);
+
+    m_State.cmdBuffer.pipelineBarrier(
+      vk::PipelineStageFlagBits::eAllCommands,
+      vk::PipelineStageFlagBits::eAllCommands,
+      vk::DependencyFlagBits{},
+      0, nullptr,
+      0, nullptr,
+      1, &layoutBarrier);
+  }
+
+  void CompileContext::submitGraphicsCmds()
+  {
+    auto renderJobWaitFence = m_Device->submitGraphicsCmds(
+      m_QueuedGraphicsCommands.data(), m_QueuedGraphicsCommands.size(),
+      &m_BackbufferReadySemaphore, 1);
+
+    m_QueuedGraphicsCommands.clear();
+
+    m_RenderJobWaitFences[m_CurrentFrame].push_back(renderJobWaitFence.get());
+    m_FrameGc->addFence(std::move(renderJobWaitFence));
+  }
+
   void CompileContext::nextFrame()
   {
     m_CurrentFrame = (m_CurrentFrame + 1) % SWAPCHAIN_IMAGES_COUNT;
+
+    if (!m_RenderJobWaitFences[m_CurrentFrame].empty())
+    {
+      m_Device->m_Device->waitForFences(m_RenderJobWaitFences[m_CurrentFrame].size(),
+      m_RenderJobWaitFences[m_CurrentFrame].data(), true, -1);
+
+      m_RenderJobWaitFences[m_CurrentFrame].clear();
+    }
+
     getCurrentFrameOwnedResources().Clear();
     m_FrameGc->nextFrame();
+
+    acquireBackbuffer();
   }
 
   void CompileContext::compileCommand(const SetBlendStateCmd& cmd)
@@ -265,18 +318,6 @@ namespace gapi::vulkan
                         const vk::PipelineStageFlagBits srcStage, const vk::PipelineStageFlagBits dstStage)
   {
     insureActiveCmd();
-    
-    TextureHandlerInternal h{handler};
-    if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
-    {
-      logerror("vulkan: unable to set image barrier for swapchain image");
-      return;
-    }
-
-    if (h.as.typed.type != (uint64_t)TextureType::Allocated)
-    {
-      ASSERT(!"Unsupported");
-    }
 
     const vk::ImageLayout currentLayout = m_Device->getImageLayout(handler);
 
@@ -302,5 +343,13 @@ namespace gapi::vulkan
       1, &layoutBarrier);
 
     m_Device->setImageLayout(handler, newLayout);
+  }
+
+  void CompileContext::acquireBackbuffer()
+  {
+    auto sem = m_Device->createSemaphore();
+    m_BackbufferReadySemaphore = sem.get();
+    m_FrameGc->addSemaphores(std::move(sem));
+    m_Device->acquireBackbuffer(m_BackbufferReadySemaphore);
   }
 }
