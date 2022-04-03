@@ -1,12 +1,11 @@
 #pragma once
 
-#include "frame_owned_resources.h"
 #include "resources.h"
 #include "graphics_state.h"
+#include "descriptors_set_manager.h"
 
 #include <engine/render/gapi/vulkan/cache/renderpass_storage.h>
 #include <engine/render/gapi/vulkan/cache/pipelines_storage.h>
-
 
 #include <EASTL/vector.h>
 #include <vulkan/vulkan.hpp>
@@ -27,9 +26,9 @@ namespace gapi::vulkan
         m_RenderPassStorage.init(m_Device);
         m_PipelinesStorage.init(m_Device);
 
-        for (size_t i = 0; i < std::size(m_FrameOwnedResources); ++i)
+        for (size_t i = 0; i < std::size(m_DescriptorSetsManager); ++i)
         {
-          m_FrameOwnedResources[i].m_DescriptorSetsManager.init(m_Device);
+          m_DescriptorSetsManager[i].init(m_Device);
         }
 
        acquireBackbuffer();
@@ -60,10 +59,6 @@ namespace gapi::vulkan
 
     private:
       vk::UniqueFramebuffer createFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil);
-      inline FrameOwnedResources& getCurrentFrameOwnedResources()
-      {
-        return m_FrameOwnedResources[m_CurrentFrame];
-      }
 
       vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const TextureHandler depthStencil);
 
@@ -85,13 +80,12 @@ namespace gapi::vulkan
       RenderPassStorage m_RenderPassStorage;
       PipelinesStorage m_PipelinesStorage;
 
-      FrameOwnedResources m_FrameOwnedResources[SWAPCHAIN_IMAGES_COUNT];
-      size_t m_CurrentFrame = 0;
-
       BackendState m_State;
 
-      eastl::vector<vk::CommandBuffer> m_QueuedGraphicsCommands;
+      size_t m_CurrentFrame = 0;
+      DescriptorsSetManager m_DescriptorSetsManager[SWAPCHAIN_IMAGES_COUNT];
       eastl::vector<vk::Fence> m_RenderJobWaitFences[SWAPCHAIN_IMAGES_COUNT];
       vk::Semaphore m_BackbufferReadySemaphore;
+      eastl::vector<vk::CommandBuffer> m_QueuedGraphicsCommands;
   };
 }

@@ -46,8 +46,8 @@ namespace gapi::vulkan
   void CompileContext::updateDescriptorSets()
   {
     insureActiveCmd();
-    getCurrentFrameOwnedResources().m_DescriptorSetsManager.setPipelineLayout(m_State.layout);
-    getCurrentFrameOwnedResources().m_DescriptorSetsManager.updateDescriptorSets(m_State.cmdBuffer);
+    m_DescriptorSetsManager[m_CurrentFrame].setPipelineLayout(m_State.layout);
+    m_DescriptorSetsManager[m_CurrentFrame].updateDescriptorSets(m_State.cmdBuffer);
   }
 
   void CompileContext::endRenderPass(const char* why)
@@ -198,7 +198,7 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const BindConstantBufferCmd& cmd)
   {
-    auto& dsManager = getCurrentFrameOwnedResources().m_DescriptorSetsManager;
+    auto& dsManager = m_DescriptorSetsManager[m_CurrentFrame];
 
     if (cmd.buffer != BufferHandler::Invalid)
     {
@@ -211,7 +211,7 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const BindTextureCmd& cmd)
   {
-    auto& dsManager = getCurrentFrameOwnedResources().m_DescriptorSetsManager;
+    auto& dsManager = m_DescriptorSetsManager[m_CurrentFrame];
 
     if (cmd.texture != TextureHandler::Invalid)
     {
@@ -232,7 +232,7 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const BindSamplerCmd& cmd)
   {
-    auto& dsManager = getCurrentFrameOwnedResources().m_DescriptorSetsManager;
+    auto& dsManager = m_DescriptorSetsManager[m_CurrentFrame];
 
     if (cmd.sampler != SamplerHandler::Invalid)
     {
@@ -298,12 +298,12 @@ namespace gapi::vulkan
     if (!m_RenderJobWaitFences[m_CurrentFrame].empty())
     {
       m_Device->m_Device->waitForFences(m_RenderJobWaitFences[m_CurrentFrame].size(),
-      m_RenderJobWaitFences[m_CurrentFrame].data(), true, -1);
+        m_RenderJobWaitFences[m_CurrentFrame].data(), true, -1);
 
       m_RenderJobWaitFences[m_CurrentFrame].clear();
     }
 
-    getCurrentFrameOwnedResources().Clear();
+    m_DescriptorSetsManager[m_CurrentFrame].reset();
     m_FrameGc->nextFrame();
 
     acquireBackbuffer();
