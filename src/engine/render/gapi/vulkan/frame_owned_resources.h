@@ -11,11 +11,9 @@ namespace gapi::vulkan
   {
     inline void Clear()
     {
-      m_Framebuffers.clear();
       m_DescriptorSetsManager.reset();
     }
 
-    eastl::vector<vk::UniqueFramebuffer> m_Framebuffers;
     DescriptorsSetManager m_DescriptorSetsManager;
   };
 }

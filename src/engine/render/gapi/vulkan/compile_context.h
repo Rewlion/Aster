@@ -88,10 +88,6 @@ namespace gapi::vulkan
       FrameOwnedResources m_FrameOwnedResources[SWAPCHAIN_IMAGES_COUNT];
       size_t m_CurrentFrame = 0;
 
-      bool m_HasActiveRp = false;
-      vk::Framebuffer m_CurrentFramebuffer;
-      Utils::FixedStack<vk::ClearValue, MAX_RENDER_TARGETS+1> m_CurrentClearValues;
-
       BackendState m_State;
 
       eastl::vector<vk::CommandBuffer> m_QueuedGraphicsCommands;

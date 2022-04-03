@@ -28,7 +28,7 @@ namespace gapi::vulkan
   {
     vk::UniqueFramebuffer fb = createFramebuffer(renderArea, renderTargets, depthStencil);
     const auto framebuffer = fb.get();
-    getCurrentFrameOwnedResources().m_Framebuffers.push_back(std::move(fb));
+    m_FrameGc->addFramebuffer(std::move(fb));
 
     return framebuffer;
   }

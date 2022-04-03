@@ -36,6 +36,11 @@ namespace gapi::vulkan
         frameResources[frameId].fences.push_back(std::move(fence));
       }
 
+      inline void addFramebuffer(vk::UniqueFramebuffer&& fb)
+      {
+        frameResources[frameId].framebuffers.push_back(std::move(fb));
+      }
+
       inline void nextFrame()
       {
         frameId = (frameId + 1) % SWAPCHAIN_IMAGES_COUNT;
@@ -45,6 +50,8 @@ namespace gapi::vulkan
         frameResources[frameId].cmdBuffers.clear();
         frameResources[frameId].semaphores.clear();
         frameResources[frameId].fences.clear();
+        frameResources[frameId].framebuffers.clear();
+
       }
 
     private:
@@ -55,6 +62,7 @@ namespace gapi::vulkan
         eastl::vector<vk::UniqueCommandBuffer> cmdBuffers;
         eastl::vector<vk::UniqueSemaphore> semaphores;
         eastl::vector<vk::UniqueFence> fences;
+        eastl::vector<vk::UniqueFramebuffer> framebuffers;
       };
 
       size_t frameId = 0;
