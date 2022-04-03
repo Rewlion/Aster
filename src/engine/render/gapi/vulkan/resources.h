@@ -2,6 +2,7 @@
 
 #include <engine/assert.h>
 #include <engine/render/gapi/resources.h>
+#include <engine/platform/memory.h>
 
 #include <vulkan/vulkan.hpp>
 #include <stdint.h>
@@ -60,13 +61,14 @@ namespace gapi::vulkan
     int usage = 0;
 
     size_t blockSize = 0;
+    size_t alignedBlockSize = 0;
     size_t maxDiscards = 0;
     size_t discards = 0;
     bool isFirstDiscard = true;
 
     inline size_t getConstOffset() const
     {
-      return blockSize * discards;
+      return alignedBlockSize * discards;
     }
 
     inline size_t getAbsOffset(const size_t localOffset) const

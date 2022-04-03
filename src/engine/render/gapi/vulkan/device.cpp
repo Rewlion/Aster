@@ -14,6 +14,7 @@ namespace gapi::vulkan
   Device::Device(CreateInfo&& ci, FrameGarbageCollector* frameGc)
     : m_FrameGc(frameGc)
     , m_Device(std::move(ci.device))
+    , m_DeviceProperties(ci.deviceProperties)
     , m_QueueIndices(ci.queueIndices)
     , m_MemoryIndices(ci.memoryIndices)
   {
@@ -209,8 +210,10 @@ namespace gapi::vulkan
 
     vk::BufferCreateInfo bufferCi;
     bufferCi.usage = get_buffer_usage(usage);
-    bufferCi.size = b.blockSize * b.maxDiscards;
+    bufferCi.size = get_buffer_size(size, b.maxDiscards, usage, m_DeviceProperties.limits);
     bufferCi.sharingMode = vk::SharingMode::eExclusive;
+
+    b.alignedBlockSize = bufferCi.size / b.maxDiscards;
 
     b.buffer = m_Device->createBufferUnique(bufferCi);
     const vk::MemoryRequirements memRec = m_Device->getBufferMemoryRequirements(b.buffer.get());

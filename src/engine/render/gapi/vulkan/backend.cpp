@@ -193,6 +193,7 @@ namespace gapi::vulkan
       .instance = *m_Instance,
       .surface = *m_Surface,
       .device = eastl::move(device),
+      .deviceProperties = m_PhysicalDevice.getProperties(),
       .queueIndices = m_QueueIndices,
       .memoryIndices = m_MemoryIndices,
 

@@ -113,6 +113,24 @@ namespace gapi::vulkan
     return bits;
   }
 
+  inline size_t get_buffer_size(const size_t blockSize, const size_t discards, const int usage, const vk::PhysicalDeviceLimits& limits)
+  {
+    if (usage & BF_BindConstant)
+    {
+      const size_t alignment = limits.minUniformBufferOffsetAlignment;
+      if (blockSize >= alignment)
+      {
+        size_t alignedBlock = blockSize;
+        Sys::align(alignedBlock, alignment);
+        return alignedBlock * discards;
+      }
+      else
+        return alignment * discards;
+    }
+
+    return blockSize * discards;
+  }
+
   inline uint32_t get_buffer_discards_count(const int usage)
   {
     if (usage & BF_BindConstant)

@@ -14,4 +14,11 @@ namespace Sys
     if (r > 0)
       v = v + (Sys::alignment - r);
   }
+
+  inline static void align(size_t& v, const size_t alignment)
+  {
+    const size_t r = v % alignment;
+    if (r > 0)
+      v = v + (alignment - r);
+  }
 }

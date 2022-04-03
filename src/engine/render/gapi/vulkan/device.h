@@ -30,6 +30,7 @@ namespace gapi::vulkan
         vk::Instance instance;
         vk::SurfaceKHR surface;
         vk::UniqueDevice device;
+        vk::PhysicalDeviceProperties deviceProperties;
         QueueIndices queueIndices;
         MemoryIndices memoryIndices;
 
@@ -124,6 +125,7 @@ namespace gapi::vulkan
     private:
       FrameGarbageCollector* m_FrameGc;
       vk::UniqueDevice m_Device;
+      vk::PhysicalDeviceProperties m_DeviceProperties;
 
       Swapchain m_Swapchain;
 
