@@ -18,10 +18,10 @@ namespace Engine
 {
   void init()
   {
+    InitLog();
     Time::init_clock();
 
     load_app_settings("game_data/settings.blk");
-    InitLog();
     Window::init_window();
 
     gapi::init();

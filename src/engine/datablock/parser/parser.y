@@ -273,7 +273,6 @@ ROW4
 %%
 
 void yyerror(Ast::Config* rootAst, const char* msg) {
-  logerror("blk parsing error: {} {}", yylineno, msg);
-  assert(!"fuck");
-  //exit(-1);
+  logerror("[{}] blk parsing error: {} {}", rootAst->blkFile, yylineno, msg);
+  rootAst->isValid = false;
 }

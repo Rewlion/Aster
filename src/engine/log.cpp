@@ -1,7 +1,6 @@
 #include "log.h"
 
-#include <engine/datablock/datablock.h>
-#include <engine/settings.h>
+#include <engine/types.h>
 
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
@@ -32,10 +31,8 @@ namespace Engine
     console_sink->set_level(spdlog::level::trace);
     console_sink->set_pattern("[%^%l%$] %v");
 
-    DataBlock* settingsBlk = Engine::get_app_settings();
-    const string appName = settingsBlk->getText("app_name");
     const string timeStr = GetTimeString();
-    const string logFile = fmt::format("logs_{}/{}.log.txt", appName,timeStr);
+    const string logFile = fmt::format("logs/{}.log.txt",timeStr);
 
     const auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFile.c_str(), true);
     file_sink->set_level(spdlog::level::trace);

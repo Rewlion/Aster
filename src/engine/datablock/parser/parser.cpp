@@ -1,5 +1,7 @@
 #include "parser.h"
 
+#include <engine/assert.h>
+
 #include <cstdio>
 #include <cstdlib>
 
@@ -19,9 +21,14 @@ DataBlock BlkParser::ParseFile(const string& path)
 
   yyin = f;
   Ast::Config root;
+  root.blkFile = path;
+
   yyrestart(f);
   yyparse(&root);
   fclose(f);
+
+  if (!root.isValid)
+    ASSERT(!"failed to parse blk file");
 
   return TraverseAst(root);
 }

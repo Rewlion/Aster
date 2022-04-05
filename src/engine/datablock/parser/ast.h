@@ -63,6 +63,8 @@ namespace Ast
   struct Config: public Node
   {
     AnnotatedParam* paramList;
+    bool isValid = true;
+    std::string blkFile;
   };
 
   struct AnnotatedParam: public Node
