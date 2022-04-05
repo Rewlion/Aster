@@ -105,7 +105,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 35 "src/engine/datablock/parser/parser.y"
+#line 36 "src/engine/datablock/parser/parser.y"
 
   bool bval;
   int ival;

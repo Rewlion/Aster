@@ -1,9 +1,11 @@
 %{
+    #define YY_DECL int yylex(Ast::Config* rootAst)
+
     #include <stdio.h>
     #include "parser.tab.hpp"
 
     void yyerror(Ast::Config* rootAst, const char* msg);
-    extern int yylex();
+    extern int yylex(Ast::Config* rootAst);
     int columno = 1;
     std::string lineText;
 %}
@@ -26,20 +28,30 @@
   fileName[strlen(yytext) - 2] = '\0';
 
   yyin = fopen( fileName, "r" );
+
   if (!yyin)
-    printf("(%d) can't include file `%s`", yylineno, fileName);
+  {
+    std::string err = std::string("can't include file: ") + fileName + ": file not found";
+    yyerror(rootAst, err.c_str());
+    yyterminate();
+  }
 
 	yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
   BEGIN(INITIAL);
 }
 
-<include>. { printf("(%d) unexpected string: `%s`\n", yylineno, yytext); exit(1); }
+<include>. {
+  std::string err = std::string("unexpected string: ") + yytext;
+  yyerror(rootAst, err.c_str());
+  yyterminate();
+}
 
 #include[ ] {
   BEGIN(include);
 }
 
 <<EOF>> {
+  fclose(yyin);
   yypop_buffer_state();
   if ( !YY_CURRENT_BUFFER )
   {

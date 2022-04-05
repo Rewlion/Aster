@@ -5,7 +5,7 @@
   #include <engine/log.h>
 
 // Declare stuff from Flex that Bison needs to know about:
-  extern int yylex();
+  extern int yylex(Ast::Config* rootAst);
   extern int yyparse(Ast::Config* rootAst);
   extern void yyerror(Ast::Config* rootAst, const char* msg);
   extern FILE *yyin;
@@ -30,6 +30,7 @@
 
 %define parse.error detailed
 
+%lex-param {Ast::Config* rootAst}
 %parse-param {Ast::Config* rootAst}
 
 %union {
