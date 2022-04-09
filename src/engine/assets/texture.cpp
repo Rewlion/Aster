@@ -2,7 +2,7 @@
 
 #include <engine/assert.h>
 #include <engine/log.h>
-#include <engine/render/gapi/gapi.h>
+#include <engine/gapi/gapi.h>
 
 #include <ktx/ktx.h>
 

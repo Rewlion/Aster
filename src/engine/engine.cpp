@@ -7,7 +7,7 @@
 #include <engine/ecs/registry.h>
 #include <engine/input/input.h>
 #include <engine/level.h>
-#include <engine/render/gapi/gapi.h>
+#include <engine/gapi/gapi.h>
 #include <engine/render/world_render.h>
 #include <engine/settings.h>
 #include <engine/time.h>

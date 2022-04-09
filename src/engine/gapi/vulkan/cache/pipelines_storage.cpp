@@ -1,10 +1,10 @@
 #include "pipelines_storage.h"
 
 #include <engine/log.h>
-#include <engine/render/gapi/resources.h>
-#include <engine/render/gapi/vulkan/device.h>
-#include <engine/render/gapi/vulkan/gapi_to_vk.h>
-#include <engine/render/gapi/vulkan/traits.h>
+#include <engine/gapi/resources.h>
+#include <engine/gapi/vulkan/device.h>
+#include <engine/gapi/vulkan/gapi_to_vk.h>
+#include <engine/gapi/vulkan/traits.h>
 
 #include <boost/functional/hash.hpp>
 

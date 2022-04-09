@@ -3,7 +3,7 @@
 #include "state.hpp"
 
 #include <engine/utils/fixed_stack.hpp>
-#include <engine/render/gapi/resources.h>
+#include <engine/gapi/resources.h>
 
 #include <vulkan/vulkan.hpp>
 

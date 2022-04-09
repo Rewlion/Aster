@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include <engine/render/gapi/gapi.h>
+#include <engine/gapi/gapi.h>
 
 
 #include <EASTL/hash_map.h>

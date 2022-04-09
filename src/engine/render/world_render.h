@@ -1,8 +1,8 @@
 #pragma once
 
-#include <engine/render/gapi/resources.h>
+#include <engine/gapi/resources.h>
 
-#include <engine/render/gapi/cmd_encoder.h>
+#include <engine/gapi/cmd_encoder.h>
 
 namespace Engine::Render
 {

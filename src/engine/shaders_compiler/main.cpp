@@ -7,7 +7,7 @@
 #include <engine/log.h>
 #include <engine/types.h>
 #include <engine/utils/fs.h>
-#include <engine/render/gapi/resources.h>
+#include <engine/gapi/resources.h>
 
 #include <boost/program_options.hpp>
 #include <Unknwn.h>

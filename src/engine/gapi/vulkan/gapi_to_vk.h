@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/render/gapi/resources.h>
+#include <engine/gapi/resources.h>
 
 #include <vulkan/vulkan.hpp>
 

@@ -4,7 +4,7 @@
 #include <engine/assets/assets_manager.h>
 #include <engine/log.h>
 #include <engine/math.h>
-#include <engine/render/gapi/gapi.h>
+#include <engine/gapi/gapi.h>
 #include <engine/time.h>
 
 #include <glm/gtx/transform.hpp>

@@ -3,7 +3,7 @@
 #include "result.h"
 
 #include <engine/log.h>
-#include <engine/render/gapi/vulkan/device.h>
+#include <engine/gapi/vulkan/device.h>
 
 namespace gapi::vulkan
 {

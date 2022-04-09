@@ -4,8 +4,8 @@
 #include "graphics_state.h"
 #include "descriptors_set_manager.h"
 
-#include <engine/render/gapi/vulkan/cache/renderpass_storage.h>
-#include <engine/render/gapi/vulkan/cache/pipelines_storage.h>
+#include <engine/gapi/vulkan/cache/renderpass_storage.h>
+#include <engine/gapi/vulkan/cache/pipelines_storage.h>
 
 #include <EASTL/vector.h>
 #include <vulkan/vulkan.hpp>

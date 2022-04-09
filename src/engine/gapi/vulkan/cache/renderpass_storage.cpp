@@ -1,6 +1,6 @@
 #include "renderpass_storage.h"
 
-#include <engine/render/gapi/vulkan/device.h>
+#include <engine/gapi/vulkan/device.h>
 #include <engine/log.h>
 
 #include <boost/functional/hash.hpp>
