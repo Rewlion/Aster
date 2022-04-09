@@ -369,4 +369,9 @@ namespace gapi
   };
 
   using RenderTargets = Utils::FixedStack<TextureHandler, MAX_RENDER_TARGETS>;
+
+  struct RenderState
+  {
+    ShaderStagesNames shaders;
+  };
 }

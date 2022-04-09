@@ -108,34 +108,4 @@ namespace gapi
     SetDepthStencilStateCmd
   >;
   using CommandList = eastl::vector<Command>;
-
-  void begin_renderpass(CommandList& cmdList, const RenderTargets& renderTargets, TextureHandler depthStencil = TextureHandler::Invalid);
-
-  void bind_graphics_shaders(CommandList& cmdList, const ShaderStagesNames& stages);
-
-  void draw(CommandList& cmdList, const PrimitiveTopology topology, const uint32_t vertexCount,
-               const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance);
-
-  void draw_indexed(CommandList& cmdList, const PrimitiveTopology topology, const uint32_t indexCount, uint32_t instanceCount,
-                      const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstace);
-
-  void present(CommandList& cmdList);
-
-  void push_constants(CommandList& cmdList, const void* data, const size_t size, const ShaderStage stage);
-
-  void bind_vertex_buffer(CommandList& cmdList, const BufferHandler buffer);
-
-  void bind_index_buffer(CommandList& cmdList, const BufferHandler buffer);
-
-  void bind_const_buffer(CommandList& cmdList, const BufferHandler buffer, const size_t argument, const size_t binding);
-
-  void bind_texture(CommandList& cmdList, const TextureHandler texture, const size_t argument, const size_t binding);
-
-  void bind_sampler(CommandList& cmdList, const SamplerHandler sampler, const size_t argument, const size_t binding);
-
-  void clear(CommandList& cmdList, const ClearState clearing);
-
-  void set_blend_state(CommandList& cmdList, const BlendState& blending);
-
-  void set_depth_stencil(CommandList& cmdList, const DepthStencilStateDescription& ds);
 }

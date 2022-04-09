@@ -40,15 +40,15 @@ namespace Engine::Render
   {
     gapi::CommandList cmdList;
 
-    begin_renderpass(cmdList, { gapi::get_backbuffer() });
-    clear(cmdList, gapi::CLEAR_RT);
-    bind_graphics_shaders(cmdList, {str_hash("test_vs"), str_hash("test_ps")});
+    m_CmdEncoder.beginRenderpass({ gapi::get_backbuffer()});
+    m_CmdEncoder.clear(gapi::CLEAR_RT);
+    m_CmdEncoder.bindGraphicsShaders({str_hash("test_vs"), str_hash("test_ps")});
 
     mat4 mvp = mat4{1};
     mvp = glm::translate(mvp, float3{0,0, 5});
     mvp = math::perspective(90.0, 3.0f/4.0f, 0.1, 100.0) * mvp;
 
-    push_constants(cmdList, &mvp, sizeof(mvp), gapi::ShaderStage::Vertex);
+    m_CmdEncoder.pushConstants(&mvp, sizeof(mvp), gapi::ShaderStage::Vertex);
 
     StaticModelAsset asset;
     if (!assets_manager.getStaticModel(str_hash("bin/assets/cube/cube.gltf"), asset))
@@ -67,19 +67,19 @@ namespace Engine::Render
     float4 color{1.0, 1.0, 0.6, 1.0};
     write_buffer(m_TestConstBuffer, &color, 0, sizeof(color), gapi::WR_DISCARD);
 
-    bind_texture(cmdList, texture.texture, 0, 0);
-    bind_sampler(cmdList, m_TestSampler, 0, 1);
-    bind_const_buffer(cmdList, m_TestConstBuffer, 0, 2);
+    m_CmdEncoder.bindTexture(texture.texture, 0, 0);
+    m_CmdEncoder.bindSampler(m_TestSampler, 0, 1);
+    m_CmdEncoder.bindConstBuffer(m_TestConstBuffer, 0, 2);
 
     for(const auto& submesh: asset.submeshes)
     {
-      bind_vertex_buffer(cmdList, submesh.vertexBuffer);
-      bind_index_buffer(cmdList, submesh.indexBuffer);
-      draw_indexed(cmdList, gapi::PrimitiveTopology::TriangleList, submesh.indexCount, 1, 0, 0, 0);
+      m_CmdEncoder.bindVertexBuffer(submesh.vertexBuffer);
+      m_CmdEncoder.bindIndexBuffer(submesh.indexBuffer);
+      m_CmdEncoder.drawIndexed(gapi::PrimitiveTopology::TriangleList, submesh.indexCount, 1, 0, 0, 0);
     }
 
-    present(cmdList);
-    submit_commands(std::move(cmdList));
+    m_CmdEncoder.present();
+    m_CmdEncoder.flush();
   }
 
 }
