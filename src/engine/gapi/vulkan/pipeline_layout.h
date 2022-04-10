@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/shaders_compiler/spirv.h>
+#include <shaders_compiler/spirv.h>
 
 #include <vulkan/vulkan.hpp>
 

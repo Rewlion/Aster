@@ -3,9 +3,9 @@
 #include <engine/assert.h>
 #include <engine/gapi/resources.h>
 #include <engine/gapi/vulkan/pipeline_layout.h>
-#include <engine/shaders_compiler/spirv.h>
 #include <engine/types.h>
 #include <engine/utils/fixed_stack.hpp>
+#include <shaders_compiler/spirv.h>
 
 #include <vulkan/vulkan.hpp>
 #include <EASTL/hash_map.h>

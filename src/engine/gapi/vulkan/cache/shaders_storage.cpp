@@ -5,11 +5,11 @@
 #include <engine/algorithm/hash.h>
 #include <engine/assert.h>
 #include <engine/datablock/utils.h>
-#include <engine/log.h>
 #include <engine/gapi/vulkan/device.h>
+#include <engine/log.h>
 #include <engine/settings.h>
-#include <engine/shaders_compiler/constants.h>
 #include <engine/utils/fs.h>
+#include <shaders_compiler/constants.h>
 
 #include <boost/functional/hash.hpp>
 

@@ -2,7 +2,7 @@
 
 #define VULKAN_HPP_NO_EXCEPTIONS 1
 
-#include <engine/shaders_compiler/spirv.h>
+#include <shaders_compiler/spirv.h>
 #include <engine/utils/bit_capacity.hpp>
 
 #include <vulkan/vulkan.hpp>
