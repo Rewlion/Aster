@@ -10,10 +10,11 @@ namespace gapi
 {
   constexpr size_t MAX_RENDER_TARGETS = 8;
 
-  enum class TextureHandler: uint64_t { Invalid = (uint64_t)-1 };
-  enum class SamplerHandler: uint64_t { Invalid = (uint64_t)-1 };
-  enum class BufferHandler: uint64_t { Invalid = (uint64_t)-1 };
-  enum class DepthStencilStateHandler: uint64_t { Invalid = (uint64_t)-1 };
+  using ResourceHandler = uint64_t;
+  enum class TextureHandler: ResourceHandler { Invalid = (ResourceHandler)-1 };
+  enum class SamplerHandler: ResourceHandler { Invalid = (ResourceHandler)-1 };
+  enum class BufferHandler: ResourceHandler { Invalid = (ResourceHandler)-1 };
+  enum class DepthStencilStateHandler: ResourceHandler { Invalid = (ResourceHandler)-1 };
 
   using index_type = uint32_t;
 
@@ -373,5 +374,8 @@ namespace gapi
   struct RenderState
   {
     ShaderStagesNames shaders;
+    PrimitiveTopology topology;
+    DepthStencilStateDescription depthStencil;
+    BlendState blending;
   };
 }
