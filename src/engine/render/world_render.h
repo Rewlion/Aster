@@ -4,8 +4,6 @@
 
 #include <engine/gapi/cmd_encoder.h>
 
-#include <engine/materials/test_materials.h>
-
 namespace Engine::Render
 {
   class WorldRender
@@ -21,8 +19,6 @@ namespace Engine::Render
       gapi::BufferHandler m_TestConstBuffer;
 
       gapi::CmdEncoder m_CmdEncoder;
-
-      TestMaterial m_Material;
   };
 
   extern WorldRender world_render;

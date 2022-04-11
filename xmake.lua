@@ -79,9 +79,14 @@ target("aster")
   add_files("src/aster/main.cpp",
             "src/aster/ecs/*gen.cpp"
            )
-  add_deps("aster-ecs", "engine")
+  add_deps("aster-ecs", "engine", "engine-materials")
+  add_ldflags("-WHOLEARCHIVE:engine-materials", {force = true})
   set_suffixname("-$(mode)")
   set_targetdir("/game/aster")
+
+target("engine-materials")
+  set_kind("static")
+  add_files("src/engine/materials/**.cpp")
 
 target("engine")
   set_kind("static")
@@ -91,7 +96,16 @@ target("engine")
             "ktx"
            )
   add_deps("spirv-cross")
-  add_files("src/engine/**.cpp")
+  add_files("src/engine/**.cpp",
+    "src/engine/assets/**.cpp",
+    "src/engine/datablock/**.cpp",
+    "src/engine/ecs/**.cpp",
+    "src/engine/gapi/**.cpp",
+    "src/engine/input/**.cpp",
+    "src/engine/render/**.cpp",
+    "src/engine/utils/**.cpp",
+    "src/engine/*.cpp"
+  )
 
 target("blk-test")
   set_kind("binary")

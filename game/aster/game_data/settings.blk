@@ -1,5 +1,7 @@
 text app_name ="aster"
 
+#include "bin/assets/assets.blk"
+
 entity_templates
 {
   text template = "game_data/templates/templates.blk"

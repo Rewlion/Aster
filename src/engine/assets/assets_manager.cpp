@@ -1,8 +1,12 @@
 #include "assets_manager.h"
 
 #include <engine/algorithm/hash.h>
+#include <engine/assert.h>
 #include <engine/log.h>
+#include <engine/settings.h>
 #include <engine/utils/fs.h>
+#include <engine/materials/materials.h>
+#include <engine/materials/storage.h>
 
 #include <algorithm>
 #include <filesystem>
@@ -18,63 +22,29 @@ namespace Engine
 
   void AssetsManager::loadAssetsFromFs()
   {
-      const std::filesystem::path assetsDir{"bin/assets"};
-
-      for (const auto& rootDirEntry : std::filesystem::directory_iterator{assetsDir})
-      {
-        if (!rootDirEntry.is_directory())
-          continue;
-
-        for (const auto& assetDirEntry : std::filesystem::directory_iterator{rootDirEntry})
-        {
-          if (!assetDirEntry.is_regular_file())
-            continue;
-
-          std::string file = assetDirEntry.path().string();
-          std::replace(file.begin(), file.end(), '\\', '/');
-
-          log("asset manager: loading asset `{}`", file);
-          loadAsset(file);
-        }
-      }
-  }
-
-  void AssetsManager::loadAsset(const string& file)
-  {
-    const string_hash fileHash = str_hash(file.c_str());
-    if (m_StaticModels.find(fileHash) != m_StaticModels.end())
+    DataBlock* assets = get_app_settings()->getChildBlock("assets");
+    for (const DataBlock& asset: assets->getChildBlocks())
     {
-      logerror("asset manager: failed to load new asset. `{}:{}` has hash collision with already loaded file.", file.c_str(), fileHash);
-      return;
-    }
+      const string assetType = asset.getName();
 
-    if (Utils::check_file_ext(file, "gltf"))
-    {
-      StaticModelAsset asset = loadGltf(file);
+      if (assetType == "texture")
+        loadTextureAsset(asset);
 
-      m_StaticModels.insert({
-        fileHash,
-        asset
-      });
-    }
-    else if (Utils::check_file_ext(file, "ktx"))
-    {
-      TextureAsset asset = loadTexture(file);
-      m_Textures.insert({
-        fileHash,
-        asset
-      });
+      if (assetType == "static_mesh")
+        loadStaticMeshAsset(asset);
     }
   }
 
-  bool AssetsManager::getStaticModel(const string_hash assetUri, StaticModelAsset& asset)
+  bool AssetsManager::getStaticModel(const string_hash assetUri, StaticModelAsset*& asset)
   {
     const auto it = m_StaticModels.find(assetUri);
     if (it != m_StaticModels.end())
     {
-      asset = it->second;
+      asset = &it->second;
       return true;
     }
+
+    ASSERT(!"asset not found");
 
     return false;
   }
@@ -88,6 +58,73 @@ namespace Engine
       return true;
     }
 
+    ASSERT(!"asset not found");
+
     return false;
+  }
+
+  void AssetsManager::loadTextureAsset(const DataBlock& asset)
+  {
+    const string file = asset.getText("bin");
+    const string name = asset.getText("name");
+
+    log("asset manager: loading texture: {} as {}", file, name);
+    const string_hash nameHash = str_hash(name.c_str());
+
+    TextureAsset textureAsset = loadTexture(file);
+      m_Textures.insert({
+        nameHash,
+        textureAsset
+      });
+  }
+
+  void AssetsManager::loadStaticMeshAsset(const DataBlock& asset)
+  {
+    const string file = asset.getText("bin");
+    const string name = asset.getText("name");
+
+    log("asset manager: loading static_mesh: {} as {}", file, name);
+    const string_hash nameHash = str_hash(name.c_str());
+
+    StaticModelAsset staticMeshAsset = loadGltf(file);
+    Material* m = createMaterial(*asset.getChildBlock("material"));
+    staticMeshAsset.material.reset(m);
+
+    m_StaticModels.insert({
+        nameHash,
+        std::move(staticMeshAsset)
+    });
+  }
+
+  Material* AssetsManager::createMaterial(const DataBlock& matBlk)
+  {
+    const string matName = matBlk.getAnnotation();
+    Material* material = MaterialsStorage::constructMaterial(matName);
+
+    Material::Params matParams;
+
+    for (const auto& param: matBlk.getChildBlocks())
+    {
+      if (param.getName() == "texture")
+      {
+        const string textureName = param.getText("name");
+        TextureAsset texture;
+        bool r = getTexture(str_hash(textureName.c_str()), texture);
+        ASSERT(r != false);
+
+        Material::Param matParam;
+        matParam.name = param.getText("binding");
+        matParam.type = Material::BindingType::Texture;
+        matParam.handler = (gapi::ResourceHandler)texture.texture;
+
+        matParams.push(matParam);
+        continue;
+      }
+
+      ASSERT(!"unsupported type");
+    }
+
+    material->addParams(matParams);
+    return material;
   }
 }

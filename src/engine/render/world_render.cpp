@@ -34,22 +34,6 @@ namespace Engine::Render
     m_TestSampler = allocate_sampler(samplerAllocDesc);
 
     m_TestConstBuffer = gapi::allocate_buffer(sizeof(float4), gapi::BF_CpuVisible | gapi::BF_BindConstant);
-
-    TextureAsset texture;
-    if (!assets_manager.getTexture(str_hash("bin/assets/cube/container.ktx"), texture))
-    {
-      logerror("failed to get asset");
-      return;
-    }
-
-    Material::Params params;
-    Material::Param p;
-    p.name = "test_texture";
-    p.type = Material::BindingType::Texture;
-    p.handler = gapi::ResourceHandler(texture.texture);
-    params.push(p);
-
-    m_Material.addParams(params);
   }
 
   void WorldRender::render()
@@ -65,15 +49,15 @@ namespace Engine::Render
 
     m_CmdEncoder.pushConstants(&mvp, sizeof(mvp), gapi::ShaderStage::Vertex);
 
-    StaticModelAsset asset;
-    if (!assets_manager.getStaticModel(str_hash("bin/assets/cube/cube.gltf"), asset))
+    StaticModelAsset* asset;
+    if (!assets_manager.getStaticModel(str_hash("cube"), asset))
     {
       logerror("failed to get asset");
       return;
     }
 
-    m_Material.setState(m_CmdEncoder, Engine::RenderPassType::Main);
-    m_Material.setParams(m_CmdEncoder);
+    asset->material->setState(m_CmdEncoder, Engine::RenderPassType::Main);
+    asset->material->setParams(m_CmdEncoder);
 
     float4 color{1.0, 1.0, 0.6, 1.0};
     write_buffer(m_TestConstBuffer, &color, 0, sizeof(color), gapi::WR_DISCARD);
@@ -81,11 +65,11 @@ namespace Engine::Render
     m_CmdEncoder.bindSampler(m_TestSampler, 0, 1);
     m_CmdEncoder.bindConstBuffer(m_TestConstBuffer, 0, 2);
 
-    for(const auto& submesh: asset.submeshes)
+    for(const auto& submesh: asset->submeshes)
     {
       m_CmdEncoder.bindVertexBuffer(submesh.vertexBuffer);
       m_CmdEncoder.bindIndexBuffer(submesh.indexBuffer);
-      m_CmdEncoder.drawIndexed(m_Material.getTopology(), submesh.indexCount, 1, 0, 0, 0);
+      m_CmdEncoder.drawIndexed(asset->material->getTopology(), submesh.indexCount, 1, 0, 0, 0);
     }
 
     m_CmdEncoder.present();
