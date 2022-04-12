@@ -14,15 +14,17 @@ namespace Engine
 {
   struct Submesh
   {
-    gapi::BufferHandler vertexBuffer;
-    gapi::BufferHandler indexBuffer;
-    gapi::index_type    indexCount = 0;
+    gapi::BufferHandler       vertexBuffer;
+    gapi::BufferHandler       indexBuffer;
+    gapi::index_type          indexCount = 0;
+    std::unique_ptr<Material> material;
   };
+
+  constexpr size_t MAX_SUBMESH_COUNT = 32;
 
   struct StaticModelAsset
   {
-    std::unique_ptr<Material> material;
-    Utils::FixedStack<Submesh, 32>  submeshes;
+    Utils::FixedStack<Submesh, MAX_SUBMESH_COUNT>  submeshes;
   };
 
   struct TextureAsset

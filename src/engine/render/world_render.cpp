@@ -56,9 +56,6 @@ namespace Engine::Render
       return;
     }
 
-    asset->material->setState(m_CmdEncoder, Engine::RenderPassType::Main);
-    asset->material->setParams(m_CmdEncoder);
-
     float4 color{1.0, 1.0, 0.6, 1.0};
     write_buffer(m_TestConstBuffer, &color, 0, sizeof(color), gapi::WR_DISCARD);
 
@@ -67,9 +64,12 @@ namespace Engine::Render
 
     for(const auto& submesh: asset->submeshes)
     {
+      submesh.material->setState(m_CmdEncoder, Engine::RenderPassType::Main);
+      submesh.material->setParams(m_CmdEncoder);
+
       m_CmdEncoder.bindVertexBuffer(submesh.vertexBuffer);
       m_CmdEncoder.bindIndexBuffer(submesh.indexBuffer);
-      m_CmdEncoder.drawIndexed(asset->material->getTopology(), submesh.indexCount, 1, 0, 0, 0);
+      m_CmdEncoder.drawIndexed(submesh.material->getTopology(), submesh.indexCount, 1, 0, 0, 0);
     }
 
     m_CmdEncoder.present();

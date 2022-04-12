@@ -261,7 +261,7 @@ namespace Engine
       write_buffer(submesh.indexBuffer, indices.data(), 0, indicesSize);
       submesh.indexCount = indices.size();
 
-      asset.submeshes.push(submesh);
+      asset.submeshes.push(std::move(submesh));
     }
 
     return asset;

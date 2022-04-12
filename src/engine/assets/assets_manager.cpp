@@ -87,8 +87,19 @@ namespace Engine
     const string_hash nameHash = str_hash(name.c_str());
 
     StaticModelAsset staticMeshAsset = loadGltf(file);
-    Material* m = createMaterial(*asset.getChildBlock("material"));
-    staticMeshAsset.material.reset(m);
+
+    Utils::FixedStack<const DataBlock*, MAX_SUBMESH_COUNT> materials;
+    for (const DataBlock& material: asset.getChildBlocks())
+      if (material.getName() == "material")
+        materials.push(&material);
+
+    ASSERT(materials.getSize() == staticMeshAsset.submeshes.getSize());
+
+    for (size_t i = 0; i < staticMeshAsset.submeshes.getSize(); ++i)
+    {
+      Material* m = createMaterial(*materials.get(i));
+      staticMeshAsset.submeshes.get(i).material.reset(m);
+    }
 
     m_StaticModels.insert({
         nameHash,

@@ -2,6 +2,41 @@
 
 namespace Utils
 {
+    template<class T>
+    class Iterator
+    {
+      public:
+        Iterator(T* values, size_t pos)
+          : m_Values(values)
+          , m_Pos(pos)
+        {
+        }
+
+        T& operator*() const
+        {
+          return m_Values[m_Pos];
+        }
+
+        Iterator operator++()
+        {
+          return Iterator{m_Values, ++m_Pos};
+        }
+
+        bool operator==(const Iterator& it) const
+        {
+          return m_Values == it.m_Values && m_Pos == it.m_Pos;
+        }
+
+        bool operator!=(const Iterator& it) const
+        {
+          return m_Values != it.m_Values || m_Pos != it.m_Pos;
+        }
+
+      private:
+        T* m_Values;
+        size_t m_Pos;
+  };
+
   template<class T, size_t N>
   class FixedStack
   {
@@ -11,6 +46,16 @@ namespace Utils
       {
         static_assert(sizeof...(args) <= N);
         (push(args), ...);
+      }
+
+      FixedStack(FixedStack<T,N>&& rvl)
+      {
+        *(this) = std::move(rvl);
+      }
+
+      FixedStack(const FixedStack<T,N>& rvl)
+      {
+        *(this) = rvl;
       }
 
       FixedStack()
@@ -61,7 +106,7 @@ namespace Utils
       {
         if (m_Size < N)
         {
-          m_Values[m_Size++] = std::forward<T>(v);
+          m_Values[m_Size++] = std::move(v);
           return true;
         }
         else
@@ -110,6 +155,17 @@ namespace Utils
         return *this;
       }
 
+      inline const FixedStack<T,N>& operator=(FixedStack<T,N>&& rvl)
+      {
+        clear();
+        for(auto& v: rvl)
+          push(std::move(v));
+
+        rvl.clear();
+
+        return *this;
+      }
+
       inline bool operator==(const FixedStack<T,N>& rvl)
       {
         if (rvl.m_Size == m_Size)
@@ -134,53 +190,24 @@ namespace Utils
           pop();
       }
 
-    class ConstIterator
+    decltype(auto) begin() const
     {
-      public:
-        ConstIterator(const T* values, size_t pos)
-          : m_Values(values)
-          , m_Pos(pos)
-        {
-        }
-
-        const T& operator*() const
-        {
-          return m_Values[m_Pos];
-        }
-
-        const T& operator++()
-        {
-          return m_Values[++m_Pos];
-        }
-
-        const T& operator++(int)
-        {
-          return m_Values[m_Pos++];
-        }
-
-        bool operator==(const ConstIterator& it) const
-        {
-          return m_Values == it.m_Values && m_Pos == it.m_Pos;
-        }
-
-        bool operator!=(const ConstIterator& it) const
-        {
-          return m_Values != it.m_Values || m_Pos != it.m_Pos;
-        }
-
-      private:
-        const T* m_Values;
-        size_t m_Pos;
-    };
-
-    ConstIterator begin() const
-    {
-      return ConstIterator(m_Values, 0);
+      return Iterator<const T>(m_Values, 0);
     }
 
-    ConstIterator end() const
+    decltype(auto) end() const
     {
-      return ConstIterator(m_Values, m_Size);
+      return Iterator<const T>(m_Values, m_Size);
+    }
+
+    decltype(auto) begin()
+    {
+      return Iterator<T>(m_Values, 0);
+    }
+
+    decltype(auto) end()
+    {
+      return Iterator<T>(m_Values, m_Size);
     }
 
     private:
