@@ -22,8 +22,6 @@ namespace Engine::Render
       void renderStaticSceneOpaque();
 
     private:
-      gapi::BufferHandler m_TestBuffer;
-      gapi::BufferHandler m_TestIndexBuffer;
       gapi::SamplerHandler m_TestSampler;
       gapi::BufferHandler m_TestConstBuffer;
 

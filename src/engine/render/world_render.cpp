@@ -16,21 +16,6 @@ namespace Engine::Render
 
   void WorldRender::init()
   {
-    m_TestBuffer = gapi::allocate_buffer(sizeof(float2) * 3, gapi::BF_GpuVisible | gapi::BF_BindVertex);
-
-    float2 vertices[3] = {
-      float2(0,0),
-      float2(0,1),
-      float2(1,0)
-    };
-    write_buffer(m_TestBuffer, (void*)vertices, 0, sizeof(float2) * 3);
-
-    m_TestIndexBuffer = gapi::allocate_buffer(sizeof(gapi::index_type) * 3,
-                                              gapi::BF_GpuVisible | gapi::BF_BindIndex);
-
-    gapi::index_type indices[3] = {0,1,2};
-    write_buffer(m_TestIndexBuffer, indices, 0, sizeof(gapi::index_type) * 3);
-
     gapi::SamplerAllocationDescription samplerAllocDesc;
     m_TestSampler = allocate_sampler(samplerAllocDesc);
 
