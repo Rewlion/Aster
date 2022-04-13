@@ -1,5 +1,14 @@
 text input.initial_action_set = "FlyingCamera"
 
+scene
+{
+  object
+  {
+    float3 pos = 0.0 , 0.0 , 10.0
+    text model = "cube"
+  }
+}
+
 entity @("template1")
 {
   float2 test_float2 = 23.0, 1.0

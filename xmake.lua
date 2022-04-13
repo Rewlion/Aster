@@ -104,6 +104,7 @@ target("engine")
     "src/engine/input/**.cpp",
     "src/engine/render/**.cpp",
     "src/engine/utils/**.cpp",
+    "src/engine/scene/**.cpp",
     "src/engine/*.cpp"
   )
 

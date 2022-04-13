@@ -4,6 +4,8 @@
 #include <engine/datablock/utils.h>
 #include <engine/ecs/registry.h>
 #include <engine/input/input.h>
+#include <engine/scene/scene.h>
+
 namespace
 {
   class From
@@ -132,6 +134,9 @@ namespace Engine
 
     const string actionSet = blk.getText("input.initial_action_set");
     Input::manager.setActionSet(str_hash(actionSet.c_str()));
+
+    const DataBlock* sceneBlk = blk.getChildBlock("scene");
+    ::Engine::scene.loadScene(*sceneBlk);
   }
 
 }

@@ -13,6 +13,15 @@ namespace Engine::Render
       void render();
 
     private:
+      struct FrameData
+      {
+      };
+      FrameData m_FrameData;
+
+      void beforeRender();
+      void renderStaticSceneOpaque();
+
+    private:
       gapi::BufferHandler m_TestBuffer;
       gapi::BufferHandler m_TestIndexBuffer;
       gapi::SamplerHandler m_TestSampler;
