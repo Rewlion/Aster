@@ -58,17 +58,12 @@ namespace Engine::Render
     for (const auto& obj: objects)
     {
       mat4 mvp = mat4{1};
-      mvp = glm::translate(mvp, float3{0,0, 5});
+      mvp = glm::translate(mvp, obj.pos);
       mvp = math::perspective(90.0, 3.0f/4.0f, 0.1, 100.0) * mvp;
 
       m_CmdEncoder.pushConstants(&mvp, sizeof(mvp), gapi::ShaderStage::Vertex);
 
-      StaticModelAsset* asset;
-      if (!assets_manager.getStaticModel(str_hash(obj.model.c_str()), asset))
-      {
-        logerror("failed to get asset");
-        return;
-      }
+      StaticModelAsset* asset = assets_manager.getStaticModel(obj.model);
 
       float4 color{1.0, 1.0, 0.6, 1.0};
       write_buffer(m_TestConstBuffer, &color, 0, sizeof(color), gapi::WR_DISCARD);

@@ -39,7 +39,7 @@ namespace Engine
     public:
       void init();
 
-      bool getStaticModel(const string_hash assetUri, StaticModelAsset*& asset);
+      StaticModelAsset* getStaticModel(const string& assetName);
 
       bool getTexture(const string_hash assetUri, TextureAsset& asset);
 

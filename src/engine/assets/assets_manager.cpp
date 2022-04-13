@@ -35,18 +35,17 @@ namespace Engine
     }
   }
 
-  bool AssetsManager::getStaticModel(const string_hash assetUri, StaticModelAsset*& asset)
+  StaticModelAsset* AssetsManager::getStaticModel(const string& assetName)
   {
-    const auto it = m_StaticModels.find(assetUri);
+    const string_hash assetNameHash = str_hash(assetName.c_str());
+
+    const auto it = m_StaticModels.find(assetNameHash);
     if (it != m_StaticModels.end())
-    {
-      asset = &it->second;
-      return true;
-    }
+      return &it->second;
 
     ASSERT(!"asset not found");
 
-    return false;
+    return nullptr;
   }
 
   bool AssetsManager::getTexture(const string_hash assetUri, TextureAsset& asset)
