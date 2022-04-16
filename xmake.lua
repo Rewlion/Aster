@@ -88,25 +88,59 @@ target("engine-materials")
   set_kind("static")
   add_files("src/engine/materials/**.cpp")
 
+target("engine-assets")
+  set_kind("static")
+  add_files("src/engine/assets/**.cpp")
+
+target("engine-datablock")
+  set_kind("static")
+  add_files("src/engine/datablock/**.cpp")
+
+target("engine-ecs")
+  set_kind("static")
+  add_files("src/engine/ecs/**.cpp")
+
+target("engine-blk")
+  set_kind("static")
+  add_files("src/engine/gapi/**.cpp")
+
+target("engine-input")
+  set_kind("static")
+  add_files("src/engine/input/**.cpp")
+
+target("engine-gapi")
+  set_kind("static")
+  add_files("src/engine/render/**.cpp")
+
+target("engine-render")
+  set_kind("static")
+  add_files("src/engine/render/**.cpp")
+
+target("engine-scene")
+  set_kind("static")
+  add_files("src/engine/scene/**.cpp")
+
+target("engine-utils")
+  set_kind("static")
+  add_files("src/engine/utils/**.cpp")
+
 target("engine")
   set_kind("static")
+  add_files("src/engine/*.cpp")
   add_links("user32",
             "EASTL",
             "vulkan-1",
-            "ktx"
-           )
-  add_deps("spirv-cross")
-  add_files("src/engine/**.cpp",
-    "src/engine/assets/**.cpp",
-    "src/engine/datablock/**.cpp",
-    "src/engine/ecs/**.cpp",
-    "src/engine/gapi/**.cpp",
-    "src/engine/input/**.cpp",
-    "src/engine/render/**.cpp",
-    "src/engine/utils/**.cpp",
-    "src/engine/scene/**.cpp",
-    "src/engine/*.cpp"
-  )
+            "ktx")
+  add_deps("spirv-cross",
+           "engine-assets",
+           "engine-blk",
+           "engine-datablock",
+           "engine-ecs",
+           "engine-gapi",
+           "engine-input",
+           "engine-render",
+           "engine-scene",
+           "engine-utils")
 
 target("blk-test")
   set_kind("binary")
