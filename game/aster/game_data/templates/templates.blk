@@ -8,3 +8,10 @@ template2 @("entity_template") {
   float2 test_float2 = 0.0, 0.0
 }
 
+camera @("entity_template")
+{
+  float3 pos = 0.0, 0.0, 0.0
+  float camera_fov = 0.0
+  float camera_zNear = 0.0
+  float camera_zFar = 0.0
+}

@@ -10,15 +10,16 @@ namespace Engine::Render
   {
     public:
       void init();
-      void render();
+      void render(const mat4& cameraVP);
 
     private:
       struct FrameData
       {
+        mat4 vp;
       };
       FrameData m_FrameData;
 
-      void beforeRender();
+      void beforeRender(const mat4& cameraVP);
       void renderStaticSceneOpaque();
 
     private:

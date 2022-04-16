@@ -22,14 +22,15 @@ namespace Engine::Render
     m_TestConstBuffer = gapi::allocate_buffer(sizeof(float4), gapi::BF_CpuVisible | gapi::BF_BindConstant);
   }
 
-  void WorldRender::render()
+  void WorldRender::render(const mat4& cameraVP)
   {
-    beforeRender();
+    beforeRender(cameraVP);
     renderStaticSceneOpaque();
   }
 
-  void WorldRender::beforeRender()
+  void WorldRender::beforeRender(const mat4& cameraVP)
   {
+    m_FrameData.vp = cameraVP;
   }
 
   void WorldRender::renderStaticSceneOpaque()
@@ -44,7 +45,7 @@ namespace Engine::Render
     {
       mat4 mvp = mat4{1};
       mvp = glm::translate(mvp, obj.pos);
-      mvp = math::perspective(90.0, 3.0f/4.0f, 0.1, 100.0) * mvp;
+      mvp = m_FrameData.vp * mvp;
 
       m_CmdEncoder.pushConstants(&mvp, sizeof(mvp), gapi::ShaderStage::Vertex);
 

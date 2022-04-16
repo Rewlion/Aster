@@ -5,14 +5,15 @@
 #include <engine/ecs/components.h>
 #include <engine/ecs/components_accessor.h>
 #include <engine/ecs/registry.h>
+#include <engine/gapi/gapi.h>
 #include <engine/input/input.h>
 #include <engine/level.h>
-#include <engine/gapi/gapi.h>
 #include <engine/render/world_render.h>
 #include <engine/settings.h>
 #include <engine/time.h>
 #include <engine/types.h>
 #include <engine/window.h>
+#include <engine/work_cycle/camera.h>
 
 namespace Engine
 {
@@ -45,7 +46,8 @@ namespace Engine
 
       ECS::manager.tick();
 
-      Render::world_render.render();
+      const mat4 vp = get_camera_vp();
+      Render::world_render.render(vp);
     }
   }
 }

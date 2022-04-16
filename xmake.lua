@@ -84,6 +84,11 @@ target("aster")
   set_suffixname("-$(mode)")
   set_targetdir("/game/aster")
 
+target("engine-ecs-generation")
+  set_kind("object")
+  add_rules("ecs_generation")
+  add_files("src/engine/**.ecs.cpp")
+
 target("engine-materials")
   set_kind("static")
   add_files("src/engine/materials/**.cpp")
@@ -124,6 +129,10 @@ target("engine-utils")
   set_kind("static")
   add_files("src/engine/utils/**.cpp")
 
+target("engine-workcycle")
+  set_kind("static")
+  add_files("src/engine/work_cycle/**.cpp|*.ecs.cpp")
+
 target("engine")
   set_kind("static")
   add_files("src/engine/*.cpp")
@@ -140,7 +149,8 @@ target("engine")
            "engine-input",
            "engine-render",
            "engine-scene",
-           "engine-utils")
+           "engine-utils",
+           "engine-workcycle")
 
 target("blk-test")
   set_kind("binary")
