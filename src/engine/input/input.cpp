@@ -92,4 +92,9 @@ namespace Engine::Input
     if (actionSet != str_hash(""))
       m_Keyboard.setActionSet(actionSet);
   }
+
+  ButtonStatus InputManager::getKeyboardButtonStatus(const string_hash action) const
+  {
+    return m_Keyboard.getKeyboardButtonStatus(action);
+  }
 }

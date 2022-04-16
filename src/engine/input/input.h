@@ -14,6 +14,8 @@ namespace Engine::Input
       void processInput();
       void setActionSet(const string_hash actionSet);
 
+      ButtonStatus getKeyboardButtonStatus(const string_hash action) const;
+
     private:
       void loadRegisteredActions(const DataBlock& inputSettings);
       void loadControllerMappings(const DataBlock& controllerMappings);

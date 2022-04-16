@@ -17,6 +17,8 @@ namespace Engine::Input
       void processInput();
       void setActionSet(const string_hash actionSet);
 
+      ButtonStatus getKeyboardButtonStatus(const string_hash action) const;
+
     private:
       using ButtonMappings = eastl::fixed_vector<ButtonMapping, 256>;
       using HandledActionSet = eastl::vector_map<string_hash, ButtonMappings>;

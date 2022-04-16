@@ -109,4 +109,22 @@ namespace Engine::Input
       logerror("Keyaboard failed to set ActionSet `{}`: unknwon action set");
   }
 
+  ButtonStatus Keyboard::getKeyboardButtonStatus(const string_hash action) const
+  {
+    if (m_ActiveSet)
+    {
+      const auto it = m_ActionSets.find(*m_ActiveSet);
+      if (it != m_ActionSets.end())
+      {
+        for (const auto& buttonMapping: it->second)
+        {
+          if (buttonMapping.action == action)
+            return buttonMapping.status;
+        }
+      }
+    }
+
+    return ButtonStatus::Release;
+  }
+
 }
