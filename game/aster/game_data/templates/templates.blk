@@ -14,4 +14,6 @@ camera @("entity_template")
   float camera_fov = 0.0
   float camera_zNear = 0.0
   float camera_zFar = 0.0
+  float3 forward = 0.0, 0.0, 0.0
+  float3 right = 0.0, 0.0, 0.0
 }

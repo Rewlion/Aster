@@ -29,7 +29,7 @@ namespace Engine
     });
 
     mat4 vp = mat4{1};
-    vp = glm::translate(vp, pos);
+    vp = glm::translate(vp, -pos);
     vp = math::perspective(fov, 3.0f/4.0f, zNear, zFar) * vp;
 
     return vp;

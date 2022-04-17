@@ -9,11 +9,11 @@ ControllerMappings
         Button
         {
           int MoveLeft = 65
-          int MoveRight = 0
-          int MoveForward = 0
-          int MoveBackward = 0
-          int MoveUp = 0
-          int MoveDown = 0
+          int MoveRight = 68
+          int MoveForward = 87
+          int MoveBackward = 83
+          int MoveUp = 32
+          int MoveDown = 67
         }
       }
     }

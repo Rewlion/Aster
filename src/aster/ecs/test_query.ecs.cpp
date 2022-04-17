@@ -22,7 +22,9 @@ static void system_test(const float& test_float)
 {
   const auto status = Engine::Input::manager.getKeyboardButtonStatus(str_hash("MoveLeft"));
   if (status == Engine::Input::ButtonStatus::Press)
-    log("MoveLeft");
+  {
+    
+  }
 }
 
 ECS_SYSTEM()

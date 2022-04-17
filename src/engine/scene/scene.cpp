@@ -14,9 +14,10 @@ namespace Engine
     {
       if (obj.getName() == "object")
       {
-        Object& newObj = *(Object*)m_SceneObjects.push_back_uninitialized();
+        Object newObj;
         newObj.model = obj.getText("model");
         newObj.pos = obj.getFloat3("pos");
+        m_SceneObjects.push_back(std::move(newObj));
       }
     }
   }

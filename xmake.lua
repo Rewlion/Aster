@@ -72,13 +72,11 @@ target("spirv-cross")
 target("aster-ecs")
   set_kind("object")
   add_rules("ecs_generation")
-  add_files("src/aster/ecs/*.ecs.cpp")
+  add_files("src/aster/**.ecs.cpp")
 
 target("aster")
   set_kind("binary")
-  add_files("src/aster/main.cpp",
-            "src/aster/ecs/*gen.cpp"
-           )
+  add_files("src/aster/**.cpp|**.ecs.cpp")
   add_deps("aster-ecs", "engine", "engine-materials")
   add_ldflags("-WHOLEARCHIVE:engine-materials", {force = true})
   set_suffixname("-$(mode)")
