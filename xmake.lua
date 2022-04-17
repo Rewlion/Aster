@@ -150,11 +150,6 @@ target("engine")
            "engine-utils",
            "engine-workcycle")
 
-target("blk-test")
-  set_kind("binary")
-  add_deps("engine")
-  add_files("src/test/datablock/main.cpp")
-
 target("shaders_compiler")
   set_kind("binary")
   add_links("dxcompiler")
