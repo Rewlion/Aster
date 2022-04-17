@@ -76,6 +76,5 @@ namespace Engine
   {
     encoder.bindGraphicsShaders(m_RenderState.shaders);
     encoder.setDepthStencil(m_RenderState.depthStencil);
-    encoder.setBlendState(m_RenderState.blending);
   }
 }
