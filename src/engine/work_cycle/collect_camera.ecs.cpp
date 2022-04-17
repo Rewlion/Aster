@@ -34,8 +34,7 @@ namespace Engine
 
     mat4 vp = mat4{1};
     vp = math::perspective(fov, Engine::Render::world_render.getWndAspect(), zNear, zFar) *
-         math::look_at(pos + forward * 2.0f, pos, float3{0,1,0}) *
-         glm::translate(vp, -pos);
+         math::look_at(pos + forward * 2.0f, pos, float3{0,1,0});
 
     return vp;
   }
