@@ -11,13 +11,17 @@ namespace Engine::Input
 {
   InputManager manager;
 
-  static void DumpActionSet(const ActionSet& set)
+  static void dump_action_set(const ActionSet& set)
   {
     string buttons;
     for(const auto& btn: set.buttons)
       buttons += "    " + btn.name + "\n";
 
-    log("added ActionSet `{}`\n  Buttons:\n{}", set.name, buttons);
+    string analogs;
+    for(const auto& analog: set.analogs)
+      analogs += "    " + analog.name + "\n";
+
+    log("added ActionSet `{}`\n  Buttons:\n{}  Analogs:\n{}", set.name, buttons, analogs);
   }
 
   void InputManager::init()
@@ -67,7 +71,22 @@ namespace Engine::Input
         }
       }
 
-      DumpActionSet(actionSet);
+      const DataBlock* analogs = actionSetBlk.getChildBlock("Analog");
+      for(const auto& analog: analogs->getChildBlocks())
+      {
+        const string actionName = analog.getName();
+        if (actionName != "")
+        {
+          actionSet.analogs.emplace_back(actionName);
+        }
+        else
+        {
+          logerror("analog action without name encountered");
+          continue;
+        }
+      }
+
+      dump_action_set(actionSet);
 
       m_ActionSets.insert({
         str_hash(actionSet.name.c_str()),
@@ -80,21 +99,47 @@ namespace Engine::Input
   {
     const DataBlock* keyboardMappings = controllerMappings.getChildBlock("Keyboard/Actions");
     m_Keyboard.init(m_ActionSets, *keyboardMappings);
+
+    const DataBlock* mouseMappings = controllerMappings.getChildBlock("Mouse/Actions");
+    m_Mouse.init(m_ActionSets, *mouseMappings);
   }
 
   void InputManager::processInput()
   {
     m_Keyboard.processInput();
+    m_Mouse.processInput();
   }
 
   void InputManager::setActionSet(const string_hash actionSet)
   {
     if (actionSet != str_hash(""))
+    {
       m_Keyboard.setActionSet(actionSet);
+      m_Mouse.setActionSet(actionSet);
+    }
   }
 
-  ButtonStatus InputManager::getKeyboardButtonStatus(const string_hash action) const
+  ButtonStatus InputManager::getButtonStatus(const string_hash action) const
   {
-    return m_Keyboard.getKeyboardButtonStatus(action);
+    for (const auto& handler: { (InputHandler&)m_Keyboard, (InputHandler&)m_Mouse })
+    {
+      ButtonStatus status = handler.getButtonStatus(action);
+      if (status != ButtonStatus::Unknown)
+        return status;
+    }
+
+    return ButtonStatus::Unknown;
+  }
+
+  float2 InputManager::getAnalogStatus(const string_hash action) const
+  {
+    float2 delta = {0.0f, 0.0f};
+    if (m_Keyboard.getAnalogStatus(action, delta))
+      return delta;
+
+    if (m_Mouse.getAnalogStatus(action, delta))
+      return delta;
+
+    return {0.0f, 0.0f};
   }
 }

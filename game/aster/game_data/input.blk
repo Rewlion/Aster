@@ -23,5 +23,12 @@ Actions
       {
       }
     }
+
+    Analog
+    {
+      CameraRotation
+      {
+      }
+    }
   }
 }

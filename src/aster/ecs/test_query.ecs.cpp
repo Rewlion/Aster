@@ -20,7 +20,7 @@ static void event_system(const TestEvent& event, const string& test_str)
 ECS_SYSTEM()
 static void system_test(const float& test_float)
 {
-  const auto status = Engine::Input::manager.getKeyboardButtonStatus(str_hash("MoveLeft"));
+  const auto status = Engine::Input::manager.getButtonStatus(str_hash("MoveLeft"));
   if (status == Engine::Input::ButtonStatus::Press)
   {
     

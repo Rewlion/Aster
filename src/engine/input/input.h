@@ -2,6 +2,7 @@
 
 #include "actions.h"
 #include "keyboard.h"
+#include "mouse.h"
 
 class DataBlock;
 
@@ -14,7 +15,8 @@ namespace Engine::Input
       void processInput();
       void setActionSet(const string_hash actionSet);
 
-      ButtonStatus getKeyboardButtonStatus(const string_hash action) const;
+      ButtonStatus getButtonStatus(const string_hash action) const;
+      float2 getAnalogStatus(const string_hash action) const;
 
     private:
       void loadRegisteredActions(const DataBlock& inputSettings);
@@ -23,6 +25,7 @@ namespace Engine::Input
     private:
       eastl::vector_map<string_hash, ActionSet> m_ActionSets;
       Keyboard m_Keyboard;
+      Mouse m_Mouse;
   };
 
   extern Engine::Input::InputManager manager;

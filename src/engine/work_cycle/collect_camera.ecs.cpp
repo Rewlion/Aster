@@ -9,6 +9,7 @@
 ECS_QUERY()
 static void query_camera(eastl::function<void(
   const float3& pos,
+  const float3& forward,
   const float& camera_fov,
   const float& camera_zNear,
   const float& camera_zFar)> cb);
@@ -18,20 +19,23 @@ namespace Engine
   mat4 get_camera_vp()
   {
     float3 pos;
+    float3 forward;
     float fov = 0;
     float zNear = 0;
     float zFar = 0;
 
-    query_camera([&](const float3& _pos, const float& _fov, const float& _zNear, const float& _zFar){
+    query_camera([&](const float3& _pos, const float3& _forward, const float& _fov, const float& _zNear, const float& _zFar){
       pos = _pos;
+      forward = _forward;
       fov = _fov;
       zNear = _zNear;
       zFar = _zFar;
     });
 
     mat4 vp = mat4{1};
-    vp = glm::translate(vp, -pos);
-    vp = math::perspective(fov, Engine::Render::world_render.getWndAspect(), zNear, zFar) * vp;
+    vp = math::perspective(fov, Engine::Render::world_render.getWndAspect(), zNear, zFar) *
+         math::look_at(pos + forward * 2.0f, pos, float3{0,1,0}) *
+         glm::translate(vp, -pos);
 
     return vp;
   }

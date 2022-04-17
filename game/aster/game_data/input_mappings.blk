@@ -18,4 +18,21 @@ ControllerMappings
       }
     }
   }
+
+  Mouse
+  {
+    Actions
+    {
+      FlyingCamera
+      {
+        Analog
+        {
+          CameraRotation
+          {
+            int device = 0
+          }
+        }
+      }
+    }
+  }
 }
