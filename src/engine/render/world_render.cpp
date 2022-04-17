@@ -7,6 +7,7 @@
 #include <engine/math.h>
 #include <engine/scene/scene.h>
 #include <engine/time.h>
+#include <engine/window.h>
 
 #include <glm/gtx/transform.hpp>
 
@@ -16,6 +17,9 @@ namespace Engine::Render
 
   void WorldRender::init()
   {
+    m_WindowSize = Window::get_window_size();
+    m_Aspect = (float)m_WindowSize.x / (float)m_WindowSize.y;
+
     gapi::SamplerAllocationDescription samplerAllocDesc;
     m_TestSampler = allocate_sampler(samplerAllocDesc);
 

@@ -12,6 +12,11 @@ namespace Engine::Render
       void init();
       void render(const mat4& cameraVP);
 
+      inline float getWndAspect() const
+      {
+        return m_Aspect;
+      }
+
     private:
       struct FrameData
       {
@@ -27,6 +32,9 @@ namespace Engine::Render
       gapi::BufferHandler m_TestConstBuffer;
 
       gapi::CmdEncoder m_CmdEncoder;
+
+      int2 m_WindowSize;
+      float m_Aspect;
   };
 
   extern WorldRender world_render;

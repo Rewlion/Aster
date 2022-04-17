@@ -1,6 +1,7 @@
 #include <engine/ecs/macros.h>
 #include <engine/math.h>
 #include <engine/types.h>
+#include <engine/render/world_render.h>
 
 #include <EASTL/functional.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -30,7 +31,7 @@ namespace Engine
 
     mat4 vp = mat4{1};
     vp = glm::translate(vp, -pos);
-    vp = math::perspective(fov, 3.0f/4.0f, zNear, zFar) * vp;
+    vp = math::perspective(fov, Engine::Render::world_render.getWndAspect(), zNear, zFar) * vp;
 
     return vp;
   }
