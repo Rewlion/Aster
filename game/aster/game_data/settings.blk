@@ -15,7 +15,7 @@ text input_mappings = "game_data/input_mappings.blk"
 graphics
 {
   text gapi = "vulkan"
-  text resolution = "1024x768"
+  text resolution = "1980x1024"
   text pipelines_blk = "game_data/pipelines.blk"
 }
 

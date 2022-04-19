@@ -26,10 +26,10 @@ namespace math
     return m;
   }
 
-  glm::mat4 look_at(const glm::vec3& at, const glm::vec3& from, const glm::vec3& up)
+  glm::mat4 look_at(const glm::vec3& at, const glm::vec3& from)
   {
     const glm::vec3 z = glm::normalize(at - from);
-    const glm::vec3 x = glm::normalize(glm::cross(up, z));
+    const glm::vec3 x = glm::normalize(glm::cross(float3{0.0, 1.0, 0.0}, z));
     const glm::vec3 y = glm::normalize(glm::cross(z, x));
 
     const glm::mat4 M{

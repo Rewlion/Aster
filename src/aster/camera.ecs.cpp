@@ -8,6 +8,7 @@
 
 #include <EASTL/functional.h>
 #include <glm/gtx/transform.hpp>
+#include "glm/gtc/quaternion.hpp"
 
 static const bool has_input(const char* action)
 {
@@ -42,9 +43,9 @@ static void camera_movement(
   const float3 right = math::get_right(math::radians(camera_rotations.x));
 
   const float dt = Engine::Time::get_dt();
-  const float v = 1.0f;
+  const float v = 30.0f;
 
-  pos += (dr.x * right + dr.y * up +  dr.z * forward) * dt;
+  pos += (dr.x * right + dr.y * up +  dr.z * forward) * dt * v;
 }
 
 ECS_SYSTEM()
@@ -61,9 +62,8 @@ static void camera_rotation(
   if (camera_rotations.x > 360.0 || camera_rotations.x < -360.0)
     camera_rotations.x = 0;
 
-
-  const mat4 Tr = glm::rotate(math::radians(camera_rotations.x), float3{0, 1, 0}) *
-                  glm::rotate(math::radians(camera_rotations.y), float3{1, 0, 0});
-
-  forward = Tr * float4(0.0, 0.0, 1.0, 0.0f);
+  const glm::quat rotation = glm::angleAxis(math::radians(camera_rotations.x), float3{0, 1, 0}) *
+                             glm::angleAxis(math::radians(camera_rotations.y), float3{1, 0, 0});
+  const mat4 tm = glm::mat4_cast(rotation);
+  forward = tm * float4(0.0, 0.0, 1.0, 0.0f);
 }

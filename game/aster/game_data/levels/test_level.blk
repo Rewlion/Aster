@@ -30,7 +30,7 @@ entity @("template2")
 entity @("camera")
 {
   float3 pos = 0.0, 0.0, 0.0
-  float camera_fov = 90.0
+  float camera_fov = 60.0
   float camera_zNear = 0.1
   float camera_zFar = 100.0
   float2 camera_rotations = 0.0, 0.0
