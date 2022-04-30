@@ -215,14 +215,6 @@ namespace gapi::vulkan
 
     if (cmd.texture != TextureHandler::Invalid)
     {
-      if (m_Device->getImageLayout(cmd.texture) != vk::ImageLayout::eShaderReadOnlyOptimal)
-      {
-        endRenderPass("Bind texture");
-        imageBarrier(cmd.texture, vk::ImageLayout::eShaderReadOnlyOptimal,
-                     vk::PipelineStageFlagBits::eFragmentShader,
-                     vk::PipelineStageFlagBits::eFragmentShader);
-      }
-
       vk::ImageView imgView = m_Device->getImageView(cmd.texture);
       dsManager.setImage(imgView, cmd.argument, cmd.binding);
 
@@ -251,6 +243,106 @@ namespace gapi::vulkan
   void CompileContext::compileCommand(const SetDepthStencilStateCmd& cmd)
   {
     m_State.graphicsState.set<GraphicsPipelineTSF, DepthStencilStateDescription>(cmd.ds);
+  }
+
+  static vk::PipelineStageFlags get_pipeline_stage_for_texture_state(const TextureState state)
+  {
+    switch (state)
+    {
+      case TextureState::Undefined:          return vk::PipelineStageFlagBits::eTopOfPipe;
+      case TextureState::DepthReadStencilWrite:
+      case TextureState::DepthReadStencilRead:
+      case TextureState::DepthWriteStencilWrite:
+      case TextureState::DepthWriteStencilRead:
+      case TextureState::DepthRead:
+      case TextureState::StencilRead:
+      case TextureState::StencilWrite:
+      case TextureState::DepthWrite:         return vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests;
+      case TextureState::RenderTarget:       return vk::PipelineStageFlagBits::eColorAttachmentOutput;
+      case TextureState::ShaderRead:         return vk::PipelineStageFlagBits::eAllGraphics;
+      case TextureState::Present:            return vk::PipelineStageFlagBits::eColorAttachmentOutput;
+      case TextureState::TransferDst:        return vk::PipelineStageFlagBits::eTransfer;
+      default: ASSERT(!"unsupported stage"); return {};
+    }
+  }
+
+  static vk::ImageLayout get_image_layout_for_texture_state(const TextureState state)
+  {
+    switch (state)
+    {
+      case TextureState::Undefined:              return vk::ImageLayout::eUndefined;
+      case TextureState::DepthReadStencilWrite:  return vk::ImageLayout::eDepthReadOnlyStencilAttachmentOptimal;
+      case TextureState::DepthReadStencilRead:   return vk::ImageLayout::eDepthStencilReadOnlyOptimal;
+      case TextureState::DepthWriteStencilWrite: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+      case TextureState::DepthWriteStencilRead:  return vk::ImageLayout::eDepthAttachmentStencilReadOnlyOptimal;
+      case TextureState::StencilRead:            return vk::ImageLayout::eStencilReadOnlyOptimal;
+      case TextureState::StencilWrite:           return vk::ImageLayout::eStencilAttachmentOptimal;
+      case TextureState::DepthRead:              return vk::ImageLayout::eDepthReadOnlyOptimal;
+      case TextureState::DepthWrite:             return vk::ImageLayout::eDepthAttachmentOptimal;
+      case TextureState::RenderTarget:           return vk::ImageLayout::eColorAttachmentOptimal;
+      case TextureState::ShaderRead:             return vk::ImageLayout::eShaderReadOnlyOptimal;
+      case TextureState::Present:                return vk::ImageLayout::ePresentSrcKHR;
+      case TextureState::TransferDst:            return vk::ImageLayout::eTransferDstOptimal;
+      default: ASSERT(!"unsupported stage");     return {};
+    }
+  }
+
+  static vk::AccessFlags get_image_access_flags(const TextureState state)
+  {
+    switch (state)
+    {
+      case TextureState::Undefined:              return {};
+      case TextureState::DepthReadStencilWrite:  return vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+      case TextureState::DepthReadStencilRead:   return vk::AccessFlagBits::eDepthStencilAttachmentRead;
+      case TextureState::DepthWriteStencilWrite: return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+      case TextureState::DepthWriteStencilRead:  return vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+      case TextureState::StencilRead:            return vk::AccessFlagBits::eDepthStencilAttachmentRead;
+      case TextureState::StencilWrite:           return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+      case TextureState::DepthRead:              return vk::AccessFlagBits::eDepthStencilAttachmentRead;
+      case TextureState::DepthWrite:             return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+      case TextureState::RenderTarget:           return vk::AccessFlagBits::eColorAttachmentWrite;
+      case TextureState::ShaderRead:             return vk::AccessFlagBits::eShaderRead;
+      case TextureState::Present:                return {};
+      case TextureState::TransferDst:            return vk::AccessFlagBits::eTransferWrite;
+      default: ASSERT(!"unsupported stage");     return {};
+    }
+  }
+
+  void CompileContext::transitTextureState(const TextureHandler texture,
+                                           const TextureState oldState, const TextureState newState,
+                                           const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
+                                           const uint32_t firstArraySlice, const uint32_t arraySliceCount)
+  {
+    endRenderPass("Transit image state");
+    insureActiveCmd();
+
+    const vk::Format format = m_Device->getTextureFormat(texture);
+
+    vk::ImageSubresourceRange subresourceRange;
+    subresourceRange.baseMipLevel = firstMipLevel;
+    subresourceRange.levelCount = mipLevelsCount;
+    subresourceRange.baseArrayLayer = firstArraySlice;
+    subresourceRange.layerCount = arraySliceCount;
+    subresourceRange.aspectMask = get_image_aspect_flags(format);
+
+    vk::ImageMemoryBarrier layoutBarrier;
+    layoutBarrier.image = m_Device->getImage(texture);
+    layoutBarrier.oldLayout = get_image_layout_for_texture_state(oldState);
+    layoutBarrier.newLayout = get_image_layout_for_texture_state(newState);
+    layoutBarrier.subresourceRange = subresourceRange;
+    layoutBarrier.srcAccessMask = get_image_access_flags(oldState);
+    layoutBarrier.dstAccessMask = get_image_access_flags(newState);
+
+    m_State.cmdBuffer.pipelineBarrier(
+      get_pipeline_stage_for_texture_state(oldState),
+      get_pipeline_stage_for_texture_state(newState),
+      vk::DependencyFlags{},
+      0, nullptr,
+      0, nullptr,
+      1, &layoutBarrier
+    );
+
+    queueGraphicsCmd();
   }
 
   void CompileContext::prepareBackbufferForPresent()
@@ -312,37 +404,6 @@ namespace gapi::vulkan
   void CompileContext::compileCommand(const SetBlendStateCmd& cmd)
   {
     m_State.graphicsState.set<GraphicsPipelineTSF, BlendState>(cmd.blending);
-  }
-
-  void CompileContext::imageBarrier(const TextureHandler handler, const vk::ImageLayout newLayout,
-                        const vk::PipelineStageFlagBits srcStage, const vk::PipelineStageFlagBits dstStage)
-  {
-    insureActiveCmd();
-
-    const vk::ImageLayout currentLayout = m_Device->getImageLayout(handler);
-
-    vk::ImageSubresourceRange subresourceRange;
-    subresourceRange.baseMipLevel = 0;
-    subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
-    subresourceRange.baseArrayLayer = 0;
-    subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-    subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-
-    vk::ImageMemoryBarrier layoutBarrier;
-    layoutBarrier.oldLayout = currentLayout;
-    layoutBarrier.newLayout = newLayout;
-    layoutBarrier.image = m_Device->getImage(handler);
-    layoutBarrier.subresourceRange = subresourceRange;
-
-    m_State.cmdBuffer.pipelineBarrier(
-      srcStage,
-      dstStage,
-      vk::DependencyFlagBits{},
-      0, nullptr,
-      0, nullptr,
-      1, &layoutBarrier);
-
-    m_Device->setImageLayout(handler, newLayout);
   }
 
   void CompileContext::acquireBackbuffer()

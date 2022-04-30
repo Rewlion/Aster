@@ -82,6 +82,9 @@ namespace gapi::vulkan
     if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
       return m_Swapchain.getSurfaceFormat();
 
+    if (h.as.typed.type == (uint64_t)TextureType::Allocated)
+      return getAllocatedTexture(handler).format;
+
     ASSERT(!"UNSUPPORTED");
     return vk::Format::eUndefined;
   }
@@ -374,7 +377,7 @@ namespace gapi::vulkan
     ci.initialLayout = vk::ImageLayout::eUndefined;
 
     resource.img = m_Device->createImageUnique(ci);
-    resource.currentLayout = ci.initialLayout;
+    resource.format = ci.format;
 
     const vk::MemoryRequirements memRec = m_Device->getImageMemoryRequirements(resource.img.get());
 
@@ -426,30 +429,7 @@ namespace gapi::vulkan
     Buffer stagingBuf = allocateStagingBuffer(src, size);
     const Texture& toTexture = m_AllocatedTextures.get(textureId);
 
-    vk::ImageLayout currentLayout = toTexture.currentLayout;
-
     const auto cmdBuf = allocateTransferCmdBuffer();
-
-    vk::ImageSubresourceRange subresourceRange;
-    subresourceRange.baseMipLevel = 0;
-    subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
-    subresourceRange.baseArrayLayer = 0;
-    subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-    subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-
-    auto layoutBarrier = vk::ImageMemoryBarrier()
-      .setOldLayout(currentLayout)
-      .setNewLayout(vk::ImageLayout::eTransferDstOptimal)
-      .setImage(toTexture.img.get())
-      .setSubresourceRange(subresourceRange);
-
-    cmdBuf.pipelineBarrier(
-      vk::PipelineStageFlagBits::eTransfer,
-      vk::PipelineStageFlagBits::eFragmentShader,
-      vk::DependencyFlagBits{},
-      0, nullptr,
-      0, nullptr,
-      1, &layoutBarrier);
 
     vk::BufferImageCopy copyDesc;
     copyDesc.bufferOffset = 0;
@@ -463,17 +443,6 @@ namespace gapi::vulkan
     copyDesc.imageExtent = vk::Extent3D{(uint32_t)toTexture.size.x, (uint32_t)toTexture.size.y, 1};
 
     cmdBuf.copyBufferToImage(stagingBuf.buffer.get(), toTexture.img.get(), vk::ImageLayout::eTransferDstOptimal, 1, &copyDesc);
-
-    layoutBarrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
-    layoutBarrier.newLayout = currentLayout;
-
-    cmdBuf.pipelineBarrier(
-      vk::PipelineStageFlagBits::eFragmentShader,
-      vk::PipelineStageFlagBits::eFragmentShader,
-      vk::DependencyFlagBits{},
-      0, nullptr,
-      0, nullptr,
-      1, &layoutBarrier);
 
     cmdBuf.end();
 
@@ -531,27 +500,6 @@ namespace gapi::vulkan
     return m_AllocatedSamplers.get(id).sampler.get();
   }
 
-  vk::ImageLayout Device::getImageLayout(const TextureHandler handler)
-  {
-    TextureHandlerInternal h{handler};
-
-    if (h.as.typed.type == (uint64_t)TextureType::Allocated)
-      return m_AllocatedTextures.get(h.as.typed.id).currentLayout;
-
-    ASSERT(!"Unsupported image type");
-    return {};
-  }
-
-  void Device::setImageLayout(const TextureHandler handler, const vk::ImageLayout layout)
-  {
-    TextureHandlerInternal h{handler};
-
-    if (h.as.typed.type == (uint64_t)TextureType::Allocated)
-      m_AllocatedTextures.get(h.as.typed.id).currentLayout = layout;
-    else
-      ASSERT(!"Unsupported image type");
-  }
-
   vk::UniqueSemaphore Device::createSemaphore()
   {
     const auto semaphoreTypeCi = vk::SemaphoreTypeCreateInfo()
@@ -562,5 +510,17 @@ namespace gapi::vulkan
       .setPNext(&semaphoreTypeCi);
 
     return m_Device->createSemaphoreUnique(semaphoreCi);
+  }
+
+  Texture& Device::getAllocatedTexture(const TextureHandler texture)
+  {
+    TextureHandlerInternal handler;
+    handler.as.handler = uint64_t(texture);
+    const uint32_t textureId = handler.as.typed.id;
+
+    ASSERT(handler.as.typed.type == (uint64_t)TextureType::Allocated);
+    ASSERT(m_AllocatedTextures.contains(textureId));
+
+    return m_AllocatedTextures.get(textureId);
   }
 }

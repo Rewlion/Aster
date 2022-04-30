@@ -20,6 +20,10 @@ namespace gapi
   void                     (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
   void                     (*gapi_bind_texture)(const TextureHandler texture, const size_t set, const size_t binding);
   SamplerHandler           (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
+  void                     (*gapi_transit_texture_state)(const TextureHandler texture,
+                                                         const TextureState oldState, const TextureState newState,
+                                                         const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
+                                                         const uint32_t firstArraySlice, const uint32_t arraySliceCount);
 
   void init()
   {
@@ -83,6 +87,15 @@ namespace gapi
   SamplerHandler allocate_sampler(const SamplerAllocationDescription& allocDesc)
   {
     return gapi_allocate_sampler(allocDesc);
+  }
+
+  void transit_texture_state(const TextureHandler texture,
+                             const TextureState oldState, const TextureState newState,
+                             const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
+                             const uint32_t firstArraySlice, const uint32_t arraySliceCount)
+  {
+    gapi_transit_texture_state(texture, oldState, newState, firstMipLevel,
+                               mipLevelsCount, firstArraySlice, arraySliceCount);
   }
 
 }

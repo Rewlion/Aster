@@ -82,8 +82,8 @@ namespace gapi::vulkan
     vk::UniqueImage img;
     vk::UniqueDeviceMemory memory;
     vk::UniqueImageView view;
+    vk::Format format;
 
-    vk::ImageLayout currentLayout = vk::ImageLayout::eUndefined;
     int3 size = {0,0,0};
   };
 

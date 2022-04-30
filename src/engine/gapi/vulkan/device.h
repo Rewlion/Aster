@@ -92,10 +92,6 @@ namespace gapi::vulkan
 
       vk::Sampler getSampler(const SamplerHandler sampler);
 
-      vk::ImageLayout getImageLayout(const TextureHandler handler);
-
-      void setImageLayout(const TextureHandler handler, const vk::ImageLayout layout);
-
       inline vk::Device& getDevice()
       {
         return m_Device.get();
@@ -107,6 +103,8 @@ namespace gapi::vulkan
       {
         m_Swapchain.acquireSurfaceImage(waitSemaphore);
       }
+
+      Texture& getAllocatedTexture(const TextureHandler texture);
 
     private:
       void discardBuffer(Buffer& buffer);

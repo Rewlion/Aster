@@ -167,6 +167,16 @@ namespace gapi::vulkan
     }
   }
 
+  inline vk::ImageAspectFlags get_image_aspect_flags(const vk::Format format)
+  {
+    switch (format)
+    {
+      case vk::Format::eR8G8B8A8Snorm:
+      case vk::Format::eR8G8B8A8Unorm: return vk::ImageAspectFlagBits::eColor;
+      default: return {};
+    }
+  }
+
   inline vk::ImageUsageFlags get_texture_usage(const TextureUsage usage)
   {
     vk::ImageUsageFlags bits;

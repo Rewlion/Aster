@@ -17,4 +17,8 @@ namespace gapi
   TextureHandler           allocate_texture(const TextureAllocationDescription& allocDesc);
   void                     copy_to_texture_sync(const void* src, const size_t size, const TextureHandler texture);
   SamplerHandler           allocate_sampler(const SamplerAllocationDescription& allocDesc);
+  void                     transit_texture_state(const TextureHandler texture,
+                                                 const TextureState oldState, const TextureState newState,
+                                                 const uint32_t firstMipLevel = 0, const uint32_t mipLevelsCount = ~(0),
+                                                 const uint32_t firstArraySlice = 0, const uint32_t arraySliceCount = ~(0));
 }

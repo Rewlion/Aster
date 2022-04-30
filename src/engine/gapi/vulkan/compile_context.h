@@ -49,6 +49,11 @@ namespace gapi::vulkan
       void compileCommand(const SetBlendStateCmd& cmd);
       void compileCommand(const SetDepthStencilStateCmd& cmd);
 
+      void transitTextureState(const TextureHandler texture,
+                               const TextureState oldState, const TextureState newState,
+                               const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
+                               const uint32_t firstArraySlice, const uint32_t arraySliceCount);
+
       vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing);
       vk::Framebuffer getFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil);
       void updateDescriptorSets();
@@ -68,10 +73,6 @@ namespace gapi::vulkan
       void submitGraphicsCmds();
       void nextFrame();
       void flushGraphicsState();
-
-      void imageBarrier(const TextureHandler handler, const vk::ImageLayout newLayout,
-                        const vk::PipelineStageFlagBits srcStage, const vk::PipelineStageFlagBits dstStage);
-
       void acquireBackbuffer();
 
     private:

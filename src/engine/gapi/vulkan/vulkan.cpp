@@ -23,6 +23,10 @@ namespace gapi
   extern TextureHandler (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
   extern void           (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
   extern SamplerHandler (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
+  extern void           (*gapi_transit_texture_state)(const TextureHandler texture,
+                                                      const TextureState oldState, const TextureState newState,
+                                                      const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
+                                                      const uint32_t firstArraySlice, const uint32_t arraySliceCount);
 }
 
 namespace gapi::vulkan
@@ -95,6 +99,15 @@ namespace gapi::vulkan
     return device.allocateSampler(allocDesc);
   }
 
+  void transit_texture_state(const TextureHandler texture,
+                             const TextureState oldState, const TextureState newState,
+                             const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
+                             const uint32_t firstArraySlice, const uint32_t arraySliceCount)
+  {
+    compileContext.transitTextureState(texture, oldState, newState, firstMipLevel,
+                                       mipLevelsCount, firstArraySlice, arraySliceCount);
+  }
+
   void init()
   {
     gapi_submit_commands = submit_commands;
@@ -107,6 +120,7 @@ namespace gapi::vulkan
     gapi_unmap_buffer = unmap_buffer;
     gapi_copy_buffers_sync = copy_buffers_sync;
     gapi_write_buffer = write_buffer;
+    gapi_transit_texture_state = transit_texture_state;
 
     backend.init();
     device = backend.createDevice(&frameGc);

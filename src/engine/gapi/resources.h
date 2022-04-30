@@ -378,4 +378,23 @@ namespace gapi
     DepthStencilStateDescription depthStencil;
     BlendState blending;
   };
+
+  enum class TextureState: uint32_t
+  {
+    Undefined,
+    DepthRead,
+    DepthWrite,
+    StencilRead,
+    StencilWrite,
+    DepthStencilRead,
+    DepthStencilWrite,
+    DepthReadStencilRead,
+    DepthWriteStencilRead,
+    DepthReadStencilWrite,
+    DepthWriteStencilWrite,
+    ShaderRead,
+    RenderTarget,
+    Present,
+    TransferDst
+  };
 }
