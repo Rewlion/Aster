@@ -14,6 +14,7 @@ namespace Engine
       struct Object
       {
         float3 pos = float3(0,0,0);
+        float3 scale = float3(1, 1, 1);
         string model;
       };
 

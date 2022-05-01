@@ -17,6 +17,7 @@ namespace Engine
         Object newObj;
         newObj.model = obj.getText("model");
         newObj.pos = obj.getFloat3("pos");
+        newObj.scale = obj.getFloat3("scale", {1, 1, 1});
         m_SceneObjects.push_back(std::move(newObj));
       }
     }

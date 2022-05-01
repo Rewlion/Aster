@@ -47,11 +47,12 @@ namespace Engine::Render
     const auto objects = scene.queueObjects();
     for (const auto& obj: objects)
     {
-      mat4 mvp = mat4{1};
-      mvp = glm::translate(mvp, obj.pos);
-      mvp = m_FrameData.vp * mvp;
+      mat4 mTr = mat4{1};
+      mTr = glm::scale(mTr, obj.scale);
+      mTr = glm::translate(mTr, obj.pos);
+      mTr = m_FrameData.vp * mTr;
 
-      m_CmdEncoder.pushConstants(&mvp, sizeof(mvp), gapi::ShaderStage::Vertex);
+      m_CmdEncoder.pushConstants(&mTr, sizeof(mTr), gapi::ShaderStage::Vertex);
 
       StaticModelAsset* asset = assets_manager.getStaticModel(obj.model);
 
