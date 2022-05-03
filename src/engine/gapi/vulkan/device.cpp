@@ -127,6 +127,13 @@ namespace gapi::vulkan
       return {dim.width, dim.height, 0};
     }
 
+    if (h.as.typed.type == (uint64_t)TextureType::Allocated)
+    {
+      ASSERT(m_AllocatedTextures.contains(h.as.typed.id));
+      const auto dim = m_AllocatedTextures.get(h.as.typed.id).size;
+      return {(uint32_t)dim.x, (uint32_t)dim.y, (uint32_t)dim.z};
+    }
+
     ASSERT(!"UNSUPPORTED");
     return {0,0,0};
   }
@@ -390,7 +397,7 @@ namespace gapi::vulkan
     m_Device->bindImageMemory(resource.img.get(), resource.memory.get(), 0);
 
     vk::ImageSubresourceRange subresRange;
-    subresRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+    subresRange.aspectMask = get_image_aspect_flags(ci.format);
     subresRange.baseArrayLayer = 0;
     subresRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
     subresRange.baseMipLevel = 0;

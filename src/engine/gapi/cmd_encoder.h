@@ -8,7 +8,7 @@ namespace gapi
   {
     public:
 
-      void beginRenderpass(const RenderTargets& renderTargets, TextureHandler depthStencil = TextureHandler::Invalid);
+      void beginRenderpass(const RenderTargets& renderTargets, RenderPassAttachment depthStencil);
 
       void bindGraphicsShaders(const ShaderStagesNames& stages);
 
@@ -32,7 +32,7 @@ namespace gapi
 
       void bindSampler(const SamplerHandler sampler, const size_t argument, const size_t binding);
 
-      void clear(const ClearState clearing);
+      void clear(const int clearing);
 
       void setBlendState(const BlendState& blending);
 

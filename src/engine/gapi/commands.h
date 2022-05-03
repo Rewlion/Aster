@@ -8,8 +8,8 @@ namespace gapi
 {
   struct BeginRenderPassCmd
   {
-    RenderTargets  renderTargets;
-    TextureHandler depthStencil = TextureHandler::Invalid;
+    RenderTargets        renderTargets;
+    RenderPassAttachment depthStencil;
   };
 
   struct BindGraphicsShadersCmd
@@ -78,7 +78,7 @@ namespace gapi
 
   struct ClearCmd
   {
-    ClearState clearing = CLEAR_NONE;
+    int clearing = CLEAR_NONE;
   };
 
   struct SetBlendStateCmd

@@ -1,27 +1,28 @@
 #include "renderpass_storage.h"
 
 #include <engine/gapi/vulkan/device.h>
+#include <engine/gapi/vulkan/gapi_to_vk.h>
 #include <engine/log.h>
 
 #include <boost/functional/hash.hpp>
 
 namespace gapi::vulkan
 {
-  static size_t hash_renderpass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing)
+  static size_t hash_renderpass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing)
   {
     using boost::hash_combine;
     size_t hash = 0;
 
     for(const auto& rt: renderTargets)
-      hash_combine(hash, rt);
+      hash_combine(hash, rt.hash());
 
-    hash_combine(hash, depthStencil);
+    hash_combine(hash, depthStencil.hash());
     hash_combine(hash, clearing);
 
     return hash;
   }
 
-  vk::RenderPass RenderPassStorage::getRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing)
+  vk::RenderPass RenderPassStorage::getRenderPass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing)
   {
     const size_t hash = hash_renderpass(renderTargets, depthStencil, clearing);
 
@@ -39,7 +40,7 @@ namespace gapi::vulkan
     return rp;
   }
 
-   vk::UniqueRenderPass RenderPassStorage::createRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing)
+  vk::UniqueRenderPass RenderPassStorage::createRenderPass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing)
   {
     Utils::FixedStack<vk::AttachmentDescription, MAX_RENDER_TARGETS + 1> attachments;
     Utils::FixedStack<vk::AttachmentReference, MAX_RENDER_TARGETS + 1> attachmentsRef;
@@ -52,16 +53,16 @@ namespace gapi::vulkan
     for(const auto& rt: renderTargets)
     {
       attachments.push(vk::AttachmentDescription{}
-        .setFormat( m_Device->getTextureFormat(rt) )
+        .setFormat( m_Device->getTextureFormat(rt.texture) )
         .setLoadOp( rtLoad )
         .setStoreOp( vk::AttachmentStoreOp::eStore )
-        .setInitialLayout( vk::ImageLayout::eUndefined )
-        .setFinalLayout( vk::ImageLayout::eColorAttachmentOptimal )
+        .setInitialLayout( get_image_layout_for_texture_state(rt.initialState) )
+        .setFinalLayout( get_image_layout_for_texture_state(rt.finalState) )
       );
 
       attachmentsRef.push(vk::AttachmentReference{}
         .setAttachment(attachmentsCount)
-        .setLayout(vk::ImageLayout::eColorAttachmentOptimal)
+        .setLayout( get_image_layout_for_texture_state(rt.initialState))
       );
 
       attachmentsCount += 1;
@@ -71,39 +72,33 @@ namespace gapi::vulkan
     if (rtCount == 0)
       logerror("BeginRenderPassCmd: render targets count: 0");
 
-    //size_t depthStencilId = -1;
-    //if (depthStencil !=  TextureHandler::Invalid)
-    //{
-    //  depthStencilId = ++attachmentsCount;
-    //
-    //  vk::ImageLayout layout = vk::ImageLayout::eUndefined;
-    //  bool hasDepth = att.depthLoadOp != TextureLoadOp::DontCare && att.depthLoadOp != TextureLoadOp::DontCare;
-    //  bool hasStencil = att.stencilLoadOp != TextureLoadOp::DontCare && att.stencilLoadOp != TextureLoadOp::DontCare;
-    //
-    //  if (hasDepth && hasStencil)
-    //    layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    //  else if (hasDepth)
-    //    layout = vk::ImageLayout::eDepthAttachmentOptimal;
-    //  else
-    //    layout = vk::ImageLayout::eStencilAttachmentOptimal;
-    //
-    //  attachments.Push(vk::AttachmentDescription{}
-    //    .setFormat( m_Device->getTextureFormat(att.texture) )
-    //    .setLoadOp( load_op_to_vk(att.depthLoadOp) )
-    //    .setStoreOp( store_op_to_vk(att.depthStoreOp) )
-    //    .setStencilLoadOp( load_op_to_vk(att.stencilLoadOp) )
-    //    .setStencilStoreOp( store_op_to_vk(att.stencilStoreOp) )
-    //    .setInitialLayout( layout )
-    //    .setFinalLayout( layout )
-    //  );
-    //}
+    size_t depthStencilId = -1;
+    if (depthStencil.texture !=  TextureHandler::Invalid)
+    {
+      depthStencilId = attachmentsCount++;
+
+      attachments.push(vk::AttachmentDescription{}
+        .setFormat( m_Device->getTextureFormat(depthStencil.texture) )
+        .setLoadOp(depthLoad)
+        .setStoreOp(vk::AttachmentStoreOp::eStore)
+        .setStencilLoadOp(stencilLoad)
+        .setStencilStoreOp(vk::AttachmentStoreOp::eStore)
+        .setInitialLayout( get_image_layout_for_texture_state(depthStencil.initialState) )
+        .setFinalLayout( get_image_layout_for_texture_state(depthStencil.finalState) )
+      );
+
+      attachmentsRef.push(vk::AttachmentReference{}
+        .setAttachment(depthStencilId)
+        .setLayout( get_image_layout_for_texture_state(depthStencil.initialState))
+      );
+    }
 
     auto subpassDesc = vk::SubpassDescription()
       .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics);
     subpassDesc.colorAttachmentCount = rtCount;
     subpassDesc.pColorAttachments = attachmentsRef.getData();
 
-    if (depthStencil !=  TextureHandler::Invalid)
+    if (depthStencil.texture !=  TextureHandler::Invalid)
       subpassDesc.pDepthStencilAttachment = &attachmentsRef.getLast();
 
     auto rpCi = vk::RenderPassCreateInfo{};

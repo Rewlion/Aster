@@ -35,6 +35,8 @@ namespace Engine::Render
 
       int2 m_WindowSize;
       float m_Aspect;
+
+      gapi::TextureHandler m_RtDepth;
   };
 
   extern WorldRender world_render;

@@ -91,25 +91,4 @@ namespace gapi::vulkan
   {
     vk::UniqueSampler sampler;
   };
-
-  inline vk::AttachmentLoadOp load_op_to_vk(const TextureLoadOp op)
-  {
-    switch (op)
-    {
-      case TextureLoadOp::Load: return vk::AttachmentLoadOp::eLoad;
-      case TextureLoadOp::Clear: return vk::AttachmentLoadOp::eClear;
-      case TextureLoadOp::DontCare: return vk::AttachmentLoadOp::eDontCare;
-      default: ASSERT(!"unsupported load op"); return vk::AttachmentLoadOp::eDontCare;
-    }
-  }
-
-  inline vk::AttachmentStoreOp store_op_to_vk(const TextureStoreOp op)
-  {
-    switch (op)
-    {
-      case TextureStoreOp::Store: return vk::AttachmentStoreOp::eStore;
-      case TextureStoreOp::DontCare: return vk::AttachmentStoreOp::eDontCare;
-      default: ASSERT(!"unsupported load op"); return vk::AttachmentStoreOp::eDontCare;
-    }
-  }
 }

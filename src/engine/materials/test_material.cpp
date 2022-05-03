@@ -15,5 +15,10 @@ namespace Engine
 
     m_RenderState.shaders = {str_hash("test_vs"), str_hash("test_ps")};
     m_RenderState.topology = gapi::PrimitiveTopology::TriangleList;
+    m_RenderState.depthStencil = {
+        .depthTestEnabled = true,
+        .depthWriteEnabled = true,
+        .depthOp = gapi::CompareOp::Greater
+    };
   }
 }

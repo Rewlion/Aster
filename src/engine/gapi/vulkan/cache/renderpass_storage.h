@@ -18,10 +18,10 @@ namespace gapi::vulkan
         m_Device = device;
       }
 
-      vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing);
+      vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing);
 
     private:
-      vk::UniqueRenderPass createRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing);
+      vk::UniqueRenderPass createRenderPass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing);
 
     private:
       Device* m_Device = nullptr;

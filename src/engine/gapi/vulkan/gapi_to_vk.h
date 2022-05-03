@@ -163,6 +163,7 @@ namespace gapi::vulkan
     {
       case TextureFormat::R8G8B8A8_SNORM: return vk::Format::eR8G8B8A8Snorm;
       case TextureFormat::R8G8B8A8_UNORM: return vk::Format::eR8G8B8A8Unorm;
+      case TextureFormat::D24_UNORM_S8_UINT: return vk::Format::eD24UnormS8Uint;
       default: return vk::Format::eUndefined;
     }
   }
@@ -171,9 +172,14 @@ namespace gapi::vulkan
   {
     switch (format)
     {
+      case vk::Format::eB8G8R8A8Srgb:
       case vk::Format::eR8G8B8A8Snorm:
       case vk::Format::eR8G8B8A8Unorm: return vk::ImageAspectFlagBits::eColor;
-      default: return {};
+      case vk::Format::eD24UnormS8Uint: return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+      default: {
+        ASSERT(!"unsupported format");
+        return {};
+      }
     }
   }
 
@@ -241,5 +247,89 @@ namespace gapi::vulkan
   inline vk::BorderColor get_border_color(const BorderColor color)
   {
     return static_cast<vk::BorderColor>(color);
+  }
+
+  inline vk::AttachmentLoadOp load_op_to_vk(const TextureLoadOp op)
+  {
+    switch (op)
+    {
+      case TextureLoadOp::Load: return vk::AttachmentLoadOp::eLoad;
+      case TextureLoadOp::Clear: return vk::AttachmentLoadOp::eClear;
+      case TextureLoadOp::DontCare: return vk::AttachmentLoadOp::eDontCare;
+      default: ASSERT(!"unsupported load op"); return vk::AttachmentLoadOp::eDontCare;
+    }
+  }
+
+  inline vk::AttachmentStoreOp store_op_to_vk(const TextureStoreOp op)
+  {
+    switch (op)
+    {
+      case TextureStoreOp::Store: return vk::AttachmentStoreOp::eStore;
+      case TextureStoreOp::DontCare: return vk::AttachmentStoreOp::eDontCare;
+      default: ASSERT(!"unsupported load op"); return vk::AttachmentStoreOp::eDontCare;
+    }
+  }
+
+   static vk::PipelineStageFlags get_pipeline_stage_for_texture_state(const TextureState state)
+  {
+    switch (state)
+    {
+      case TextureState::Undefined:          return vk::PipelineStageFlagBits::eTopOfPipe;
+      case TextureState::DepthReadStencilWrite:
+      case TextureState::DepthReadStencilRead:
+      case TextureState::DepthWriteStencilWrite:
+      case TextureState::DepthWriteStencilRead:
+      case TextureState::DepthRead:
+      case TextureState::StencilRead:
+      case TextureState::StencilWrite:
+      case TextureState::DepthWrite:         return vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests;
+      case TextureState::RenderTarget:       return vk::PipelineStageFlagBits::eColorAttachmentOutput;
+      case TextureState::ShaderRead:         return vk::PipelineStageFlagBits::eAllGraphics;
+      case TextureState::Present:            return vk::PipelineStageFlagBits::eColorAttachmentOutput;
+      case TextureState::TransferDst:        return vk::PipelineStageFlagBits::eTransfer;
+      default: ASSERT(!"unsupported stage"); return {};
+    }
+  }
+
+  static vk::ImageLayout get_image_layout_for_texture_state(const TextureState state)
+  {
+    switch (state)
+    {
+      case TextureState::Undefined:              return vk::ImageLayout::eUndefined;
+      case TextureState::DepthReadStencilWrite:  return vk::ImageLayout::eDepthReadOnlyStencilAttachmentOptimal;
+      case TextureState::DepthReadStencilRead:   return vk::ImageLayout::eDepthStencilReadOnlyOptimal;
+      case TextureState::DepthWriteStencilWrite: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+      case TextureState::DepthWriteStencilRead:  return vk::ImageLayout::eDepthAttachmentStencilReadOnlyOptimal;
+      case TextureState::StencilRead:            return vk::ImageLayout::eStencilReadOnlyOptimal;
+      case TextureState::StencilWrite:           return vk::ImageLayout::eStencilAttachmentOptimal;
+      case TextureState::DepthRead:              return vk::ImageLayout::eDepthReadOnlyOptimal;
+      case TextureState::DepthWrite:             return vk::ImageLayout::eDepthAttachmentOptimal;
+      case TextureState::RenderTarget:           return vk::ImageLayout::eColorAttachmentOptimal;
+      case TextureState::ShaderRead:             return vk::ImageLayout::eShaderReadOnlyOptimal;
+      case TextureState::Present:                return vk::ImageLayout::ePresentSrcKHR;
+      case TextureState::TransferDst:            return vk::ImageLayout::eTransferDstOptimal;
+      default: ASSERT(!"unsupported stage");     return {};
+    }
+  }
+
+  static vk::AccessFlags get_image_access_flags(const TextureState state)
+  {
+    switch (state)
+    {
+      case TextureState::Undefined:              return {};
+      case TextureState::DepthReadStencilWrite:  return vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+      case TextureState::DepthReadStencilRead:   return vk::AccessFlagBits::eDepthStencilAttachmentRead;
+      case TextureState::DepthWriteStencilWrite: return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+      case TextureState::DepthWriteStencilRead:  return vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+      case TextureState::StencilRead:            return vk::AccessFlagBits::eDepthStencilAttachmentRead;
+      case TextureState::StencilWrite:           return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+      case TextureState::DepthRead:              return vk::AccessFlagBits::eDepthStencilAttachmentRead;
+      case TextureState::DepthWrite:             return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+      case TextureState::RenderTarget:           return vk::AccessFlagBits::eColorAttachmentWrite;
+      case TextureState::ShaderRead:             return vk::AccessFlagBits::eShaderRead;
+      case TextureState::Present:                return {};
+      case TextureState::TransferDst:            return vk::AccessFlagBits::eTransferWrite;
+      default: ASSERT(!"unsupported stage");     return {};
+    }
   }
 }

@@ -15,16 +15,16 @@ namespace gapi::vulkan
     const vk::Rect2D renderArea = vk::Rect2D{{0,0}, min};
 
     m_State.renderPassState.set<RenderPassTSF, RenderTargets>(cmd.renderTargets);
-    m_State.renderPassState.set<RenderPassTSF, TextureHandler>(cmd.depthStencil);
+    m_State.renderPassState.set<RenderPassTSF, RenderPassAttachment>(cmd.depthStencil);
     m_State.renderPassState.set<RenderPassTSF, vk::Rect2D>(renderArea);
   }
 
-  vk::RenderPass CompileContext::getRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing)
+  vk::RenderPass CompileContext::getRenderPass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing)
   {
     return m_RenderPassStorage.getRenderPass(renderTargets, depthStencil, clearing);
   }
 
-  vk::Framebuffer CompileContext::getFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil)
+  vk::Framebuffer CompileContext::getFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil)
   {
     vk::UniqueFramebuffer fb = createFramebuffer(renderArea, renderTargets, depthStencil);
     const auto framebuffer = fb.get();
@@ -85,16 +85,16 @@ namespace gapi::vulkan
     m_State.graphicsState.apply(*this, m_State);
   }
 
-  vk::UniqueFramebuffer CompileContext::createFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil)
+  vk::UniqueFramebuffer CompileContext::createFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil)
   {
     Utils::FixedStack<vk::ImageView, MAX_RENDER_TARGETS + 1> attachments;
     size_t attachmentsCount = 0;
 
     for(const auto& rt: renderTargets)
-      attachments.push(m_Device->getImageView(rt));
+      attachments.push(m_Device->getImageView(rt.texture));
 
-    if (depthStencil != TextureHandler::Invalid)
-      attachments.push(m_Device->getImageView(depthStencil));
+    if (depthStencil.texture != TextureHandler::Invalid)
+      attachments.push(m_Device->getImageView(depthStencil.texture));
 
     auto fbCi = vk::FramebufferCreateInfo();
     fbCi.renderPass = m_State.renderPass;
@@ -107,22 +107,22 @@ namespace gapi::vulkan
     return m_Device->m_Device->createFramebufferUnique(fbCi);
   }
 
-  vk::Extent2D CompileContext::getMinRenderSize(const RenderTargets& renderTargets, const TextureHandler depthStencil)
+  vk::Extent2D CompileContext::getMinRenderSize(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil)
   {
     vk::Extent2D min = {(uint32_t)~(0), (uint32_t)~(0)};
     for(const auto& rt: renderTargets)
     {
-      if (rt!= TextureHandler::Invalid)
+      if (rt.texture != TextureHandler::Invalid)
       {
-        vk::Extent3D dim = m_Device->getImageDim(rt);
+        vk::Extent3D dim = m_Device->getImageDim(rt.texture);
         min.width  = dim.width  < min.width  ? dim.width  : min.width;
         min.height = dim.height < min.height ? dim.height : min.height;
       }
     }
 
-    if ((min != vk::Extent2D{0,0}) && (depthStencil != TextureHandler::Invalid))
+    if ((min != vk::Extent2D{0,0}) && (depthStencil.texture != TextureHandler::Invalid))
     {
-      vk::Extent3D dim = m_Device->getImageDim(depthStencil);
+      vk::Extent3D dim = m_Device->getImageDim(depthStencil.texture);
       min.width  = dim.width  < min.width  ? dim.width  : min.width;
       min.height = dim.height < min.height ? dim.height : min.height;
     }
@@ -237,75 +237,12 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const ClearCmd& cmd)
   {
-    m_State.renderPassState.set<RenderPassTSF, ClearState>(cmd.clearing);
+    m_State.renderPassState.set<RenderPassTSF, ClearState>((ClearState)cmd.clearing);
   }
 
   void CompileContext::compileCommand(const SetDepthStencilStateCmd& cmd)
   {
     m_State.graphicsState.set<GraphicsPipelineTSF, DepthStencilStateDescription>(cmd.ds);
-  }
-
-  static vk::PipelineStageFlags get_pipeline_stage_for_texture_state(const TextureState state)
-  {
-    switch (state)
-    {
-      case TextureState::Undefined:          return vk::PipelineStageFlagBits::eTopOfPipe;
-      case TextureState::DepthReadStencilWrite:
-      case TextureState::DepthReadStencilRead:
-      case TextureState::DepthWriteStencilWrite:
-      case TextureState::DepthWriteStencilRead:
-      case TextureState::DepthRead:
-      case TextureState::StencilRead:
-      case TextureState::StencilWrite:
-      case TextureState::DepthWrite:         return vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests;
-      case TextureState::RenderTarget:       return vk::PipelineStageFlagBits::eColorAttachmentOutput;
-      case TextureState::ShaderRead:         return vk::PipelineStageFlagBits::eAllGraphics;
-      case TextureState::Present:            return vk::PipelineStageFlagBits::eColorAttachmentOutput;
-      case TextureState::TransferDst:        return vk::PipelineStageFlagBits::eTransfer;
-      default: ASSERT(!"unsupported stage"); return {};
-    }
-  }
-
-  static vk::ImageLayout get_image_layout_for_texture_state(const TextureState state)
-  {
-    switch (state)
-    {
-      case TextureState::Undefined:              return vk::ImageLayout::eUndefined;
-      case TextureState::DepthReadStencilWrite:  return vk::ImageLayout::eDepthReadOnlyStencilAttachmentOptimal;
-      case TextureState::DepthReadStencilRead:   return vk::ImageLayout::eDepthStencilReadOnlyOptimal;
-      case TextureState::DepthWriteStencilWrite: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
-      case TextureState::DepthWriteStencilRead:  return vk::ImageLayout::eDepthAttachmentStencilReadOnlyOptimal;
-      case TextureState::StencilRead:            return vk::ImageLayout::eStencilReadOnlyOptimal;
-      case TextureState::StencilWrite:           return vk::ImageLayout::eStencilAttachmentOptimal;
-      case TextureState::DepthRead:              return vk::ImageLayout::eDepthReadOnlyOptimal;
-      case TextureState::DepthWrite:             return vk::ImageLayout::eDepthAttachmentOptimal;
-      case TextureState::RenderTarget:           return vk::ImageLayout::eColorAttachmentOptimal;
-      case TextureState::ShaderRead:             return vk::ImageLayout::eShaderReadOnlyOptimal;
-      case TextureState::Present:                return vk::ImageLayout::ePresentSrcKHR;
-      case TextureState::TransferDst:            return vk::ImageLayout::eTransferDstOptimal;
-      default: ASSERT(!"unsupported stage");     return {};
-    }
-  }
-
-  static vk::AccessFlags get_image_access_flags(const TextureState state)
-  {
-    switch (state)
-    {
-      case TextureState::Undefined:              return {};
-      case TextureState::DepthReadStencilWrite:  return vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-      case TextureState::DepthReadStencilRead:   return vk::AccessFlagBits::eDepthStencilAttachmentRead;
-      case TextureState::DepthWriteStencilWrite: return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-      case TextureState::DepthWriteStencilRead:  return vk::AccessFlagBits::eDepthStencilAttachmentRead | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-      case TextureState::StencilRead:            return vk::AccessFlagBits::eDepthStencilAttachmentRead;
-      case TextureState::StencilWrite:           return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-      case TextureState::DepthRead:              return vk::AccessFlagBits::eDepthStencilAttachmentRead;
-      case TextureState::DepthWrite:             return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-      case TextureState::RenderTarget:           return vk::AccessFlagBits::eColorAttachmentWrite;
-      case TextureState::ShaderRead:             return vk::AccessFlagBits::eShaderRead;
-      case TextureState::Present:                return {};
-      case TextureState::TransferDst:            return vk::AccessFlagBits::eTransferWrite;
-      default: ASSERT(!"unsupported stage");     return {};
-    }
   }
 
   void CompileContext::transitTextureState(const TextureHandler texture,

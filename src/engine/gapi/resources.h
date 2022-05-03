@@ -136,7 +136,7 @@ namespace gapi
 
     inline bool operator==(const DepthStencilStateDescription& rvl)
     {
-      return std::memcmp(this, &rvl, sizeof(*this));
+      return 0 == std::memcmp(this, &rvl, sizeof(*this));
     }
 
     size_t hash() const;
@@ -301,6 +301,7 @@ namespace gapi
   {
     R8G8B8A8_SNORM = 1,
     R8G8B8A8_UNORM = 2,
+    D24_UNORM_S8_UINT = 3,
   };
 
   enum class ImageFilter
@@ -369,16 +370,6 @@ namespace gapi
     TextureUsage   usage = TextureUsage::None;
   };
 
-  using RenderTargets = Utils::FixedStack<TextureHandler, MAX_RENDER_TARGETS>;
-
-  struct RenderState
-  {
-    ShaderStagesNames shaders;
-    PrimitiveTopology topology;
-    DepthStencilStateDescription depthStencil;
-    BlendState blending;
-  };
-
   enum class TextureState: uint32_t
   {
     Undefined,
@@ -397,4 +388,36 @@ namespace gapi
     Present,
     TransferDst
   };
+
+  struct RenderPassAttachment
+  {
+    TextureHandler texture    = TextureHandler::Invalid;
+    TextureState initialState = TextureState::Undefined;
+    TextureState finalState   = TextureState::Undefined;
+
+    bool operator==(const RenderPassAttachment& rvl) const
+    {
+      return texture      == rvl.texture &&
+             initialState == rvl.initialState &&
+             finalState   == rvl.finalState;
+    }
+
+    bool operator!=(const RenderPassAttachment& rvl) const
+    {
+      return !(*this == rvl);
+    }
+
+    size_t hash() const;
+  };
+
+  using RenderTargets = Utils::FixedStack<RenderPassAttachment, MAX_RENDER_TARGETS>;
+
+  struct RenderState
+  {
+    ShaderStagesNames shaders;
+    PrimitiveTopology topology;
+    DepthStencilStateDescription depthStencil;
+    BlendState blending;
+  };
+
 }

@@ -4,7 +4,7 @@
 
 namespace gapi
 {
-  void CmdEncoder::beginRenderpass(const RenderTargets& renderTargets, TextureHandler depthStencil)
+  void CmdEncoder::beginRenderpass(const RenderTargets& renderTargets, RenderPassAttachment depthStencil)
   {
     m_Cmds.push_back(BeginRenderPassCmd{
       .renderTargets = renderTargets,
@@ -102,7 +102,7 @@ namespace gapi
     });
   }
 
-  void CmdEncoder::clear(const ClearState clearing)
+  void CmdEncoder::clear(const int clearing)
   {
     m_Cmds.push_back(ClearCmd{
       .clearing = clearing

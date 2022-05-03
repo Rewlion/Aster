@@ -24,6 +24,15 @@ namespace Engine::Render
     m_TestSampler = allocate_sampler(samplerAllocDesc);
 
     m_TestConstBuffer = gapi::allocate_buffer(sizeof(float4), gapi::BF_CpuVisible | gapi::BF_BindConstant);
+
+    gapi::TextureAllocationDescription allocDesc;
+    allocDesc.format = gapi::TextureFormat::D24_UNORM_S8_UINT;
+    allocDesc.extent = int3{m_WindowSize.x, m_WindowSize.y, 1};
+    allocDesc.mipLevels = 1;
+    allocDesc.arrayLayers = 1;
+    allocDesc.usage = gapi::TextureUsage::DepthStencil;
+    m_RtDepth = gapi::allocate_texture(allocDesc);
+    gapi::transit_texture_state(m_RtDepth, gapi::TextureState::Undefined, gapi::TextureState::DepthWrite);
   }
 
   void WorldRender::render(const mat4& cameraVP)
@@ -39,10 +48,15 @@ namespace Engine::Render
 
   void WorldRender::renderStaticSceneOpaque()
   {
-    gapi::CommandList cmdList;
+    gapi::transit_texture_state(gapi::get_backbuffer(), gapi::TextureState::Present, gapi::TextureState::RenderTarget);
 
-    m_CmdEncoder.beginRenderpass({ gapi::get_backbuffer()});
-    m_CmdEncoder.clear(gapi::CLEAR_RT);
+    m_CmdEncoder.beginRenderpass(
+      {
+        gapi::RenderPassAttachment{gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget}
+      },
+      gapi::RenderPassAttachment{m_RtDepth, gapi::TextureState::DepthWrite, gapi::TextureState::DepthWrite}
+    );
+    m_CmdEncoder.clear(gapi::CLEAR_RT | gapi::CLEAR_DEPTH);
 
     const auto objects = scene.queueObjects();
     for (const auto& obj: objects)

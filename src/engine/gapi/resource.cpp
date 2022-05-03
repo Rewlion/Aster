@@ -70,4 +70,16 @@ namespace gapi
 
     return hash;
   }
+
+  size_t RenderPassAttachment::hash() const
+  {
+    using boost::hash_combine;
+    size_t hash = 0;
+
+    hash_combine(hash, texture);
+    hash_combine(hash, initialState);
+    hash_combine(hash, finalState);
+
+    return hash;
+  }
 }

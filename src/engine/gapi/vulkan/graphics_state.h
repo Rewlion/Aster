@@ -50,7 +50,7 @@ namespace gapi::vulkan
   struct RenderPassTSF
   {
     TRACKED_STATE_FIELD_ATTR(RenderTargets, renderTargets);
-    TRACKED_STATE_FIELD_ATTR(TextureHandler, depthStencil);
+    TRACKED_STATE_FIELD_ATTR(RenderPassAttachment, depthStencil);
     TRACKED_STATE_FIELD_ATTR(ClearState, clearing);
     TRACKED_STATE_FIELD_ATTR(vk::Rect2D, renderArea);
 

@@ -54,8 +54,8 @@ namespace gapi::vulkan
                                const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
                                const uint32_t firstArraySlice, const uint32_t arraySliceCount);
 
-      vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const TextureHandler depthStencil, const ClearState clearing);
-      vk::Framebuffer getFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil);
+      vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing);
+      vk::Framebuffer getFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil);
       void updateDescriptorSets();
       void endRenderPass(const char* why);
       void insureActiveCmd();
@@ -63,9 +63,9 @@ namespace gapi::vulkan
       bool getPipelineLayout(const ShaderStagesNames& stageNames, PipelineLayout const *& layout);
 
     private:
-      vk::UniqueFramebuffer createFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const TextureHandler depthStencil);
+      vk::UniqueFramebuffer createFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil);
 
-      vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const TextureHandler depthStencil);
+      vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil);
 
       void prepareBackbufferForPresent();
 
