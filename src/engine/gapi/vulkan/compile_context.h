@@ -67,8 +67,6 @@ namespace gapi::vulkan
 
       vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil);
 
-      void prepareBackbufferForPresent();
-
       void queueGraphicsCmd();
       void submitGraphicsCmds();
       void nextFrame();

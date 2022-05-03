@@ -13,7 +13,7 @@ namespace gapi::vulkan
     m_SurfaceFormat = getSuitableSurfaceFormat(ci.surfaceFormats);
     m_SurfaceExtent = getSwapchainExtent(ci.surfaceCapabilities, ci.swapchainImageExtent);
     m_Swapchain = createSwapchain(ci, m_SurfaceFormat, m_SurfaceExtent);
-    setSwapchainResources();
+    setSwapchainResources(*ci.initCmdBuf);
   }
 
   vk::UniqueSwapchainKHR Swapchain::createSwapchain(
@@ -79,7 +79,7 @@ namespace gapi::vulkan
     }
   }
 
-  void Swapchain::setSwapchainResources()
+  void Swapchain::setSwapchainResources(vk::CommandBuffer& initCmdBuf)
   {
     std::vector<vk::Image> images = m_Device.getSwapchainImagesKHR(*m_Swapchain);
     for (size_t i = 0; i < images.size(); ++i)
@@ -101,6 +101,23 @@ namespace gapi::vulkan
         .setComponents(compMap)
         .setSubresourceRange(subresourceRange);
       m_SwapchainResources.views[i] = m_Device.createImageViewUnique(imgViewCi);
+
+      vk::ImageMemoryBarrier layoutBarrier;
+      layoutBarrier.image = images[i];
+      layoutBarrier.oldLayout = vk::ImageLayout::eUndefined;
+      layoutBarrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+      layoutBarrier.subresourceRange = subresourceRange;
+      layoutBarrier.srcAccessMask = {};
+      layoutBarrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+
+      initCmdBuf.pipelineBarrier(
+        vk::PipelineStageFlagBits::eTopOfPipe,
+        vk::PipelineStageFlagBits::eColorAttachmentOutput,
+        vk::DependencyFlags{},
+        0, nullptr,
+        0, nullptr,
+        1, &layoutBarrier
+      );
     }
   }
 

@@ -20,6 +20,7 @@ namespace gapi::vulkan
         std::vector<vk::PresentModeKHR> surfacePresentModes;
 
         vk::Extent2D swapchainImageExtent = vk::Extent2D{1920, 1024};
+        vk::CommandBuffer* initCmdBuf;
       };
 
       Swapchain() = default;
@@ -77,7 +78,7 @@ namespace gapi::vulkan
         const vk::SurfaceCapabilitiesKHR& capabilities,
         const vk::Extent2D& windowSize) const;
 
-      void setSwapchainResources();
+      void setSwapchainResources(vk::CommandBuffer& initCmdBuf);
 
     private:
       vk::Device m_Device;

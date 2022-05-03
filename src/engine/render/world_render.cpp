@@ -52,7 +52,7 @@ namespace Engine::Render
 
     m_CmdEncoder.beginRenderpass(
       {
-        gapi::RenderPassAttachment{gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget}
+        gapi::RenderPassAttachment{gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::Present}
       },
       gapi::RenderPassAttachment{m_RtDepth, gapi::TextureState::DepthWrite, gapi::TextureState::DepthWrite}
     );

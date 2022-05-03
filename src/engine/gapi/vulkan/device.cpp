@@ -20,16 +20,6 @@ namespace gapi::vulkan
   {
     vk::Instance& instance = ci.instance;
 
-    Swapchain::CreateInfo swpCi;
-    swpCi.surface = ci.surface;
-    swpCi.device = m_Device.get();
-    swpCi.presentQueue = m_Device->getQueue(ci.queueIndices.present, 0);
-    swpCi.surfaceCapabilities = ci.surfaceCapabilities;
-    swpCi.surfaceFormats = ci.surfaceFormats;
-    swpCi.surfacePresentModes = ci.surfacePresentModes;
-    swpCi.swapchainImageExtent = ci.swapchainImageExtent;
-    m_Swapchain = Swapchain(swpCi);
-
     m_GraphicsQueue = m_Device->getQueue(ci.queueIndices.graphics, 0);
     m_TransferQueue = m_Device->getQueue(ci.queueIndices.transfer, 0);
 
@@ -44,6 +34,21 @@ namespace gapi::vulkan
 
     m_GraphicsCmdPool = createPool(ci.queueIndices.graphics);
     m_TransferCmdPool = createPool(ci.queueIndices.transfer);
+
+    vk::CommandBuffer swapchainInitCmdBuf = allocateGraphicsCmdBuffer();
+
+    Swapchain::CreateInfo swpCi;
+    swpCi.surface = ci.surface;
+    swpCi.device = m_Device.get();
+    swpCi.presentQueue = m_Device->getQueue(ci.queueIndices.present, 0);
+    swpCi.surfaceCapabilities = ci.surfaceCapabilities;
+    swpCi.surfaceFormats = ci.surfaceFormats;
+    swpCi.surfacePresentModes = ci.surfacePresentModes;
+    swpCi.swapchainImageExtent = ci.swapchainImageExtent;
+    swpCi.initCmdBuf = &swapchainInitCmdBuf;
+    m_Swapchain = Swapchain(swpCi);
+
+    submitGraphicsCmds(&swapchainInitCmdBuf, 1 , nullptr, 0);
   }
 
   vk::CommandBuffer Device::allocateCmdBuffer(vk::CommandPool pool)

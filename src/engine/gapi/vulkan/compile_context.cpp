@@ -137,13 +137,9 @@ namespace gapi::vulkan
 
   void CompileContext::compileCommand(const PresentSurfaceImageCmd& cmd)
   {
-    insureActiveCmd();
     endRenderPass("Swap backbuffer");
 
-    prepareBackbufferForPresent();
-    queueGraphicsCmd();
     submitGraphicsCmds();
-
     m_Device->presentSurfaceImage();
 
     nextFrame();
@@ -280,32 +276,6 @@ namespace gapi::vulkan
     );
 
     queueGraphicsCmd();
-  }
-
-  void CompileContext::prepareBackbufferForPresent()
-  {
-    insureActiveCmd();
-
-    vk::ImageSubresourceRange subresourceRange;
-    subresourceRange.baseMipLevel = 0;
-    subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
-    subresourceRange.baseArrayLayer = 0;
-    subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-    subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-
-    const auto layoutBarrier = vk::ImageMemoryBarrier()
-      .setOldLayout(vk::ImageLayout::eColorAttachmentOptimal)
-      .setNewLayout(vk::ImageLayout::ePresentSrcKHR)
-      .setImage(m_Device->getImage(m_Device->getBackbuffer()))
-      .setSubresourceRange(subresourceRange);
-
-    m_State.cmdBuffer.pipelineBarrier(
-      vk::PipelineStageFlagBits::eAllCommands,
-      vk::PipelineStageFlagBits::eAllCommands,
-      vk::DependencyFlagBits{},
-      0, nullptr,
-      0, nullptr,
-      1, &layoutBarrier);
   }
 
   void CompileContext::submitGraphicsCmds()
