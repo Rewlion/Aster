@@ -76,9 +76,9 @@ namespace gapi::vulkan
     std::array<uint32_t,4> clearColor{0,0,0,0};
     vk::ClearValue clearValue;
     clearValue.color = clearColor;
-    clearValue.depthStencil = vk::ClearDepthStencilValue(0,0);
 
     vk::ClearValue clearValues[MAX_RENDER_TARGETS+1] {clearValue};
+    clearValues[renderTargets.getSize()] = vk::ClearDepthStencilValue(1.0, 0.0);
 
     auto rpBeginInfo = vk::RenderPassBeginInfo();
     rpBeginInfo.renderPass = state.renderPass;

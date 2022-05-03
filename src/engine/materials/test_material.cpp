@@ -18,7 +18,7 @@ namespace Engine
     m_RenderState.depthStencil = {
         .depthTestEnabled = true,
         .depthWriteEnabled = true,
-        .depthOp = gapi::CompareOp::Greater
+        .depthOp = gapi::CompareOp::LessOrEqual
     };
   }
 }
