@@ -32,7 +32,7 @@ namespace Engine::Render
     allocDesc.arrayLayers = 1;
     allocDesc.usage = gapi::TextureUsage::DepthStencil;
     m_RtDepth = gapi::allocate_texture(allocDesc);
-    gapi::transit_texture_state(m_RtDepth, gapi::TextureState::Undefined, gapi::TextureState::DepthWrite);
+    gapi::transit_texture_state(m_RtDepth, gapi::TextureState::Undefined, gapi::TextureState::DepthWriteStencilRead);
   }
 
   void WorldRender::render(const mat4& cameraVP)
@@ -54,7 +54,7 @@ namespace Engine::Render
       {
         gapi::RenderPassAttachment{gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::Present}
       },
-      gapi::RenderPassAttachment{m_RtDepth, gapi::TextureState::DepthWrite, gapi::TextureState::DepthWrite}
+      gapi::RenderPassAttachment{m_RtDepth, gapi::TextureState::DepthWriteStencilRead, gapi::TextureState::DepthWriteStencilRead}
     );
     m_CmdEncoder.clear(gapi::CLEAR_RT | gapi::CLEAR_DEPTH);
 
