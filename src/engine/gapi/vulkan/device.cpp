@@ -48,7 +48,10 @@ namespace gapi::vulkan
     swpCi.initCmdBuf = &swapchainInitCmdBuf;
     m_Swapchain = Swapchain(swpCi);
 
-    submitGraphicsCmds(&swapchainInitCmdBuf, 1 , nullptr, 0);
+    swapchainInitCmdBuf.end();
+    vk::UniqueFence fence = submitGraphicsCmds(&swapchainInitCmdBuf, 1 , nullptr, 0);
+    m_Device->waitForFences(1, &fence.get(), true, ~(0));
+
   }
 
   vk::CommandBuffer Device::allocateCmdBuffer(vk::CommandPool pool)
