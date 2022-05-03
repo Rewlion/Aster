@@ -52,7 +52,8 @@ namespace gapi::vulkan
       void transitTextureState(const TextureHandler texture,
                                const TextureState oldState, const TextureState newState,
                                const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
-                               const uint32_t firstArraySlice, const uint32_t arraySliceCount);
+                               const uint32_t firstArraySlice, const uint32_t arraySliceCount,
+                               const bool sync);
 
       vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing);
       vk::Framebuffer getFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil);
@@ -72,6 +73,7 @@ namespace gapi::vulkan
       void nextFrame();
       void flushGraphicsState();
       void acquireBackbuffer();
+      void waitAllFrameFences();
 
     private:
       Device* m_Device = nullptr;
@@ -84,6 +86,7 @@ namespace gapi::vulkan
       size_t m_CurrentFrame = 0;
       DescriptorsSetManager m_DescriptorSetsManager[SWAPCHAIN_IMAGES_COUNT];
       eastl::vector<vk::Fence> m_RenderJobWaitFences[SWAPCHAIN_IMAGES_COUNT];
+      eastl::vector<vk::Semaphore> m_RenderJobWaitSemaphores[SWAPCHAIN_IMAGES_COUNT];
       vk::Semaphore m_BackbufferReadySemaphore;
       eastl::vector<vk::CommandBuffer> m_QueuedGraphicsCommands;
   };

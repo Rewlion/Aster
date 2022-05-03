@@ -26,7 +26,8 @@ namespace gapi
   extern void           (*gapi_transit_texture_state)(const TextureHandler texture,
                                                       const TextureState oldState, const TextureState newState,
                                                       const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
-                                                      const uint32_t firstArraySlice, const uint32_t arraySliceCount);
+                                                      const uint32_t firstArraySlice, const uint32_t arraySliceCount,
+                                                      const bool sync);
 }
 
 namespace gapi::vulkan
@@ -102,10 +103,11 @@ namespace gapi::vulkan
   void transit_texture_state(const TextureHandler texture,
                              const TextureState oldState, const TextureState newState,
                              const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
-                             const uint32_t firstArraySlice, const uint32_t arraySliceCount)
+                             const uint32_t firstArraySlice, const uint32_t arraySliceCount,
+                             const bool sync)
   {
     compileContext.transitTextureState(texture, oldState, newState, firstMipLevel,
-                                       mipLevelsCount, firstArraySlice, arraySliceCount);
+                                       mipLevelsCount, firstArraySlice, arraySliceCount, sync);
   }
 
   void init()

@@ -20,5 +20,9 @@ namespace gapi
   void                     transit_texture_state(const TextureHandler texture,
                                                  const TextureState oldState, const TextureState newState,
                                                  const uint32_t firstMipLevel = 0, const uint32_t mipLevelsCount = ~(0),
-                                                 const uint32_t firstArraySlice = 0, const uint32_t arraySliceCount = ~(0));
+                                                 const uint32_t firstArraySlice = 0, const uint32_t arraySliceCount = ~(0),
+                                                 const bool sync = false);
+  void                     transit_texture_state(const TextureHandler texture,
+                                                 const TextureState oldState, const TextureState newState,
+                                                 const bool sync);
 }

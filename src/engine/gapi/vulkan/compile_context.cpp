@@ -244,7 +244,8 @@ namespace gapi::vulkan
   void CompileContext::transitTextureState(const TextureHandler texture,
                                            const TextureState oldState, const TextureState newState,
                                            const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
-                                           const uint32_t firstArraySlice, const uint32_t arraySliceCount)
+                                           const uint32_t firstArraySlice, const uint32_t arraySliceCount,
+                                           const bool sync)
   {
     endRenderPass("Transit image state");
     insureActiveCmd();
@@ -276,14 +277,23 @@ namespace gapi::vulkan
     );
 
     queueGraphicsCmd();
+
+    if (sync)
+    {
+      submitGraphicsCmds();
+      waitAllFrameFences();
+    }
   }
 
   void CompileContext::submitGraphicsCmds()
   {
+    auto& waitSemaphores =  m_RenderJobWaitSemaphores[m_CurrentFrame];
+
     auto renderJobWaitFence = m_Device->submitGraphicsCmds(
       m_QueuedGraphicsCommands.data(), m_QueuedGraphicsCommands.size(),
-      &m_BackbufferReadySemaphore, 1);
+      waitSemaphores.data(),waitSemaphores.size());
 
+    waitSemaphores.clear();
     m_QueuedGraphicsCommands.clear();
 
     m_RenderJobWaitFences[m_CurrentFrame].push_back(renderJobWaitFence.get());
@@ -294,13 +304,7 @@ namespace gapi::vulkan
   {
     m_CurrentFrame = (m_CurrentFrame + 1) % SWAPCHAIN_IMAGES_COUNT;
 
-    if (!m_RenderJobWaitFences[m_CurrentFrame].empty())
-    {
-      m_Device->m_Device->waitForFences(m_RenderJobWaitFences[m_CurrentFrame].size(),
-        m_RenderJobWaitFences[m_CurrentFrame].data(), true, -1);
-
-      m_RenderJobWaitFences[m_CurrentFrame].clear();
-    }
+    waitAllFrameFences();
 
     m_DescriptorSetsManager[m_CurrentFrame].reset();
     m_FrameGc->nextFrame();
@@ -316,8 +320,18 @@ namespace gapi::vulkan
   void CompileContext::acquireBackbuffer()
   {
     auto sem = m_Device->createSemaphore();
-    m_BackbufferReadySemaphore = sem.get();
+    m_Device->acquireBackbuffer(sem.get());
+    m_RenderJobWaitSemaphores[m_CurrentFrame].push_back(sem.get());
     m_FrameGc->addSemaphores(std::move(sem));
-    m_Device->acquireBackbuffer(m_BackbufferReadySemaphore);
+  }
+
+  void CompileContext::waitAllFrameFences()
+  {
+    if (!m_RenderJobWaitFences[m_CurrentFrame].empty())
+    {
+      m_Device->m_Device->waitForFences(m_RenderJobWaitFences[m_CurrentFrame].size(),
+        m_RenderJobWaitFences[m_CurrentFrame].data(), true, -1);
+      m_RenderJobWaitFences[m_CurrentFrame].clear();
+    }
   }
 }

@@ -35,7 +35,7 @@ namespace Engine
       }
     );
 
-    transit_texture_state(asset.texture, gapi::TextureState::Undefined, gapi::TextureState::TransferDst);
+    transit_texture_state(asset.texture, gapi::TextureState::Undefined, gapi::TextureState::TransferDst, true);
     copy_to_texture_sync(texture->pData, texture->dataSize, asset.texture);
     transit_texture_state(asset.texture, gapi::TextureState::TransferDst, gapi::TextureState::ShaderRead);
 

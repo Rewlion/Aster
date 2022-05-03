@@ -23,7 +23,8 @@ namespace gapi
   void                     (*gapi_transit_texture_state)(const TextureHandler texture,
                                                          const TextureState oldState, const TextureState newState,
                                                          const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
-                                                         const uint32_t firstArraySlice, const uint32_t arraySliceCount);
+                                                         const uint32_t firstArraySlice, const uint32_t arraySliceCount,
+                                                         const bool sync);
 
   void init()
   {
@@ -92,10 +93,17 @@ namespace gapi
   void transit_texture_state(const TextureHandler texture,
                              const TextureState oldState, const TextureState newState,
                              const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
-                             const uint32_t firstArraySlice, const uint32_t arraySliceCount)
+                             const uint32_t firstArraySlice, const uint32_t arraySliceCount,
+                             const bool sync)
   {
     gapi_transit_texture_state(texture, oldState, newState, firstMipLevel,
-                               mipLevelsCount, firstArraySlice, arraySliceCount);
+                               mipLevelsCount, firstArraySlice, arraySliceCount, sync);
   }
 
+  void transit_texture_state(const TextureHandler texture,
+                             const TextureState oldState, const TextureState newState,
+                             const bool sync)
+  {
+    gapi_transit_texture_state(texture, oldState, newState, 0, ~(0), 0, ~(0), sync);
+  }
 }
