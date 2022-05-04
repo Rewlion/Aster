@@ -1,0 +1,20 @@
+texture
+{
+  text bin = "bin/assets/damaged_helmet/albedo.ktx"
+  text name = "damaged_helmet.albedo"
+}
+
+static_mesh
+{
+  text bin = "bin/assets/damaged_helmet/DamagedHelmet.gltf"
+  text name = "damaged_helmet"
+
+  material @("TestMaterial")
+  {
+    texture
+    {
+      text name = "damaged_helmet.albedo"
+      text binding = "test_texture"
+    }
+  }
+}

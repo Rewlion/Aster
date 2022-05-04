@@ -14,6 +14,12 @@ scene
     float3 pos = 0.0 , 0.0 , -5.0
     text model = "cube"
   }
+
+  object
+  {
+    float3 pos = 5.0 , 0.0 , -5.0
+    text model = "damaged_helmet"
+  }
 }
 
 entity @("template1")
