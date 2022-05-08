@@ -61,10 +61,12 @@ namespace Engine::Render
     const auto objects = scene.queueObjects();
     for (const auto& obj: objects)
     {
-      mat4 mTr = mat4{1};
-      mTr = glm::scale(mTr, obj.scale);
-      mTr = glm::translate(mTr, obj.pos);
-      mTr = m_FrameData.vp * mTr;
+      const mat4 rot = glm::rotate(obj.rot.z, float3{0.0, 0.0, 1.0}) *
+                       glm::rotate(obj.rot.y, float3{0.0, 1.0, 0.0}) *
+                       glm::rotate(obj.rot.x, float3{1.0, 0.0, 0.0});
+      const mat4 scale = glm::scale(obj.scale);
+      const mat4 tr = glm::translate(obj.pos);
+      const mat4 mTr = m_FrameData.vp * tr * scale * rot;
 
       m_CmdEncoder.pushConstants(&mTr, sizeof(mTr), gapi::ShaderStage::Vertex);
 
