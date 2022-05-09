@@ -18,3 +18,18 @@ static_mesh
     }
   }
 }
+
+model_asset
+{
+  text name = "cube"
+  text mesh = "cube"
+
+  material @("TestMaterial")
+  {
+    texture
+    {
+      text name = "cube.container"
+      text binding = "test_texture"
+    }
+  }
+}

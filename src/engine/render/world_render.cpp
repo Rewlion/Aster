@@ -70,7 +70,7 @@ namespace Engine::Render
 
       m_CmdEncoder.pushConstants(&mTr, sizeof(mTr), gapi::ShaderStage::Vertex);
 
-      StaticModelAsset* asset = assets_manager.getStaticModel(obj.model);
+      ModelAsset* asset = assets_manager.getModel(obj.model);
 
       float4 color{1.0, 1.0, 0.6, 1.0};
       write_buffer(m_TestConstBuffer, &color, 0, sizeof(color), gapi::WR_DISCARD);
@@ -78,14 +78,16 @@ namespace Engine::Render
       m_CmdEncoder.bindSampler(m_TestSampler, 0, 1);
       m_CmdEncoder.bindConstBuffer(m_TestConstBuffer, 0, 2);
 
-      for(const auto& submesh: asset->submeshes)
+      for(size_t i = 0; i < asset->mesh->submeshes.getSize(); ++i)
       {
-        submesh.material->setState(m_CmdEncoder, Engine::RenderPassType::Main);
-        submesh.material->setParams(m_CmdEncoder);
+        const Submesh& submesh = asset->mesh->submeshes.get(i);
+        Material* material = asset->materials[i];
+        material->setState(m_CmdEncoder, Engine::RenderPassType::Main);
+        material->setParams(m_CmdEncoder);
 
         m_CmdEncoder.bindVertexBuffer(submesh.vertexBuffer);
         m_CmdEncoder.bindIndexBuffer(submesh.indexBuffer);
-        m_CmdEncoder.drawIndexed(submesh.material->getTopology(), submesh.indexCount, 1, 0, 0, 0);
+        m_CmdEncoder.drawIndexed(material->getTopology(), submesh.indexCount, 1, 0, 0, 0);
       }
     }
 

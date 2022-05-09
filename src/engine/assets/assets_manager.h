@@ -17,14 +17,19 @@ namespace Engine
     gapi::BufferHandler       vertexBuffer;
     gapi::BufferHandler       indexBuffer;
     gapi::index_type          indexCount = 0;
-    std::unique_ptr<Material> material;
   };
 
   constexpr size_t MAX_SUBMESH_COUNT = 32;
 
-  struct StaticModelAsset
+  struct StaticMesh
   {
-    Utils::FixedStack<Submesh, MAX_SUBMESH_COUNT>  submeshes;
+    Utils::FixedStack<Submesh, MAX_SUBMESH_COUNT> submeshes;
+  };
+
+  struct ModelAsset
+  {
+    StaticMesh* mesh;
+    Material* materials[MAX_SUBMESH_COUNT];
   };
 
   struct TextureAsset
@@ -39,20 +44,22 @@ namespace Engine
     public:
       void init();
 
-      StaticModelAsset* getStaticModel(const string& assetName);
+      ModelAsset* getModel(const string& assetName);
 
       bool getTexture(const string_hash assetUri, TextureAsset& asset);
 
     private:
       void loadAssetsFromFs();
-      StaticModelAsset loadGltf(const string& file);
+      StaticMesh loadGltf(const string& file);
       TextureAsset loadTexture(const string& file);
       void loadTextureAsset(const DataBlock& asset);
-      void loadStaticMeshAsset(const DataBlock& asset);
+      void loadStaticMesh(const DataBlock& asset);
+      void loadModelAsset(const DataBlock& asset);
       Material* createMaterial(const DataBlock& matBlk);
     private:
-      eastl::hash_map<string_hash, StaticModelAsset> m_StaticModels;
+      eastl::hash_map<string_hash, StaticMesh> m_StaticMeshes;
       eastl::hash_map<string_hash, TextureAsset> m_Textures;
+      eastl::hash_map<string_hash, ModelAsset> m_ModelAssets;
   };
 
   extern AssetsManager assets_manager;

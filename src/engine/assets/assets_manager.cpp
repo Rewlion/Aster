@@ -29,18 +29,19 @@ namespace Engine
 
       if (assetType == "texture")
         loadTextureAsset(asset);
-
-      if (assetType == "static_mesh")
-        loadStaticMeshAsset(asset);
+      else if (assetType == "static_mesh")
+        loadStaticMesh(asset);
+      else if (assetType == "model_asset")
+        loadModelAsset(asset);
     }
   }
 
-  StaticModelAsset* AssetsManager::getStaticModel(const string& assetName)
+  ModelAsset* AssetsManager::getModel(const string& assetName)
   {
     const string_hash assetNameHash = str_hash(assetName.c_str());
 
-    const auto it = m_StaticModels.find(assetNameHash);
-    if (it != m_StaticModels.end())
+    const auto it = m_ModelAssets.find(assetNameHash);
+    if (it != m_ModelAssets.end())
       return &it->second;
 
     ASSERT(!"asset not found");
@@ -77,7 +78,7 @@ namespace Engine
       });
   }
 
-  void AssetsManager::loadStaticMeshAsset(const DataBlock& asset)
+  void AssetsManager::loadStaticMesh(const DataBlock& asset)
   {
     const string file = asset.getText("bin");
     const string name = asset.getText("name");
@@ -85,24 +86,40 @@ namespace Engine
     log("asset manager: loading static_mesh: {} as {}", file, name);
     const string_hash nameHash = str_hash(name.c_str());
 
-    StaticModelAsset staticMeshAsset = loadGltf(file);
+    StaticMesh staticMeshAsset = loadGltf(file);
+    m_StaticMeshes.insert({
+      nameHash,
+      std::move(staticMeshAsset)
+    });
+  }
+
+  void AssetsManager::loadModelAsset(const DataBlock& asset)
+  {
+    const string name = asset.getText("name");
+    const string mesh = asset.getText("mesh");
+    const string_hash meshHash = str_hash(mesh.c_str());
+
+    log("asset manager: loading model_asset: {}", name);
+
+    const auto meshIt = m_StaticMeshes.find(meshHash);
+    ASSERT(meshIt != m_StaticMeshes.end());
+
+    ModelAsset model;
+    model.mesh = &meshIt->second;
 
     Utils::FixedStack<const DataBlock*, MAX_SUBMESH_COUNT> materials;
     for (const DataBlock& material: asset.getChildBlocks())
       if (material.getName() == "material")
         materials.push(&material);
 
-    ASSERT(materials.getSize() == staticMeshAsset.submeshes.getSize());
+    ASSERT(materials.getSize() == model.mesh->submeshes.getSize());
 
-    for (size_t i = 0; i < staticMeshAsset.submeshes.getSize(); ++i)
-    {
-      Material* m = createMaterial(*materials.get(i));
-      staticMeshAsset.submeshes.get(i).material.reset(m);
-    }
+    for (size_t i = 0; i < model.mesh->submeshes.getSize(); ++i)
+      model.materials[i] = createMaterial(*materials.get(i));
 
-    m_StaticModels.insert({
-        nameHash,
-        std::move(staticMeshAsset)
+    m_ModelAssets.insert({
+      str_hash(name.c_str()),
+      std::move(model)
     });
   }
 

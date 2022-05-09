@@ -8,6 +8,12 @@ static_mesh
 {
   text bin = "bin/assets/damaged_helmet/DamagedHelmet.gltf"
   text name = "damaged_helmet"
+}
+
+model_asset
+{
+  text name = "damaged_helmet"
+  text mesh = "damaged_helmet"
 
   material @("TestMaterial")
   {

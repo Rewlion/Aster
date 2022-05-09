@@ -240,9 +240,9 @@ namespace Engine
     }
   }
 
-  static StaticModelAsset process_model(const tinygltf::Model& model)
+  static StaticMesh process_model(const tinygltf::Model& model)
   {
-    StaticModelAsset asset;
+    StaticMesh asset;
 
     for (tinygltf::Mesh mesh : model.meshes)
     {
@@ -267,7 +267,7 @@ namespace Engine
     return asset;
   }
 
-  StaticModelAsset AssetsManager::loadGltf(const string& file)
+  StaticMesh AssetsManager::loadGltf(const string& file)
   {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -285,7 +285,7 @@ namespace Engine
     if (!ret)
       ASSERT(!"asset manager: failed to load asset");
 
-    StaticModelAsset asset = process_model(model);
+    StaticMesh asset = process_model(model);
     return asset;
   }
 }
