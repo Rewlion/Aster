@@ -38,7 +38,7 @@ namespace Engine::Render
   void WorldRender::render(const mat4& cameraVP)
   {
     beforeRender(cameraVP);
-    renderStaticSceneOpaque();
+    renderWorld();
   }
 
   void WorldRender::beforeRender(const mat4& cameraVP)
@@ -46,7 +46,7 @@ namespace Engine::Render
     m_FrameData.vp = cameraVP;
   }
 
-  void WorldRender::renderStaticSceneOpaque()
+  void WorldRender::renderWorld()
   {
     gapi::transit_texture_state(gapi::get_backbuffer(), gapi::TextureState::Present, gapi::TextureState::RenderTarget);
 
@@ -58,6 +58,19 @@ namespace Engine::Render
     );
     m_CmdEncoder.clear(gapi::CLEAR_RT | gapi::CLEAR_DEPTH);
 
+    renderOpaque();
+
+    m_CmdEncoder.present();
+    m_CmdEncoder.flush();
+  }
+
+  void WorldRender::renderOpaque()
+  {
+    renderScene(RenderPassType::Main);
+  }
+
+  void WorldRender::renderScene(const RenderPassType rpType)
+  {
     const auto objects = scene.queueObjects();
     for (const auto& obj: objects)
     {
@@ -82,7 +95,7 @@ namespace Engine::Render
       {
         const Submesh& submesh = asset->mesh->submeshes.get(i);
         Material* material = asset->materials[i];
-        material->setState(m_CmdEncoder, Engine::RenderPassType::Main);
+        material->setState(m_CmdEncoder, rpType);
         material->setParams(m_CmdEncoder);
 
         m_CmdEncoder.bindVertexBuffer(submesh.vertexBuffer);
@@ -90,9 +103,6 @@ namespace Engine::Render
         m_CmdEncoder.drawIndexed(material->getTopology(), submesh.indexCount, 1, 0, 0, 0);
       }
     }
-
-    m_CmdEncoder.present();
-    m_CmdEncoder.flush();
   }
 
 }

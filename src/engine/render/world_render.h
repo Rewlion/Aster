@@ -1,8 +1,8 @@
 #pragma once
 
-#include <engine/gapi/resources.h>
-
 #include <engine/gapi/cmd_encoder.h>
+#include <engine/gapi/resources.h>
+#include <engine/materials/materials.h>
 
 namespace Engine::Render
 {
@@ -25,8 +25,9 @@ namespace Engine::Render
       FrameData m_FrameData;
 
       void beforeRender(const mat4& cameraVP);
-      void renderStaticSceneOpaque();
-
+      void renderWorld();
+      void renderOpaque();
+      void renderScene(const RenderPassType rpType);
     private:
       gapi::SamplerHandler m_TestSampler;
       gapi::BufferHandler m_TestConstBuffer;
