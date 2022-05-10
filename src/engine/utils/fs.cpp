@@ -63,4 +63,12 @@ namespace Utils
   {
     return get_file_ext(fileName) == requiredExt;
   }
+
+  string get_dir_name(const string& filePath)
+  {
+    const size_t i = filePath.find_last_of("/\\");
+    return i != string::npos ?
+            filePath.substr(0, i) :
+            "";
+  }
 }

@@ -82,13 +82,14 @@ class ShadersCompiler
       const auto compileShader = [&](const char* blkName, const char* entry, const gapi::ShaderStage stage)
       {
         const DataBlock* stageBlk = shader.getChildBlock(blkName);
+        const string currentDir = Utils::get_dir_name(shaderFile);
         if (!stageBlk->isEmpty())
         {
           const string name = stageBlk->getText("name");
           const string entry = stageBlk->getText("entry");
 
           ShaderBlob blob;
-          if (compileShaderStage(blob, shaderData, stage, name, entry))
+          if (compileShaderStage(blob, shaderData, stage, name, entry, currentDir))
           {
             m_Shaders.push_back(std::move(blob));
             return true;
@@ -123,7 +124,9 @@ class ShadersCompiler
       }
     }
 
-    bool compileShaderStage(ShaderBlob& result, const eastl::vector<char>& shaderData, const gapi::ShaderStage stage, const string& shaderName, const string& entryName)
+    bool compileShaderStage(ShaderBlob& result, const eastl::vector<char>& shaderData,
+                           const gapi::ShaderStage stage, const string& shaderName,
+                           const string& entryName, const string& currentDir)
     {
       log("compiling stage: {}, entry:{}, shader:{}", gapi::ShaderStageToText(stage), entryName, shaderName);
 
@@ -137,7 +140,11 @@ class ShadersCompiler
       ComPtr<IDxcBlobEncoding> pSource;
       pUtils->CreateBlob(shaderData.data(), shaderData.size(), CP_UTF8, pSource.GetAddressOf());
 
+      ComPtr<IDxcIncludeHandler> pIncludeHandler;
+      pUtils->CreateDefaultIncludeHandler(&pIncludeHandler);
+
       const std::wstring entry(entryName.begin(), entryName.end());
+      const std::wstring dir(currentDir.begin(), currentDir.end());
 
       std::vector<LPCWSTR> args;
       args.push_back(L"-spirv");
@@ -148,6 +155,8 @@ class ShadersCompiler
       args.push_back(entry.c_str());
       args.push_back(L"-T");
       args.push_back(getShaderTarget(stage));
+      args.push_back(L"-I");
+      args.push_back(dir.c_str());
 
       DxcBuffer dxcSrc;
       dxcSrc.Ptr = pSource->GetBufferPointer();
@@ -155,7 +164,7 @@ class ShadersCompiler
       dxcSrc.Encoding = 0;
 
       ComPtr<IDxcResult> pCompileResult;
-      HRESULT hr = pCompiler->Compile(&dxcSrc, args.data(), args.size(), nullptr, IID_PPV_ARGS(pCompileResult.GetAddressOf()));
+      HRESULT hr = pCompiler->Compile(&dxcSrc, args.data(), args.size(), pIncludeHandler.Get(), IID_PPV_ARGS(pCompileResult.GetAddressOf()));
       ASSERT(SUCCEEDED(hr));
 
       {
