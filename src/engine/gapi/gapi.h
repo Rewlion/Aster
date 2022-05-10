@@ -25,4 +25,5 @@ namespace gapi
   void                     transit_texture_state(const TextureHandler texture,
                                                  const TextureState oldState, const TextureState newState,
                                                  const bool sync);
+  void                     free_resource(const BufferHandler buffer);
 }

@@ -16,6 +16,7 @@ namespace gapi
   extern void           (*gapi_submit_commands)(CommandList&& cmds);
   extern TextureHandler (*gapi_get_backbuffer)();
   extern BufferHandler  (*gapi_allocate_buffer)(const size_t size, const int usage);
+  extern void           (*gapi_free_buffer)(const BufferHandler buffer);
   extern void*          (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size);
   extern void           (*gapi_unmap_buffer)(const BufferHandler buffer);
   extern void           (*gapi_copy_buffers_sync)(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size);
@@ -63,6 +64,11 @@ namespace gapi::vulkan
   BufferHandler allocate_buffer(const size_t size, const int usage)
   {
     return device.allocateBuffer(size, usage);
+  }
+
+  void free_buffer(const BufferHandler buffer)
+  {
+    device.freeBuffer(buffer);
   }
 
   void* map_buffer(const BufferHandler buffer, const size_t offset, const size_t size)
@@ -115,6 +121,7 @@ namespace gapi::vulkan
     gapi_submit_commands = submit_commands;
     gapi_get_backbuffer = get_backbuffer;
     gapi_allocate_buffer = allocate_buffer;
+    gapi_free_buffer = free_buffer;
     gapi_allocate_texture = allocate_texture;
     gapi_copy_to_texture_sync = copy_to_texture_sync;
     gapi_allocate_sampler = allocate_sampler;

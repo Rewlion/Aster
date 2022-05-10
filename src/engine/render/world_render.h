@@ -1,5 +1,7 @@
 #pragma once
 
+#include "frame_gc.h"
+
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/gapi/resources.h>
 #include <engine/materials/materials.h>
@@ -30,6 +32,8 @@ namespace Engine::Render
       void renderOpaque();
       void renderScene(const RenderPassType rpType);
     private:
+      FrameGC m_FrameGC;
+
       gapi::SamplerHandler m_ModelSampler;
       gapi::BufferHandler m_FrameUniforms;
       gapi::BufferHandler m_StaticMeshUniforms;

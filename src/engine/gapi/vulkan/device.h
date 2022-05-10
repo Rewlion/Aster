@@ -73,6 +73,7 @@ namespace gapi::vulkan
       void presentSurfaceImage();
 
       BufferHandler allocateBuffer(const size_t size, const int usage);
+      void freeBuffer(const BufferHandler buffer);
 
       void* mapBuffer(const BufferHandler buffer, const size_t offset, const size_t size);
       void unmapBuffer(const BufferHandler buffer);

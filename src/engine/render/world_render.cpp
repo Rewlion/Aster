@@ -47,6 +47,7 @@ namespace Engine::Render
 
   void WorldRender::beforeRender(const mat4& cameraVP)
   {
+    m_FrameGC.nextFrame();
     m_FrameData.vp = cameraVP;
     updateFrameUniforms();
   }
@@ -98,8 +99,13 @@ namespace Engine::Render
 
       PerStaticMeshUniform meshUniforms;
       meshUniforms.modelTm = tr * scale * rot;
-      write_buffer(m_StaticMeshUniforms, &meshUniforms, 0, sizeof(meshUniforms), gapi::WR_DISCARD);
-      m_CmdEncoder.bindConstBuffer(m_StaticMeshUniforms, DSET_PER_MODEL, 0);
+
+      auto meshConstBuf = m_FrameGC.allocate([](){
+        return gapi::allocate_buffer(sizeof(PerStaticMeshUniform), gapi::BF_CpuVisible | gapi::BF_BindConstant);
+      });
+
+      write_buffer(meshConstBuf, &meshUniforms, 0, sizeof(meshUniforms), gapi::WR_DISCARD);
+      m_CmdEncoder.bindConstBuffer(meshConstBuf, DSET_PER_MODEL, 0);
 
       ModelAsset* asset = assets_manager.getModel(obj.model);
 

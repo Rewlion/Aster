@@ -180,6 +180,14 @@ namespace gapi::vulkan
     return (BufferHandler)id;
   }
 
+  void Device::freeBuffer(const BufferHandler buffer)
+  {
+    const size_t id = (size_t)buffer;
+    ASSERT(m_AllocatedBuffers.contains(id));
+
+    m_AllocatedBuffers.remove(id);
+  }
+
   void* Device::mapBuffer(const BufferHandler buffer, const size_t offset, const size_t size)
   {
     Buffer* b = getAllocatedBuffer(buffer);
