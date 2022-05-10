@@ -9,6 +9,9 @@
 #include <engine/time.h>
 #include <engine/window.h>
 
+#include <engine/shaders/shaders/frame_uniforms.hlsl>
+#include <engine/shaders/shaders/mesh_uniforms.hlsl>
+
 #include <glm/gtx/transform.hpp>
 
 namespace Engine::Render
@@ -21,9 +24,10 @@ namespace Engine::Render
     m_Aspect = (float)m_WindowSize.x / (float)m_WindowSize.y;
 
     gapi::SamplerAllocationDescription samplerAllocDesc;
-    m_TestSampler = allocate_sampler(samplerAllocDesc);
+    m_ModelSampler = allocate_sampler(samplerAllocDesc);
 
-    m_TestConstBuffer = gapi::allocate_buffer(sizeof(float4), gapi::BF_CpuVisible | gapi::BF_BindConstant);
+    m_FrameUniforms = gapi::allocate_buffer(sizeof(FrameUniforms), gapi::BF_CpuVisible | gapi::BF_BindConstant);
+    m_StaticMeshUniforms = gapi::allocate_buffer(sizeof(PerStaticMeshUniform), gapi::BF_CpuVisible | gapi::BF_BindConstant);
 
     gapi::TextureAllocationDescription allocDesc;
     allocDesc.format = gapi::TextureFormat::D24_UNORM_S8_UINT;
@@ -44,6 +48,18 @@ namespace Engine::Render
   void WorldRender::beforeRender(const mat4& cameraVP)
   {
     m_FrameData.vp = cameraVP;
+    updateFrameUniforms();
+  }
+
+  void WorldRender::updateFrameUniforms()
+  {
+    FrameUniforms uniforms;
+    uniforms.viewProj = m_FrameData.vp;
+
+    write_buffer(m_FrameUniforms, &uniforms, 0, sizeof(uniforms), gapi::WR_DISCARD);
+    m_CmdEncoder.bindConstBuffer(m_FrameUniforms, DSET_PER_FRAME, 0);
+
+    m_CmdEncoder.bindSampler(m_ModelSampler, DSET_PER_FRAME, 1);
   }
 
   void WorldRender::renderWorld()
@@ -79,17 +95,13 @@ namespace Engine::Render
                        glm::rotate(obj.rot.x, float3{1.0, 0.0, 0.0});
       const mat4 scale = glm::scale(obj.scale);
       const mat4 tr = glm::translate(obj.pos);
-      const mat4 mTr = m_FrameData.vp * tr * scale * rot;
 
-      m_CmdEncoder.pushConstants(&mTr, sizeof(mTr), gapi::ShaderStage::Vertex);
+      PerStaticMeshUniform meshUniforms;
+      meshUniforms.modelTm = tr * scale * rot;
+      write_buffer(m_StaticMeshUniforms, &meshUniforms, 0, sizeof(meshUniforms), gapi::WR_DISCARD);
+      m_CmdEncoder.bindConstBuffer(m_StaticMeshUniforms, DSET_PER_MODEL, 0);
 
       ModelAsset* asset = assets_manager.getModel(obj.model);
-
-      float4 color{1.0, 1.0, 0.6, 1.0};
-      write_buffer(m_TestConstBuffer, &color, 0, sizeof(color), gapi::WR_DISCARD);
-
-      m_CmdEncoder.bindSampler(m_TestSampler, 0, 1);
-      m_CmdEncoder.bindConstBuffer(m_TestConstBuffer, 0, 2);
 
       for(size_t i = 0; i < asset->mesh->submeshes.getSize(); ++i)
       {

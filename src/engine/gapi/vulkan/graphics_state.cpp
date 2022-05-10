@@ -57,10 +57,13 @@ namespace gapi::vulkan
 
   void PushConstantTSF::apply(CompileContext& ctx, BackendState& state)
   {
-    const vk::PipelineLayout layout = state.layout->pipelineLayout.get();
-    ASSERT(layout != vk::PipelineLayout{});
+    if (size > 0 && data > 0)
+    {
+      const vk::PipelineLayout layout = state.layout->pipelineLayout.get();
+      ASSERT(layout != vk::PipelineLayout{});
 
-    state.cmdBuffer.pushConstants(layout, stage, 0 , size, data);
+      state.cmdBuffer.pushConstants(layout, stage, 0 , size, data);
+    }
   }
 
   void FlushDescriptorSetsTSF::apply(CompileContext& ctx, BackendState&)

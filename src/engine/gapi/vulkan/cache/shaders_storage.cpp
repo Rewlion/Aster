@@ -110,29 +110,11 @@ namespace
 
 namespace gapi::vulkan
 {
-  constexpr size_t EMPTY_PIPELINE_LAYOUT_HASH = 0;
-
   void ShadersStorage::init(Device* device)
   {
     m_Device = device;
 
-    createEmptyPipelineLayout();
     createShaderModules();
-  }
-
-  void ShadersStorage::createEmptyPipelineLayout()
-  {
-    vk::PipelineLayoutCreateInfo ci;
-    ci.pSetLayouts = nullptr;
-    ci.pPushConstantRanges = nullptr;
-    ci.setLayoutCount = 0;
-    ci.pushConstantRangeCount = 0;
-    PipelineLayout layout;
-    layout.pipelineLayout =  m_Device->m_Device->createPipelineLayoutUnique(ci);
-    m_PipelineLayouts.insert({
-      EMPTY_PIPELINE_LAYOUT_HASH,
-      std::move(layout)
-    });
   }
 
   void ShadersStorage::createShaderModules()
@@ -236,8 +218,7 @@ namespace gapi::vulkan
     programInfo.vertexInput.vertexAttributeDescriptionCount = vertexShaderModule->metadata.inputAssembly.attributes.getSize();
     programInfo.vertexInput.pVertexAttributeDescriptions = vertexShaderModule->metadata.inputAssembly.attributes.getData();
 
-    const bool isEmptyLayout = stagesPushConstants.getSize() == 0;
-    const size_t programHash = isEmptyLayout ? EMPTY_PIPELINE_LAYOUT_HASH : HashShadersProgram(stages);
+    const size_t programHash = HashShadersProgram(stages);
     const auto it = m_PipelineLayouts.find(programHash);
     if (it != m_PipelineLayouts.end())
     {
@@ -301,7 +282,8 @@ namespace gapi::vulkan
 
             default:
             {
-              ASSERT(!"Unsupported binding type");
+              bindingDesc.descriptorType = {};
+              bindingDesc.descriptorCount = 0;
             }
           }
           bindingDesc.stageFlags = binding.stages;

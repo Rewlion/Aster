@@ -42,7 +42,6 @@ namespace gapi::vulkan
       void getShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo);
 
     private:
-      void createEmptyPipelineLayout();
       void createShaderModules();
 
     private:

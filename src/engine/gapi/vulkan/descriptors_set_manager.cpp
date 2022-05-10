@@ -138,6 +138,7 @@ namespace gapi::vulkan
       return res.value[0];
     }
 
+    m_ActiveSets.set(set);
     return res.value[0];
   }
 
@@ -202,7 +203,6 @@ namespace gapi::vulkan
         if (!m_ActiveSets.isSet(set))
         {
           m_ActiveDescriptorSets[set] = acquireSet(set);
-          m_ActiveSets.set(set);
           m_DirtySets.set(set);
         }
     }

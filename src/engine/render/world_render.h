@@ -25,12 +25,14 @@ namespace Engine::Render
       FrameData m_FrameData;
 
       void beforeRender(const mat4& cameraVP);
+      void updateFrameUniforms();
       void renderWorld();
       void renderOpaque();
       void renderScene(const RenderPassType rpType);
     private:
-      gapi::SamplerHandler m_TestSampler;
-      gapi::BufferHandler m_TestConstBuffer;
+      gapi::SamplerHandler m_ModelSampler;
+      gapi::BufferHandler m_FrameUniforms;
+      gapi::BufferHandler m_StaticMeshUniforms;
 
       gapi::CmdEncoder m_CmdEncoder;
 

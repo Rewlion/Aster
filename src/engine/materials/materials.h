@@ -31,7 +31,7 @@ namespace Engine
       {
         size_t      set = 0;
         size_t      binding = 0;
-        BindingType type;
+        BindingType type = BindingType::Texture;
       };
 
       struct Param

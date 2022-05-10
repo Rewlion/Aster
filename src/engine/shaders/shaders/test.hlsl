@@ -1,22 +1,8 @@
-struct PushConstants
-{
-  float4x4 mvp;
-};
+#include "frame_uniforms.hlsl"
+#include "mesh_input.hlsl"
 
-[[vk::push_constant]] PushConstants consts;
-
-struct UniformTest
-{
-  float4 color;
-};
-
-struct VsInput
-{
-  float3 pos: POSITION0;
-  float3 tan: TEXCOORD1;
-  float3 bitan: TEXCOORD2;
-  float2 uv: TEXCOORD0;
-};
+INIT_FRAME_UNIFORMS()
+INIT_STATIC_MESH_UNIFORMS()
 
 struct VsOutput
 {
@@ -24,14 +10,13 @@ struct VsOutput
   float2 uv: TEXCOORD0;
 };
 
-Texture2D<float4> test_texture: register(t0, space0);
-sampler test_sampler: register(s1, space0);
-ConstantBuffer<UniformTest> test_uniform: register(b2, space0);
-
-VsOutput vs_main(VsInput input)
+VsOutput vs_main(StaticMeshVsInput input)
 {
+  float4x4 mvp = frame_uniforms.viewProj;
+  mvp = mul(mvp, model_uniforms.modelTm);
+
   VsOutput output;
-  output.pos = mul(consts.mvp, float4(input.pos, 1.0));
+  output.pos = mul(mvp, float4(input.pos, 1.0));
   output.uv = input.uv;
 
   return output;
@@ -39,6 +24,5 @@ VsOutput vs_main(VsInput input)
 
 float4 ps_main(VsOutput input): SV_Target0
 {
-  float4 a = test_texture.Sample(test_sampler, input.uv);
-  return a * test_uniform.color;
+  return albedo_tex.Sample(model_sampler, input.uv);
 }

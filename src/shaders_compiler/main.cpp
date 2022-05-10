@@ -157,6 +157,8 @@ class ShadersCompiler
       args.push_back(getShaderTarget(stage));
       args.push_back(L"-I");
       args.push_back(dir.c_str());
+      args.push_back(L"-D");
+      args.push_back(L"_TARGET_SHADER");
 
       DxcBuffer dxcSrc;
       dxcSrc.Ptr = pSource->GetBufferPointer();
