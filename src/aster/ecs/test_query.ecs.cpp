@@ -38,6 +38,5 @@ static void system_with_query(const float& test_float)
 ECS_EVENT_SYSTEM()
 static void input_handler(const ButtonActionInputEvent& evt)
 {
-  log("YAAAY, EVENT!");
 }
   
