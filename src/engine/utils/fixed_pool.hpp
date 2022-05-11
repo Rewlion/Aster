@@ -29,6 +29,8 @@ namespace Utils
       ASSERT(id < N);
 
       m_Values[id].~T();
+      std::memset(&m_Values[id], 0, sizeof(T));
+
       const bool indexSaved = m_FreeIndices.push(id);
       ASSERT(indexSaved);
 
@@ -64,10 +66,9 @@ namespace Utils
         }
         else
         {
-          i = m_Size + 1;
+          i = m_Size++;
         }
 
-        m_Size += 1;
         m_BitCapacity.set(i);
 
         return i;

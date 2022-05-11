@@ -26,6 +26,7 @@ namespace Engine::Render
 
       void nextFrame()
       {
+        frame = (frame + 1) % 2;
         auto& resources = m_Resources[frame];
         for(auto& resource: resources)
           std::visit([](const auto& c) {
