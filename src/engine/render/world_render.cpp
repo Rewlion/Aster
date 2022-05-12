@@ -56,6 +56,7 @@ namespace Engine::Render
   {
     FrameUniforms uniforms;
     uniforms.viewProj = m_FrameData.vp;
+    uniforms.secSinceStart = Time::get_sec_since_start();
 
     write_buffer(m_FrameUniforms, &uniforms, 0, sizeof(uniforms), gapi::WR_DISCARD);
     m_CmdEncoder.bindConstBuffer(m_FrameUniforms, DSET_PER_FRAME, 0);

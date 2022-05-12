@@ -3,6 +3,7 @@
 struct FrameUniforms
 {
   float4x4 viewProj;
+  float secSinceStart;
 };
 
 #define INIT_FRAME_UNIFORMS() \

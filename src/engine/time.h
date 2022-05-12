@@ -10,5 +10,9 @@ namespace Engine::Time
 
   uint64_t get_time_since_start();
 
+  float get_sec_since_start();
+
   float get_dt();
+
+  float convert_to_sec(uint64_t rawTime);
 }
