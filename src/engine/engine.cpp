@@ -46,8 +46,8 @@ namespace Engine
 
       ECS::manager.tick();
 
-      const mat4 vp = get_camera_vp();
-      Render::world_render.render(vp);
+      const CameraData camera = get_camera();
+      Render::world_render.render(camera);
     }
   }
 }

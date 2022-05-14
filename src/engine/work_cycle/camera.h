@@ -4,5 +4,11 @@
 
 namespace Engine
 {
-  mat4 get_camera_vp();
+  struct CameraData
+  {
+    float3 pos;
+    mat4 viewProj;
+  };
+
+  CameraData get_camera();
 }

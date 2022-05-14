@@ -5,6 +5,7 @@
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/gapi/resources.h>
 #include <engine/materials/materials.h>
+#include <engine/work_cycle/camera.h>
 
 namespace Engine::Render
 {
@@ -12,7 +13,7 @@ namespace Engine::Render
   {
     public:
       void init();
-      void render(const mat4& cameraVP);
+      void render(const CameraData& camera);
 
       inline float getWndAspect() const
       {
@@ -22,11 +23,11 @@ namespace Engine::Render
     private:
       struct FrameData
       {
-        mat4 vp;
+        CameraData camera;
       };
       FrameData m_FrameData;
 
-      void beforeRender(const mat4& cameraVP);
+      void beforeRender(const CameraData& camera);
       void updateFrameUniforms();
       void renderWorld();
       void renderOpaque();

@@ -1,3 +1,5 @@
+#include "camera.h"
+
 #include <engine/ecs/macros.h>
 #include <engine/math.h>
 #include <engine/types.h>
@@ -16,7 +18,7 @@ static void query_camera(eastl::function<void(
 
 namespace Engine
 {
-  mat4 get_camera_vp()
+  CameraData get_camera()
   {
     float3 pos;
     float3 forward;
@@ -36,6 +38,9 @@ namespace Engine
     vp = math::perspective(fov, Engine::Render::world_render.getWndAspect(), zNear, zFar) *
          math::look_at(pos + forward * 2.0f, pos);
 
-    return vp;
+    return {
+      .pos = pos,
+      .viewProj = vp
+    };
   }
 }

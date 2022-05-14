@@ -141,7 +141,7 @@ namespace
   {
     float3 pos       = {0,0,0};
     float3 tangent   = {0,0,0};
-    float3 bitangent = {0,0,0};
+    float3 normal    = {0,0,0};
     float2 uv        = {0,0};
   };
 
@@ -217,26 +217,26 @@ namespace Engine
       const float3 bitangent = glm::normalize(float3{ tb[0][1], tb[1][1], tb[2][1] });
       const float3 normal = glm::normalize(glm::cross(p2p0, p1p0));
 
-      vertices[indices[i]].tangent     += tangent;
-      vertices[indices[i]].bitangent   += bitangent;
+      vertices[indices[i]].tangent  += tangent;
+      vertices[indices[i]].normal   += normal;
 
-      vertices[indices[i+1]].tangent   += tangent;
-      vertices[indices[i+1]].bitangent += bitangent;
+      vertices[indices[i+1]].tangent += tangent;
+      vertices[indices[i+1]].normal  += normal;
 
-      vertices[indices[i+2]].tangent   += tangent;
-      vertices[indices[i+2]].bitangent += bitangent;
+      vertices[indices[i+2]].tangent += tangent;
+      vertices[indices[i+2]].normal  += normal;
     }
 
     for (size_t i = 0; i < indices.size(); i += 3)
     {
-      vertices[indices[i]].tangent     = glm::normalize(vertices[indices[i]].tangent);
-      vertices[indices[i]].bitangent   = glm::normalize(vertices[indices[i]].bitangent);
+      vertices[indices[i]].tangent   = glm::normalize(vertices[indices[i]].tangent);
+      vertices[indices[i]].normal    = glm::normalize(vertices[indices[i]].normal);
 
-      vertices[indices[i+1]].tangent   = glm::normalize(vertices[indices[i+1]].tangent);
-      vertices[indices[i+1]].bitangent = glm::normalize(vertices[indices[i+1]].bitangent);
+      vertices[indices[i+1]].tangent = glm::normalize(vertices[indices[i+1]].tangent);
+      vertices[indices[i+1]].normal  = glm::normalize(vertices[indices[i+1]].normal);
 
-      vertices[indices[i+2]].tangent   = glm::normalize(vertices[indices[i+2]].tangent);
-      vertices[indices[i+2]].bitangent = glm::normalize(vertices[indices[i+2]].bitangent);
+      vertices[indices[i+2]].tangent = glm::normalize(vertices[indices[i+2]].tangent);
+      vertices[indices[i+2]].normal  = glm::normalize(vertices[indices[i+2]].normal);
     }
   }
 

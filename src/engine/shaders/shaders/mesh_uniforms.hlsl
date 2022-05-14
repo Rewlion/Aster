@@ -3,6 +3,7 @@
 struct PerStaticMeshUniform
 {
   float4x4 modelTm;
+  float4x4 normalTm;
 };
 
 #define INIT_STATIC_MESH_UNIFORMS()\

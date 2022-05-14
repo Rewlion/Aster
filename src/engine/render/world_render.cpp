@@ -39,23 +39,24 @@ namespace Engine::Render
     gapi::transit_texture_state(m_RtDepth, gapi::TextureState::Undefined, gapi::TextureState::DepthWriteStencilRead);
   }
 
-  void WorldRender::render(const mat4& cameraVP)
+  void WorldRender::render(const CameraData& cameraVP)
   {
     beforeRender(cameraVP);
     renderWorld();
   }
 
-  void WorldRender::beforeRender(const mat4& cameraVP)
+  void WorldRender::beforeRender(const CameraData& camera)
   {
     m_FrameGC.nextFrame();
-    m_FrameData.vp = cameraVP;
+    m_FrameData.camera = camera;
     updateFrameUniforms();
   }
 
   void WorldRender::updateFrameUniforms()
   {
     FrameUniforms uniforms;
-    uniforms.viewProj = m_FrameData.vp;
+    uniforms.viewProj = m_FrameData.camera.viewProj;
+    
     uniforms.secSinceStart = Time::get_sec_since_start();
 
     write_buffer(m_FrameUniforms, &uniforms, 0, sizeof(uniforms), gapi::WR_DISCARD);
@@ -100,6 +101,7 @@ namespace Engine::Render
 
       PerStaticMeshUniform meshUniforms;
       meshUniforms.modelTm = tr * scale * rot;
+      meshUniforms.normalTm = glm::transpose(glm::inverse(meshUniforms.modelTm));
 
       auto meshConstBuf = m_FrameGC.allocate([](){
         return gapi::allocate_buffer(sizeof(PerStaticMeshUniform), gapi::BF_CpuVisible | gapi::BF_BindConstant);
