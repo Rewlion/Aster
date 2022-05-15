@@ -129,6 +129,8 @@ namespace Utils
         if (m_Size > 0)
         {
           getLast().~T();
+          std::memset(&getLast(), 0, sizeof(T));
+
           --m_Size;
           return true;
         }
@@ -186,7 +188,7 @@ namespace Utils
 
       inline void clear()
       {
-        for (size_t i = 0; i < m_Size; ++i)
+        for (size_t i = 0, count = m_Size; i < count; ++i)
           pop();
       }
 
