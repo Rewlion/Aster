@@ -82,9 +82,20 @@ namespace gapi::vulkan
 
   void DescriptorsSetManager::setPipelineLayout(const PipelineLayout* layout)
   {
+    if (m_PipelineLayout != nullptr)
+    {
+      for (size_t set = 0; set < std::size(m_PipelineLayout->sets); ++set)
+      {
+        const size_t bindingsCount = std::max(layout->sets[set].getBindingsCount(),
+                                              m_PipelineLayout->sets[set].getBindingsCount());
+        const bool hasDifferentBindings = std::memcmp(&layout->sets[set],
+                                                      &m_PipelineLayout->sets[set],
+                                                      bindingsCount * sizeof(layout->sets[set].bindings[0]));
+        if (hasDifferentBindings)
+          m_DirtySets.set(set);
+      }
+    }
     m_PipelineLayout = layout;
-
-    //m_DirtySets.ResetAll();
   }
 
   bool DescriptorsSetManager::validateBinding(const size_t set, const size_t binding)
@@ -116,7 +127,7 @@ namespace gapi::vulkan
       }
     }
 
-    logerror("vulkan: can't set [set:{}, binding:{}], pipeline hasn't declared such binding", set, binding);
+    //logerror("vulkan: can't set [set:{}, binding:{}], pipeline hasn't declared such binding", set, binding);
     return false;
   }
 
