@@ -14,4 +14,19 @@ shaders_list
       text entry = "ps_main"
     }
   }
+  
+  "shaders/scene_opaque.hlsl"
+  {
+    vs
+    {
+      text name = "scene_opaque_vs"
+      text entry = "vs_main"
+    }
+
+    ps
+    {
+      text name = "scene_opaque_ps"
+      text entry = "ps_main"
+    }
+  }
 }

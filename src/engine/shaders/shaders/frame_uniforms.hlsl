@@ -4,6 +4,7 @@ struct FrameUniforms
 {
   float4x4 viewProj;
   float secSinceStart;
+  float3 __t;
   float3 cameraPos;
 };
 

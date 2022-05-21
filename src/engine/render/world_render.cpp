@@ -56,7 +56,7 @@ namespace Engine::Render
   {
     FrameUniforms uniforms;
     uniforms.viewProj = m_FrameData.camera.viewProj;
-    
+    uniforms.cameraPos = m_FrameData.camera.pos;
     uniforms.secSinceStart = Time::get_sec_since_start();
 
     write_buffer(m_FrameUniforms, &uniforms, 0, sizeof(uniforms), gapi::WR_DISCARD);

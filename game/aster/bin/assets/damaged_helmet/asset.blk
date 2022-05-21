@@ -4,6 +4,19 @@ texture
   text name = "damaged_helmet.albedo"
 }
 
+texture
+{
+  text bin = "bin/assets/damaged_helmet/metal_roughness.ktx"
+  text name = "damaged_helmet.metal_roughness"
+}
+
+texture
+{
+  text bin = "bin/assets/damaged_helmet/normal.ktx"
+  text name = "damaged_helmet.normal"
+}
+
+
 static_mesh
 {
   text bin = "bin/assets/damaged_helmet/DamagedHelmet.gltf"
@@ -15,12 +28,22 @@ model_asset
   text name = "damaged_helmet"
   text mesh = "damaged_helmet"
 
-  material @("TestMaterial")
+  material @("SceneOpaqueMaterial")
   {
     texture
     {
       text name = "damaged_helmet.albedo"
-      text binding = "test_texture"
+      text binding = "albedo"
+    }
+	texture
+    {
+      text name = "damaged_helmet.metal_roughness"
+      text binding = "metal_roughness"
+    }
+	texture
+    {
+      text name = "damaged_helmet.normal"
+      text binding = "normal"
     }
   }
 }

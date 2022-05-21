@@ -215,7 +215,7 @@ namespace Engine
 
       const float3 tangent = glm::normalize(float3{tb[0][0], tb[1][0], tb[2][0]});
       const float3 bitangent = glm::normalize(float3{ tb[0][1], tb[1][1], tb[2][1] });
-      const float3 normal = glm::normalize(glm::cross(p2p0, p1p0));
+      const float3 normal = glm::normalize(glm::cross(p1p0, p2p0));
 
       vertices[indices[i]].tangent  += tangent;
       vertices[indices[i]].normal   += normal;
