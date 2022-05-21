@@ -4,6 +4,7 @@
 #include <engine/datablock/utils.h>
 #include <engine/settings.h>
 #include <engine/log.h>
+#include <engine/window.h>
 
 #include <spdlog/fmt/fmt.h>
 
@@ -106,8 +107,11 @@ namespace Engine::Input
 
   void InputManager::processInput()
   {
-    m_Keyboard.processInput();
-    m_Mouse.processInput();
+    if (Window::is_active_window())
+    {
+      m_Keyboard.processInput();
+      m_Mouse.processInput();
+    }
   }
 
   void InputManager::setActionSet(const string_hash actionSet)

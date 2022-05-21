@@ -114,4 +114,9 @@ namespace Engine::Window
       DispatchMessage(&msg);
     }
   }
+
+  bool is_active_window()
+  {
+    return GetForegroundWindow() == CURRENT_WINDOW_HANDLER;
+  }
 }
