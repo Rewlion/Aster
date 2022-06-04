@@ -72,7 +72,7 @@ void init_worldPos(inout Gbuffer g, float3 worldPos)
 float4 encode_gbuffer(Gbuffer g)
 {
   float t = frame_uniforms.secSinceStart;
-  float3 sunPos = float3( 5.0 * sin(t), -4.0, 5.0 * cos(t) );
+  float3 sunPos = float3( 10.0 * sin(t), -4.0, 10.0 * cos(t) );
 
   float3 N = g.normal;
   float3 L = normalize(sunPos - g.worldPos);
@@ -90,7 +90,7 @@ float4 encode_gbuffer(Gbuffer g)
   float4 kD = (1.0 - F) * (1.0 - g.metal);
   float4 specular = (NDF*ggx*F) / (4.0 * LoN * VoN + 0.0001);
   float4 lambertDiffuse = kD * g.albedo / Pi;
-  float4 ambient = g.albedo * 0.05;
+  float4 ambient = g.albedo * 0.1;
 
   float4 Ri = float4(1.0, 1.0, 1.0, 1.0) * LoN;
   float4 Ro = (lambertDiffuse + specular) * Ri + ambient;
