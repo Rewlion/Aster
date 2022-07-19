@@ -1,7 +1,9 @@
 #pragma once
 
 #include "constants.h"
+#include "resources.h"
 
+#include <engine/gapi/resources.h>
 #include <engine/types.h>
 #include <engine/utils/fixed_stack.hpp>
 
@@ -56,4 +58,57 @@ namespace spirv
   };
 
   Reflection reflect(const eastl::vector<char>& spirv);
+
+  namespace v2
+  {
+    struct Binding
+    {
+      BindingType          type = BindingType::None;
+      vk::ShaderStageFlags stages;
+      string               name;
+
+      bool operator==(const Binding& rvl) const
+      {
+        return std::tie(type, stages, name) ==
+               std::tie(rvl.type, rvl.stages, rvl.name);
+      }
+    };
+
+    struct DescriptorSet
+    {
+      eastl::vector<Binding> bindings;
+
+      bool operator==(const DescriptorSet& rvl) const
+      {
+        return bindings == rvl.bindings;
+      }
+    };
+
+    struct InputAssembly
+    {
+      eastl::vector<vk::VertexInputBindingDescription> buffers;
+      eastl::vector<vk::VertexInputAttributeDescription> attributes;
+
+      bool operator==(const InputAssembly& rvl) const
+      {
+        return std::tie(buffers, attributes) == std::tie(rvl.buffers, rvl.attributes);
+      }
+    };
+
+    struct Reflection
+    {
+      string                       entry;
+      vk::ShaderStageFlagBits      stage;
+      eastl::vector<DescriptorSet> dsets;
+
+      bool operator==(const Reflection& rvl) const
+      {
+        return std::tie(entry, stage, dsets) ==
+               std::tie(rvl.entry, rvl.stage, rvl.dsets);
+      }
+    };
+
+    InputAssembly shader_input_to_spirv_ia(const ShadersSystem::InputDescription& input);
+    Reflection reflect(const eastl::vector<char>& spirv, const gapi::ShaderStage stage, const string& entry);
+  }
 }

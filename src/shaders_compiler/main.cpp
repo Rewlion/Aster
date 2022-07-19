@@ -1,3 +1,4 @@
+#include "compiler.h"
 
 #include "spirv.h"
 #include "constants.h"
@@ -9,6 +10,8 @@
 #include <engine/utils/fs.h>
 #include <engine/gapi/resources.h>
 
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 #include <boost/program_options.hpp>
 #include <Unknwn.h>
 #include <dxc/dxcapi.h>
@@ -22,7 +25,6 @@
 
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
-
 
 struct ShaderBlob
 {
@@ -66,7 +68,6 @@ class ShadersCompiler
     }
 
   private:
-
     bool Compile(const DataBlock& shader)
     {
       const string shaderFile = m_BlkDir + "/" + shader.getName();
@@ -241,6 +242,27 @@ class ShadersCompiler
 };
 
 int main(int argc, char** argv)
+{
+  Engine::InitLog();
+  ShadersSystem::Compiler compiler;
+  compiler.compileModuleFromFile("tools/test.tfx");
+  const ShadersSystem::MaterialsBin& mBin = compiler.getMaterialsBins();
+
+  {
+    std::ofstream out("tools/bin", std::ios::binary);
+    boost::archive::binary_oarchive archive(out);
+    archive << mBin;
+  }
+
+  ShadersSystem::MaterialsBin mBin2;
+  {
+    std::ifstream in("tools/bin", std::ios::binary);
+    boost::archive::binary_iarchive archive2(in);
+    archive2 >> mBin2;
+  }
+}
+
+int main__2(int argc, char** argv)
 {
   po::options_description desc("Allowed options");
   desc.add_options()

@@ -59,6 +59,7 @@
 %token <sval> NAME_VAL
 %token AT "@"
 %token COLON ":"
+%token SEMICOLON ";"
 %token EQUAL_OP "="
 %token LEFT_PARENTHESIS "("
 %token RIGHT_PARENTHESIS ")"

@@ -6,6 +6,8 @@
 #include <vulkan/vulkan.hpp>
 #include <SPIRV-Cross/spirv_glsl.hpp>
 
+#include <EASTL/functional.h>
+
 namespace spirv
 {
   static vk::ShaderStageFlagBits get_shader_stage(const spirv_cross::EntryPoint& ep)
@@ -332,5 +334,134 @@ namespace spirv
     }
 
     return ret;
+  }
+
+  namespace v2
+  {
+    static vk::ShaderStageFlagBits get_shader_stage(const gapi::ShaderStage stage)
+    {
+      switch (stage)
+      {
+      case gapi::ShaderStage::Vertex:
+      {
+        return vk::ShaderStageFlagBits::eVertex;
+      }
+
+      case gapi::ShaderStage::Fragment:
+      {
+        return vk::ShaderStageFlagBits::eFragment;
+      }
+
+      default:
+        ASSERT(!"unknown shader stage");
+        return vk::ShaderStageFlagBits::eVertex; //make compiler happy
+      }
+    }
+
+    static vk::Format get_attribute_format(const ShadersSystem::AttributeType type)
+    {
+      switch (type)
+      {
+         case ShadersSystem::AttributeType::Float:  return vk::Format::eR32Sfloat;
+         case ShadersSystem::AttributeType::Float2: return vk::Format::eR32G32Sfloat;
+         case ShadersSystem::AttributeType::Float3: return vk::Format::eR32G32B32Sfloat;
+         case ShadersSystem::AttributeType::Float4: return vk::Format::eR32G32B32A32Sfloat;
+         case ShadersSystem::AttributeType::Int:    return vk::Format::eR32Sint;
+         case ShadersSystem::AttributeType::Int2:   return vk::Format::eR32G32Sint;
+         case ShadersSystem::AttributeType::Int3:   return vk::Format::eR32G32B32Sint;
+         case ShadersSystem::AttributeType::Int4:   return vk::Format::eR32G32B32A32Sint;
+         default:
+         {
+          ASSERT(!"unsupported");
+          break;
+         }
+      }
+    }
+
+    InputAssembly shader_input_to_spirv_ia(const ShadersSystem::InputDescription& input)
+    {
+      InputAssembly ia;
+      ia.buffers.reserve(input.buffers.size());
+      ia.attributes.reserve(input.attributes.size());
+
+      for (const auto& buffer: input.buffers)
+      {
+        ia.buffers.push_back(vk::VertexInputBindingDescription{
+          buffer.binding,
+          buffer.stride,
+          vk::VertexInputRate::eVertex
+        });
+      }
+
+      for (const auto& attribute: input.attributes)
+      {
+        ia.attributes.push_back(vk::VertexInputAttributeDescription{
+          attribute.location,
+          attribute.binding,
+          get_attribute_format(attribute.type),
+          attribute.offset}
+        );
+      }
+
+      return ia;
+    }
+
+    Reflection reflect(const eastl::vector<char>& spirv, const gapi::ShaderStage stage, const string& entry)
+    {
+      Reflection ret;
+
+      const uint32_t* code = reinterpret_cast<const uint32_t*>(spirv.data());
+      const size_t wordsCount = spirv.size() / sizeof(uint32_t);
+
+      spirv_cross::CompilerGLSL glsl{code, wordsCount};
+
+      const spirv_cross::SmallVector<spirv_cross::EntryPoint> entryPoints = glsl.get_entry_points_and_stages();
+      if (entryPoints.size() != 1)
+        logwarn("shader has more than one entry point, using the first one.");
+
+      const spirv_cross::EntryPoint entryPoint = entryPoints[0];
+      ret.entry = entry;
+      ret.stage = get_shader_stage(stage);
+
+      const spirv_cross::ShaderResources resources = glsl.get_shader_resources();
+
+      const auto getBinding = [&](unsigned int nSet, unsigned int nBinding) -> Binding&
+      {
+        if (nSet >= ret.dsets.size())
+          ret.dsets.resize(nSet+1);
+
+        if (nBinding >= ret.dsets[nSet].bindings.size())
+          ret.dsets[nSet].bindings.resize(nSet+1);
+
+        return ret.dsets[nSet].bindings[nBinding];
+      };
+
+      const auto setupBinding = [&](auto& resources, const auto getResType)
+      {
+        for (size_t i = 0; i < resources.size(); ++i)
+        {
+          const spirv_cross::Resource& res = resources[i];
+
+          const unsigned int nSet = glsl.get_decoration(res.id, spv::Decoration::DecorationDescriptorSet);
+          const unsigned int nBinding = glsl.get_decoration(res.id, spv::Decoration::DecorationBinding);
+
+          Binding& binding = getBinding(nSet, nBinding);
+          binding.type = getResType(res);
+          binding.stages = ret.stage;
+          binding.name = res.name;
+        }
+      };
+
+      const auto getTexType = [&](const spirv_cross::Resource& res)
+      {
+        const spirv_cross::SPIRType& type = glsl.get_type(res.type_id);
+        return get_texture_type(type);
+      };
+      setupBinding(resources.separate_images, getTexType);
+      setupBinding(resources.separate_samplers, [](const spirv_cross::Resource& res){return BindingType::Sampler;});
+      setupBinding(resources.uniform_buffers, [](const spirv_cross::Resource& res){return BindingType::UniformBufferDynamic;});
+
+      return ret;
+    }
   }
 }
