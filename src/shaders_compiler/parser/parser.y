@@ -38,10 +38,10 @@
   int ival;
   char* sval;
 
-  ScopeDeclaration* scopeDeclaration;
+  ScopeDeclarationExp* scopeDeclaration;
   ScopeExp* scopeExp;
 
-  ShadersResourcesReserve* shadersResourcesReserve;
+  ShadersResourcesReserveExp* shadersResourcesReserve;
   ResourceReserveExp* resReserveExp;
   gapi::ShaderStage shader;
   DescriptorSetReserveExp* dsetExp;
@@ -49,7 +49,7 @@
 
   ResourceDeclaration* resourceDeclaration;
   ResourceType resourceType;
-  ResourceAssignExpNode* resourceAssignExp;
+  ResourceAssignExp* resourceAssignExp;
 
   AttributeType attributeType;
   InputBufferExp* inputBufferExp;
@@ -153,8 +153,7 @@ MODULE_EXPRESSION
 
 TECHNIQUE_DECLARATION
   : "technique" TOKEN_NAME_VAL[name] "{" TECHNIQUE_EXP_LIST[exps] "}" ";" {
-    const TechniqueDeclaration technique{$name, $exps};
-    compiler.onTechniqueDeclaration(technique);
+    compiler.onTechniqueDeclaration(new TechniqueDeclarationExp{$name, $exps});
   }
   ;
 
@@ -221,8 +220,7 @@ INPUT_ATTRIBUTE
 
 SCOPE_DECLARATION
   : "scope" TOKEN_NAME_VAL[name] "{" SCOPE_EXP_LIST[exps] "}" ";" {
-    const ScopeDeclaration scope{$name, $exps};
-    compiler.onScopeDeclaration(scope);
+    compiler.onScopeDeclaration(new ScopeDeclarationExp{$name, $exps});
   }
   ;
 
@@ -239,10 +237,13 @@ SCOPE_EXP_LIST
 
 SCOPE_EXP
   : TOKEN_SHADER SHADERS_LIST[shaders] ":" RESOURCE_RESERVE_EXP_LIST[exps] {
-    $$ = new ShadersResourcesReserve($shaders, $exps);
+    $$ = new ShadersResourcesReserveExp($shaders, $exps);
   }
   | RESOURCE_TYPE[type] TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
     $$ = new ResourceDeclarationExp($type, $name, $exps);
+  }
+  | ATTRIBUTE_TYPE[type] TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
+    $$ = new CbufferVarDeclarationExp($type, $name, $exps);
   }
   ;
 
@@ -281,30 +282,6 @@ ASSIGN_EXP
 RESOURCE_TYPE
   : TOKEN_TEXTURE2D {
     $$ = ResourceType::Texture2D;
-  }
-  | TOKEN_INT {
-    $$ = ResourceType::Int;
-  }
-  | TOKEN_INT2 {
-    $$ = ResourceType::Int2;
-  }
-  | TOKEN_INT3 {
-    $$ = ResourceType::Int3;
-  }
-  | TOKEN_INT4 {
-    $$ = ResourceType::Int4;
-  }
-  | TOKEN_FLOAT {
-    $$ = ResourceType::Float;
-  }
-  | TOKEN_FLOAT2 {
-    $$ = ResourceType::Float2;
-  }
-  | TOKEN_FLOAT3 {
-    $$ = ResourceType::Float3;
-  }
-  | TOKEN_FLOAT4 {
-    $$ = ResourceType::Float4;
   }
   ;
 

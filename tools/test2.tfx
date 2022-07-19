@@ -1,0 +1,11 @@
+scope testScope {
+  shader vertex, pixel:
+    descriptor_set(1);
+    register(texture, 1-5);
+    cbuffer(1);
+
+  texture2D myvar = extern(someVar);
+  texture2D myvar2 = extern(someVar);
+
+  int lol = extern(kek);
+};

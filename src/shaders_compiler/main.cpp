@@ -1,5 +1,6 @@
 #include "compiler.h"
 
+#include "serialization.h"
 #include "spirv.h"
 #include "constants.h"
 
@@ -246,6 +247,7 @@ int main(int argc, char** argv)
   Engine::InitLog();
   ShadersSystem::Compiler compiler;
   compiler.compileModuleFromFile("tools/test.tfx");
+  compiler.compileModuleFromFile("tools/test2.tfx");
   const ShadersSystem::MaterialsBin& mBin = compiler.getMaterialsBins();
 
   {

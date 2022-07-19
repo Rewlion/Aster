@@ -150,7 +150,7 @@ namespace ShadersSystem
         {
         }
 
-        void process(const TechniqueDeclaration& tDecl)
+        void process(const TechniqueDeclarationExp& tDecl)
         {
           m_TechniqueName = string(tDecl.name);
           processExps(*tDecl.exps);
@@ -158,9 +158,9 @@ namespace ShadersSystem
           generateReflection();
         }
 
-        Technique getTechniqueDecription() const
+        TechniqueDeclaration getTechniqueDecription() const
         {
-          return Technique
+          return TechniqueDeclaration
           {
             .name = std::move(m_TechniqueName),
             .byteCode = std::move(m_ByteCode),
@@ -346,9 +346,12 @@ namespace ShadersSystem
     };
   }
 
-  void Compiler::onTechniqueDeclaration(const TechniqueDeclaration& tDecl)
+  void Compiler::onTechniqueDeclaration(TechniqueDeclarationExp* exp)
   {
     try {
+      m_GC.push_back(std::unique_ptr<Node>(exp));
+      TechniqueDeclarationExp& tDecl = *exp;
+
       const string_hash nameHash = str_hash(tDecl.name);
       if (m_Module.declaredTechniques.find(nameHash) != m_Module.declaredTechniques.end())
         throw std::runtime_error(fmt::format("failed to declare a new technique `{}`: it's already declared", tDecl.name));
@@ -357,12 +360,14 @@ namespace ShadersSystem
 
       TechniqueProcessor tp(*this);
       tp.process(tDecl);
-      Technique tq = tp.getTechniqueDecription();
+      TechniqueDeclaration tq = tp.getTechniqueDecription();
 
       const auto declaredTq = m_DeclaredTechniques.find(nameHash);
       if (declaredTq != m_DeclaredTechniques.end())
+      {
         if (declaredTq->second == tq)
           throw std::runtime_error(fmt::format("failed to redeclare a technique `{}`", tq.name));
+      }
       else
         m_DeclaredTechniques.insert({
           nameHash,

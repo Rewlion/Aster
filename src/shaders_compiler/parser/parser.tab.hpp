@@ -142,10 +142,10 @@ union SHSTYPE
   int ival;
   char* sval;
 
-  ScopeDeclaration* scopeDeclaration;
+  ScopeDeclarationExp* scopeDeclaration;
   ScopeExp* scopeExp;
 
-  ShadersResourcesReserve* shadersResourcesReserve;
+  ShadersResourcesReserveExp* shadersResourcesReserve;
   ResourceReserveExp* resReserveExp;
   gapi::ShaderStage shader;
   DescriptorSetReserveExp* dsetExp;
@@ -153,7 +153,7 @@ union SHSTYPE
 
   ResourceDeclaration* resourceDeclaration;
   ResourceType resourceType;
-  ResourceAssignExpNode* resourceAssignExp;
+  ResourceAssignExp* resourceAssignExp;
 
   AttributeType attributeType;
   InputBufferExp* inputBufferExp;

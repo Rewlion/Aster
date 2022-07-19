@@ -1,7 +1,7 @@
 #pragma once
 
 #include "constants.h"
-#include "resources.h"
+#include "ast_types.h"
 
 #include <engine/gapi/resources.h>
 #include <engine/types.h>
@@ -10,6 +10,11 @@
 #include <vulkan/vulkan.hpp>
 #include <EASTL/vector.h>
 #include <array>
+
+namespace ShadersSystem
+{
+  struct InputDescription;
+}
 
 namespace spirv
 {

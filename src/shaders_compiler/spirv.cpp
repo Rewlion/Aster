@@ -1,4 +1,5 @@
 #include "spirv.h"
+#include "ast_processing_types.h"
 
 #include <engine/log.h>
 #include <engine/assert.h>

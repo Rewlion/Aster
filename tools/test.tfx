@@ -1,0 +1,62 @@
+scope testScope {
+  shader vertex, pixel:
+    descriptor_set(1);
+    register(texture, 1-5);
+    cbuffer(1);
+
+  texture2D myvar = extern(someVar);
+  texture2D myvar2 = extern(someVar);
+
+  int lol = extern(kek);
+};
+
+scope testSomeScope {
+  shader vertex, pixel:
+    descriptor_set(1);
+    register(texture, 1-5);
+    cbuffer(1);
+
+  int lol2 = extern(kek);
+};
+
+technique mytechnique {
+  support scope testScope;
+  activate scope testSomeScope;
+
+  input:
+    buffer(0):
+      float2 k1;
+      float3 k2;
+    buffer(1):
+      int b;
+
+  #hlsl
+    void kek(inout float4 c) {
+      c = float4(0,0,0,0);
+    }
+  #end
+
+  #hlsl
+    struct VsOutput
+    {
+      float4 pos: SV_Position;
+    };
+
+    VsOutput vs_main()
+    {
+      VsOutput op;
+      op.pos = float4(0,0,0,0);
+      return op;
+    }
+  #end
+
+  #hlsl
+    float4 ps_main() : SV_Target
+    {
+      return float4(0,0,0,0);
+    }
+  #end
+
+  compile(vs_6_1, vs_main);
+  compile(ps_6_1, ps_main);
+};

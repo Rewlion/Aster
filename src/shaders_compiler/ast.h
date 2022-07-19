@@ -1,98 +1,15 @@
 #pragma once
 
-#include <stdint.h>
+#include "ast_types.h"
 
 #include <engine/assert.h>
 #include <engine/gapi/resources.h>
 
+#include <stdint.h>
+#include <typeinfo>
+
 namespace ShadersSystem
 {
-  enum class ResourceType: uint8_t
-  {
-    None = 0,
-    Cbuffer = 1,
-    Texture2D = 2,
-    Float = 3,
-    Float2 = 4,
-    Float3 = 5,
-    Float4 = 6,
-    Int = 7,
-    Int2 = 8,
-    Int3 = 9,
-    Int4 = 10,
-  };
-
-  enum class AttributeType: uint8_t
-  {
-    None = 0,
-    Float = 3,
-    Float2 = 4,
-    Float3 = 5,
-    Float4 = 6,
-    Int = 7,
-    Int2 = 8,
-    Int3 = 9,
-    Int4 = 10,
-  };
-
-  inline size_t attributeType_to_size(const AttributeType type)
-  {
-    switch (type)
-    {
-      case AttributeType::Float:
-      case AttributeType::Int:
-        return 4;
-      case AttributeType::Float2:
-      case AttributeType::Int2:
-        return 8;
-      case AttributeType::Float3:
-      case AttributeType::Int3:
-        return 12;
-      case AttributeType::Float4:
-      case AttributeType::Int4:
-        return 16;
-
-      default:
-      {
-        ASSERT(!"unsupported type");
-        return 0;
-      }
-    }
-  }
-
-  inline string attributeType_to_string(const AttributeType type)
-  {
-    switch (type)
-    {
-      case AttributeType::Float:  return "float";
-      case AttributeType::Int:    return "int";
-      case AttributeType::Float2: return "float2";
-      case AttributeType::Int2:   return "int2";
-      case AttributeType::Float3: return "float3";
-      case AttributeType::Int3:   return "int3";
-      case AttributeType::Float4: return "float4";
-      case AttributeType::Int4:   return "int4";
-
-      default:
-      {
-        ASSERT(!"unsupported type");
-        return 0;
-      }
-    }
-  }
-
-  enum class ResourceAccessType: uint8_t
-  {
-    None = 0,
-    Extern = 1,
-    Channel = 2
-  };
-
-  struct TexturesRangeReserve
-  {
-    uint8_t begin = 0, end = 0;
-  };
-
   struct Node
   {
     enum Type
@@ -250,27 +167,6 @@ namespace ShadersSystem
     }
   };
 
-  enum class TargetProfile
-  {
-    None,
-    VS_6_0,
-    VS_6_1,
-    VS_6_2,
-    VS_6_3,
-    VS_6_4,
-    VS_6_5,
-    VS_6_6,
-    VS_6_7,
-    PS_6_0,
-    PS_6_1,
-    PS_6_2,
-    PS_6_3,
-    PS_6_4,
-    PS_6_5,
-    PS_6_6,
-    PS_6_7,
-  };
-
   struct CompileExp: public TechniqueExp
   {
     TargetProfile targetProfile;
@@ -313,18 +209,18 @@ namespace ShadersSystem
     }
   };
 
-  struct TechniqueDeclaration: public Node
+  struct TechniqueDeclarationExp: public Node
   {
     const char* name;
     const TechniqueExp* exps;
 
-    TechniqueDeclaration(const char* name, const TechniqueExp* exps)
+    TechniqueDeclarationExp(const char* name, const TechniqueExp* exps)
       : name(name)
       , exps(exps)
     {
     }
 
-    virtual ~TechniqueDeclaration()
+    virtual ~TechniqueDeclarationExp()
     {
       if (name)
       {
@@ -349,7 +245,8 @@ namespace ShadersSystem
     enum class Type
     {
       ShadersResourcesReserve = 0,
-      ResourceDeclaration = 1
+      ResourceDeclaration = 1,
+      CbufferVarDeclaration = 2,
     };
     Type type;
     ScopeExp* next;
@@ -405,17 +302,17 @@ namespace ShadersSystem
     }
   };
 
-  struct ShadersResourcesReserve: public ScopeExp
+  struct ShadersResourcesReserveExp: public ScopeExp
   {
     const ShaderExp* shaders;
     const ResourceReserveExp* exps;
-    ShadersResourcesReserve(const ShaderExp* shaders, ResourceReserveExp* exps)
+    ShadersResourcesReserveExp(const ShaderExp* shaders, ResourceReserveExp* exps)
       : ScopeExp(ScopeExp::Type::ShadersResourcesReserve)
       , shaders(shaders)
       , exps(exps)
     {
     }
-    virtual ~ShadersResourcesReserve()
+    virtual ~ShadersResourcesReserveExp()
     {
       if (shaders)
       {
@@ -469,32 +366,56 @@ namespace ShadersSystem
     }
   };
 
-  struct ResourceAssignExpNode: public Node
+  struct ResourceAssignExp: public Node
   {
     enum class Type
     {
       None = 0,
       Access = 1
     };
-    ResourceAssignExpNode(Type type)
+    ResourceAssignExp(Type type)
       : type(type)
       , next(nullptr)
       {
       }
-    virtual ~ResourceAssignExpNode()
+    virtual ~ResourceAssignExp()
     {
       delete next;
     }
+
+    bool operator==(const ResourceAssignExp& e) const
+    {
+      const ResourceAssignExp* a = next;
+      const ResourceAssignExp* b = e.next;
+
+      while (a && b)
+      {
+        if (a->isEqual(b) == false)
+          return false;
+
+        a = a->next;
+        b = b->next;
+      }
+
+      return (a == nullptr) && (b == nullptr);
+    }
+
     Type type = Type::None;
-    const ResourceAssignExpNode* next = nullptr;
+    const ResourceAssignExp* next = nullptr;
+
+  protected:
+    virtual bool isEqual(const ResourceAssignExp* e) const
+    {
+      return type == e->type;
+    }
   };
 
-  struct AccessResource: public ResourceAssignExpNode
+  struct AccessResource: public ResourceAssignExp
   {
     ResourceAccessType accessType;
     const char* resourceName;
     AccessResource(const ResourceAccessType accessType, const char* resourceName)
-      : ResourceAssignExpNode(ResourceAssignExpNode::Type::Access)
+      : ResourceAssignExp(ResourceAssignExp::Type::Access)
       , accessType(accessType)
       , resourceName(resourceName)
     {
@@ -507,15 +428,28 @@ namespace ShadersSystem
         resourceName = nullptr;
       }
     }
+
+  protected:
+    virtual bool isEqual(const ResourceAssignExp* e) const
+    {
+      if (typeid(this) == typeid(e))
+      {
+        const auto* rvl = reinterpret_cast<const AccessResource*>(e);
+        return accessType == rvl->accessType &&
+               !std::strcmp(resourceName, rvl->resourceName);
+      }
+
+      return false;
+    }
   };
 
   struct ResourceDeclarationExp: public ScopeExp
   {
     ResourceType resourceType;
     const char* name;
-    const ResourceAssignExpNode* assignExps;
+    const ResourceAssignExp* assignExps;
     ResourceDeclarationExp(const ResourceType resType, const char* name,
-                        const ResourceAssignExpNode* assignExps)
+                        const ResourceAssignExp* assignExps)
       : ScopeExp(ScopeExp::Type::ResourceDeclaration)
       , resourceType(resType)
       , name(name)
@@ -537,16 +471,44 @@ namespace ShadersSystem
     }
   };
 
-  struct ScopeDeclaration: public Node
+  struct CbufferVarDeclarationExp: public ScopeExp
+  {
+    AttributeType varType;
+    const char* name;
+    const ResourceAssignExp* assignExps;
+    CbufferVarDeclarationExp(const AttributeType varType, const char* name,
+                             const ResourceAssignExp* assignExps)
+      : ScopeExp(ScopeExp::Type::CbufferVarDeclaration)
+      , varType(varType)
+      , name(name)
+      , assignExps(assignExps)
+    {
+    }
+    virtual ~CbufferVarDeclarationExp()
+    {
+      if (name)
+      {
+        delete name;
+        name = nullptr;
+      }
+      if (assignExps)
+      {
+        delete assignExps;
+        assignExps = nullptr;
+      }
+    }
+  };
+
+  struct ScopeDeclarationExp: public Node
   {
     const char* name;
     const ScopeExp* exps;
-    ScopeDeclaration(const char* name, const ScopeExp* exps)
+    ScopeDeclarationExp(const char* name, const ScopeExp* exps)
       : name(name)
       , exps(exps)
     {
     }
-    virtual ~ScopeDeclaration()
+    virtual ~ScopeDeclarationExp()
     {
       if (name)
       {
