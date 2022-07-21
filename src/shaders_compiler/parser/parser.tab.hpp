@@ -138,31 +138,81 @@ extern int shdebug;
     TOKEN_INVERT = 323,            /* "invert"  */
     TOKEN_INCREMENT_AND_WRAP = 324, /* "inc_and_wrap"  */
     TOKEN_DECREMENT_AND_WRAP = 325, /* "dec_and_wrap"  */
-    TOKEN_TARGET_VS_6_0 = 326,     /* "vs_6_0"  */
-    TOKEN_TARGET_VS_6_1 = 327,     /* "vs_6_1"  */
-    TOKEN_TARGET_VS_6_2 = 328,     /* "vs_6_2"  */
-    TOKEN_TARGET_VS_6_3 = 329,     /* "vs_6_3"  */
-    TOKEN_TARGET_VS_6_4 = 330,     /* "vs_6_4"  */
-    TOKEN_TARGET_VS_6_5 = 331,     /* "vs_6_5"  */
-    TOKEN_TARGET_VS_6_6 = 332,     /* "vs_6_6"  */
-    TOKEN_TARGET_VS_6_7 = 333,     /* "vs_6_7"  */
-    TOKEN_TARGET_PS_6_0 = 334,     /* "ps_6_0"  */
-    TOKEN_TARGET_PS_6_1 = 335,     /* "ps_6_1"  */
-    TOKEN_TARGET_PS_6_2 = 336,     /* "ps_6_2"  */
-    TOKEN_TARGET_PS_6_3 = 337,     /* "ps_6_3"  */
-    TOKEN_TARGET_PS_6_4 = 338,     /* "ps_6_4"  */
-    TOKEN_TARGET_PS_6_5 = 339,     /* "ps_6_5"  */
-    TOKEN_TARGET_PS_6_6 = 340,     /* "ps_6_6"  */
-    TOKEN_TARGET_PS_6_7 = 341,     /* "ps_6_7"  */
-    TOKEN_FLOAT = 342,             /* TOKEN_FLOAT  */
-    TOKEN_FLOAT2 = 343,            /* TOKEN_FLOAT2  */
-    TOKEN_FLOAT3 = 344,            /* TOKEN_FLOAT3  */
-    TOKEN_FLOAT4 = 345,            /* TOKEN_FLOAT4  */
-    TOKEN_INT = 346,               /* TOKEN_INT  */
-    TOKEN_INT2 = 347,              /* TOKEN_INT2  */
-    TOKEN_INT3 = 348,              /* TOKEN_INT3  */
-    TOKEN_INT4 = 349,              /* TOKEN_INT4  */
-    TOKEN_TEXTURE2D = 350          /* TOKEN_TEXTURE2D  */
+    TOKEN_BLENDING = 326,          /* "blending"  */
+    TOKEN_HAS_BLANDING = 327,      /* "has_blending"  */
+    TOKEN_LOGIC_OP_ENABLED = 328,  /* "logic_op_enabled"  */
+    TOKEN_LOGIC_OP = 329,          /* "logic_op"  */
+    TOKEN_BLEND_CONSTANTS = 330,   /* "blend_constants"  */
+    TOKEN_MRT = 331,               /* "mrt"  */
+    TOKEN_SRC_COLOR_BLEND_FACTOR = 332, /* "src_color_blend_factor"  */
+    TOKEN_DST_COLOR_BLEND_FACTOR = 333, /* "dst_color_blend_factor"  */
+    TOKEN_COLOR_BLEND_OP = 334,    /* "color_blend_op"  */
+    TOKEN_SRC_ALPHA_BLEND_FACTOR = 335, /* "src_alpha_blend_factor"  */
+    TOKEN_DST_ALPHA_BLEND_FACTOR = 336, /* "dst_alpha_blend_factor"  */
+    TOKEN_ALPHA_BLEND_OP = 337,    /* "alpha_blend_op"  */
+    TOKEN_ONE = 338,               /* "one"  */
+    TOKEN_SRC_COLOR = 339,         /* "src_color"  */
+    TOKEN_ONE_MINUS_SRC_COLOR = 340, /* "one_minus_src_color"  */
+    TOKEN_DST_COLOR = 341,         /* "dst_color"  */
+    TOKEN_ONE_MINUS_DST_COLOR = 342, /* "one_minus_dst_color"  */
+    TOKEN_SRC_ALPHA = 343,         /* "src_alpha"  */
+    TOKEN_ONE_MINUS_SRC_ALPHA = 344, /* "one_minus_src_alpha"  */
+    TOKEN_DST_ALPHA = 345,         /* "dst_alpha"  */
+    TOKEN_ONE_MINUS_DST_ALPHA = 346, /* "one_minus_dst_alpha"  */
+    TOKEN_CONSTANT_COLOR = 347,    /* "constant_color"  */
+    TOKEN_ONE_MINUS_CONSTANT_COLOR = 348, /* "one_minus_constant_color"  */
+    TOKEN_CONSTANT_ALPHA = 349,    /* "constant_alpha"  */
+    TOKEN_ONE_MINUS_CONSTANT_ALPHA = 350, /* "one_minus_constant_alpha"  */
+    TOKEN_SRC_ALPHA_SATURATE = 351, /* "src_alpha_saturate"  */
+    TOKEN_SRC_ONE_COLOR = 352,     /* "src_one_color"  */
+    TOKEN_ONE_MINUS_SRC_ONE_COLOR = 353, /* "one_minus_src_one_color"  */
+    TOKEN_SRC_ONE_ALPHA = 354,     /* "src_one_alpha"  */
+    TOKEN_ONE_MINUS_SRC_ONE_ALPHA = 355, /* "one_minus_src_one_alpha"  */
+    TOKEN_ADD = 356,               /* "add"  */
+    TOKEN_SUBTRACT = 357,          /* "subtract"  */
+    TOKEN_REVERSE_SUBTRACT = 358,  /* "reverse_subtract"  */
+    TOKEN_MIN = 359,               /* "min"  */
+    TOKEN_MAX = 360,               /* "max"  */
+    TOKEN_CLEAR = 361,             /* "clear"  */
+    TOKEN_AND = 362,               /* "and"  */
+    TOKEN_AND_REVERSE = 363,       /* "and_reverse"  */
+    TOKEN_COPY = 364,              /* "copy"  */
+    TOKEN_AND_INVERTED = 365,      /* "and_inverted"  */
+    TOKEN_NO_OP = 366,             /* "no_op"  */
+    TOKEN_XOR = 367,               /* "xor"  */
+    TOKEN_OR = 368,                /* "or"  */
+    TOKEN_NOR = 369,               /* "nor"  */
+    TOKEN_EQUIVALENT = 370,        /* "equivalent"  */
+    TOKEN_OR_REVERSE = 371,        /* "or_reverse"  */
+    TOKEN_COPY_INVERTED = 372,     /* "copy_inverted"  */
+    TOKEN_OR_INVERTED = 373,       /* "or_inverted"  */
+    TOKEN_NAND = 374,              /* "nand"  */
+    TOKEN_SET = 375,               /* "set"  */
+    TOKEN_TARGET_VS_6_0 = 376,     /* "vs_6_0"  */
+    TOKEN_TARGET_VS_6_1 = 377,     /* "vs_6_1"  */
+    TOKEN_TARGET_VS_6_2 = 378,     /* "vs_6_2"  */
+    TOKEN_TARGET_VS_6_3 = 379,     /* "vs_6_3"  */
+    TOKEN_TARGET_VS_6_4 = 380,     /* "vs_6_4"  */
+    TOKEN_TARGET_VS_6_5 = 381,     /* "vs_6_5"  */
+    TOKEN_TARGET_VS_6_6 = 382,     /* "vs_6_6"  */
+    TOKEN_TARGET_VS_6_7 = 383,     /* "vs_6_7"  */
+    TOKEN_TARGET_PS_6_0 = 384,     /* "ps_6_0"  */
+    TOKEN_TARGET_PS_6_1 = 385,     /* "ps_6_1"  */
+    TOKEN_TARGET_PS_6_2 = 386,     /* "ps_6_2"  */
+    TOKEN_TARGET_PS_6_3 = 387,     /* "ps_6_3"  */
+    TOKEN_TARGET_PS_6_4 = 388,     /* "ps_6_4"  */
+    TOKEN_TARGET_PS_6_5 = 389,     /* "ps_6_5"  */
+    TOKEN_TARGET_PS_6_6 = 390,     /* "ps_6_6"  */
+    TOKEN_TARGET_PS_6_7 = 391,     /* "ps_6_7"  */
+    TOKEN_FLOAT = 392,             /* "float"  */
+    TOKEN_FLOAT2 = 393,            /* "float2"  */
+    TOKEN_FLOAT3 = 394,            /* "float3"  */
+    TOKEN_FLOAT4 = 395,            /* "float4"  */
+    TOKEN_INT = 396,               /* "int"  */
+    TOKEN_INT2 = 397,              /* "int2"  */
+    TOKEN_INT3 = 398,              /* "int3"  */
+    TOKEN_INT4 = 399,              /* "int4"  */
+    TOKEN_TEXTURE2D = 400          /* "texture2D"  */
   };
   typedef enum shtokentype shtoken_kind_t;
 #endif
@@ -202,11 +252,16 @@ union SHSTYPE
   gapi::PrimitiveTopology primitiveTopology;
   gapi::CompareOp compareOp;
   gapi::StencilOp stencilOp;
+  BlendingExp* blendingExp;
+  MrtBlendingExp* mrtBlendingExp;
+  gapi::BlendFactor blendFactor;
+  gapi::BlendOp blendOp;
+  gapi::LogicOp logicOp;
 
   TechniqueExp* techniqueExp;
   TargetProfile targetProfile;
 
-#line 210 "src/shaders_compiler/parser/parser.tab.hpp"
+#line 265 "src/shaders_compiler/parser/parser.tab.hpp"
 
 };
 typedef union SHSTYPE SHSTYPE;

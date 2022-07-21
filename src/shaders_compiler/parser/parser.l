@@ -370,6 +370,79 @@ patch_list {
   return TOKEN_DECREMENT_AND_WRAP;
 }
 
+"one" {
+  return TOKEN_ONE;
+}
+
+"src_color" {
+  return TOKEN_SRC_COLOR;
+}
+
+"one_minus_src_color" {
+  return TOKEN_ONE_MINUS_SRC_COLOR;
+}
+
+"dst_color" {
+  return TOKEN_DST_COLOR;
+}
+
+"one_minus_dst_color" {
+  return TOKEN_ONE_MINUS_DST_COLOR;
+}
+
+"src_alpha" {
+  return TOKEN_SRC_ALPHA;
+}
+
+"one_minus_src_alpha" {
+  return TOKEN_ONE_MINUS_SRC_ALPHA;
+}
+
+"dst_alpha" {
+  return TOKEN_DST_ALPHA;
+}
+
+"one_minus_dst_alpha" {
+  return TOKEN_ONE_MINUS_DST_ALPHA;
+}
+
+"constant_color" {
+  return TOKEN_CONSTANT_COLOR;
+}
+
+"one_minus_constant_color" {
+  return TOKEN_ONE_MINUS_CONSTANT_COLOR;
+}
+
+"constant_alpha" {
+  return TOKEN_CONSTANT_ALPHA;
+}
+
+"one_minus_constant_alpha" {
+  return TOKEN_ONE_MINUS_CONSTANT_ALPHA;
+}
+
+"src_alpha_saturate" {
+  return TOKEN_SRC_ALPHA_SATURATE;
+}
+
+"src_one_color" {
+  return TOKEN_SRC_ONE_COLOR;
+}
+
+"one_minus_src_one_color" {
+  return TOKEN_ONE_MINUS_SRC_ONE_COLOR;
+}
+
+"src_one_alpha" {
+  return TOKEN_SRC_ONE_ALPHA;
+}
+
+"one_minus_src_one_alpha" {
+  return TOKEN_ONE_MINUS_SRC_ONE_ALPHA;
+}
+
+
 vs_6_0 {
   return TOKEN_TARGET_VS_6_0;
 }

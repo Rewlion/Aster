@@ -199,10 +199,10 @@ namespace gapi
     ConstantAlpha         = 12,
     OneMinusConstantAlpha = 13,
     SrcAlphaSaturate      = 14,
-    Src1Color             = 15,
-    OneMinusSrc1Color     = 16,
-    Src1Alpha             = 17,
-    OneMinusSrc1Alpha     = 18
+    SrcOneColor           = 15,
+    OneMinusSrcOneColor   = 16,
+    SrcOneAlpha           = 17,
+    OneMinusSrcOneAlpha   = 18
   };
 
   enum class BlendOp: uint8_t

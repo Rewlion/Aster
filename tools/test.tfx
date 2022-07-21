@@ -33,6 +33,18 @@ technique mytechnique {
     stencil_depth_fail_op = keep;
     stencil_compare_op = never;
     stencil_ref_val = 0;
+    blending:
+      logic_op_enabled = yes;
+      logic_op = add;
+      blend_constants = float4(0.0, 0.0, 0.0, 0.0);
+      mrt:
+        has_blending = true;
+        src_color_blend_factor = zero;
+        dst_color_blend_factor = zero;
+        color_blend_op = add;
+        src_alpha_blend_factor = zero;
+        dst_alpha_blend_factor = zero;
+        alpha_blend_op = add;
 
   input:
     buffer(0):

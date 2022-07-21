@@ -60,6 +60,11 @@
   gapi::PrimitiveTopology primitiveTopology;
   gapi::CompareOp compareOp;
   gapi::StencilOp stencilOp;
+  BlendingExp* blendingExp;
+  MrtBlendingExp* mrtBlendingExp;
+  gapi::BlendFactor blendFactor;
+  gapi::BlendOp blendOp;
+  gapi::LogicOp logicOp;
 
   TechniqueExp* techniqueExp;
   TargetProfile targetProfile;
@@ -134,6 +139,56 @@
 %token TOKEN_INVERT "invert"
 %token TOKEN_INCREMENT_AND_WRAP "inc_and_wrap"
 %token TOKEN_DECREMENT_AND_WRAP "dec_and_wrap"
+%token TOKEN_BLENDING "blending"
+%token TOKEN_HAS_BLANDING "has_blending"
+%token TOKEN_LOGIC_OP_ENABLED "logic_op_enabled"
+%token TOKEN_LOGIC_OP "logic_op"
+%token TOKEN_BLEND_CONSTANTS "blend_constants"
+%token TOKEN_MRT "mrt"
+%token TOKEN_SRC_COLOR_BLEND_FACTOR "src_color_blend_factor"
+%token TOKEN_DST_COLOR_BLEND_FACTOR "dst_color_blend_factor"
+%token TOKEN_COLOR_BLEND_OP "color_blend_op"
+%token TOKEN_SRC_ALPHA_BLEND_FACTOR "src_alpha_blend_factor"
+%token TOKEN_DST_ALPHA_BLEND_FACTOR "dst_alpha_blend_factor"
+%token TOKEN_ALPHA_BLEND_OP "alpha_blend_op"
+%token TOKEN_ONE "one"
+%token TOKEN_SRC_COLOR "src_color"
+%token TOKEN_ONE_MINUS_SRC_COLOR "one_minus_src_color"
+%token TOKEN_DST_COLOR "dst_color"
+%token TOKEN_ONE_MINUS_DST_COLOR "one_minus_dst_color"
+%token TOKEN_SRC_ALPHA "src_alpha"
+%token TOKEN_ONE_MINUS_SRC_ALPHA "one_minus_src_alpha"
+%token TOKEN_DST_ALPHA "dst_alpha"
+%token TOKEN_ONE_MINUS_DST_ALPHA "one_minus_dst_alpha"
+%token TOKEN_CONSTANT_COLOR "constant_color"
+%token TOKEN_ONE_MINUS_CONSTANT_COLOR "one_minus_constant_color"
+%token TOKEN_CONSTANT_ALPHA "constant_alpha"
+%token TOKEN_ONE_MINUS_CONSTANT_ALPHA "one_minus_constant_alpha"
+%token TOKEN_SRC_ALPHA_SATURATE "src_alpha_saturate"
+%token TOKEN_SRC_ONE_COLOR "src_one_color"
+%token TOKEN_ONE_MINUS_SRC_ONE_COLOR "one_minus_src_one_color"
+%token TOKEN_SRC_ONE_ALPHA "src_one_alpha"
+%token TOKEN_ONE_MINUS_SRC_ONE_ALPHA "one_minus_src_one_alpha"
+%token TOKEN_ADD "add"
+%token TOKEN_SUBTRACT "subtract"
+%token TOKEN_REVERSE_SUBTRACT "reverse_subtract"
+%token TOKEN_MIN "min"
+%token TOKEN_MAX "max"
+%token TOKEN_CLEAR "clear"
+%token TOKEN_AND "and"
+%token TOKEN_AND_REVERSE "and_reverse"
+%token TOKEN_COPY "copy"
+%token TOKEN_AND_INVERTED "and_inverted"
+%token TOKEN_NO_OP "no_op"
+%token TOKEN_XOR "xor"
+%token TOKEN_OR "or"
+%token TOKEN_NOR "nor"
+%token TOKEN_EQUIVALENT "equivalent"
+%token TOKEN_OR_REVERSE "or_reverse"
+%token TOKEN_COPY_INVERTED "copy_inverted"
+%token TOKEN_OR_INVERTED "or_inverted"
+%token TOKEN_NAND "nand"
+%token TOKEN_SET "set"
 %token TOKEN_TARGET_VS_6_0 "vs_6_0"
 %token TOKEN_TARGET_VS_6_1 "vs_6_1"
 %token TOKEN_TARGET_VS_6_2 "vs_6_2"
@@ -151,15 +206,15 @@
 %token TOKEN_TARGET_PS_6_6 "ps_6_6"
 %token TOKEN_TARGET_PS_6_7 "ps_6_7"
 
-%token TOKEN_FLOAT
-%token TOKEN_FLOAT2
-%token TOKEN_FLOAT3
-%token TOKEN_FLOAT4
-%token TOKEN_INT
-%token TOKEN_INT2
-%token TOKEN_INT3
-%token TOKEN_INT4
-%token TOKEN_TEXTURE2D
+%token TOKEN_FLOAT "float"
+%token TOKEN_FLOAT2 "float2"
+%token TOKEN_FLOAT3 "float3"
+%token TOKEN_FLOAT4 "float4"
+%token TOKEN_INT "int"
+%token TOKEN_INT2 "int2"
+%token TOKEN_INT3 "int3"
+%token TOKEN_INT4 "int4"
+%token TOKEN_TEXTURE2D "texture2D"
 
 %type <techniqueExp>         TECHNIQUE_EXP
 %type <techniqueExp>         TECHNIQUE_EXP_LIST
@@ -171,6 +226,7 @@
 %type <resReserveExp>        RESOURCE_RESERVE_EXP_LIST
 %type <ival>                 INT_VALUE
 %type <bval>                 BOOL_VALUE
+%type <f4val>                FLOAT4_VALUE
 %type <resourceType>         RESOURCE_TYPE
 %type <resourceAssignExp>    ASSIGN_EXP
 %type <targetProfile>        TARGET_PROFILE
@@ -184,6 +240,13 @@
 %type <renderStateExp>       RENDER_STATE_EXP_LIST
 %type <compareOp>            COMPARE_OP
 %type <stencilOp>            STENCIL_OP
+%type <blendingExp>          BLENDING_EXP
+%type <blendingExp>          BLENDING_EXP_LIST
+%type <mrtBlendingExp>       MRT_BLENDING_EXP
+%type <mrtBlendingExp>       MRT_BLENDING_EXP_LIST
+%type <blendFactor>          BLEND_FACTOR
+%type <blendOp>              BLEND_OP
+%type <logicOp>              LOGIC_OP
 
 %%
 
@@ -314,6 +377,9 @@ RENDER_STATE_EXP
   | "stencil_ref_val" "=" INT_VALUE[v] ";" {
     $$ = new StencilReferenceValueExp($v);
   }
+  | "blending" ":" BLENDING_EXP_LIST[exps] {
+    $$ = $exps;
+  }
   ;
 
 PRIMITIVE_TOPOLOGY
@@ -400,6 +466,195 @@ STENCIL_OP
   }
   | "dec_and_wrap" {
     $$ = gapi::StencilOp::DecrementAndWrap;
+  }
+  ;
+
+BLENDING_EXP_LIST
+  : BLENDING_EXP[exp] BLENDING_EXP_LIST[next] {
+    $$ = $exp;
+    $$->next = $next;
+  }
+  | BLENDING_EXP[exp] {
+    $$ = $exp;
+    $$->next = nullptr;
+  }
+
+BLENDING_EXP
+  : "logic_op_enabled" "=" BOOL_VALUE[v] ";" {
+    $$ = new LogicOpEnablingExp($v);
+  }
+  | "logic_op" "=" LOGIC_OP[op] ";" {
+    $$ = new LogicOpExp($op);
+  }
+  | "blend_constants" "=" FLOAT4_VALUE[v] ";" {
+    $$ = new BlendConstants($v);
+  }
+  | "mrt" ":" MRT_BLENDING_EXP_LIST[exps] {
+    $$ = $exps;
+  }
+  ;
+
+MRT_BLENDING_EXP_LIST
+  : MRT_BLENDING_EXP[el] MRT_BLENDING_EXP_LIST[next] {
+    $$ = $el;
+    $$->next = $next;
+  }
+  | MRT_BLENDING_EXP[el] {
+    $$ = $el;
+    $$->next = nullptr;
+  }
+  ;
+
+MRT_BLENDING_EXP
+  : "has_blending" "=" BOOL_VALUE[v] ";" {
+    $$ = new MrtBlendingEnabledExp($v);
+  }
+  | "src_color_blend_factor" "=" BLEND_FACTOR[f] ";" {
+    $$ = new MrtSrcColorBlendFactorExp($f);
+  }
+  | "dst_color_blend_factor" "=" BLEND_FACTOR[f] ";" {
+    $$ = new MrtDstColorBlendFactorExp($f);
+  }
+  | "color_blend_op" "=" BLEND_OP[op] ";" {
+    $$ = new MrtColorBlendOpExp($op);
+  }
+  | "src_alpha_blend_factor" "=" BLEND_FACTOR[f] ";" {
+    $$ = new MrtSrcAlphaBlendFactorExp($f);
+  }
+  | "dst_alpha_blend_factor" "=" BLEND_FACTOR[f] ";" {
+    $$ = new MrtDstAlphaBlendFactorExp($f);
+  }
+  | "alpha_blend_op" "=" BLEND_OP[op] ";" {
+    $$ = new MrtAlphaBlendOpExp($op);
+  }
+  ;
+
+BLEND_FACTOR
+  : "zero" {
+    $$ = gapi::BlendFactor::Zero;
+  }
+  | "one" {
+    $$ = gapi::BlendFactor::One;
+  }
+  | "src_color" {
+    $$ = gapi::BlendFactor::SrcColor;
+  }
+  | "one_minus_src_color" {
+    $$ = gapi::BlendFactor::OneMinusSrcColor;
+  }
+  | "dst_color" {
+    $$ = gapi::BlendFactor::DstColor;
+  }
+  | "one_minus_dst_color" {
+    $$ = gapi::BlendFactor::OneMinusDstColor;
+  }
+  | "src_alpha" {
+    $$ = gapi::BlendFactor::SrcAlpha;
+  }
+  | "one_minus_src_alpha" {
+    $$ = gapi::BlendFactor::OneMinusSrcAlpha;
+  }
+  | "dst_alpha" {
+    $$ = gapi::BlendFactor::DstAlpha;
+  }
+  | "one_minus_dst_alpha" {
+    $$ = gapi::BlendFactor::OneMinusDstAlpha;
+  }
+  | "constant_color" {
+    $$ = gapi::BlendFactor::ConstantColor;
+  }
+  | "one_minus_constant_color" {
+    $$ = gapi::BlendFactor::OneMinusConstantColor;
+  }
+  | "constant_alpha" {
+    $$ = gapi::BlendFactor::ConstantAlpha;
+  }
+  | "one_minus_constant_alpha" {
+    $$ = gapi::BlendFactor::OneMinusConstantAlpha;
+  }
+  | "src_alpha_saturate" {
+    $$ = gapi::BlendFactor::SrcAlphaSaturate;
+  }
+  | "src_one_color" {
+    $$ = gapi::BlendFactor::SrcOneColor;
+  }
+  | "one_minus_src_one_color" {
+    $$ = gapi::BlendFactor::OneMinusSrcOneColor;
+  }
+  | "src_one_alpha" {
+    $$ = gapi::BlendFactor::SrcOneAlpha;
+  }
+  | "one_minus_src_one_alpha" {
+    $$ = gapi::BlendFactor::OneMinusSrcOneAlpha;
+  }
+  ;
+
+BLEND_OP
+  : "add" {
+    $$ = gapi::BlendOp::Add;
+  }
+  | "subtract" {
+    $$ = gapi::BlendOp::Subtract;
+  }
+  | "reverse_subtract" {
+    $$ = gapi::BlendOp::ReverseSubtract;
+  }
+  | "min" {
+    $$ = gapi::BlendOp::Min;
+  }
+  | "max" {
+    $$ = gapi::BlendOp::Max;
+  }
+  ;
+
+LOGIC_OP
+  : "clear" {
+    $$ = gapi::LogicOp::Clear;
+  }
+  | "and" {
+    $$ = gapi::LogicOp::And;
+  }
+  | "and_reverse" {
+    $$ = gapi::LogicOp::AndReverse;
+  }
+  | "copy" {
+    $$ = gapi::LogicOp::Copy;
+  }
+  | "and_inverted" {
+    $$ = gapi::LogicOp::AndInverted;
+  }
+  | "no_op" {
+    $$ = gapi::LogicOp::NoOp;
+  }
+  | "xor" {
+    $$ = gapi::LogicOp::Xor;
+  }
+  | "or" {
+    $$ = gapi::LogicOp::Or;
+  }
+  | "nor" {
+    $$ = gapi::LogicOp::Nor;
+  }
+  | "equivalent" {
+    $$ = gapi::LogicOp::Equivalent;
+  }
+  | "invert" {
+    $$ = gapi::LogicOp::Invert;
+  }
+  | "or_reverse" {
+    $$ = gapi::LogicOp::OrReverse;
+  }
+  | "copy_inverted" {
+    $$ = gapi::LogicOp::CopyInverted;
+  }
+  | "or_inverted" {
+    $$ = gapi::LogicOp::OrInverted;
+  }
+  | "nand" {
+    $$ = gapi::LogicOp::Nand;
+  }
+  | "set" {
+    $$ = gapi::LogicOp::Set;
   }
   ;
 
@@ -494,6 +749,12 @@ ATTRIBUTE_TYPE
   }
   | TOKEN_FLOAT4 {
     $$ = AttributeType::Float4;
+  }
+  ;
+
+FLOAT4_VALUE
+  : "float4" "(" TOKEN_FLOAT_VAL[v0] "," TOKEN_FLOAT_VAL[v1] "," TOKEN_FLOAT_VAL[v2] "," TOKEN_FLOAT_VAL[v3] ")" {
+    $$ = float4($v0, $v1, $v2, $v3);
   }
   ;
 

@@ -181,7 +181,8 @@ namespace ShadersSystem
       StencilPassOp,
       StencilDepthFailOp,
       StencilCompareOp,
-      StencilReferenceValue
+      StencilReferenceValue,
+      Blending
     };
 
     RenderStateExp(const StateType stateType)
@@ -310,6 +311,176 @@ namespace ShadersSystem
     {
     }
     uint32_t value;
+  };
+
+  struct BlendingExp: public RenderStateExp
+  {
+    enum class Type
+    {
+      LogicOpEnabling,
+      LogicOp,
+      BlendConstants,
+      MrtState
+    };
+
+    BlendingExp(const Type blendingStateType)
+      : RenderStateExp(RenderStateExp::StateType::Blending)
+      , blendingStateType(blendingStateType)
+    {
+    }
+
+    virtual ~BlendingExp()
+    {
+      if (next)
+      {
+        delete next;
+        next = nullptr;
+      }
+    }
+
+    Type blendingStateType;
+    BlendingExp* next;
+  };
+
+  struct LogicOpEnablingExp: public BlendingExp
+  {
+    LogicOpEnablingExp(const bool enabled)
+      : BlendingExp(BlendingExp::Type::LogicOpEnabling)
+      , enabled(enabled)
+    {
+    }
+    bool enabled;
+  };
+
+  struct LogicOpExp: public BlendingExp
+  {
+    LogicOpExp(const gapi::LogicOp op)
+      : BlendingExp(BlendingExp::Type::LogicOp)
+      , op(op)
+    {
+    }
+
+    gapi::LogicOp op;
+  };
+
+  struct BlendConstants: public BlendingExp
+  {
+    BlendConstants(const float4 val)
+      : BlendingExp(BlendingExp::Type::BlendConstants)
+      , val(val)
+    {
+    }
+
+    float4 val;
+  };
+
+  struct MrtBlendingExp: public BlendingExp
+  {
+    enum class Type
+    {
+      Enabling,
+      SrcColorBlendFactor,
+      DstColorBlendFactor,
+      ColorBlendOp,
+      SrcAlphaBlendFactor,
+      DstAlphaBlendFactor,
+      AlphaBlendOp
+    };
+
+    MrtBlendingExp(const Type type)
+      : BlendingExp(BlendingExp::Type::MrtState)
+      , mrtBlendingStateType(type)
+    {
+    }
+
+    virtual ~MrtBlendingExp()
+    {
+      if (next)
+      {
+        delete next;
+        next = nullptr;
+      }
+    }
+
+    Type mrtBlendingStateType;
+    MrtBlendingExp* next;
+  };
+
+  struct MrtBlendingEnabledExp: public MrtBlendingExp
+  {
+    MrtBlendingEnabledExp(const bool enabled)
+      : MrtBlendingExp(MrtBlendingExp::Type::Enabling)
+      , enabled(enabled)
+    {
+    }
+
+    bool enabled;
+  };
+
+  struct MrtSrcColorBlendFactorExp: public MrtBlendingExp
+  {
+    MrtSrcColorBlendFactorExp(const gapi::BlendFactor factor)
+      : MrtBlendingExp(MrtBlendingExp::Type::SrcColorBlendFactor)
+      , factor(factor)
+    {
+    }
+
+    gapi::BlendFactor factor;
+  };
+
+  struct MrtDstColorBlendFactorExp: public MrtBlendingExp
+  {
+    MrtDstColorBlendFactorExp(const gapi::BlendFactor factor)
+      : MrtBlendingExp(MrtBlendingExp::Type::DstColorBlendFactor)
+      , factor(factor)
+    {
+    }
+
+    gapi::BlendFactor factor;
+  };
+
+  struct MrtColorBlendOpExp: public MrtBlendingExp
+  {
+    MrtColorBlendOpExp(const gapi::BlendOp op)
+      : MrtBlendingExp(MrtBlendingExp::Type::ColorBlendOp)
+      , op(op)
+    {
+    }
+
+    gapi::BlendOp op;
+  };
+
+  struct MrtSrcAlphaBlendFactorExp: public MrtBlendingExp
+  {
+    MrtSrcAlphaBlendFactorExp(const gapi::BlendFactor factor)
+      : MrtBlendingExp(MrtBlendingExp::Type::SrcAlphaBlendFactor)
+      , factor(factor)
+    {
+    }
+
+    gapi::BlendFactor factor;
+  };
+
+  struct MrtDstAlphaBlendFactorExp: public MrtBlendingExp
+  {
+    MrtDstAlphaBlendFactorExp(const gapi::BlendFactor factor)
+      : MrtBlendingExp(MrtBlendingExp::Type::DstAlphaBlendFactor)
+      , factor(factor)
+    {
+    }
+
+    gapi::BlendFactor factor;
+  };
+
+  struct MrtAlphaBlendOpExp: public MrtBlendingExp
+  {
+    MrtAlphaBlendOpExp(const gapi::BlendOp op)
+      : MrtBlendingExp(MrtBlendingExp::Type::ColorBlendOp)
+      , op(op)
+    {
+    }
+
+    gapi::BlendOp op;
   };
 
   struct CompileExp: public TechniqueExp
