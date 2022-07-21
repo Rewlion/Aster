@@ -55,6 +55,8 @@
   InputBufferExp* inputBufferExp;
   InputAttributeExp* inputAttributeExp;
 
+  gapi::PrimitiveTopology primitiveTopology;
+
   TechniqueExp* techniqueExp;
   TargetProfile targetProfile;
 }
@@ -90,6 +92,17 @@
 %token TOKEN_SUPPORT "support"
 %token TOKEN_ACTIVATE "activate"
 %token TOKEN_COMPILE "compile"
+%token TOKEN_PRIMITIVE_TOPOLOGY "primitive_topology"
+%token TOKEN_PT_POINT_LIST "point_list"
+%token TOKEN_PT_LINE_LIST "line_list"
+%token TOKEN_PT_LINE_STRIP "line_strip"
+%token TOKEN_PT_TRIANGLE_LIST "triangle_list"
+%token TOKEN_PT_TRIANGLE_FAN "triangle_fan"
+%token TOKEN_PT_LINE_LIST_WITH_ADJACENCY "line_list_with_adjacency"
+%token TOKEN_PT_LINE_STRIP_WITH_ADJACENCY "line_strip_with_adjacency"
+%token TOKEN_PT_TRIANGLE_LIST_WITH_ADJACENCY "triangle_list_with_adjacency"
+%token TOKEN_PT_TRIANGLE_STRIP_WITH_ADJACENCY "triangle_strip_with_adjacency"
+%token TOKEN_PT_PATCH_LIST "patch_list"
 %token TOKEN_TARGET_VS_6_0 "vs_6_0"
 %token TOKEN_TARGET_VS_6_1 "vs_6_1"
 %token TOKEN_TARGET_VS_6_2 "vs_6_2"
@@ -134,6 +147,7 @@
 %type <inputAttributeExp>    INPUT_ATTRIBUTE
 %type <inputAttributeExp>    INPUT_ATTRIBUTE_LIST
 %type <attributeType>        ATTRIBUTE_TYPE
+%type <primitiveTopology>    PRIMITIVE_TOPOLOGY
 
 %%
 
@@ -183,6 +197,9 @@ TECHNIQUE_EXP
   | "input" ":" INPUT_BUFFER_LIST[buffers] {
     $$ = new InputExp($buffers);
   }
+  | "primitive_topology" "=" PRIMITIVE_TOPOLOGY[v] ";"{
+    $$ = new PrimitiveTopologyExp($v);
+  }
   ;
 
 INPUT_BUFFER_LIST
@@ -217,6 +234,40 @@ INPUT_ATTRIBUTE
   : ATTRIBUTE_TYPE[type] TOKEN_NAME_VAL[name] ";" {
     $$ = new InputAttributeExp($type, $name);
   }
+  ;
+
+PRIMITIVE_TOPOLOGY
+  : "point_list" {
+    $$ = gapi::PrimitiveTopology::PointList;
+  }
+  | "line_list" {
+    $$ = gapi::PrimitiveTopology::LineList;
+  }
+  | "line_strip" {
+    $$ = gapi::PrimitiveTopology::LineStrip;
+  }
+  | "triangle_list" {
+    $$ = gapi::PrimitiveTopology::TriangleList;
+  }
+  | "triangle_fan" {
+    $$ = gapi::PrimitiveTopology::TriangleFan;
+  }
+  | "line_list_with_adjacency" {
+    $$ = gapi::PrimitiveTopology::LineListWithAdjacency;
+  }
+  | "line_strip_with_adjacency" {
+    $$ = gapi::PrimitiveTopology::LineStripWithAdjacency;
+  }
+  | "triangle_list_with_adjacency" {
+    $$ = gapi::PrimitiveTopology::TriangleListWithAdjacency;
+  }
+  | "triangle_strip_with_adjacency" {
+    $$ = gapi::PrimitiveTopology::TriangleStripWithAdjacency;
+  }
+  | "patch_list" {
+    $$ = gapi::PrimitiveTopology::PatchList;
+  }
+  ;
 
 SCOPE_DECLARATION
   : "scope" TOKEN_NAME_VAL[name] "{" SCOPE_EXP_LIST[exps] "}" ";" {

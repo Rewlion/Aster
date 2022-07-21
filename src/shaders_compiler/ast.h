@@ -31,6 +31,7 @@ namespace ShadersSystem
       Hlsl = 3,
       Compile = 4,
       Input = 5,
+      PrimitiveTopology = 6,
     };
 
     TechniqueExp* next;
@@ -164,6 +165,17 @@ namespace ShadersSystem
         delete buffers;
         buffers = nullptr;
       }
+    }
+  };
+
+  struct PrimitiveTopologyExp: public TechniqueExp
+  {
+    gapi::PrimitiveTopology tp;
+
+    PrimitiveTopologyExp(const gapi::PrimitiveTopology tp)
+      : TechniqueExp(TechniqueExp::Type::PrimitiveTopology)
+      , tp(tp)
+    {
     }
   };
 

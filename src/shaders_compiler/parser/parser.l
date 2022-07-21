@@ -202,6 +202,50 @@ compile {
   return TOKEN_COMPILE;
 }
 
+primitive_topology {
+  return TOKEN_PRIMITIVE_TOPOLOGY;
+}
+
+point_list {
+  return TOKEN_PT_POINT_LIST;
+}
+
+line_list {
+  return TOKEN_PT_LINE_LIST;
+}
+
+line_strip {
+  return TOKEN_PT_LINE_STRIP;
+}
+
+triangle_list {
+  return TOKEN_PT_TRIANGLE_LIST;
+}
+
+triangle_fan {
+  return TOKEN_PT_TRIANGLE_FAN;
+}
+
+line_list_with_adjacency {
+  return TOKEN_PT_LINE_LIST_WITH_ADJACENCY;
+}
+
+line_strip_with_adjacency {
+  return TOKEN_PT_LINE_STRIP_WITH_ADJACENCY;
+}
+
+triangle_list_with_adjacency {
+  return TOKEN_PT_TRIANGLE_LIST_WITH_ADJACENCY;
+}
+
+triangle_strip_with_adjacency {
+  return TOKEN_PT_TRIANGLE_STRIP_WITH_ADJACENCY;
+}
+
+patch_list {
+  return TOKEN_PT_PATCH_LIST;
+}
+
 vs_6_0 {
   return TOKEN_TARGET_VS_6_0;
 }

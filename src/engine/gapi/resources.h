@@ -154,7 +154,7 @@ namespace gapi
     LineStripWithAdjacency     = 7,
     TriangleListWithAdjacency  = 8,
     TriangleStripWithAdjacency = 9,
-    PathList                   = 10
+    PatchList                  = 10
   };
 
   struct GraphicsPipelineLayoutDescription

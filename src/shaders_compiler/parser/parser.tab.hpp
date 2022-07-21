@@ -100,31 +100,42 @@ extern int shdebug;
     TOKEN_SUPPORT = 285,           /* "support"  */
     TOKEN_ACTIVATE = 286,          /* "activate"  */
     TOKEN_COMPILE = 287,           /* "compile"  */
-    TOKEN_TARGET_VS_6_0 = 288,     /* "vs_6_0"  */
-    TOKEN_TARGET_VS_6_1 = 289,     /* "vs_6_1"  */
-    TOKEN_TARGET_VS_6_2 = 290,     /* "vs_6_2"  */
-    TOKEN_TARGET_VS_6_3 = 291,     /* "vs_6_3"  */
-    TOKEN_TARGET_VS_6_4 = 292,     /* "vs_6_4"  */
-    TOKEN_TARGET_VS_6_5 = 293,     /* "vs_6_5"  */
-    TOKEN_TARGET_VS_6_6 = 294,     /* "vs_6_6"  */
-    TOKEN_TARGET_VS_6_7 = 295,     /* "vs_6_7"  */
-    TOKEN_TARGET_PS_6_0 = 296,     /* "ps_6_0"  */
-    TOKEN_TARGET_PS_6_1 = 297,     /* "ps_6_1"  */
-    TOKEN_TARGET_PS_6_2 = 298,     /* "ps_6_2"  */
-    TOKEN_TARGET_PS_6_3 = 299,     /* "ps_6_3"  */
-    TOKEN_TARGET_PS_6_4 = 300,     /* "ps_6_4"  */
-    TOKEN_TARGET_PS_6_5 = 301,     /* "ps_6_5"  */
-    TOKEN_TARGET_PS_6_6 = 302,     /* "ps_6_6"  */
-    TOKEN_TARGET_PS_6_7 = 303,     /* "ps_6_7"  */
-    TOKEN_FLOAT = 304,             /* TOKEN_FLOAT  */
-    TOKEN_FLOAT2 = 305,            /* TOKEN_FLOAT2  */
-    TOKEN_FLOAT3 = 306,            /* TOKEN_FLOAT3  */
-    TOKEN_FLOAT4 = 307,            /* TOKEN_FLOAT4  */
-    TOKEN_INT = 308,               /* TOKEN_INT  */
-    TOKEN_INT2 = 309,              /* TOKEN_INT2  */
-    TOKEN_INT3 = 310,              /* TOKEN_INT3  */
-    TOKEN_INT4 = 311,              /* TOKEN_INT4  */
-    TOKEN_TEXTURE2D = 312          /* TOKEN_TEXTURE2D  */
+    TOKEN_PRIMITIVE_TOPOLOGY = 288, /* "primitive_topology"  */
+    TOKEN_PT_POINT_LIST = 289,     /* "point_list"  */
+    TOKEN_PT_LINE_LIST = 290,      /* "line_list"  */
+    TOKEN_PT_LINE_STRIP = 291,     /* "line_strip"  */
+    TOKEN_PT_TRIANGLE_LIST = 292,  /* "triangle_list"  */
+    TOKEN_PT_TRIANGLE_FAN = 293,   /* "triangle_fan"  */
+    TOKEN_PT_LINE_LIST_WITH_ADJACENCY = 294, /* "line_list_with_adjacency"  */
+    TOKEN_PT_LINE_STRIP_WITH_ADJACENCY = 295, /* "line_strip_with_adjacency"  */
+    TOKEN_PT_TRIANGLE_LIST_WITH_ADJACENCY = 296, /* "triangle_list_with_adjacency"  */
+    TOKEN_PT_TRIANGLE_STRIP_WITH_ADJACENCY = 297, /* "triangle_strip_with_adjacency"  */
+    TOKEN_PT_PATCH_LIST = 298,     /* "patch_list"  */
+    TOKEN_TARGET_VS_6_0 = 299,     /* "vs_6_0"  */
+    TOKEN_TARGET_VS_6_1 = 300,     /* "vs_6_1"  */
+    TOKEN_TARGET_VS_6_2 = 301,     /* "vs_6_2"  */
+    TOKEN_TARGET_VS_6_3 = 302,     /* "vs_6_3"  */
+    TOKEN_TARGET_VS_6_4 = 303,     /* "vs_6_4"  */
+    TOKEN_TARGET_VS_6_5 = 304,     /* "vs_6_5"  */
+    TOKEN_TARGET_VS_6_6 = 305,     /* "vs_6_6"  */
+    TOKEN_TARGET_VS_6_7 = 306,     /* "vs_6_7"  */
+    TOKEN_TARGET_PS_6_0 = 307,     /* "ps_6_0"  */
+    TOKEN_TARGET_PS_6_1 = 308,     /* "ps_6_1"  */
+    TOKEN_TARGET_PS_6_2 = 309,     /* "ps_6_2"  */
+    TOKEN_TARGET_PS_6_3 = 310,     /* "ps_6_3"  */
+    TOKEN_TARGET_PS_6_4 = 311,     /* "ps_6_4"  */
+    TOKEN_TARGET_PS_6_5 = 312,     /* "ps_6_5"  */
+    TOKEN_TARGET_PS_6_6 = 313,     /* "ps_6_6"  */
+    TOKEN_TARGET_PS_6_7 = 314,     /* "ps_6_7"  */
+    TOKEN_FLOAT = 315,             /* TOKEN_FLOAT  */
+    TOKEN_FLOAT2 = 316,            /* TOKEN_FLOAT2  */
+    TOKEN_FLOAT3 = 317,            /* TOKEN_FLOAT3  */
+    TOKEN_FLOAT4 = 318,            /* TOKEN_FLOAT4  */
+    TOKEN_INT = 319,               /* TOKEN_INT  */
+    TOKEN_INT2 = 320,              /* TOKEN_INT2  */
+    TOKEN_INT3 = 321,              /* TOKEN_INT3  */
+    TOKEN_INT4 = 322,              /* TOKEN_INT4  */
+    TOKEN_TEXTURE2D = 323          /* TOKEN_TEXTURE2D  */
   };
   typedef enum shtokentype shtoken_kind_t;
 #endif
@@ -159,10 +170,12 @@ union SHSTYPE
   InputBufferExp* inputBufferExp;
   InputAttributeExp* inputAttributeExp;
 
+  gapi::PrimitiveTopology primitiveTopology;
+
   TechniqueExp* techniqueExp;
   TargetProfile targetProfile;
 
-#line 166 "src/shaders_compiler/parser/parser.tab.hpp"
+#line 179 "src/shaders_compiler/parser/parser.tab.hpp"
 
 };
 typedef union SHSTYPE SHSTYPE;
