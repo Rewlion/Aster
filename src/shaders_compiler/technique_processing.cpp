@@ -164,6 +164,7 @@ namespace ShadersSystem
           {
             .name = std::move(m_TechniqueName),
             .byteCode = std::move(m_ByteCode),
+            .renderState = std::move(m_RenderState),
             .ia = spirv::v2::shader_input_to_spirv_ia(m_Input),
             .blobs = std::move(m_Shaders),
             .reflections = std::move(m_Reflections)
@@ -289,6 +290,99 @@ namespace ShadersSystem
           }
         }
 
+        gapi::AttachmentBlendState processMrtBlending(const MrtBlendingExp* exp)
+        {
+          gapi::AttachmentBlendState mrtState;
+
+          #define SET_MRT_STATE(type, state, nodeType, nodeParam) case MrtBlendingExp::Type::type:\
+          {\
+            mrtState.state = reinterpret_cast<const nodeType*>(exp)->nodeParam;\
+            break;\
+          }
+
+          while (exp)
+          {
+            switch (exp->mrtBlendingStateType)
+            {
+              SET_MRT_STATE(Enabling, blendEnabled, MrtBlendingEnabledExp, enabled)
+              SET_MRT_STATE(SrcColorBlendFactor, srcColorBlendFactor, MrtSrcColorBlendFactorExp, factor)
+              SET_MRT_STATE(DstColorBlendFactor, dstColorBlendFactor, MrtDstColorBlendFactorExp, factor)
+              SET_MRT_STATE(ColorBlendOp, colorBlendOp, MrtColorBlendOpExp, op)
+              SET_MRT_STATE(SrcAlphaBlendFactor, srcAlphaBlendFactor, MrtSrcAlphaBlendFactorExp, factor)
+              SET_MRT_STATE(DstAlphaBlendFactor, dstAlphaBlendFactor, MrtDstAlphaBlendFactorExp, factor)
+              SET_MRT_STATE(AlphaBlendOp, alphaBlendOp, MrtAlphaBlendOpExp, op)
+            }
+            exp = exp->next;
+          }
+
+          #undef SET_MRT_STATE
+
+          return mrtState;
+        }
+
+        void processBlending(const BlendingExp* exp)
+        {
+          #define SET_RENDER_STATE(type, state, nodeType, nodeParam) case BlendingExp::Type::type:\
+          {\
+            m_RenderState.state = reinterpret_cast<const nodeType*>(exp)->nodeParam;\
+            break;\
+          }
+
+          while (exp)
+          {
+            switch (exp->blendingStateType)
+            {
+              SET_RENDER_STATE(LogicOpEnabling, blending.logicOpEnabled, LogicOpEnablingExp, enabled)
+              SET_RENDER_STATE(LogicOp, blending.logicOp, LogicOpExp, op)
+              SET_RENDER_STATE(BlendConstants, blending.blendConstants, BlendConstants, val)
+              case BlendingExp::Type::MrtState:
+              {
+                const MrtBlendingExp* mrtBlendingExp = reinterpret_cast<const MrtBlendingExp*>(exp);
+                m_RenderState.blending.attachments.push(processMrtBlending(mrtBlendingExp));
+                break;
+              }
+            }
+            exp = exp->next;
+          }
+
+          #undef SET_RENDER_STATE
+        }
+
+        void processRenderState(const RenderStateExp* exp)
+        {
+          #define SET_RENDER_STATE(type, state, nodeType, nodeParam) case RenderStateExp::StateType::type:\
+          {\
+            m_RenderState.state = reinterpret_cast<const nodeType*>(exp)->nodeParam;\
+            break;\
+          }
+
+          while (exp)
+          {
+            switch (exp->stateType)
+            {
+              SET_RENDER_STATE(PrimitiveTopology, topology, PrimitiveTopologyExp, tp);
+              SET_RENDER_STATE(DepthTest, depthStencil.depthTestEnabled, DepthTestExp, enabled);
+              SET_RENDER_STATE(DepthWrite, depthStencil.depthWriteEnabled, DepthWriteExp, enabled);
+              SET_RENDER_STATE(DepthOp, depthStencil.depthOp, DepthOpExp, op);
+              SET_RENDER_STATE(StencilTest, depthStencil.stencilTestEnabled, StencilTestExp, enabled);
+              SET_RENDER_STATE(StencilFailOp, depthStencil.stencilFailOp, StencilFailOpExp, op);
+              SET_RENDER_STATE(StencilPassOp, depthStencil.stencilPassOp, StencilPassOpExp, op);
+              SET_RENDER_STATE(StencilDepthFailOp, depthStencil.stencilDepthFailOp, StencilDepthFailOpExp, op);
+              SET_RENDER_STATE(StencilCompareOp, depthStencil.stencilCompareOp, StencilCompareOpExp, op);
+              SET_RENDER_STATE(StencilReferenceValue, depthStencil.stencilReferenceValue, StencilReferenceValueExp, value);
+              case RenderStateExp::StateType::Blending:
+              {
+                const BlendingExp* blendingExp = reinterpret_cast<const BlendingExp*>(exp);
+                processBlending(blendingExp);
+                break;
+              }
+            }
+            exp = exp->next;
+          }
+
+          #undef SET_RENDER_STATE
+        }
+
         void processExps(const TechniqueExp& exps)
         {
           const TechniqueExp* exp = &exps;
@@ -326,6 +420,12 @@ namespace ShadersSystem
                 processCompile(*compileExp);
                 break;
               }
+              case TechniqueExp::Type::RenderState:
+              {
+                const RenderStateExp* rsExp = reinterpret_cast<const RenderStateExp*>(exp);
+                processRenderState(rsExp);
+                break;
+              }
             }
             exp = exp->next;
           }
@@ -339,6 +439,7 @@ namespace ShadersSystem
         eastl::vector_set<string_hash> m_SupportedScopes;
         ByteCodes m_ByteCode;
 
+        tfx::RenderState m_RenderState;
         InputDescription m_Input;
         gapi::ShaderStage m_Stages = gapi::ShaderStage(0);
         eastl::vector<ShaderBlob> m_Shaders;

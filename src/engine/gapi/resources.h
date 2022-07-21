@@ -134,7 +134,7 @@ namespace gapi
     CompareOp stencilCompareOp      = CompareOp::Never;
     uint32_t  stencilReferenceValue = 0;
 
-    inline bool operator==(const DepthStencilStateDescription& rvl)
+    inline bool operator==(const DepthStencilStateDescription& rvl) const
     {
       return 0 == std::memcmp(this, &rvl, sizeof(*this));
     }
@@ -224,7 +224,7 @@ namespace gapi
     BlendFactor dstAlphaBlendFactor = BlendFactor::Zero;
     BlendOp     alphaBlendOp        = BlendOp::Add;
 
-    inline bool operator==(const AttachmentBlendState& rvl)
+    inline bool operator==(const AttachmentBlendState& rvl) const
     {
       return std::memcmp(this, &rvl, sizeof(*this));
     }
@@ -240,9 +240,9 @@ namespace gapi
                      MAX_RENDER_TARGETS>    attachments;
     float4                                  blendConstants   = float4{0.0f , 0.0f, 0.0f, 0.0f};
 
-    bool operator==(const BlendState& rvl)
+    bool operator==(const BlendState& rvl) const
     {
-      return rvl.attachments == attachments        &&
+      return attachments     == rvl.attachments    &&
              logicOpEnabled  == rvl.logicOpEnabled &&
              logicOp         == rvl.logicOp        &&
              blendConstants  == rvl.blendConstants;

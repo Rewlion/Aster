@@ -78,10 +78,17 @@ namespace boost::serialization
   }
 
   template<class Archive>
+  void serialize(Archive& a, tfx::RenderState& st, const unsigned version)
+  {
+    a & make_binary_object(&st, sizeof(st));
+  }
+
+  template<class Archive>
   void serialize(Archive& a, ShadersSystem::TechniqueDeclaration& t, const unsigned version)
   {
     a & t.name
       & t.byteCode
+      & t.renderState
       & t.ia
       & t.blobs
       & t.reflections;

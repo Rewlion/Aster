@@ -4,6 +4,8 @@
 #include "byte_code.h"
 #include "spirv.h"
 
+#include <engine/tfx/tfx.h>
+
 namespace ShadersSystem
 {
   struct ShaderBlob
@@ -118,6 +120,7 @@ namespace ShadersSystem
   {
     string name;
     ByteCodes byteCode;
+    tfx::RenderState renderState;
     spirv::v2::InputAssembly ia;
     eastl::vector<ShaderBlob> blobs;
     eastl::vector<spirv::v2::Reflection> reflections;
@@ -126,6 +129,7 @@ namespace ShadersSystem
     {
       return name == rvl.name &&
         is_same_byte_code(byteCode, rvl.byteCode) &&
+        renderState == rvl.renderState &&
         ia == rvl.ia;
         blobs == rvl.blobs &&
         reflections == rvl.reflections;

@@ -168,7 +168,7 @@ namespace Utils
         return *this;
       }
 
-      inline bool operator==(const FixedStack<T,N>& rvl)
+      inline bool operator==(const FixedStack<T,N>& rvl) const
       {
         if (rvl.m_Size == m_Size)
         {

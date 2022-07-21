@@ -370,6 +370,54 @@ patch_list {
   return TOKEN_DECREMENT_AND_WRAP;
 }
 
+"blending" {
+  return TOKEN_BLENDING;
+}
+
+"has_blending" {
+  return TOKEN_HAS_BLANDING;
+}
+
+"logic_op_enabled" {
+  return TOKEN_LOGIC_OP_ENABLED;
+}
+
+"logic_op" {
+  return TOKEN_LOGIC_OP;
+}
+
+"blend_constants" {
+  return TOKEN_BLEND_CONSTANTS;
+}
+
+"mrt" {
+  return TOKEN_MRT;
+}
+
+"src_color_blend_factor" {
+  return TOKEN_SRC_COLOR_BLEND_FACTOR;
+}
+
+"dst_color_blend_factor" {
+  return TOKEN_DST_COLOR_BLEND_FACTOR;
+}
+
+"color_blend_op" {
+  return TOKEN_COLOR_BLEND_OP;
+}
+
+"src_alpha_blend_factor" {
+  return TOKEN_SRC_ALPHA_BLEND_FACTOR;
+}
+
+"dst_alpha_blend_factor" {
+  return TOKEN_DST_ALPHA_BLEND_FACTOR;
+}
+
+"alpha_blend_op" {
+  return TOKEN_ALPHA_BLEND_OP;
+}
+
 "one" {
   return TOKEN_ONE;
 }
@@ -440,6 +488,86 @@ patch_list {
 
 "one_minus_src_one_alpha" {
   return TOKEN_ONE_MINUS_SRC_ONE_ALPHA;
+}
+
+"add" {
+  return TOKEN_ADD;
+}
+
+"subtract" {
+  return TOKEN_SUBTRACT;
+}
+
+"reverse_subtract" {
+  return TOKEN_REVERSE_SUBTRACT;
+}
+
+"min" {
+  return TOKEN_MIN;
+}
+
+"max" {
+  return TOKEN_MAX;
+}
+
+"clear" {
+  return TOKEN_CLEAR;
+}
+
+"and" {
+  return TOKEN_AND;
+}
+
+"and_reverse" {
+  return TOKEN_AND_REVERSE;
+}
+
+"copy" {
+  return TOKEN_COPY;
+}
+
+"and_inverted" {
+  return TOKEN_AND_INVERTED;
+}
+
+"no_op" {
+  return TOKEN_NO_OP;
+}
+
+"xor" {
+  return TOKEN_XOR;
+}
+
+"or" {
+  return TOKEN_OR;
+}
+
+"nor" {
+  return TOKEN_NOR;
+}
+
+"equivalent" {
+  return TOKEN_EQUIVALENT;
+}
+
+"or_reverse" {
+  return TOKEN_OR_REVERSE;
+}
+
+"copy_inverted" {
+  return TOKEN_COPY_INVERTED;
+}
+
+"or_inverted" {
+  return TOKEN_OR_INVERTED;
+}
+
+"nand" {
+  return TOKEN_NAND;
+}
+
+"set" {
+  return TOKEN_SET;
 }
 
 
