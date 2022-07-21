@@ -31,7 +31,7 @@ namespace ShadersSystem
       Hlsl = 3,
       Compile = 4,
       Input = 5,
-      PrimitiveTopology = 6,
+      RenderState = 6,
     };
 
     TechniqueExp* next;
@@ -168,15 +168,148 @@ namespace ShadersSystem
     }
   };
 
-  struct PrimitiveTopologyExp: public TechniqueExp
+  struct RenderStateExp: public TechniqueExp
+  {
+    enum class StateType
+    {
+      PrimitiveTopology,
+      DepthTest,
+      DepthWrite,
+      DepthOp,
+      StencilTest,
+      StencilFailOp,
+      StencilPassOp,
+      StencilDepthFailOp,
+      StencilCompareOp,
+      StencilReferenceValue
+    };
+
+    RenderStateExp(const StateType stateType)
+      : TechniqueExp(TechniqueExp::Type::RenderState)
+      , stateType(stateType)
+    {
+    }
+
+    virtual ~RenderStateExp()
+    {
+      if (next)
+      {
+        delete next;
+        next = nullptr;
+      }
+    }
+
+    StateType stateType;
+    RenderStateExp* next;
+  };
+
+  struct PrimitiveTopologyExp: public RenderStateExp
   {
     gapi::PrimitiveTopology tp;
 
     PrimitiveTopologyExp(const gapi::PrimitiveTopology tp)
-      : TechniqueExp(TechniqueExp::Type::PrimitiveTopology)
+      : RenderStateExp(RenderStateExp::StateType::PrimitiveTopology)
       , tp(tp)
     {
     }
+  };
+
+  struct DepthTestExp: public RenderStateExp
+  {
+    DepthTestExp(const bool enabled)
+      : RenderStateExp(RenderStateExp::StateType::DepthTest)
+      , enabled(enabled)
+    {
+    }
+
+    bool enabled;
+  };
+
+  struct DepthWriteExp: public RenderStateExp
+  {
+    DepthWriteExp(const bool enabled)
+      : RenderStateExp(RenderStateExp::StateType::DepthWrite)
+      , enabled(enabled)
+    {
+    }
+
+    bool enabled;
+  };
+
+  struct DepthOpExp: public RenderStateExp
+  {
+    DepthOpExp(const gapi::CompareOp op)
+      : RenderStateExp(RenderStateExp::StateType::DepthOp)
+      , op(op)
+    {
+    }
+
+    gapi::CompareOp op;
+  };
+
+  struct StencilTestExp: public RenderStateExp
+  {
+    StencilTestExp(const bool enabled)
+      : RenderStateExp(RenderStateExp::StateType::StencilTest)
+      , enabled(enabled)
+    {
+    }
+
+    bool enabled;
+  };
+
+  struct StencilFailOpExp: public RenderStateExp
+  {
+    StencilFailOpExp(const gapi::StencilOp op)
+      : RenderStateExp(RenderStateExp::StateType::StencilFailOp)
+      , op(op)
+    {
+    }
+
+    const gapi::StencilOp op;
+  };
+
+  struct StencilPassOpExp: public RenderStateExp
+  {
+    StencilPassOpExp(const gapi::StencilOp op)
+      : RenderStateExp(RenderStateExp::StateType::StencilPassOp)
+      , op(op)
+    {
+    }
+
+    const gapi::StencilOp op;
+  };
+
+  struct StencilDepthFailOpExp: public RenderStateExp
+  {
+    StencilDepthFailOpExp(const gapi::StencilOp op)
+      : RenderStateExp(RenderStateExp::StateType::StencilDepthFailOp)
+      , op(op)
+    {
+    }
+
+    const gapi::StencilOp op;
+  };
+
+  struct StencilCompareOpExp: public RenderStateExp
+  {
+    StencilCompareOpExp(const gapi::CompareOp op)
+      : RenderStateExp(RenderStateExp::StateType::StencilCompareOp)
+      , op(op)
+    {
+    }
+
+    const gapi::CompareOp op;
+  };
+
+  struct StencilReferenceValueExp: public RenderStateExp
+  {
+    StencilReferenceValueExp(const uint32_t value)
+      : RenderStateExp(RenderStateExp::StateType::StencilReferenceValue)
+      , value(value)
+    {
+    }
+    uint32_t value;
   };
 
   struct CompileExp: public TechniqueExp

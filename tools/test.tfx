@@ -23,6 +23,17 @@ technique mytechnique {
   support scope testScope;
   activate scope testSomeScope;
 
+  render_state:
+    primitive_topology = triangle_list;
+    depth_test = yes;
+    depth_write = true;
+    stencil_test = no;
+    stencil_fail_op = keep;
+    stencil_pass_op = keep;
+    stencil_depth_fail_op = keep;
+    stencil_compare_op = never;
+    stencil_ref_val = 0;
+
   input:
     buffer(0):
       float2 k1;

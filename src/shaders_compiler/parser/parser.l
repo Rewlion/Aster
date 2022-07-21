@@ -140,6 +140,26 @@ descriptor_set {
   return TOKEN_DESCRIPTOR_SET;
 }
 
+false {
+  shlval.bval = false;
+  return TOKEN_BOOL_VAL;
+}
+
+true {
+  shlval.bval = true;
+  return TOKEN_BOOL_VAL;
+}
+
+no {
+  shlval.bval = false;
+  return TOKEN_BOOL_VAL;
+}
+
+yes {
+  shlval.bval = true;
+  return TOKEN_BOOL_VAL;
+}
+
 [0-9]+ {
   shlval.ival = atoi(yytext);
   return TOKEN_INT_VAL;
@@ -202,6 +222,10 @@ compile {
   return TOKEN_COMPILE;
 }
 
+render_state {
+  return TOKEN_RENDER_STATE;
+}
+
 primitive_topology {
   return TOKEN_PRIMITIVE_TOPOLOGY;
 }
@@ -244,6 +268,106 @@ triangle_strip_with_adjacency {
 
 patch_list {
   return TOKEN_PT_PATCH_LIST;
+}
+
+"depth_test" {
+  return TOKEN_DEPTH_TEST;
+}
+
+"depth_write" {
+  return TOKEN_DEPTH_WRITE;
+}
+
+"depth_op" {
+  return TOKEN_DEPTH_OP;
+}
+
+"stencil_test" {
+  return TOKEN_STENCIL_TEST;
+}
+
+"stencil_fail_op" {
+  return TOKEN_STENCIL_FAIL_OP;
+}
+
+"stencil_pass_op" {
+  return TOKEN_STENCIL_PASS_OP;
+}
+
+"stencil_depth_fail_op" {
+  return TOKEN_STENCIL_DEPTH_FAIL_OP;
+}
+
+"stencil_compare_op" {
+  return TOKEN_STENCIL_COMPARE_OP;
+}
+
+"stencil_ref_val" {
+  return TOKEN_STENCIL_REFERENCE_VALUE;
+}
+
+"never" {
+  return TOKEN_NEVER;
+}
+
+"less" {
+  return TOKEN_LESS;
+}
+
+"equal" {
+  return TOKEN_EQUAL;
+}
+
+"less_or_equal" {
+  return TOKEN_LESS_OR_EQUAL;
+}
+
+"greater" {
+  return TOKEN_GREATER;
+}
+
+"not_equal" {
+  return TOKEN_NOT_EQUAL;
+}
+
+"greater_or_equal" {
+  return TOKEN_GREATER_OR_EQUAL;
+}
+
+"always" {
+  return TOKEN_ALWAYS;
+}
+
+"keep" {
+  return TOKEN_KEEP;
+}
+
+"zero" {
+  return TOKEN_ZERO;
+}
+
+"replace" {
+  return TOKEN_REPLACE;
+}
+
+"inc_clamp" {
+  return TOKEN_INCREMENT_AND_CLAMP;
+}
+
+"dec_clamp" {
+  return TOKEN_DECREMENT_AND_CLAMP;
+}
+
+"invert" {
+  return TOKEN_INVERT;
+}
+
+"inc_and_wrap" {
+  return TOKEN_INCREMENT_AND_WRAP;
+}
+
+"dec_and_wrap" {
+  return TOKEN_DECREMENT_AND_WRAP;
 }
 
 vs_6_0 {

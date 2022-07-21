@@ -37,6 +37,7 @@
   float fval;
   int ival;
   char* sval;
+  bool bval;
 
   ScopeDeclarationExp* scopeDeclaration;
   ScopeExp* scopeExp;
@@ -55,7 +56,10 @@
   InputBufferExp* inputBufferExp;
   InputAttributeExp* inputAttributeExp;
 
+  RenderStateExp* renderStateExp;
   gapi::PrimitiveTopology primitiveTopology;
+  gapi::CompareOp compareOp;
+  gapi::StencilOp stencilOp;
 
   TechniqueExp* techniqueExp;
   TargetProfile targetProfile;
@@ -64,6 +68,7 @@
 %token <fval> TOKEN_FLOAT_VAL
 %token <ival> TOKEN_INT_VAL
 %token <sval> TOKEN_NAME_VAL
+%token <bval> TOKEN_BOOL_VAL
 %token <sval> TOKEN_HLSL_CODE
 
 %token TOKEN_AT "@"
@@ -92,6 +97,7 @@
 %token TOKEN_SUPPORT "support"
 %token TOKEN_ACTIVATE "activate"
 %token TOKEN_COMPILE "compile"
+%token TOKEN_RENDER_STATE "render_state"
 %token TOKEN_PRIMITIVE_TOPOLOGY "primitive_topology"
 %token TOKEN_PT_POINT_LIST "point_list"
 %token TOKEN_PT_LINE_LIST "line_list"
@@ -103,6 +109,31 @@
 %token TOKEN_PT_TRIANGLE_LIST_WITH_ADJACENCY "triangle_list_with_adjacency"
 %token TOKEN_PT_TRIANGLE_STRIP_WITH_ADJACENCY "triangle_strip_with_adjacency"
 %token TOKEN_PT_PATCH_LIST "patch_list"
+%token TOKEN_DEPTH_TEST "depth_test"
+%token TOKEN_DEPTH_WRITE "depth_write"
+%token TOKEN_DEPTH_OP "depth_op"
+%token TOKEN_STENCIL_TEST "stencil_test"
+%token TOKEN_STENCIL_FAIL_OP "stencil_fail_op"
+%token TOKEN_STENCIL_PASS_OP "stencil_pass_op"
+%token TOKEN_STENCIL_DEPTH_FAIL_OP "stencil_depth_fail_op"
+%token TOKEN_STENCIL_COMPARE_OP "stencil_compare_op"
+%token TOKEN_STENCIL_REFERENCE_VALUE "stencil_ref_val"
+%token TOKEN_NEVER "never"
+%token TOKEN_LESS "less"
+%token TOKEN_EQUAL "equal"
+%token TOKEN_LESS_OR_EQUAL "less_or_equal"
+%token TOKEN_GREATER "greater"
+%token TOKEN_NOT_EQUAL "not_equal"
+%token TOKEN_GREATER_OR_EQUAL "greater_or_equal"
+%token TOKEN_ALWAYS "always"
+%token TOKEN_KEEP "keep"
+%token TOKEN_ZERO "zero"
+%token TOKEN_REPLACE "replace"
+%token TOKEN_INCREMENT_AND_CLAMP "inc_and_clamp"
+%token TOKEN_DECREMENT_AND_CLAMP "dec_and_clamp"
+%token TOKEN_INVERT "invert"
+%token TOKEN_INCREMENT_AND_WRAP "inc_and_wrap"
+%token TOKEN_DECREMENT_AND_WRAP "dec_and_wrap"
 %token TOKEN_TARGET_VS_6_0 "vs_6_0"
 %token TOKEN_TARGET_VS_6_1 "vs_6_1"
 %token TOKEN_TARGET_VS_6_2 "vs_6_2"
@@ -139,6 +170,7 @@
 %type <resReserveExp>        RESOURCE_RESERVE_EXP
 %type <resReserveExp>        RESOURCE_RESERVE_EXP_LIST
 %type <ival>                 INT_VALUE
+%type <bval>                 BOOL_VALUE
 %type <resourceType>         RESOURCE_TYPE
 %type <resourceAssignExp>    ASSIGN_EXP
 %type <targetProfile>        TARGET_PROFILE
@@ -148,6 +180,10 @@
 %type <inputAttributeExp>    INPUT_ATTRIBUTE_LIST
 %type <attributeType>        ATTRIBUTE_TYPE
 %type <primitiveTopology>    PRIMITIVE_TOPOLOGY
+%type <renderStateExp>       RENDER_STATE_EXP
+%type <renderStateExp>       RENDER_STATE_EXP_LIST
+%type <compareOp>            COMPARE_OP
+%type <stencilOp>            STENCIL_OP
 
 %%
 
@@ -197,8 +233,8 @@ TECHNIQUE_EXP
   | "input" ":" INPUT_BUFFER_LIST[buffers] {
     $$ = new InputExp($buffers);
   }
-  | "primitive_topology" "=" PRIMITIVE_TOPOLOGY[v] ";"{
-    $$ = new PrimitiveTopologyExp($v);
+  | "render_state" ":" RENDER_STATE_EXP_LIST[rs] {
+    $$ = $rs;
   }
   ;
 
@@ -236,6 +272,50 @@ INPUT_ATTRIBUTE
   }
   ;
 
+RENDER_STATE_EXP_LIST
+  : RENDER_STATE_EXP[state] RENDER_STATE_EXP_LIST[next] {
+    $$ = $state;
+    $$->next = $next;
+  }
+  | RENDER_STATE_EXP[state] {
+    $$ = $state;
+    $$->next = nullptr;
+  }
+  ;
+
+RENDER_STATE_EXP
+  : "primitive_topology" "=" PRIMITIVE_TOPOLOGY[v] ";"{
+    $$ = new PrimitiveTopologyExp($v);
+  }
+  | "depth_test" "=" BOOL_VALUE[v] ";" {
+    $$ = new DepthTestExp($v);
+  }
+  | "depth_write" "=" BOOL_VALUE[v] ";" {
+    $$ = new DepthWriteExp($v);
+  }
+  | "depth_op" "=" COMPARE_OP[op] ";" {
+    $$ = new DepthOpExp($op);
+  }
+  | "stencil_test" "=" BOOL_VALUE[v] ";" {
+    $$ = new StencilTestExp($v);
+  }
+  | "stencil_fail_op" "=" STENCIL_OP[op] ";" {
+    $$ = new StencilFailOpExp($op);
+  }
+  | "stencil_pass_op" "=" STENCIL_OP[op] ";" {
+    $$ = new StencilPassOpExp($op);
+  }
+  | "stencil_depth_fail_op" "=" STENCIL_OP[op] ";" {
+    $$ = new StencilDepthFailOpExp($op);
+  }
+  | "stencil_compare_op" "=" COMPARE_OP[op] ";" {
+    $$ = new StencilCompareOpExp($op);
+  }
+  | "stencil_ref_val" "=" INT_VALUE[v] ";" {
+    $$ = new StencilReferenceValueExp($v);
+  }
+  ;
+
 PRIMITIVE_TOPOLOGY
   : "point_list" {
     $$ = gapi::PrimitiveTopology::PointList;
@@ -266,6 +346,60 @@ PRIMITIVE_TOPOLOGY
   }
   | "patch_list" {
     $$ = gapi::PrimitiveTopology::PatchList;
+  }
+  ;
+
+COMPARE_OP
+  : "never" {
+   $$ = gapi::CompareOp::Never;
+  }
+  | "less" {
+   $$ = gapi::CompareOp::Less;
+  }
+  | "equal" {
+   $$ = gapi::CompareOp::Never;
+  }
+  | "less_or_equal" {
+   $$ = gapi::CompareOp::LessOrEqual;
+  }
+  | "greater" {
+   $$ = gapi::CompareOp::Greater;
+  }
+  | "not_equal" {
+   $$ = gapi::CompareOp::NotEqual;
+  }
+  | "greater_or_equal" {
+   $$ = gapi::CompareOp::GreaterOrEqual;
+  }
+  | "always" {
+   $$ = gapi::CompareOp::Always;
+  }
+  ;
+
+STENCIL_OP
+  : "keep" {
+    $$ = gapi::StencilOp::Keep;
+  }
+  | "zero" {
+    $$ = gapi::StencilOp::Zero;
+  }
+  | "replace" {
+    $$ = gapi::StencilOp::Replace;
+  }
+  | "inc_and_clamp" {
+    $$ = gapi::StencilOp::IncrementAndClamp;
+  }
+  | "dec_and_clamp" {
+    $$ = gapi::StencilOp::DecrementAndClamp;
+  }
+  | "invert" {
+    $$ = gapi::StencilOp::Invert;
+  }
+  | "inc_and_wrap" {
+    $$ = gapi::StencilOp::IncrementAndWrap;
+  }
+  | "dec_and_wrap" {
+    $$ = gapi::StencilOp::DecrementAndWrap;
   }
   ;
 
@@ -368,6 +502,11 @@ INT_VALUE
     $$ = $v;
   }
   ;
+
+BOOL_VALUE
+  : TOKEN_BOOL_VAL[v] {
+    $$ = $v;
+  }
 
 SHADERS_LIST
   : SHADERS_ELEM[shader] "," SHADERS_LIST[shaders] {
