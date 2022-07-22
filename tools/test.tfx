@@ -24,21 +24,24 @@ technique mytechnique {
   activate scope testSomeScope;
 
   render_state:
+    primitive_topology = triangle_list;
     input:
       buffer(0):
         float2 k1;
         float3 k2;
       buffer(1):
         int b;
-    primitive_topology = triangle_list;
-    depth_test = yes;
-    depth_write = true;
-    stencil_test = no;
-    stencil_fail_op = keep;
-    stencil_pass_op = keep;
-    stencil_depth_fail_op = keep;
-    stencil_compare_op = never;
-    stencil_ref_val = 0;
+    depth:
+      test = yes;
+      write = true;
+      compare_op = always;
+    stencil:
+      test = no;
+      fail_op = keep;
+      pass_op = keep;
+      depth_fail_op = keep;
+      compare_op = never;
+      ref_val = 0;
     blending:
       logic_op_enabled = yes;
       logic_op = and;

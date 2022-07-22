@@ -113,6 +113,7 @@ namespace ShadersSystem
     RenderStateExp(const StateType stateType)
       : TechniqueExp(TechniqueExp::Type::RenderState)
       , stateType(stateType)
+      , next(nullptr)
     {
     }
 
@@ -326,6 +327,7 @@ namespace ShadersSystem
     BlendingExp(const Type blendingStateType)
       : RenderStateExp(RenderStateExp::StateType::Blending)
       , blendingStateType(blendingStateType)
+      , next(nullptr)
     {
     }
 
@@ -390,6 +392,7 @@ namespace ShadersSystem
     MrtBlendingExp(const Type type)
       : BlendingExp(BlendingExp::Type::MrtState)
       , mrtBlendingStateType(type)
+      , next(nullptr)
     {
     }
 
@@ -569,6 +572,7 @@ namespace ShadersSystem
 
     ScopeExp(Type type)
       : type(type)
+      , next(nullptr)
     {
     }
     virtual ~ScopeExp()

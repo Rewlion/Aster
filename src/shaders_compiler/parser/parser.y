@@ -70,151 +70,151 @@
   TargetProfile targetProfile;
 }
 
-%token <fval> TOKEN_FLOAT_VAL
-%token <ival> TOKEN_INT_VAL
-%token <sval> TOKEN_NAME_VAL
-%token <bval> TOKEN_BOOL_VAL
-%token <sval> TOKEN_HLSL_CODE
+%token <fval> TFX_TOKEN_FLOAT_VAL
+%token <ival> TFX_TOKEN_INT_VAL
+%token <sval> TFX_TOKEN_NAME_VAL
+%token <bval> TFX_TOKEN_BOOL_VAL
+%token <sval> TFX_TOKEN_HLSL_CODE
 
-%token TOKEN_AT "@"
-%token TOKEN_COLON ":"
-%token TOKEN_SEMICOLON ";"
-%token TOKEN_EQUAL_OP "="
-%token TOKEN_LEFT_PARENTHESIS "("
-%token TOKEN_RIGHT_PARENTHESIS ")"
-%token TOKEN_LEFT_BRACKET "{"
-%token TOKEN_RIGHT_BRACKET "}"
-%token TOKEN_COMMA ","
-%token TOKEN_MINUS "-"
-%token TOKEN_INPUT "input"
-%token TOKEN_BUFFER "buffer"
-%token TOKEN_SCOPE "scope"
-%token TOKEN_SHADER "shader"
-%token TOKEN_SHADER_VERTEX "vertex"
-%token TOKEN_SHADER_PIXEL "pixel"
-%token TOKEN_REGISTER "register"
-%token TOKEN_TEXTURE "texture"
-%token TOKEN_CBUFFER "cbuffer"
-%token TOKEN_EXTERN "extern"
-%token TOKEN_CHANNEL "channel"
-%token TOKEN_DESCRIPTOR_SET "descriptor_set"
-%token TOKEN_TECHNIQUE "technique"
-%token TOKEN_SUPPORT "support"
-%token TOKEN_ACTIVATE "activate"
-%token TOKEN_COMPILE "compile"
-%token TOKEN_RENDER_STATE "render_state"
-%token TOKEN_PRIMITIVE_TOPOLOGY "primitive_topology"
-%token TOKEN_PT_POINT_LIST "point_list"
-%token TOKEN_PT_LINE_LIST "line_list"
-%token TOKEN_PT_LINE_STRIP "line_strip"
-%token TOKEN_PT_TRIANGLE_LIST "triangle_list"
-%token TOKEN_PT_TRIANGLE_FAN "triangle_fan"
-%token TOKEN_PT_LINE_LIST_WITH_ADJACENCY "line_list_with_adjacency"
-%token TOKEN_PT_LINE_STRIP_WITH_ADJACENCY "line_strip_with_adjacency"
-%token TOKEN_PT_TRIANGLE_LIST_WITH_ADJACENCY "triangle_list_with_adjacency"
-%token TOKEN_PT_TRIANGLE_STRIP_WITH_ADJACENCY "triangle_strip_with_adjacency"
-%token TOKEN_PT_PATCH_LIST "patch_list"
-%token TOKEN_DEPTH_TEST "depth_test"
-%token TOKEN_DEPTH_WRITE "depth_write"
-%token TOKEN_DEPTH_OP "depth_op"
-%token TOKEN_STENCIL_TEST "stencil_test"
-%token TOKEN_STENCIL_FAIL_OP "stencil_fail_op"
-%token TOKEN_STENCIL_PASS_OP "stencil_pass_op"
-%token TOKEN_STENCIL_DEPTH_FAIL_OP "stencil_depth_fail_op"
-%token TOKEN_STENCIL_COMPARE_OP "stencil_compare_op"
-%token TOKEN_STENCIL_REFERENCE_VALUE "stencil_ref_val"
-%token TOKEN_NEVER "never"
-%token TOKEN_LESS "less"
-%token TOKEN_EQUAL "equal"
-%token TOKEN_LESS_OR_EQUAL "less_or_equal"
-%token TOKEN_GREATER "greater"
-%token TOKEN_NOT_EQUAL "not_equal"
-%token TOKEN_GREATER_OR_EQUAL "greater_or_equal"
-%token TOKEN_ALWAYS "always"
-%token TOKEN_KEEP "keep"
-%token TOKEN_ZERO "zero"
-%token TOKEN_REPLACE "replace"
-%token TOKEN_INCREMENT_AND_CLAMP "inc_and_clamp"
-%token TOKEN_DECREMENT_AND_CLAMP "dec_and_clamp"
-%token TOKEN_INVERT "invert"
-%token TOKEN_INCREMENT_AND_WRAP "inc_and_wrap"
-%token TOKEN_DECREMENT_AND_WRAP "dec_and_wrap"
-%token TOKEN_BLENDING "blending"
-%token TOKEN_HAS_BLANDING "has_blending"
-%token TOKEN_LOGIC_OP_ENABLED "logic_op_enabled"
-%token TOKEN_LOGIC_OP "logic_op"
-%token TOKEN_BLEND_CONSTANTS "blend_constants"
-%token TOKEN_MRT "mrt"
-%token TOKEN_SRC_COLOR_BLEND_FACTOR "src_color_blend_factor"
-%token TOKEN_DST_COLOR_BLEND_FACTOR "dst_color_blend_factor"
-%token TOKEN_COLOR_BLEND_OP "color_blend_op"
-%token TOKEN_SRC_ALPHA_BLEND_FACTOR "src_alpha_blend_factor"
-%token TOKEN_DST_ALPHA_BLEND_FACTOR "dst_alpha_blend_factor"
-%token TOKEN_ALPHA_BLEND_OP "alpha_blend_op"
-%token TOKEN_ONE "one"
-%token TOKEN_SRC_COLOR "src_color"
-%token TOKEN_ONE_MINUS_SRC_COLOR "one_minus_src_color"
-%token TOKEN_DST_COLOR "dst_color"
-%token TOKEN_ONE_MINUS_DST_COLOR "one_minus_dst_color"
-%token TOKEN_SRC_ALPHA "src_alpha"
-%token TOKEN_ONE_MINUS_SRC_ALPHA "one_minus_src_alpha"
-%token TOKEN_DST_ALPHA "dst_alpha"
-%token TOKEN_ONE_MINUS_DST_ALPHA "one_minus_dst_alpha"
-%token TOKEN_CONSTANT_COLOR "constant_color"
-%token TOKEN_ONE_MINUS_CONSTANT_COLOR "one_minus_constant_color"
-%token TOKEN_CONSTANT_ALPHA "constant_alpha"
-%token TOKEN_ONE_MINUS_CONSTANT_ALPHA "one_minus_constant_alpha"
-%token TOKEN_SRC_ALPHA_SATURATE "src_alpha_saturate"
-%token TOKEN_SRC_ONE_COLOR "src_one_color"
-%token TOKEN_ONE_MINUS_SRC_ONE_COLOR "one_minus_src_one_color"
-%token TOKEN_SRC_ONE_ALPHA "src_one_alpha"
-%token TOKEN_ONE_MINUS_SRC_ONE_ALPHA "one_minus_src_one_alpha"
-%token TOKEN_ADD "add"
-%token TOKEN_SUBTRACT "subtract"
-%token TOKEN_REVERSE_SUBTRACT "reverse_subtract"
-%token TOKEN_MIN "min"
-%token TOKEN_MAX "max"
-%token TOKEN_CLEAR "clear"
-%token TOKEN_AND "and"
-%token TOKEN_AND_REVERSE "and_reverse"
-%token TOKEN_COPY "copy"
-%token TOKEN_AND_INVERTED "and_inverted"
-%token TOKEN_NO_OP "no_op"
-%token TOKEN_XOR "xor"
-%token TOKEN_OR "or"
-%token TOKEN_NOR "nor"
-%token TOKEN_EQUIVALENT "equivalent"
-%token TOKEN_OR_REVERSE "or_reverse"
-%token TOKEN_COPY_INVERTED "copy_inverted"
-%token TOKEN_OR_INVERTED "or_inverted"
-%token TOKEN_NAND "nand"
-%token TOKEN_SET "set"
-%token TOKEN_TARGET_VS_6_0 "vs_6_0"
-%token TOKEN_TARGET_VS_6_1 "vs_6_1"
-%token TOKEN_TARGET_VS_6_2 "vs_6_2"
-%token TOKEN_TARGET_VS_6_3 "vs_6_3"
-%token TOKEN_TARGET_VS_6_4 "vs_6_4"
-%token TOKEN_TARGET_VS_6_5 "vs_6_5"
-%token TOKEN_TARGET_VS_6_6 "vs_6_6"
-%token TOKEN_TARGET_VS_6_7 "vs_6_7"
-%token TOKEN_TARGET_PS_6_0 "ps_6_0"
-%token TOKEN_TARGET_PS_6_1 "ps_6_1"
-%token TOKEN_TARGET_PS_6_2 "ps_6_2"
-%token TOKEN_TARGET_PS_6_3 "ps_6_3"
-%token TOKEN_TARGET_PS_6_4 "ps_6_4"
-%token TOKEN_TARGET_PS_6_5 "ps_6_5"
-%token TOKEN_TARGET_PS_6_6 "ps_6_6"
-%token TOKEN_TARGET_PS_6_7 "ps_6_7"
+%token TFX_TOKEN_AT "@"
+%token TFX_TOKEN_COLON ":"
+%token TFX_TOKEN_SEMICOLON ";"
+%token TFX_TOKEN_EQUAL_OP "="
+%token TFX_TOKEN_LEFT_PARENTHESIS "("
+%token TFX_TOKEN_RIGHT_PARENTHESIS ")"
+%token TFX_TOKEN_LEFT_BRACKET "{"
+%token TFX_TOKEN_RIGHT_BRACKET "}"
+%token TFX_TOKEN_COMMA ","
+%token TFX_TOKEN_MINUS "-"
+%token TFX_TOKEN_INPUT "input"
+%token TFX_TOKEN_BUFFER "buffer"
+%token TFX_TOKEN_SCOPE "scope"
+%token TFX_TOKEN_SHADER "shader"
+%token TFX_TOKEN_SHADER_VERTEX "vertex"
+%token TFX_TOKEN_SHADER_PIXEL "pixel"
+%token TFX_TOKEN_REGISTER "register"
+%token TFX_TOKEN_TEXTURE "texture"
+%token TFX_TOKEN_CBUFFER "cbuffer"
+%token TFX_TOKEN_EXTERN "extern"
+%token TFX_TOKEN_CHANNEL "channel"
+%token TFX_TOKEN_DESCRIPTOR_SET "descriptor_set"
+%token TFX_TOKEN_TECHNIQUE "technique"
+%token TFX_TOKEN_SUPPORT "support"
+%token TFX_TOKEN_ACTIVATE "activate"
+%token TFX_TOKEN_COMPILE "compile"
+%token TFX_TOKEN_RENDER_STATE "render_state"
+%token TFX_TOKEN_PRIMITIVE_TOPOLOGY "primitive_topology"
+%token TFX_TOKEN_PT_POINT_LIST "point_list"
+%token TFX_TOKEN_PT_LINE_LIST "line_list"
+%token TFX_TOKEN_PT_LINE_STRIP "line_strip"
+%token TFX_TOKEN_PT_TRIANGLE_LIST "triangle_list"
+%token TFX_TOKEN_PT_TRIANGLE_FAN "triangle_fan"
+%token TFX_TOKEN_PT_LINE_LIST_WITH_ADJACENCY "line_list_with_adjacency"
+%token TFX_TOKEN_PT_LINE_STRIP_WITH_ADJACENCY "line_strip_with_adjacency"
+%token TFX_TOKEN_PT_TRIANGLE_LIST_WITH_ADJACENCY "triangle_list_with_adjacency"
+%token TFX_TOKEN_PT_TRIANGLE_STRIP_WITH_ADJACENCY "triangle_strip_with_adjacency"
+%token TFX_TOKEN_PT_PATCH_LIST "patch_list"
+%token TFX_TOKEN_DEPTH "depth"
+%token TFX_TOKEN_STENCIL "stencil"
+%token TFX_TOKEN_TEST "test"
+%token TFX_TOKEN_WRITE "write"
+%token TFX_TOKEN_FAIL_OP "fail_op"
+%token TFX_TOKEN_PASS_OP "pass_op"
+%token TFX_TOKEN_DEPTH_FAIL_OP "depth_fail_op"
+%token TFX_TOKEN_COMPARE_OP "compare_op"
+%token TFX_TOKEN_REFERENCE_VALUE "ref_val"
+%token TFX_TOKEN_NEVER "never"
+%token TFX_TOKEN_LESS "less"
+%token TFX_TOKEN_EQUAL "equal"
+%token TFX_TOKEN_LESS_OR_EQUAL "less_or_equal"
+%token TFX_TOKEN_GREATER "greater"
+%token TFX_TOKEN_NOT_EQUAL "not_equal"
+%token TFX_TOKEN_GREATER_OR_EQUAL "greater_or_equal"
+%token TFX_TOKEN_ALWAYS "always"
+%token TFX_TOKEN_KEEP "keep"
+%token TFX_TOKEN_ZERO "zero"
+%token TFX_TOKEN_REPLACE "replace"
+%token TFX_TOKEN_INCREMENT_AND_CLAMP "inc_and_clamp"
+%token TFX_TOKEN_DECREMENT_AND_CLAMP "dec_and_clamp"
+%token TFX_TOKEN_INVERT "invert"
+%token TFX_TOKEN_INCREMENT_AND_WRAP "inc_and_wrap"
+%token TFX_TOKEN_DECREMENT_AND_WRAP "dec_and_wrap"
+%token TFX_TOKEN_BLENDING "blending"
+%token TFX_TOKEN_HAS_BLANDING "has_blending"
+%token TFX_TOKEN_LOGIC_OP_ENABLED "logic_op_enabled"
+%token TFX_TOKEN_LOGIC_OP "logic_op"
+%token TFX_TOKEN_BLEND_CONSTANTS "blend_constants"
+%token TFX_TOKEN_MRT "mrt"
+%token TFX_TOKEN_SRC_COLOR_BLEND_FACTOR "src_color_blend_factor"
+%token TFX_TOKEN_DST_COLOR_BLEND_FACTOR "dst_color_blend_factor"
+%token TFX_TOKEN_COLOR_BLEND_OP "color_blend_op"
+%token TFX_TOKEN_SRC_ALPHA_BLEND_FACTOR "src_alpha_blend_factor"
+%token TFX_TOKEN_DST_ALPHA_BLEND_FACTOR "dst_alpha_blend_factor"
+%token TFX_TOKEN_ALPHA_BLEND_OP "alpha_blend_op"
+%token TFX_TOKEN_ONE "one"
+%token TFX_TOKEN_SRC_COLOR "src_color"
+%token TFX_TOKEN_ONE_MINUS_SRC_COLOR "one_minus_src_color"
+%token TFX_TOKEN_DST_COLOR "dst_color"
+%token TFX_TOKEN_ONE_MINUS_DST_COLOR "one_minus_dst_color"
+%token TFX_TOKEN_SRC_ALPHA "src_alpha"
+%token TFX_TOKEN_ONE_MINUS_SRC_ALPHA "one_minus_src_alpha"
+%token TFX_TOKEN_DST_ALPHA "dst_alpha"
+%token TFX_TOKEN_ONE_MINUS_DST_ALPHA "one_minus_dst_alpha"
+%token TFX_TOKEN_CONSTANT_COLOR "constant_color"
+%token TFX_TOKEN_ONE_MINUS_CONSTANT_COLOR "one_minus_constant_color"
+%token TFX_TOKEN_CONSTANT_ALPHA "constant_alpha"
+%token TFX_TOKEN_ONE_MINUS_CONSTANT_ALPHA "one_minus_constant_alpha"
+%token TFX_TOKEN_SRC_ALPHA_SATURATE "src_alpha_saturate"
+%token TFX_TOKEN_SRC_ONE_COLOR "src_one_color"
+%token TFX_TOKEN_ONE_MINUS_SRC_ONE_COLOR "one_minus_src_one_color"
+%token TFX_TOKEN_SRC_ONE_ALPHA "src_one_alpha"
+%token TFX_TOKEN_ONE_MINUS_SRC_ONE_ALPHA "one_minus_src_one_alpha"
+%token TFX_TOKEN_ADD "add"
+%token TFX_TOKEN_SUBTRACT "subtract"
+%token TFX_TOKEN_REVERSE_SUBTRACT "reverse_subtract"
+%token TFX_TOKEN_MIN "min"
+%token TFX_TOKEN_MAX "max"
+%token TFX_TOKEN_CLEAR "clear"
+%token TFX_TOKEN_AND "and"
+%token TFX_TOKEN_AND_REVERSE "and_reverse"
+%token TFX_TOKEN_COPY "copy"
+%token TFX_TOKEN_AND_INVERTED "and_inverted"
+%token TFX_TOKEN_NO_OP "no_op"
+%token TFX_TOKEN_XOR "xor"
+%token TFX_TOKEN_OR "or"
+%token TFX_TOKEN_NOR "nor"
+%token TFX_TOKEN_EQUIVALENT "equivalent"
+%token TFX_TOKEN_OR_REVERSE "or_reverse"
+%token TFX_TOKEN_COPY_INVERTED "copy_inverted"
+%token TFX_TOKEN_OR_INVERTED "or_inverted"
+%token TFX_TOKEN_NAND "nand"
+%token TFX_TOKEN_SET "set"
+%token TFX_TOKEN_TARGET_VS_6_0 "vs_6_0"
+%token TFX_TOKEN_TARGET_VS_6_1 "vs_6_1"
+%token TFX_TOKEN_TARGET_VS_6_2 "vs_6_2"
+%token TFX_TOKEN_TARGET_VS_6_3 "vs_6_3"
+%token TFX_TOKEN_TARGET_VS_6_4 "vs_6_4"
+%token TFX_TOKEN_TARGET_VS_6_5 "vs_6_5"
+%token TFX_TOKEN_TARGET_VS_6_6 "vs_6_6"
+%token TFX_TOKEN_TARGET_VS_6_7 "vs_6_7"
+%token TFX_TOKEN_TARGET_PS_6_0 "ps_6_0"
+%token TFX_TOKEN_TARGET_PS_6_1 "ps_6_1"
+%token TFX_TOKEN_TARGET_PS_6_2 "ps_6_2"
+%token TFX_TOKEN_TARGET_PS_6_3 "ps_6_3"
+%token TFX_TOKEN_TARGET_PS_6_4 "ps_6_4"
+%token TFX_TOKEN_TARGET_PS_6_5 "ps_6_5"
+%token TFX_TOKEN_TARGET_PS_6_6 "ps_6_6"
+%token TFX_TOKEN_TARGET_PS_6_7 "ps_6_7"
 
-%token TOKEN_FLOAT "float"
-%token TOKEN_FLOAT2 "float2"
-%token TOKEN_FLOAT3 "float3"
-%token TOKEN_FLOAT4 "float4"
-%token TOKEN_INT "int"
-%token TOKEN_INT2 "int2"
-%token TOKEN_INT3 "int3"
-%token TOKEN_INT4 "int4"
-%token TOKEN_TEXTURE2D "texture2D"
+%token TFX_TOKEN_FLOAT "float"
+%token TFX_TOKEN_FLOAT2 "float2"
+%token TFX_TOKEN_FLOAT3 "float3"
+%token TFX_TOKEN_FLOAT4 "float4"
+%token TFX_TOKEN_INT "int"
+%token TFX_TOKEN_INT2 "int2"
+%token TFX_TOKEN_INT3 "int3"
+%token TFX_TOKEN_INT4 "int4"
+%token TFX_TOKEN_TEXTURE2D "texture2D"
 
 %type <techniqueExp>         TECHNIQUE_EXP
 %type <techniqueExp>         TECHNIQUE_EXP_LIST
@@ -238,6 +238,10 @@
 %type <primitiveTopology>    PRIMITIVE_TOPOLOGY
 %type <renderStateExp>       RENDER_STATE_EXP
 %type <renderStateExp>       RENDER_STATE_EXP_LIST
+%type <renderStateExp>       DEPTH_EXP
+%type <renderStateExp>       DEPTH_EXP_LIST
+%type <renderStateExp>       STENCIL_EXP
+%type <renderStateExp>       STENCIL_EXP_LIST
 %type <compareOp>            COMPARE_OP
 %type <stencilOp>            STENCIL_OP
 %type <blendingExp>          BLENDING_EXP
@@ -265,7 +269,7 @@ MODULE_EXPRESSION
   ;
 
 TECHNIQUE_DECLARATION
-  : "technique" TOKEN_NAME_VAL[name] "{" TECHNIQUE_EXP_LIST[exps] "}" ";" {
+  : "technique" TFX_TOKEN_NAME_VAL[name] "{" TECHNIQUE_EXP_LIST[exps] "}" ";" {
     compiler.onTechniqueDeclaration(new TechniqueDeclarationExp{$name, $exps});
   }
   ;
@@ -281,16 +285,16 @@ TECHNIQUE_EXP_LIST
   ;
 
 TECHNIQUE_EXP
-  : "support" "scope" TOKEN_NAME_VAL[name] ";" {
+  : "support" "scope" TFX_TOKEN_NAME_VAL[name] ";" {
     $$ = new ScopeSupportExp($name);
   }
-  | "activate" "scope" TOKEN_NAME_VAL[name] ";" {
+  | "activate" "scope" TFX_TOKEN_NAME_VAL[name] ";" {
     $$ = new ScopeActivateExp($name);
   }
-  | "compile" "(" TARGET_PROFILE[target] "," TOKEN_NAME_VAL[entry] ")" ";" {
+  | "compile" "(" TARGET_PROFILE[target] "," TFX_TOKEN_NAME_VAL[entry] ")" ";" {
     $$ = new CompileExp($target, $entry);
   }
-  | TOKEN_HLSL_CODE[code] {
+  | TFX_TOKEN_HLSL_CODE[code] {
     $$ = new HlslExp($code);
   }
   | "render_state" ":" RENDER_STATE_EXP_LIST[rs] {
@@ -305,7 +309,6 @@ RENDER_STATE_EXP_LIST
   }
   | RENDER_STATE_EXP[state] {
     $$ = $state;
-    $$->next = nullptr;
   }
   ;
 
@@ -316,35 +319,67 @@ RENDER_STATE_EXP
   | "input" ":" INPUT_BUFFER_LIST[buffers] {
     $$ = new InputExp($buffers);
   }
-  | "depth_test" "=" BOOL_VALUE[v] ";" {
-    $$ = new DepthTestExp($v);
+  | "depth" ":" DEPTH_EXP_LIST[exps] {
+    $$ = $exps;
   }
-  | "depth_write" "=" BOOL_VALUE[v] ";" {
-    $$ = new DepthWriteExp($v);
-  }
-  | "depth_op" "=" COMPARE_OP[op] ";" {
-    $$ = new DepthOpExp($op);
-  }
-  | "stencil_test" "=" BOOL_VALUE[v] ";" {
-    $$ = new StencilTestExp($v);
-  }
-  | "stencil_fail_op" "=" STENCIL_OP[op] ";" {
-    $$ = new StencilFailOpExp($op);
-  }
-  | "stencil_pass_op" "=" STENCIL_OP[op] ";" {
-    $$ = new StencilPassOpExp($op);
-  }
-  | "stencil_depth_fail_op" "=" STENCIL_OP[op] ";" {
-    $$ = new StencilDepthFailOpExp($op);
-  }
-  | "stencil_compare_op" "=" COMPARE_OP[op] ";" {
-    $$ = new StencilCompareOpExp($op);
-  }
-  | "stencil_ref_val" "=" INT_VALUE[v] ";" {
-    $$ = new StencilReferenceValueExp($v);
+  | "stencil" ":" STENCIL_EXP_LIST[exps] {
+    $$ = $exps;
   }
   | "blending" ":" BLENDING_EXP_LIST[exps] {
     $$ = $exps;
+  }
+  ;
+
+DEPTH_EXP_LIST
+  : DEPTH_EXP[exp] DEPTH_EXP_LIST[next] {
+    $$ = $exp;
+    $$->next = $next;
+  }
+  | DEPTH_EXP[exp] {
+    $$ = $exp;
+  }
+  ;
+
+DEPTH_EXP
+  : "test" "=" BOOL_VALUE[v] ";" {
+    $$ = new DepthTestExp($v);
+  }
+  | "write" "=" BOOL_VALUE[v] ";" {
+    $$ = new DepthWriteExp($v);
+  }
+  | "compare_op" "=" COMPARE_OP[op] ";" {
+    $$ = new DepthOpExp($op);
+  }
+  ;
+
+STENCIL_EXP_LIST
+  : STENCIL_EXP[exp] STENCIL_EXP_LIST[next] {
+    $$ = $exp;
+    $$->next = $next;
+  }
+  | STENCIL_EXP[exp] {
+    $$ = $exp;
+  }
+  ;
+
+STENCIL_EXP
+  : "test" "=" BOOL_VALUE[v] ";" {
+    $$ = new StencilTestExp($v);
+  }
+  | "fail_op" "=" STENCIL_OP[op] ";" {
+    $$ = new StencilFailOpExp($op);
+  }
+  | "pass_op" "=" STENCIL_OP[op] ";" {
+    $$ = new StencilPassOpExp($op);
+  }
+  | "depth_fail_op" "=" STENCIL_OP[op] ";" {
+    $$ = new StencilDepthFailOpExp($op);
+  }
+  | "compare_op" "=" COMPARE_OP[op] ";" {
+    $$ = new StencilCompareOpExp($op);
+  }
+  | "ref_val" "=" INT_VALUE[v] ";" {
+    $$ = new StencilReferenceValueExp($v);
   }
   ;
 
@@ -410,7 +445,7 @@ INPUT_ATTRIBUTE_LIST
   ;
 
 INPUT_ATTRIBUTE
-  : ATTRIBUTE_TYPE[type] TOKEN_NAME_VAL[name] ";" {
+  : ATTRIBUTE_TYPE[type] TFX_TOKEN_NAME_VAL[name] ";" {
     $$ = new InputAttributeExp($type, $name);
   }
   ;
@@ -659,7 +694,7 @@ LOGIC_OP
   ;
 
 SCOPE_DECLARATION
-  : "scope" TOKEN_NAME_VAL[name] "{" SCOPE_EXP_LIST[exps] "}" ";" {
+  : "scope" TFX_TOKEN_NAME_VAL[name] "{" SCOPE_EXP_LIST[exps] "}" ";" {
     compiler.onScopeDeclaration(new ScopeDeclarationExp{$name, $exps});
   }
   ;
@@ -676,13 +711,13 @@ SCOPE_EXP_LIST
   ;
 
 SCOPE_EXP
-  : TOKEN_SHADER SHADERS_LIST[shaders] ":" RESOURCE_RESERVE_EXP_LIST[exps] {
+  : TFX_TOKEN_SHADER SHADERS_LIST[shaders] ":" RESOURCE_RESERVE_EXP_LIST[exps] {
     $$ = new ShadersResourcesReserveExp($shaders, $exps);
   }
-  | RESOURCE_TYPE[type] TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
+  | RESOURCE_TYPE[type] TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
     $$ = new ResourceDeclarationExp($type, $name, $exps);
   }
-  | ATTRIBUTE_TYPE[type] TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
+  | ATTRIBUTE_TYPE[type] TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
     $$ = new CbufferVarDeclarationExp($type, $name, $exps);
   }
   ;
@@ -711,61 +746,61 @@ RESOURCE_RESERVE_EXP
   ;
 
 ASSIGN_EXP
-  : "extern" "(" TOKEN_NAME_VAL[name] ")" {
+  : "extern" "(" TFX_TOKEN_NAME_VAL[name] ")" {
     $$ = new AccessResource(ResourceAccessType::Extern, $name);
   }
-  | "channel" "(" TOKEN_NAME_VAL[name] ")" {
+  | "channel" "(" TFX_TOKEN_NAME_VAL[name] ")" {
     $$ = new AccessResource(ResourceAccessType::Channel, $name);
   }
   ;
 
 RESOURCE_TYPE
-  : TOKEN_TEXTURE2D {
+  : TFX_TOKEN_TEXTURE2D {
     $$ = ResourceType::Texture2D;
   }
   ;
 
 ATTRIBUTE_TYPE
-  : TOKEN_INT {
+  : TFX_TOKEN_INT {
     $$ = AttributeType::Int;
   }
-  | TOKEN_INT2 {
+  | TFX_TOKEN_INT2 {
     $$ = AttributeType::Int2;
   }
-  | TOKEN_INT3 {
+  | TFX_TOKEN_INT3 {
     $$ = AttributeType::Int3;
   }
-  | TOKEN_INT4 {
+  | TFX_TOKEN_INT4 {
     $$ = AttributeType::Int4;
   }
-  | TOKEN_FLOAT {
+  | TFX_TOKEN_FLOAT {
     $$ = AttributeType::Float;
   }
-  | TOKEN_FLOAT2 {
+  | TFX_TOKEN_FLOAT2 {
     $$ = AttributeType::Float2;
   }
-  | TOKEN_FLOAT3 {
+  | TFX_TOKEN_FLOAT3 {
     $$ = AttributeType::Float3;
   }
-  | TOKEN_FLOAT4 {
+  | TFX_TOKEN_FLOAT4 {
     $$ = AttributeType::Float4;
   }
   ;
 
 FLOAT4_VALUE
-  : "float4" "(" TOKEN_FLOAT_VAL[v0] "," TOKEN_FLOAT_VAL[v1] "," TOKEN_FLOAT_VAL[v2] "," TOKEN_FLOAT_VAL[v3] ")" {
+  : "float4" "(" TFX_TOKEN_FLOAT_VAL[v0] "," TFX_TOKEN_FLOAT_VAL[v1] "," TFX_TOKEN_FLOAT_VAL[v2] "," TFX_TOKEN_FLOAT_VAL[v3] ")" {
     $$ = float4($v0, $v1, $v2, $v3);
   }
   ;
 
 INT_VALUE
-  : TOKEN_INT_VAL[v] {
+  : TFX_TOKEN_INT_VAL[v] {
     $$ = $v;
   }
   ;
 
 BOOL_VALUE
-  : TOKEN_BOOL_VAL[v] {
+  : TFX_TOKEN_BOOL_VAL[v] {
     $$ = $v;
   }
 
