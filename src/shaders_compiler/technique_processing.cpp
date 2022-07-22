@@ -376,6 +376,12 @@ namespace ShadersSystem
                 processBlending(blendingExp);
                 break;
               }
+              case RenderStateExp::StateType::Input:
+              {
+                const InputExp* inputExp = reinterpret_cast<const InputExp*>(exp);
+                processInputExp(*inputExp);
+                break;
+              }
             }
             exp = exp->next;
           }
@@ -400,12 +406,6 @@ namespace ShadersSystem
               {
                 const ScopeActivateExp* scExp = reinterpret_cast<const ScopeActivateExp*>(exp);
                 processScopeSupportExp(scExp->name, true);
-                break;
-              }
-              case TechniqueExp::Type::Input:
-              {
-                const InputExp* inputExp = reinterpret_cast<const InputExp*>(exp);
-                processInputExp(*inputExp);
                 break;
               }
               case TechniqueExp::Type::Hlsl:

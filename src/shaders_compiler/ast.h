@@ -25,13 +25,12 @@ namespace ShadersSystem
   {
     enum class Type
     {
-      None = 0,
-      ScopeSupport = 1,
-      ScopeActivate = 2,
-      Hlsl = 3,
-      Compile = 4,
-      Input = 5,
-      RenderState = 6,
+      None,
+      ScopeSupport,
+      ScopeActivate,
+      Hlsl,
+      Compile,
+      RenderState,
     };
 
     TechniqueExp* next;
@@ -93,6 +92,43 @@ namespace ShadersSystem
     }
   };
 
+  struct RenderStateExp: public TechniqueExp
+  {
+    enum class StateType
+    {
+      PrimitiveTopology,
+      DepthTest,
+      DepthWrite,
+      DepthOp,
+      StencilTest,
+      StencilFailOp,
+      StencilPassOp,
+      StencilDepthFailOp,
+      StencilCompareOp,
+      StencilReferenceValue,
+      Blending,
+      Input
+    };
+
+    RenderStateExp(const StateType stateType)
+      : TechniqueExp(TechniqueExp::Type::RenderState)
+      , stateType(stateType)
+    {
+    }
+
+    virtual ~RenderStateExp()
+    {
+      if (next)
+      {
+        delete next;
+        next = nullptr;
+      }
+    }
+
+    StateType stateType;
+    RenderStateExp* next;
+  };
+
   struct InputAttributeExp: public Node
   {
     AttributeType attributeType;
@@ -149,11 +185,11 @@ namespace ShadersSystem
     }
   };
 
-  struct InputExp: public TechniqueExp
+  struct InputExp: public RenderStateExp
   {
     InputBufferExp* buffers;
     InputExp(InputBufferExp* buffers)
-      : TechniqueExp(TechniqueExp::Type::Input)
+      : RenderStateExp(RenderStateExp::StateType::Input)
       , buffers(buffers)
     {
     }
@@ -166,42 +202,6 @@ namespace ShadersSystem
         buffers = nullptr;
       }
     }
-  };
-
-  struct RenderStateExp: public TechniqueExp
-  {
-    enum class StateType
-    {
-      PrimitiveTopology,
-      DepthTest,
-      DepthWrite,
-      DepthOp,
-      StencilTest,
-      StencilFailOp,
-      StencilPassOp,
-      StencilDepthFailOp,
-      StencilCompareOp,
-      StencilReferenceValue,
-      Blending
-    };
-
-    RenderStateExp(const StateType stateType)
-      : TechniqueExp(TechniqueExp::Type::RenderState)
-      , stateType(stateType)
-    {
-    }
-
-    virtual ~RenderStateExp()
-    {
-      if (next)
-      {
-        delete next;
-        next = nullptr;
-      }
-    }
-
-    StateType stateType;
-    RenderStateExp* next;
   };
 
   struct PrimitiveTopologyExp: public RenderStateExp

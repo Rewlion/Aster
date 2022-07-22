@@ -293,45 +293,8 @@ TECHNIQUE_EXP
   | TOKEN_HLSL_CODE[code] {
     $$ = new HlslExp($code);
   }
-  | "input" ":" INPUT_BUFFER_LIST[buffers] {
-    $$ = new InputExp($buffers);
-  }
   | "render_state" ":" RENDER_STATE_EXP_LIST[rs] {
     $$ = $rs;
-  }
-  ;
-
-INPUT_BUFFER_LIST
-  : INPUT_BUFFER[buffer] INPUT_BUFFER_LIST[next] {
-    $$ = $buffer;
-    $$->next = $next;
-  }
-  | INPUT_BUFFER[buffer] {
-    $$ = $buffer;
-    $$->next = nullptr;
-  }
-  ;
-
-INPUT_BUFFER
-  : "buffer" "(" INT_VALUE[reg] ")" ":" INPUT_ATTRIBUTE_LIST[attrs] {
-    $$ = new InputBufferExp($reg, $attrs);
-  }
-  ;
-
-INPUT_ATTRIBUTE_LIST
-  : INPUT_ATTRIBUTE[attr] INPUT_ATTRIBUTE_LIST[next] {
-    $$ = $attr;
-    $$->next = $next;
-  }
-  | INPUT_ATTRIBUTE[attr] {
-    $$ = $attr;
-    $$->next = nullptr;
-  }
-  ;
-
-INPUT_ATTRIBUTE
-  : ATTRIBUTE_TYPE[type] TOKEN_NAME_VAL[name] ";" {
-    $$ = new InputAttributeExp($type, $name);
   }
   ;
 
@@ -349,6 +312,9 @@ RENDER_STATE_EXP_LIST
 RENDER_STATE_EXP
   : "primitive_topology" "=" PRIMITIVE_TOPOLOGY[v] ";"{
     $$ = new PrimitiveTopologyExp($v);
+  }
+  | "input" ":" INPUT_BUFFER_LIST[buffers] {
+    $$ = new InputExp($buffers);
   }
   | "depth_test" "=" BOOL_VALUE[v] ";" {
     $$ = new DepthTestExp($v);
@@ -412,6 +378,40 @@ PRIMITIVE_TOPOLOGY
   }
   | "patch_list" {
     $$ = gapi::PrimitiveTopology::PatchList;
+  }
+  ;
+
+INPUT_BUFFER_LIST
+  : INPUT_BUFFER[buffer] INPUT_BUFFER_LIST[next] {
+    $$ = $buffer;
+    $$->next = $next;
+  }
+  | INPUT_BUFFER[buffer] {
+    $$ = $buffer;
+    $$->next = nullptr;
+  }
+  ;
+
+INPUT_BUFFER
+  : "buffer" "(" INT_VALUE[reg] ")" ":" INPUT_ATTRIBUTE_LIST[attrs] {
+    $$ = new InputBufferExp($reg, $attrs);
+  }
+  ;
+
+INPUT_ATTRIBUTE_LIST
+  : INPUT_ATTRIBUTE[attr] INPUT_ATTRIBUTE_LIST[next] {
+    $$ = $attr;
+    $$->next = $next;
+  }
+  | INPUT_ATTRIBUTE[attr] {
+    $$ = $attr;
+    $$->next = nullptr;
+  }
+  ;
+
+INPUT_ATTRIBUTE
+  : ATTRIBUTE_TYPE[type] TOKEN_NAME_VAL[name] ";" {
+    $$ = new InputAttributeExp($type, $name);
   }
   ;
 

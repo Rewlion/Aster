@@ -24,6 +24,12 @@ technique mytechnique {
   activate scope testSomeScope;
 
   render_state:
+    input:
+      buffer(0):
+        float2 k1;
+        float3 k2;
+      buffer(1):
+        int b;
     primitive_topology = triangle_list;
     depth_test = yes;
     depth_write = true;
@@ -35,7 +41,7 @@ technique mytechnique {
     stencil_ref_val = 0;
     blending:
       logic_op_enabled = yes;
-      logic_op = add;
+      logic_op = and;
       blend_constants = float4(0.0, 0.0, 0.0, 0.0);
       mrt:
         has_blending = true;
@@ -45,13 +51,6 @@ technique mytechnique {
         src_alpha_blend_factor = zero;
         dst_alpha_blend_factor = zero;
         alpha_blend_op = add;
-
-  input:
-    buffer(0):
-      float2 k1;
-      float3 k2;
-    buffer(1):
-      int b;
 
   #hlsl
     void kek(inout float4 c) {
