@@ -239,21 +239,21 @@ namespace ShadersSystem
         m_Scope.cbufferSize = offset;
       }
 
-      size_t getCbufferPadSize(const AttributeType type)
+      size_t getCbufferPadSize(const gapi::AttributeType type)
       {
         switch (type)
         {
-          case AttributeType::Int:
-          case AttributeType::Float: return 3;
+          case gapi::AttributeType::Int:
+          case gapi::AttributeType::Float: return 3;
 
-          case AttributeType::Int2:
-          case AttributeType::Float2: return 2;
+          case gapi::AttributeType::Int2:
+          case gapi::AttributeType::Float2: return 2;
 
-          case AttributeType::Int3:
-          case AttributeType::Float3: return 1;
+          case gapi::AttributeType::Int3:
+          case gapi::AttributeType::Float3: return 1;
 
-          case AttributeType::Int4:
-          case AttributeType::Float4: return 0;
+          case gapi::AttributeType::Int4:
+          case gapi::AttributeType::Float4: return 0;
 
           default:
           {
@@ -294,21 +294,21 @@ namespace ShadersSystem
         return hlsl;
       }
 
-      const char* getResourceTypeStr(const AttributeType type) const
+      const char* getResourceTypeStr(const gapi::AttributeType type) const
       {
         switch (type)
         {
-          case AttributeType::Int: return "int";
-          case AttributeType::Float: return "float";
+          case gapi::AttributeType::Int: return "int";
+          case gapi::AttributeType::Float: return "float";
 
-          case AttributeType::Int2: return "int2";
-          case AttributeType::Float2: return "float2";
+          case gapi::AttributeType::Int2: return "int2";
+          case gapi::AttributeType::Float2: return "float2";
 
-          case AttributeType::Int3: return "int3";
-          case AttributeType::Float3: return "float3";
+          case gapi::AttributeType::Int3: return "int3";
+          case gapi::AttributeType::Float3: return "float3";
 
-          case AttributeType::Int4: return "int4";
-          case AttributeType::Float4: return "float4";
+          case gapi::AttributeType::Int4: return "int4";
+          case gapi::AttributeType::Float4: return "float4";
 
           default:
           {
@@ -318,23 +318,23 @@ namespace ShadersSystem
         }
       }
 
-      string getCbufferPad(const AttributeType type, const size_t i) const
+      string getCbufferPad(const gapi::AttributeType type, const size_t i) const
       {
         const auto getPadName = [&](const int size)
                                 { return fmt::format("int{} {}{};", size, "__pad", i); };
         switch (type)
         {
-          case AttributeType::Int:
-          case AttributeType::Float: return getPadName(3);
+          case gapi::AttributeType::Int:
+          case gapi::AttributeType::Float: return getPadName(3);
 
-          case AttributeType::Int2:
-          case AttributeType::Float2: return getPadName(2);
+          case gapi::AttributeType::Int2:
+          case gapi::AttributeType::Float2: return getPadName(2);
 
-          case AttributeType::Int3:
-          case AttributeType::Float3: return getPadName(1);
+          case gapi::AttributeType::Int3:
+          case gapi::AttributeType::Float3: return getPadName(1);
 
-          case AttributeType::Int4:
-          case AttributeType::Float4: return "";
+          case gapi::AttributeType::Int4:
+          case gapi::AttributeType::Float4: return "";
 
           default:
           {

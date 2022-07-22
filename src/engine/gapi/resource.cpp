@@ -1,5 +1,7 @@
 #include "resources.h"
 
+#include <engine/assert.h>
+
 #include <boost/functional/hash.hpp>
 
 namespace gapi
@@ -81,5 +83,51 @@ namespace gapi
     hash_combine(hash, finalState);
 
     return hash;
+  }
+
+  size_t attributeType_to_size(const AttributeType type)
+  {
+    switch (type)
+    {
+      case AttributeType::Float:
+      case AttributeType::Int:
+        return 4;
+      case AttributeType::Float2:
+      case AttributeType::Int2:
+        return 8;
+      case AttributeType::Float3:
+      case AttributeType::Int3:
+        return 12;
+      case AttributeType::Float4:
+      case AttributeType::Int4:
+        return 16;
+
+      default:
+      {
+        ASSERT(!"unsupported type");
+        return 0;
+      }
+    }
+  }
+
+  string attributeType_to_string(const AttributeType type)
+  {
+    switch (type)
+    {
+      case AttributeType::Float:  return "float";
+      case AttributeType::Int:    return "int";
+      case AttributeType::Float2: return "float2";
+      case AttributeType::Int2:   return "int2";
+      case AttributeType::Float3: return "float3";
+      case AttributeType::Int3:   return "int3";
+      case AttributeType::Float4: return "float4";
+      case AttributeType::Int4:   return "int4";
+
+      default:
+      {
+        ASSERT(!"unsupported type");
+        return 0;
+      }
+    }
   }
 }

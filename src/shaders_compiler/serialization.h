@@ -28,22 +28,22 @@ namespace boost::serialization
   }
 
   template<class Archive>
-  void serialize(Archive& a, vk::VertexInputBindingDescription& vib, const unsigned version)
+  void serialize(Archive& a, gapi::VertexInputDescription::Buffer& vib, const unsigned version)
   {
     a & make_binary_object(&vib, sizeof(vib));
   }
 
   template<class Archive>
-  void serialize(Archive& a, vk::VertexInputAttributeDescription& via, const unsigned version)
+  void serialize(Archive& a, gapi::VertexInputDescription::Attribute& via, const unsigned version)
   {
     a & make_binary_object(&via, sizeof(via));
   }
 
   template<class Archive>
-  void serialize(Archive& a, spirv::v2::InputAssembly& ia, const unsigned version)
+  void serialize(Archive& a, gapi::VertexInputDescription& ia, const unsigned version)
   {
-    a & ia.buffers
-      & ia.attributes;
+    a & ia.attributes
+      & ia.buffers;
   }
 
   template<class Archive>
@@ -80,7 +80,10 @@ namespace boost::serialization
   template<class Archive>
   void serialize(Archive& a, tfx::RenderState& st, const unsigned version)
   {
-    a & make_binary_object(&st, sizeof(st));
+    a & st.ia
+      & st.topology
+      & make_binary_object(&st.depthStencil, sizeof(st.depthStencil))
+      & make_binary_object(&st.blending, sizeof(st.blending));
   }
 
   template<class Archive>
@@ -89,7 +92,6 @@ namespace boost::serialization
     a & t.name
       & t.byteCode
       & t.renderState
-      & t.ia
       & t.blobs
       & t.reflections;
   }

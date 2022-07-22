@@ -46,7 +46,7 @@ namespace ShadersSystem
 
   struct CBufferVar
   {
-    AttributeType type;
+    gapi::AttributeType type;
     string name;
     size_t offset = 0;
     const ResourceAssignExp* assignExp = nullptr;
@@ -54,32 +54,6 @@ namespace ShadersSystem
     bool operator==(const CBufferVar& rvl) const;
   };
   typedef eastl::vector_map<string_hash, CBufferVar> CbufferVars;
-
-  struct InputDescription
-  {
-    struct Attribute
-    {
-      uint32_t offset = 0;
-      uint8_t location = 0;
-      uint8_t binding = 0;
-      AttributeType type;
-
-      bool operator==(const Attribute& rvl) const;
-    };
-
-    struct Buffer
-    {
-      uint32_t stride = 0;
-      uint8_t binding = 0;
-
-      bool operator==(const Buffer& rvl) const;
-    };
-
-    bool operator==(const InputDescription& ia) const;
-
-    eastl::vector<Attribute> attributes;
-    eastl::vector<Buffer> buffers;
-  };
 
   constexpr uint8_t NO_CBUFFER = ~(0);
 
@@ -121,7 +95,6 @@ namespace ShadersSystem
     string name;
     ByteCodes byteCode;
     tfx::RenderState renderState;
-    spirv::v2::InputAssembly ia;
     eastl::vector<ShaderBlob> blobs;
     eastl::vector<spirv::v2::Reflection> reflections;
 
@@ -130,7 +103,6 @@ namespace ShadersSystem
       return name == rvl.name &&
         is_same_byte_code(byteCode, rvl.byteCode) &&
         renderState == rvl.renderState &&
-        ia == rvl.ia;
         blobs == rvl.blobs &&
         reflections == rvl.reflections;
     }

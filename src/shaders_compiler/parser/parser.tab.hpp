@@ -244,7 +244,7 @@ union SHSTYPE
   ResourceType resourceType;
   ResourceAssignExp* resourceAssignExp;
 
-  AttributeType attributeType;
+  gapi::AttributeType attributeType;
   InputBufferExp* inputBufferExp;
   InputAttributeExp* inputAttributeExp;
 

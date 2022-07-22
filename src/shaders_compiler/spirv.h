@@ -113,7 +113,7 @@ namespace spirv
       }
     };
 
-    InputAssembly shader_input_to_spirv_ia(const ShadersSystem::InputDescription& input);
+    InputAssembly shader_input_to_spirv_ia(const gapi::VertexInputDescription& input);
     Reflection reflect(const eastl::vector<char>& spirv, const gapi::ShaderStage stage, const string& entry);
   }
 }

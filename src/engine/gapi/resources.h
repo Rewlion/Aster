@@ -412,6 +412,42 @@ namespace gapi
 
   using RenderTargets = Utils::FixedStack<RenderPassAttachment, MAX_RENDER_TARGETS>;
 
+  enum class AttributeType: uint8_t
+  {
+    None,
+    Float, Float2, Float3, Float4,
+    Int, Int2, Int3, Int4,
+  };
+
+  size_t attributeType_to_size(const AttributeType type);
+  string attributeType_to_string(const AttributeType type);
+
+  struct VertexInputDescription
+  {
+    struct Attribute
+    {
+      uint32_t offset = 0;
+      uint8_t location = 0;
+      uint8_t binding = 0;
+      AttributeType type;
+
+      bool operator==(const Attribute& rvl) const;
+    };
+
+    struct Buffer
+    {
+      uint32_t stride = 0;
+      uint8_t binding = 0;
+
+      bool operator==(const Buffer& rvl) const;
+    };
+
+    bool operator==(const VertexInputDescription& ia) const;
+
+    eastl::vector<Attribute> attributes;
+    eastl::vector<Buffer> buffers;
+  };
+
   struct RenderState
   {
     ShaderStagesNames shaders;

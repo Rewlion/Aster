@@ -2,6 +2,8 @@
 
 #include "ast_types.h"
 
+#include <engine/gapi/resources.h>
+
 #include <variant>
 #include <stdint.h>
 
@@ -67,10 +69,10 @@ namespace ShadersSystem
   {
     uint16_t offset;
     ResourceAccessType accessType;
-    AttributeType type;
+    gapi::AttributeType type;
     char resourceName[RESOURCE_MAX_NAME_LEN];
 
-    ShBindCbufferVar(const uint16_t offset, const ResourceAccessType accessType, const AttributeType type, const string& resName)
+    ShBindCbufferVar(const uint16_t offset, const ResourceAccessType accessType, const gapi::AttributeType type, const string& resName)
       : ShOp(ShOpCode::BindCbufferVar)
       , accessType(accessType)
       , type(type)

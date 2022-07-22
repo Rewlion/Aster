@@ -23,21 +23,25 @@ namespace ShadersSystem
            offset == rvl.offset &&
            ((assignExp == rvl.assignExp) || (assignExp && rvl.assignExp && *assignExp == *rvl.assignExp));
   }
+}
 
-  bool InputDescription::Attribute::operator==(const Attribute& rvl) const
+namespace gapi
+{
+  bool VertexInputDescription::Attribute::operator==(const VertexInputDescription::Attribute& rvl) const
   {
     return std::tie(offset, location, binding, type) ==
            std::tie(rvl.offset, rvl.location, rvl.binding, rvl.type);
   }
 
-  bool InputDescription::Buffer::operator==(const InputDescription::Buffer& rvl) const
+  bool VertexInputDescription::Buffer::operator==(const VertexInputDescription::Buffer& rvl) const
   {
     return std::tie(stride, binding) == std::tie(rvl.stride, rvl.binding);
   }
 
-  bool InputDescription::operator==(const InputDescription& ia) const
+  bool VertexInputDescription::operator==(const VertexInputDescription& ia) const
   {
     return attributes == ia.attributes &&
            buffers == ia.buffers;
   }
 }
+

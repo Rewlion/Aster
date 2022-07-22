@@ -132,11 +132,11 @@ namespace ShadersSystem
 
   struct InputAttributeExp: public Node
   {
-    AttributeType attributeType;
+    gapi::AttributeType attributeType;
     const char* name;
     const InputAttributeExp* next;
 
-    InputAttributeExp(const AttributeType type, const char* name)
+    InputAttributeExp(const gapi::AttributeType type, const char* name)
       : attributeType(type)
       , name(name)
       , next(nullptr)
@@ -793,10 +793,10 @@ namespace ShadersSystem
 
   struct CbufferVarDeclarationExp: public ScopeExp
   {
-    AttributeType varType;
+    gapi::AttributeType varType;
     const char* name;
     const ResourceAssignExp* assignExps;
-    CbufferVarDeclarationExp(const AttributeType varType, const char* name,
+    CbufferVarDeclarationExp(const gapi::AttributeType varType, const char* name,
                              const ResourceAssignExp* assignExps)
       : ScopeExp(ScopeExp::Type::CbufferVarDeclaration)
       , varType(varType)

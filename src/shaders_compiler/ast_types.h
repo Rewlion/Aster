@@ -18,65 +18,6 @@ namespace ShadersSystem
     CbufferVar = 3
   };
 
-  enum class AttributeType: uint8_t
-  {
-    None = 0,
-    Float = 3,
-    Float2 = 4,
-    Float3 = 5,
-    Float4 = 6,
-    Int = 7,
-    Int2 = 8,
-    Int3 = 9,
-    Int4 = 10,
-  };
-
-  inline size_t attributeType_to_size(const AttributeType type)
-  {
-    switch (type)
-    {
-      case AttributeType::Float:
-      case AttributeType::Int:
-        return 4;
-      case AttributeType::Float2:
-      case AttributeType::Int2:
-        return 8;
-      case AttributeType::Float3:
-      case AttributeType::Int3:
-        return 12;
-      case AttributeType::Float4:
-      case AttributeType::Int4:
-        return 16;
-
-      default:
-      {
-        ASSERT(!"unsupported type");
-        return 0;
-      }
-    }
-  }
-
-  inline string attributeType_to_string(const AttributeType type)
-  {
-    switch (type)
-    {
-      case AttributeType::Float:  return "float";
-      case AttributeType::Int:    return "int";
-      case AttributeType::Float2: return "float2";
-      case AttributeType::Int2:   return "int2";
-      case AttributeType::Float3: return "float3";
-      case AttributeType::Int3:   return "int3";
-      case AttributeType::Float4: return "float4";
-      case AttributeType::Int4:   return "int4";
-
-      default:
-      {
-        ASSERT(!"unsupported type");
-        return 0;
-      }
-    }
-  }
-
   enum class ResourceAccessType: uint8_t
   {
     None = 0,

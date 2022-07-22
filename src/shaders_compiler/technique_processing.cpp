@@ -165,7 +165,6 @@ namespace ShadersSystem
             .name = std::move(m_TechniqueName),
             .byteCode = std::move(m_ByteCode),
             .renderState = std::move(m_RenderState),
-            .ia = spirv::v2::shader_input_to_spirv_ia(m_Input),
             .blobs = std::move(m_Shaders),
             .reflections = std::move(m_Reflections)
           };
@@ -223,7 +222,7 @@ namespace ShadersSystem
 
         void processInputExp(const InputExp& exp)
         {
-          m_Input = InputDescription{};
+          m_RenderState.ia = gapi::VertexInputDescription{};
           const InputBufferExp* bExp = exp.buffers;
 
           string sp = "  ";
@@ -236,7 +235,7 @@ namespace ShadersSystem
             const InputAttributeExp* attrExp = bExp->attributes;
             while (attrExp)
             {
-              m_Input.attributes.push_back(InputDescription::Attribute{
+              m_RenderState.ia.attributes.push_back(gapi::VertexInputDescription::Attribute{
                 .offset = 0,
                 .location = location++,
                 .binding = (uint8_t)bExp->reg,
@@ -249,7 +248,7 @@ namespace ShadersSystem
               attrExp = attrExp->next;
             }
 
-            m_Input.buffers.push_back(InputDescription::Buffer{
+            m_RenderState.ia.buffers.push_back(gapi::VertexInputDescription::Buffer{
               .stride = offset,
               .binding = (uint8_t)bExp->reg
             });
@@ -440,7 +439,7 @@ namespace ShadersSystem
         ByteCodes m_ByteCode;
 
         tfx::RenderState m_RenderState;
-        InputDescription m_Input;
+        gapi::VertexInputDescription m_Input;
         gapi::ShaderStage m_Stages = gapi::ShaderStage(0);
         eastl::vector<ShaderBlob> m_Shaders;
         eastl::vector<spirv::v2::Reflection> m_Reflections;

@@ -2815,7 +2815,7 @@ yyreduce:
   case 135: /* ATTRIBUTE_TYPE: "int"  */
 #line 764 "src/shaders_compiler/parser/parser.y"
                   {
-    (yyval.attributeType) = AttributeType::Int;
+    (yyval.attributeType) = gapi::AttributeType::Int;
   }
 #line 2821 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
@@ -2823,7 +2823,7 @@ yyreduce:
   case 136: /* ATTRIBUTE_TYPE: "int2"  */
 #line 767 "src/shaders_compiler/parser/parser.y"
                    {
-    (yyval.attributeType) = AttributeType::Int2;
+    (yyval.attributeType) = gapi::AttributeType::Int2;
   }
 #line 2829 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
@@ -2831,7 +2831,7 @@ yyreduce:
   case 137: /* ATTRIBUTE_TYPE: "int3"  */
 #line 770 "src/shaders_compiler/parser/parser.y"
                    {
-    (yyval.attributeType) = AttributeType::Int3;
+    (yyval.attributeType) = gapi::AttributeType::Int3;
   }
 #line 2837 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
@@ -2839,7 +2839,7 @@ yyreduce:
   case 138: /* ATTRIBUTE_TYPE: "int4"  */
 #line 773 "src/shaders_compiler/parser/parser.y"
                    {
-    (yyval.attributeType) = AttributeType::Int4;
+    (yyval.attributeType) = gapi::AttributeType::Int4;
   }
 #line 2845 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
@@ -2847,7 +2847,7 @@ yyreduce:
   case 139: /* ATTRIBUTE_TYPE: "float"  */
 #line 776 "src/shaders_compiler/parser/parser.y"
                     {
-    (yyval.attributeType) = AttributeType::Float;
+    (yyval.attributeType) = gapi::AttributeType::Float;
   }
 #line 2853 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
@@ -2855,7 +2855,7 @@ yyreduce:
   case 140: /* ATTRIBUTE_TYPE: "float2"  */
 #line 779 "src/shaders_compiler/parser/parser.y"
                      {
-    (yyval.attributeType) = AttributeType::Float2;
+    (yyval.attributeType) = gapi::AttributeType::Float2;
   }
 #line 2861 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
@@ -2863,7 +2863,7 @@ yyreduce:
   case 141: /* ATTRIBUTE_TYPE: "float3"  */
 #line 782 "src/shaders_compiler/parser/parser.y"
                      {
-    (yyval.attributeType) = AttributeType::Float3;
+    (yyval.attributeType) = gapi::AttributeType::Float3;
   }
 #line 2869 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
@@ -2871,7 +2871,7 @@ yyreduce:
   case 142: /* ATTRIBUTE_TYPE: "float4"  */
 #line 785 "src/shaders_compiler/parser/parser.y"
                      {
-    (yyval.attributeType) = AttributeType::Float4;
+    (yyval.attributeType) = gapi::AttributeType::Float4;
   }
 #line 2877 "src/shaders_compiler/parser/parser.tab.cpp"
     break;

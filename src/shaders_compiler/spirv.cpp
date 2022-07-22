@@ -359,18 +359,18 @@ namespace spirv
       }
     }
 
-    static vk::Format get_attribute_format(const ShadersSystem::AttributeType type)
+    static vk::Format get_attribute_format(const gapi::AttributeType type)
     {
       switch (type)
       {
-         case ShadersSystem::AttributeType::Float:  return vk::Format::eR32Sfloat;
-         case ShadersSystem::AttributeType::Float2: return vk::Format::eR32G32Sfloat;
-         case ShadersSystem::AttributeType::Float3: return vk::Format::eR32G32B32Sfloat;
-         case ShadersSystem::AttributeType::Float4: return vk::Format::eR32G32B32A32Sfloat;
-         case ShadersSystem::AttributeType::Int:    return vk::Format::eR32Sint;
-         case ShadersSystem::AttributeType::Int2:   return vk::Format::eR32G32Sint;
-         case ShadersSystem::AttributeType::Int3:   return vk::Format::eR32G32B32Sint;
-         case ShadersSystem::AttributeType::Int4:   return vk::Format::eR32G32B32A32Sint;
+         case gapi::AttributeType::Float:  return vk::Format::eR32Sfloat;
+         case gapi::AttributeType::Float2: return vk::Format::eR32G32Sfloat;
+         case gapi::AttributeType::Float3: return vk::Format::eR32G32B32Sfloat;
+         case gapi::AttributeType::Float4: return vk::Format::eR32G32B32A32Sfloat;
+         case gapi::AttributeType::Int:    return vk::Format::eR32Sint;
+         case gapi::AttributeType::Int2:   return vk::Format::eR32G32Sint;
+         case gapi::AttributeType::Int3:   return vk::Format::eR32G32B32Sint;
+         case gapi::AttributeType::Int4:   return vk::Format::eR32G32B32A32Sint;
          default:
          {
           ASSERT(!"unsupported");
@@ -379,7 +379,7 @@ namespace spirv
       }
     }
 
-    InputAssembly shader_input_to_spirv_ia(const ShadersSystem::InputDescription& input)
+    InputAssembly shader_input_to_spirv_ia(const gapi::VertexInputDescription& input)
     {
       InputAssembly ia;
       ia.buffers.reserve(input.buffers.size());

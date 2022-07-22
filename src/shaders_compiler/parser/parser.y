@@ -52,7 +52,7 @@
   ResourceType resourceType;
   ResourceAssignExp* resourceAssignExp;
 
-  AttributeType attributeType;
+  gapi::AttributeType attributeType;
   InputBufferExp* inputBufferExp;
   InputAttributeExp* inputAttributeExp;
 
@@ -762,28 +762,28 @@ RESOURCE_TYPE
 
 ATTRIBUTE_TYPE
   : TFX_TOKEN_INT {
-    $$ = AttributeType::Int;
+    $$ = gapi::AttributeType::Int;
   }
   | TFX_TOKEN_INT2 {
-    $$ = AttributeType::Int2;
+    $$ = gapi::AttributeType::Int2;
   }
   | TFX_TOKEN_INT3 {
-    $$ = AttributeType::Int3;
+    $$ = gapi::AttributeType::Int3;
   }
   | TFX_TOKEN_INT4 {
-    $$ = AttributeType::Int4;
+    $$ = gapi::AttributeType::Int4;
   }
   | TFX_TOKEN_FLOAT {
-    $$ = AttributeType::Float;
+    $$ = gapi::AttributeType::Float;
   }
   | TFX_TOKEN_FLOAT2 {
-    $$ = AttributeType::Float2;
+    $$ = gapi::AttributeType::Float2;
   }
   | TFX_TOKEN_FLOAT3 {
-    $$ = AttributeType::Float3;
+    $$ = gapi::AttributeType::Float3;
   }
   | TFX_TOKEN_FLOAT4 {
-    $$ = AttributeType::Float4;
+    $$ = gapi::AttributeType::Float4;
   }
   ;
 
