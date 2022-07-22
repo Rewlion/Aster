@@ -393,6 +393,7 @@ namespace ShadersSystem
       : BlendingExp(BlendingExp::Type::MrtState)
       , mrtBlendingStateType(type)
       , next(nullptr)
+      , n(0)
     {
     }
 
@@ -407,6 +408,7 @@ namespace ShadersSystem
 
     Type mrtBlendingStateType;
     MrtBlendingExp* next;
+    int n;
   };
 
   struct MrtBlendingEnabledExp: public MrtBlendingExp

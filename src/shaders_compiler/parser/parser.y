@@ -524,7 +524,8 @@ BLENDING_EXP
   | "blend_constants" "=" FLOAT4_VALUE[v] ";" {
     $$ = new BlendConstants($v);
   }
-  | "mrt" ":" MRT_BLENDING_EXP_LIST[exps] {
+  | "mrt" "(" INT_VALUE[v] ")" ":" MRT_BLENDING_EXP_LIST[exps] {
+    $exps->n = $v;
     $$ = $exps;
   }
   ;

@@ -46,7 +46,9 @@ technique mytechnique {
       logic_op_enabled = yes;
       logic_op = and;
       blend_constants = float4(0.0, 0.0, 0.0, 0.0);
-      mrt:
+      mrt(0):
+        has_blending = no;
+      mrt(3):
         has_blending = true;
         src_color_blend_factor = zero;
         dst_color_blend_factor = zero;

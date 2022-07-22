@@ -617,7 +617,7 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  9
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   303
+#define YYLAST   318
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  146
@@ -626,7 +626,7 @@ union yyalloc
 /* YYNRULES -- Number of rules.  */
 #define YYNRULES  165
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  309
+#define YYNSTATES  312
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   400
@@ -697,16 +697,16 @@ static const yytype_int16 yyrline[] =
      405,   408,   411,   414,   420,   424,   431,   437,   441,   448,
      454,   457,   460,   463,   466,   469,   472,   475,   481,   484,
      487,   490,   493,   496,   499,   502,   508,   512,   518,   521,
-     524,   527,   533,   537,   544,   547,   550,   553,   556,   559,
-     562,   568,   571,   574,   577,   580,   583,   586,   589,   592,
-     595,   598,   601,   604,   607,   610,   613,   616,   619,   622,
-     628,   631,   634,   637,   640,   646,   649,   652,   655,   658,
-     661,   664,   667,   670,   673,   676,   679,   682,   685,   688,
-     691,   697,   703,   707,   714,   717,   720,   726,   730,   736,
-     740,   743,   749,   752,   758,   764,   767,   770,   773,   776,
-     779,   782,   785,   791,   797,   803,   808,   812,   818,   821,
-     827,   830,   833,   836,   839,   842,   845,   848,   851,   854,
-     857,   860,   863,   866,   869,   872
+     524,   527,   534,   538,   545,   548,   551,   554,   557,   560,
+     563,   569,   572,   575,   578,   581,   584,   587,   590,   593,
+     596,   599,   602,   605,   608,   611,   614,   617,   620,   623,
+     629,   632,   635,   638,   641,   647,   650,   653,   656,   659,
+     662,   665,   668,   671,   674,   677,   680,   683,   686,   689,
+     692,   698,   704,   708,   715,   718,   721,   727,   731,   737,
+     741,   744,   750,   753,   759,   765,   768,   771,   774,   777,
+     780,   783,   786,   792,   798,   804,   809,   813,   819,   822,
+     828,   831,   834,   837,   840,   843,   846,   849,   852,   855,
+     858,   861,   864,   867,   870,   873
 };
 #endif
 
@@ -792,7 +792,7 @@ static const yytype_int16 yytoknum[] =
 };
 #endif
 
-#define YYPACT_NINF (-251)
+#define YYPACT_NINF (-259)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -806,37 +806,38 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-      -9,     5,    14,    50,    -9,  -251,  -251,    44,    79,  -251,
-    -251,   -20,     2,   -16,  -251,  -251,  -251,  -251,  -251,  -251,
-    -251,  -251,  -251,    46,   -20,   109,   110,  -251,    96,   125,
-     136,   140,   135,     2,  -251,  -251,   142,   153,   160,  -251,
-     161,   162,   166,   169,    32,   -15,   165,  -251,    33,   -16,
-    -251,    10,    10,   167,   168,  -251,  -251,  -251,  -251,  -251,
-    -251,  -251,  -251,  -251,  -251,  -251,  -251,  -251,  -251,  -251,
-    -251,   163,   171,   170,   173,   174,   175,  -251,   -15,  -251,
-     164,   176,   177,  -251,   180,  -251,   179,   181,   182,   184,
-    -251,  -251,   190,   178,    47,    55,     1,   -10,  -251,   183,
-     192,   192,    33,   193,   194,  -251,  -251,   172,   188,  -251,
-     178,  -251,  -251,  -251,  -251,  -251,  -251,  -251,  -251,  -251,
-    -251,   191,   195,   196,   198,  -251,    55,   199,   200,   201,
-     202,   203,   204,  -251,     1,   205,   206,   207,   210,  -251,
-     -10,   186,  -251,   208,   209,  -251,   211,   212,   213,   192,
-    -251,  -251,   197,   197,   -33,  -251,   197,   -23,   -23,   -23,
-     -33,   192,  -251,   197,   -38,    64,   -64,  -251,   192,  -251,
-    -251,  -251,  -251,  -251,   214,  -251,   216,   218,  -251,  -251,
-    -251,  -251,  -251,  -251,  -251,  -251,   219,   220,  -251,  -251,
-    -251,  -251,  -251,  -251,  -251,  -251,   221,   222,   223,   224,
-     225,   226,  -251,  -251,  -251,  -251,  -251,  -251,  -251,  -251,
-    -251,  -251,  -251,  -251,  -251,  -251,  -251,  -251,   227,   228,
-     229,   230,   231,   232,   233,   234,   235,   236,  -251,   -64,
-     237,   239,  -251,  -251,  -251,  -251,  -251,  -251,  -251,  -251,
-    -251,  -251,  -251,   217,  -251,   197,    43,    43,     8,    43,
-      43,     8,  -251,   192,   -42,   189,   240,  -251,  -251,  -251,
-    -251,  -251,  -251,  -251,  -251,  -251,  -251,  -251,  -251,  -251,
-    -251,  -251,  -251,  -251,  -251,  -251,   241,   242,  -251,  -251,
-    -251,  -251,  -251,   243,   245,   246,   247,   248,  -251,   -42,
-     244,   255,  -251,  -251,  -251,  -251,  -251,  -251,  -251,  -251,
-    -251,   249,   250,  -251,   257,   251,   259,   252,  -251
+      -9,     5,    14,    61,    -9,  -259,  -259,    52,   100,  -259,
+    -259,   -20,     2,    32,  -259,  -259,  -259,  -259,  -259,  -259,
+    -259,  -259,  -259,   101,   -20,   131,   158,  -259,   144,   145,
+     154,   159,   152,     2,  -259,  -259,   160,   155,   162,  -259,
+     163,   164,   165,   168,    17,   -15,   166,  -259,    33,    32,
+    -259,    85,    85,   167,   169,  -259,  -259,  -259,  -259,  -259,
+    -259,  -259,  -259,  -259,  -259,  -259,  -259,  -259,  -259,  -259,
+    -259,   170,   171,   172,   173,   175,   176,  -259,   -15,  -259,
+     177,   178,   179,  -259,   182,  -259,   181,   183,   184,   186,
+    -259,  -259,   192,   180,     1,    62,    -1,    86,  -259,   153,
+     194,   194,    33,   195,   196,  -259,  -259,   174,   190,  -259,
+     180,  -259,  -259,  -259,  -259,  -259,  -259,  -259,  -259,  -259,
+    -259,   193,   197,   198,   199,  -259,    62,   200,   201,   202,
+     203,   204,   205,  -259,    -1,   206,   207,   208,   209,  -259,
+      86,   188,  -259,   210,   211,  -259,   212,   213,   217,   194,
+    -259,  -259,   214,   214,   -33,  -259,   214,    38,    38,    38,
+     -33,   194,  -259,   214,   -38,    41,   194,  -259,   194,  -259,
+    -259,  -259,  -259,  -259,   215,  -259,   219,   220,  -259,  -259,
+    -259,  -259,  -259,  -259,  -259,  -259,   221,   222,  -259,  -259,
+    -259,  -259,  -259,  -259,  -259,  -259,   223,   224,   225,   226,
+     227,   228,  -259,  -259,  -259,  -259,  -259,  -259,  -259,  -259,
+    -259,  -259,  -259,  -259,  -259,  -259,  -259,  -259,   229,   230,
+     231,   232,   189,   234,  -259,  -259,  -259,  -259,  -259,  -259,
+    -259,  -259,  -259,  -259,  -259,   185,  -259,   235,   194,   -11,
+     191,   -64,   233,  -259,   -11,   242,   237,   238,   239,   240,
+     241,   243,   244,   245,  -259,   -64,  -259,  -259,   247,   246,
+     214,     0,     0,    53,     0,     0,    53,  -259,  -259,   250,
+     248,  -259,  -259,  -259,  -259,  -259,  -259,  -259,  -259,  -259,
+    -259,  -259,  -259,  -259,  -259,  -259,  -259,  -259,  -259,  -259,
+     249,   251,  -259,  -259,  -259,  -259,  -259,   253,   254,   255,
+     256,   252,  -259,  -259,  -259,  -259,  -259,  -259,  -259,   257,
+     258,  -259
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -866,32 +867,33 @@ static const yytype_uint8 yydefact[] =
       60,    61,    62,    63,    64,    65,     0,     0,     0,     0,
        0,     0,   115,   105,   106,   107,   108,   109,   110,   111,
      112,   113,   114,   116,   117,   118,   119,   120,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,    71,    73,
-       0,     0,    23,    24,    25,    28,    29,    30,    31,    32,
-      33,    68,    69,     0,    70,     0,     0,     0,     0,     0,
-       0,     0,    72,     0,     0,     0,     0,    81,    82,    83,
-      84,    85,    86,    87,    88,    89,    90,    91,    92,    93,
-      94,    95,    96,    97,    98,    99,     0,     0,   100,   101,
-     102,   103,   104,     0,     0,     0,     0,     0,    46,    48,
-       0,     0,    74,    75,    76,    77,    78,    79,    80,   129,
-      47,     0,     0,    49,     0,     0,     0,     0,   143
+       0,     0,     0,     0,    23,    24,    25,    28,    29,    30,
+      31,    32,    33,    68,    69,     0,    70,     0,     0,     0,
+       0,     0,     0,    46,    48,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,    71,    73,   129,    47,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,    72,    49,     0,
+       0,    81,    82,    83,    84,    85,    86,    87,    88,    89,
+      90,    91,    92,    93,    94,    95,    96,    97,    98,    99,
+       0,     0,   100,   101,   102,   103,   104,     0,     0,     0,
+       0,     0,    74,    75,    76,    77,    78,    79,    80,     0,
+       0,   143
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -251,   260,  -251,  -251,   154,  -251,   108,  -251,   112,  -251,
-     129,  -251,  -251,   158,  -251,   -19,  -251,   111,   -53,   132,
-    -251,    40,  -251,  -103,    22,  -251,  -251,   253,  -251,   185,
-    -251,   238,  -251,  -250,  -251,  -101,  -151,   254,  -251,  -251
+    -259,   218,  -259,  -259,   236,  -259,   127,  -259,   122,  -259,
+     133,  -259,  -259,   187,  -259,    26,  -259,   112,   -24,   134,
+    -259,    18,  -259,  -258,     9,  -259,  -259,   259,  -259,   216,
+    -259,   260,  -259,  -181,  -259,  -101,  -151,   261,  -259,  -259
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int16 yydefgoto[] =
 {
       -1,     3,     4,     5,    32,    33,    77,    78,   125,   126,
-     133,   134,   121,   109,   110,   288,   289,   186,   196,   139,
-     140,   228,   229,   276,   283,   218,     6,    23,    24,    83,
+     133,   134,   121,   109,   110,   243,   244,   186,   196,   139,
+     140,   254,   255,   290,   297,   218,     6,    23,    24,    83,
       84,    88,    25,    26,   220,   143,   176,    36,    37,    71
 };
 
@@ -900,72 +902,74 @@ static const yytype_int16 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int16 yytable[] =
 {
-     144,    13,   177,    72,   290,   187,    34,    35,   221,    27,
-       7,     1,   201,   222,   223,   224,   225,   226,   227,     8,
+     144,    13,   177,    72,   291,   187,   298,   299,   247,    27,
+       7,     1,   201,   248,   249,   250,   251,   252,   253,     8,
       73,     2,   178,   179,   180,   181,   182,   183,   184,   185,
-     202,    74,    75,    28,    29,    30,    31,    86,    87,   290,
-     188,   189,   190,   191,   192,   193,   194,   195,   174,   127,
-       9,   128,   129,   130,   131,   132,    76,    80,    11,    81,
-     200,    38,    82,   135,   136,   137,   138,   230,   203,   204,
+     202,    74,    75,    28,    29,    30,    31,   111,   112,   113,
+     114,   115,   116,   117,   118,   119,   120,   127,   174,   128,
+     129,   130,   131,   132,    34,    35,    76,    80,   245,    81,
+     200,     9,    82,   245,   271,   221,    11,   222,   203,   204,
      205,   206,   207,   208,   209,   210,   211,   212,   213,   214,
-     215,   216,   217,   111,   112,   113,   114,   115,   116,   117,
-     118,   119,   120,    12,   256,    14,    15,    16,    17,    18,
-      19,    20,    21,   122,   123,   197,   198,   257,   124,   278,
-     279,   280,   281,   282,    40,    41,    42,    14,    15,    16,
-      17,    18,    19,    20,    21,    22,   258,   259,   260,   261,
-     262,   263,   264,   265,   266,   267,   268,   269,   270,   271,
-     272,   273,   274,   275,   277,    43,   284,   285,    44,    45,
-      46,    48,   287,    55,    56,    57,    58,    59,    60,    61,
-      62,    63,    64,    65,    66,    67,    68,    69,    70,    49,
-      50,    53,    51,    52,    54,    79,    99,    90,    91,    92,
-      93,    94,    95,    96,    97,   148,    98,    47,   100,   101,
-     102,   103,   105,   104,   106,   107,   142,   108,   146,   147,
-     149,   151,   168,   175,   219,   291,   152,   153,   141,   154,
-     156,   157,   158,   159,   160,   161,   163,   164,   165,   166,
-     255,   169,   170,   173,   171,   172,   232,   231,   233,   234,
-     235,   236,   237,   238,   239,   240,   241,   242,   155,   244,
-     243,   245,   246,   247,   248,   249,   250,   251,   254,   301,
-     292,   293,   294,   295,   253,   296,   297,   298,   302,   303,
-     305,   299,   307,   162,    10,   308,   304,   306,   150,   252,
-     300,   199,   167,   286,     0,     0,     0,    39,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,   145,     0,     0,
-      89,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    85
+     215,   216,   217,   272,   273,   274,   275,   276,   277,   278,
+     279,   280,   281,   282,   283,   284,   285,   286,   287,   288,
+     289,   188,   189,   190,   191,   192,   193,   194,   195,   270,
+     122,   123,    86,    87,    12,   124,    38,    14,    15,    16,
+      17,    18,    19,    20,    21,    22,    14,    15,    16,    17,
+      18,    19,    20,    21,   197,   198,    40,   242,    55,    56,
+      57,    58,    59,    60,    61,    62,    63,    64,    65,    66,
+      67,    68,    69,    70,   292,   293,   294,   295,   296,   135,
+     136,   137,   138,    41,    42,    43,    44,    46,    45,    48,
+      53,    49,    50,    54,    51,    52,    79,    90,   141,    91,
+      93,   219,    95,    94,    96,    97,    92,   148,   240,    99,
+     100,   101,   102,   103,   105,   104,   106,   107,   142,   108,
+     146,   147,   149,   151,   168,    98,   238,   246,   152,   153,
+     154,   156,   157,   158,   159,   160,   161,   163,   164,   165,
+     175,   166,    10,   169,   170,   171,   172,   173,   223,   224,
+     225,   226,   227,   228,   229,   230,   231,   232,   233,   234,
+     259,   236,   235,   239,   241,   237,   256,   258,   155,   260,
+     261,   262,   263,   301,   264,   265,   266,   268,   302,   303,
+     310,   304,   269,   305,   306,   307,   308,   162,   309,    47,
+     257,   311,   199,   267,   167,   300,     0,     0,     0,     0,
+       0,     0,     0,    39,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,   150,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+      85,     0,    89,     0,     0,     0,     0,     0,   145
 };
 
 static const yytype_int16 yycheck[] =
 {
-     101,    21,   153,    18,   254,   156,    22,    23,    72,     7,
+     101,    21,   153,    18,   262,   156,   264,   265,    72,     7,
        5,    20,   163,    77,    78,    79,    80,    81,    82,     5,
       35,    30,    55,    56,    57,    58,    59,    60,    61,    62,
-      68,    46,    47,    31,    32,    33,    34,    27,    28,   289,
-      63,    64,    65,    66,    67,    68,    69,    70,   149,    48,
-       0,    50,    51,    52,    53,    54,    71,    24,    14,    26,
-     161,    15,    29,    73,    74,    75,    76,   168,   106,   107,
+      68,    46,    47,    31,    32,    33,    34,    36,    37,    38,
+      39,    40,    41,    42,    43,    44,    45,    48,   149,    50,
+      51,    52,    53,    54,    22,    23,    71,    24,   239,    26,
+     161,     0,    29,   244,    64,   166,    14,   168,   106,   107,
      108,   109,   110,   111,   112,   113,   114,   115,   116,   117,
-     118,   119,   120,    36,    37,    38,    39,    40,    41,    42,
-      43,    44,    45,    14,   245,   137,   138,   139,   140,   141,
-     142,   143,   144,    48,    49,   158,   159,    64,    53,   101,
-     102,   103,   104,   105,     5,     5,    20,   137,   138,   139,
-     140,   141,   142,   143,   144,   145,    83,    84,    85,    86,
-      87,    88,    89,    90,    91,    92,    93,    94,    95,    96,
-      97,    98,    99,   100,   247,    20,   249,   250,    12,     9,
-      15,     9,   253,   121,   122,   123,   124,   125,   126,   127,
-     128,   129,   130,   131,   132,   133,   134,   135,   136,    16,
-      10,     5,    11,    11,     5,    10,    12,    10,    10,    16,
-       9,    11,     9,     9,     9,    13,    78,    33,    12,    12,
-      10,    12,    10,    12,    10,     5,     4,    19,     5,     5,
-      12,    10,    16,     6,   140,    16,    11,    11,    25,    11,
-      11,    11,    11,    11,    11,    11,    11,    11,    11,     9,
-       3,    13,    13,    10,    13,    13,    10,    13,    10,    10,
-      10,    10,    10,    10,    10,    10,    10,    10,   126,    10,
-      12,    11,    11,    11,    11,    11,    11,    11,     9,     5,
-      10,    10,    10,    10,    17,    10,    10,    10,     3,    10,
-       3,    13,     3,   134,     4,    13,    16,    16,   110,   229,
-     289,   160,   140,   251,    -1,    -1,    -1,    24,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,   102,    -1,    -1,
-      52,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    49
+     118,   119,   120,    83,    84,    85,    86,    87,    88,    89,
+      90,    91,    92,    93,    94,    95,    96,    97,    98,    99,
+     100,    63,    64,    65,    66,    67,    68,    69,    70,   260,
+      48,    49,    27,    28,    14,    53,    15,   137,   138,   139,
+     140,   141,   142,   143,   144,   145,   137,   138,   139,   140,
+     141,   142,   143,   144,   158,   159,     5,   238,   121,   122,
+     123,   124,   125,   126,   127,   128,   129,   130,   131,   132,
+     133,   134,   135,   136,   101,   102,   103,   104,   105,    73,
+      74,    75,    76,     5,    20,    20,    12,    15,     9,     9,
+       5,    16,    10,     5,    11,    11,    10,    10,    25,    10,
+       9,   140,     9,    11,     9,     9,    16,    13,     3,    12,
+      12,    12,    10,    12,    10,    12,    10,     5,     4,    19,
+       5,     5,    12,    10,    16,    78,    17,    16,    11,    11,
+      11,    11,    11,    11,    11,    11,    11,    11,    11,    11,
+       6,    12,     4,    13,    13,    13,    13,    10,    13,    10,
+      10,    10,    10,    10,    10,    10,    10,    10,    10,    10,
+       3,    10,    12,     9,     9,    13,    13,     5,   126,    11,
+      11,    11,    11,     3,    11,    11,    11,    10,    10,    10,
+       3,    10,    16,    10,    10,    10,    10,   134,    16,    33,
+     244,    13,   160,   255,   140,   266,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    24,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,   110,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      49,    -1,    52,    -1,    -1,    -1,    -1,    -1,   102
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -988,21 +992,22 @@ static const yytype_uint8 yystos[] =
       52,    53,    54,   156,   157,    73,    74,    75,    76,   165,
      166,    25,     4,   181,   181,   175,     5,     5,    13,    12,
      159,    10,    11,    11,    11,   154,    11,    11,    11,    11,
-      11,    11,   156,    11,    11,    11,     9,   165,    16,    13,
+      11,    11,   156,    11,    11,    11,    12,   165,    16,    13,
       13,    13,    13,    10,   181,     6,   182,   182,    55,    56,
       57,    58,    59,    60,    61,    62,   163,   182,    63,    64,
       65,    66,    67,    68,    69,    70,   164,   164,   164,   163,
      181,   182,    68,   106,   107,   108,   109,   110,   111,   112,
      113,   114,   115,   116,   117,   118,   119,   120,   171,   140,
-     180,    72,    77,    78,    79,    80,    81,    82,   167,   168,
-     181,    13,    10,    10,    10,    10,    10,    10,    10,    10,
-      10,    10,    10,    12,    10,    11,    11,    11,    11,    11,
-      11,    11,   167,    17,     9,     3,   182,    64,    83,    84,
-      85,    86,    87,    88,    89,    90,    91,    92,    93,    94,
-      95,    96,    97,    98,    99,   100,   169,   169,   101,   102,
-     103,   104,   105,   170,   169,   169,   170,   181,   161,   162,
-     179,    16,    10,    10,    10,    10,    10,    10,    10,    13,
-     161,     5,     3,    10,    16,     3,    16,     3,    13
+     180,   181,   181,    13,    10,    10,    10,    10,    10,    10,
+      10,    10,    10,    10,    10,    12,    10,    13,    17,     9,
+       3,     9,   181,   161,   162,   179,    16,    72,    77,    78,
+      79,    80,    81,    82,   167,   168,    13,   161,     5,     3,
+      11,    11,    11,    11,    11,    11,    11,   167,    10,    16,
+     182,    64,    83,    84,    85,    86,    87,    88,    89,    90,
+      91,    92,    93,    94,    95,    96,    97,    98,    99,   100,
+     169,   169,   101,   102,   103,   104,   105,   170,   169,   169,
+     170,     3,    10,    10,    10,    10,    10,    10,    10,    16,
+       3,    13
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
@@ -1037,7 +1042,7 @@ static const yytype_int8 yyr2[] =
        1,     1,     1,     1,     2,     1,     6,     2,     1,     3,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     2,     1,     4,     4,
-       4,     3,     2,     1,     4,     4,     4,     4,     4,     4,
+       4,     6,     2,     1,     4,     4,     4,     4,     4,     4,
        4,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
@@ -1740,28 +1745,28 @@ yyreduce:
 #line 258 "src/shaders_compiler/parser/parser.y"
                                          {
   }
-#line 1744 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1749 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 3: /* MODULE_EXPRESSIONS: MODULE_EXPRESSION  */
 #line 260 "src/shaders_compiler/parser/parser.y"
                       {
   }
-#line 1751 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1756 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 4: /* MODULE_EXPRESSION: SCOPE_DECLARATION  */
 #line 265 "src/shaders_compiler/parser/parser.y"
                       {
   }
-#line 1758 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1763 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 5: /* MODULE_EXPRESSION: TECHNIQUE_DECLARATION  */
 #line 267 "src/shaders_compiler/parser/parser.y"
                           {
   }
-#line 1765 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1770 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 6: /* TECHNIQUE_DECLARATION: "technique" TFX_TOKEN_NAME_VAL "{" TECHNIQUE_EXP_LIST "}" ";"  */
@@ -1769,7 +1774,7 @@ yyreduce:
                                                                               {
     compiler.onTechniqueDeclaration(new TechniqueDeclarationExp{(yyvsp[-4].sval), (yyvsp[-2].techniqueExp)});
   }
-#line 1773 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1778 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 7: /* TECHNIQUE_EXP_LIST: TECHNIQUE_EXP TECHNIQUE_EXP_LIST  */
@@ -1778,7 +1783,7 @@ yyreduce:
     (yyval.techniqueExp) = (yyvsp[-1].techniqueExp);
     (yyval.techniqueExp)->next = (yyvsp[0].techniqueExp);
   }
-#line 1782 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1787 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 8: /* TECHNIQUE_EXP_LIST: TECHNIQUE_EXP  */
@@ -1786,7 +1791,7 @@ yyreduce:
                        {
     (yyval.techniqueExp) = (yyvsp[0].techniqueExp);
   }
-#line 1790 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1795 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 9: /* TECHNIQUE_EXP: "support" "scope" TFX_TOKEN_NAME_VAL ";"  */
@@ -1794,7 +1799,7 @@ yyreduce:
                                                    {
     (yyval.techniqueExp) = new ScopeSupportExp((yyvsp[-1].sval));
   }
-#line 1798 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1803 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 10: /* TECHNIQUE_EXP: "activate" "scope" TFX_TOKEN_NAME_VAL ";"  */
@@ -1802,7 +1807,7 @@ yyreduce:
                                                     {
     (yyval.techniqueExp) = new ScopeActivateExp((yyvsp[-1].sval));
   }
-#line 1806 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1811 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 11: /* TECHNIQUE_EXP: "compile" "(" TARGET_PROFILE "," TFX_TOKEN_NAME_VAL ")" ";"  */
@@ -1810,7 +1815,7 @@ yyreduce:
                                                                                {
     (yyval.techniqueExp) = new CompileExp((yyvsp[-4].targetProfile), (yyvsp[-2].sval));
   }
-#line 1814 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1819 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 12: /* TECHNIQUE_EXP: TFX_TOKEN_HLSL_CODE  */
@@ -1818,7 +1823,7 @@ yyreduce:
                               {
     (yyval.techniqueExp) = new HlslExp((yyvsp[0].sval));
   }
-#line 1822 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1827 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 13: /* TECHNIQUE_EXP: "render_state" ":" RENDER_STATE_EXP_LIST  */
@@ -1826,7 +1831,7 @@ yyreduce:
                                                  {
     (yyval.techniqueExp) = (yyvsp[0].renderStateExp);
   }
-#line 1830 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1835 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 14: /* RENDER_STATE_EXP_LIST: RENDER_STATE_EXP RENDER_STATE_EXP_LIST  */
@@ -1835,7 +1840,7 @@ yyreduce:
     (yyval.renderStateExp) = (yyvsp[-1].renderStateExp);
     (yyval.renderStateExp)->next = (yyvsp[0].renderStateExp);
   }
-#line 1839 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1844 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 15: /* RENDER_STATE_EXP_LIST: RENDER_STATE_EXP  */
@@ -1843,7 +1848,7 @@ yyreduce:
                             {
     (yyval.renderStateExp) = (yyvsp[0].renderStateExp);
   }
-#line 1847 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1852 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 16: /* RENDER_STATE_EXP: "primitive_topology" "=" PRIMITIVE_TOPOLOGY ";"  */
@@ -1851,7 +1856,7 @@ yyreduce:
                                                       {
     (yyval.renderStateExp) = new PrimitiveTopologyExp((yyvsp[-1].primitiveTopology));
   }
-#line 1855 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1860 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 17: /* RENDER_STATE_EXP: "input" ":" INPUT_BUFFER_LIST  */
@@ -1859,7 +1864,7 @@ yyreduce:
                                            {
     (yyval.renderStateExp) = new InputExp((yyvsp[0].inputBufferExp));
   }
-#line 1863 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1868 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 18: /* RENDER_STATE_EXP: "depth" ":" DEPTH_EXP_LIST  */
@@ -1867,7 +1872,7 @@ yyreduce:
                                      {
     (yyval.renderStateExp) = (yyvsp[0].renderStateExp);
   }
-#line 1871 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1876 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 19: /* RENDER_STATE_EXP: "stencil" ":" STENCIL_EXP_LIST  */
@@ -1875,7 +1880,7 @@ yyreduce:
                                          {
     (yyval.renderStateExp) = (yyvsp[0].renderStateExp);
   }
-#line 1879 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1884 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 20: /* RENDER_STATE_EXP: "blending" ":" BLENDING_EXP_LIST  */
@@ -1883,7 +1888,7 @@ yyreduce:
                                            {
     (yyval.renderStateExp) = (yyvsp[0].blendingExp);
   }
-#line 1887 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1892 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 21: /* DEPTH_EXP_LIST: DEPTH_EXP DEPTH_EXP_LIST  */
@@ -1892,7 +1897,7 @@ yyreduce:
     (yyval.renderStateExp) = (yyvsp[-1].renderStateExp);
     (yyval.renderStateExp)->next = (yyvsp[0].renderStateExp);
   }
-#line 1896 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1901 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 22: /* DEPTH_EXP_LIST: DEPTH_EXP  */
@@ -1900,7 +1905,7 @@ yyreduce:
                    {
     (yyval.renderStateExp) = (yyvsp[0].renderStateExp);
   }
-#line 1904 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1909 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 23: /* DEPTH_EXP: "test" "=" BOOL_VALUE ";"  */
@@ -1908,7 +1913,7 @@ yyreduce:
                                  {
     (yyval.renderStateExp) = new DepthTestExp((yyvsp[-1].bval));
   }
-#line 1912 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1917 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 24: /* DEPTH_EXP: "write" "=" BOOL_VALUE ";"  */
@@ -1916,7 +1921,7 @@ yyreduce:
                                   {
     (yyval.renderStateExp) = new DepthWriteExp((yyvsp[-1].bval));
   }
-#line 1920 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1925 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 25: /* DEPTH_EXP: "compare_op" "=" COMPARE_OP ";"  */
@@ -1924,7 +1929,7 @@ yyreduce:
                                         {
     (yyval.renderStateExp) = new DepthOpExp((yyvsp[-1].compareOp));
   }
-#line 1928 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1933 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 26: /* STENCIL_EXP_LIST: STENCIL_EXP STENCIL_EXP_LIST  */
@@ -1933,7 +1938,7 @@ yyreduce:
     (yyval.renderStateExp) = (yyvsp[-1].renderStateExp);
     (yyval.renderStateExp)->next = (yyvsp[0].renderStateExp);
   }
-#line 1937 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1942 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 27: /* STENCIL_EXP_LIST: STENCIL_EXP  */
@@ -1941,7 +1946,7 @@ yyreduce:
                      {
     (yyval.renderStateExp) = (yyvsp[0].renderStateExp);
   }
-#line 1945 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1950 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 28: /* STENCIL_EXP: "test" "=" BOOL_VALUE ";"  */
@@ -1949,7 +1954,7 @@ yyreduce:
                                  {
     (yyval.renderStateExp) = new StencilTestExp((yyvsp[-1].bval));
   }
-#line 1953 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1958 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 29: /* STENCIL_EXP: "fail_op" "=" STENCIL_OP ";"  */
@@ -1957,7 +1962,7 @@ yyreduce:
                                      {
     (yyval.renderStateExp) = new StencilFailOpExp((yyvsp[-1].stencilOp));
   }
-#line 1961 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1966 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 30: /* STENCIL_EXP: "pass_op" "=" STENCIL_OP ";"  */
@@ -1965,7 +1970,7 @@ yyreduce:
                                      {
     (yyval.renderStateExp) = new StencilPassOpExp((yyvsp[-1].stencilOp));
   }
-#line 1969 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1974 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 31: /* STENCIL_EXP: "depth_fail_op" "=" STENCIL_OP ";"  */
@@ -1973,7 +1978,7 @@ yyreduce:
                                            {
     (yyval.renderStateExp) = new StencilDepthFailOpExp((yyvsp[-1].stencilOp));
   }
-#line 1977 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1982 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 32: /* STENCIL_EXP: "compare_op" "=" COMPARE_OP ";"  */
@@ -1981,7 +1986,7 @@ yyreduce:
                                         {
     (yyval.renderStateExp) = new StencilCompareOpExp((yyvsp[-1].compareOp));
   }
-#line 1985 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1990 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 33: /* STENCIL_EXP: "ref_val" "=" INT_VALUE ";"  */
@@ -1989,7 +1994,7 @@ yyreduce:
                                    {
     (yyval.renderStateExp) = new StencilReferenceValueExp((yyvsp[-1].ival));
   }
-#line 1993 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 1998 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 34: /* PRIMITIVE_TOPOLOGY: "point_list"  */
@@ -1997,7 +2002,7 @@ yyreduce:
                  {
     (yyval.primitiveTopology) = gapi::PrimitiveTopology::PointList;
   }
-#line 2001 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2006 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 35: /* PRIMITIVE_TOPOLOGY: "line_list"  */
@@ -2005,7 +2010,7 @@ yyreduce:
                 {
     (yyval.primitiveTopology) = gapi::PrimitiveTopology::LineList;
   }
-#line 2009 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2014 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 36: /* PRIMITIVE_TOPOLOGY: "line_strip"  */
@@ -2013,7 +2018,7 @@ yyreduce:
                  {
     (yyval.primitiveTopology) = gapi::PrimitiveTopology::LineStrip;
   }
-#line 2017 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2022 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 37: /* PRIMITIVE_TOPOLOGY: "triangle_list"  */
@@ -2021,7 +2026,7 @@ yyreduce:
                     {
     (yyval.primitiveTopology) = gapi::PrimitiveTopology::TriangleList;
   }
-#line 2025 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2030 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 38: /* PRIMITIVE_TOPOLOGY: "triangle_fan"  */
@@ -2029,7 +2034,7 @@ yyreduce:
                    {
     (yyval.primitiveTopology) = gapi::PrimitiveTopology::TriangleFan;
   }
-#line 2033 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2038 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 39: /* PRIMITIVE_TOPOLOGY: "line_list_with_adjacency"  */
@@ -2037,7 +2042,7 @@ yyreduce:
                                {
     (yyval.primitiveTopology) = gapi::PrimitiveTopology::LineListWithAdjacency;
   }
-#line 2041 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2046 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 40: /* PRIMITIVE_TOPOLOGY: "line_strip_with_adjacency"  */
@@ -2045,7 +2050,7 @@ yyreduce:
                                 {
     (yyval.primitiveTopology) = gapi::PrimitiveTopology::LineStripWithAdjacency;
   }
-#line 2049 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2054 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 41: /* PRIMITIVE_TOPOLOGY: "triangle_list_with_adjacency"  */
@@ -2053,7 +2058,7 @@ yyreduce:
                                    {
     (yyval.primitiveTopology) = gapi::PrimitiveTopology::TriangleListWithAdjacency;
   }
-#line 2057 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2062 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 42: /* PRIMITIVE_TOPOLOGY: "triangle_strip_with_adjacency"  */
@@ -2061,7 +2066,7 @@ yyreduce:
                                     {
     (yyval.primitiveTopology) = gapi::PrimitiveTopology::TriangleStripWithAdjacency;
   }
-#line 2065 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2070 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 43: /* PRIMITIVE_TOPOLOGY: "patch_list"  */
@@ -2069,7 +2074,7 @@ yyreduce:
                  {
     (yyval.primitiveTopology) = gapi::PrimitiveTopology::PatchList;
   }
-#line 2073 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2078 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 44: /* INPUT_BUFFER_LIST: INPUT_BUFFER INPUT_BUFFER_LIST  */
@@ -2078,7 +2083,7 @@ yyreduce:
     (yyval.inputBufferExp) = (yyvsp[-1].inputBufferExp);
     (yyval.inputBufferExp)->next = (yyvsp[0].inputBufferExp);
   }
-#line 2082 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2087 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 45: /* INPUT_BUFFER_LIST: INPUT_BUFFER  */
@@ -2087,7 +2092,7 @@ yyreduce:
     (yyval.inputBufferExp) = (yyvsp[0].inputBufferExp);
     (yyval.inputBufferExp)->next = nullptr;
   }
-#line 2091 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2096 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 46: /* INPUT_BUFFER: "buffer" "(" INT_VALUE ")" ":" INPUT_ATTRIBUTE_LIST  */
@@ -2095,7 +2100,7 @@ yyreduce:
                                                                     {
     (yyval.inputBufferExp) = new InputBufferExp((yyvsp[-3].ival), (yyvsp[0].inputAttributeExp));
   }
-#line 2099 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2104 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 47: /* INPUT_ATTRIBUTE_LIST: INPUT_ATTRIBUTE INPUT_ATTRIBUTE_LIST  */
@@ -2104,7 +2109,7 @@ yyreduce:
     (yyval.inputAttributeExp) = (yyvsp[-1].inputAttributeExp);
     (yyval.inputAttributeExp)->next = (yyvsp[0].inputAttributeExp);
   }
-#line 2108 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2113 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 48: /* INPUT_ATTRIBUTE_LIST: INPUT_ATTRIBUTE  */
@@ -2113,7 +2118,7 @@ yyreduce:
     (yyval.inputAttributeExp) = (yyvsp[0].inputAttributeExp);
     (yyval.inputAttributeExp)->next = nullptr;
   }
-#line 2117 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2122 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 49: /* INPUT_ATTRIBUTE: ATTRIBUTE_TYPE TFX_TOKEN_NAME_VAL ";"  */
@@ -2121,7 +2126,7 @@ yyreduce:
                                                       {
     (yyval.inputAttributeExp) = new InputAttributeExp((yyvsp[-2].attributeType), (yyvsp[-1].sval));
   }
-#line 2125 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2130 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 50: /* COMPARE_OP: "never"  */
@@ -2129,7 +2134,7 @@ yyreduce:
             {
    (yyval.compareOp) = gapi::CompareOp::Never;
   }
-#line 2133 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2138 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 51: /* COMPARE_OP: "less"  */
@@ -2137,7 +2142,7 @@ yyreduce:
            {
    (yyval.compareOp) = gapi::CompareOp::Less;
   }
-#line 2141 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2146 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 52: /* COMPARE_OP: "equal"  */
@@ -2145,7 +2150,7 @@ yyreduce:
             {
    (yyval.compareOp) = gapi::CompareOp::Never;
   }
-#line 2149 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2154 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 53: /* COMPARE_OP: "less_or_equal"  */
@@ -2153,7 +2158,7 @@ yyreduce:
                     {
    (yyval.compareOp) = gapi::CompareOp::LessOrEqual;
   }
-#line 2157 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2162 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 54: /* COMPARE_OP: "greater"  */
@@ -2161,7 +2166,7 @@ yyreduce:
               {
    (yyval.compareOp) = gapi::CompareOp::Greater;
   }
-#line 2165 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2170 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 55: /* COMPARE_OP: "not_equal"  */
@@ -2169,7 +2174,7 @@ yyreduce:
                 {
    (yyval.compareOp) = gapi::CompareOp::NotEqual;
   }
-#line 2173 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2178 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 56: /* COMPARE_OP: "greater_or_equal"  */
@@ -2177,7 +2182,7 @@ yyreduce:
                        {
    (yyval.compareOp) = gapi::CompareOp::GreaterOrEqual;
   }
-#line 2181 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2186 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 57: /* COMPARE_OP: "always"  */
@@ -2185,7 +2190,7 @@ yyreduce:
              {
    (yyval.compareOp) = gapi::CompareOp::Always;
   }
-#line 2189 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2194 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 58: /* STENCIL_OP: "keep"  */
@@ -2193,7 +2198,7 @@ yyreduce:
            {
     (yyval.stencilOp) = gapi::StencilOp::Keep;
   }
-#line 2197 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2202 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 59: /* STENCIL_OP: "zero"  */
@@ -2201,7 +2206,7 @@ yyreduce:
            {
     (yyval.stencilOp) = gapi::StencilOp::Zero;
   }
-#line 2205 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2210 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 60: /* STENCIL_OP: "replace"  */
@@ -2209,7 +2214,7 @@ yyreduce:
               {
     (yyval.stencilOp) = gapi::StencilOp::Replace;
   }
-#line 2213 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2218 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 61: /* STENCIL_OP: "inc_and_clamp"  */
@@ -2217,7 +2222,7 @@ yyreduce:
                     {
     (yyval.stencilOp) = gapi::StencilOp::IncrementAndClamp;
   }
-#line 2221 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2226 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 62: /* STENCIL_OP: "dec_and_clamp"  */
@@ -2225,7 +2230,7 @@ yyreduce:
                     {
     (yyval.stencilOp) = gapi::StencilOp::DecrementAndClamp;
   }
-#line 2229 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2234 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 63: /* STENCIL_OP: "invert"  */
@@ -2233,7 +2238,7 @@ yyreduce:
              {
     (yyval.stencilOp) = gapi::StencilOp::Invert;
   }
-#line 2237 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2242 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 64: /* STENCIL_OP: "inc_and_wrap"  */
@@ -2241,7 +2246,7 @@ yyreduce:
                    {
     (yyval.stencilOp) = gapi::StencilOp::IncrementAndWrap;
   }
-#line 2245 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2250 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 65: /* STENCIL_OP: "dec_and_wrap"  */
@@ -2249,7 +2254,7 @@ yyreduce:
                    {
     (yyval.stencilOp) = gapi::StencilOp::DecrementAndWrap;
   }
-#line 2253 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2258 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 66: /* BLENDING_EXP_LIST: BLENDING_EXP BLENDING_EXP_LIST  */
@@ -2258,7 +2263,7 @@ yyreduce:
     (yyval.blendingExp) = (yyvsp[-1].blendingExp);
     (yyval.blendingExp)->next = (yyvsp[0].blendingExp);
   }
-#line 2262 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2267 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 67: /* BLENDING_EXP_LIST: BLENDING_EXP  */
@@ -2267,7 +2272,7 @@ yyreduce:
     (yyval.blendingExp) = (yyvsp[0].blendingExp);
     (yyval.blendingExp)->next = nullptr;
   }
-#line 2271 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2276 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 68: /* BLENDING_EXP: "logic_op_enabled" "=" BOOL_VALUE ";"  */
@@ -2275,7 +2280,7 @@ yyreduce:
                                              {
     (yyval.blendingExp) = new LogicOpEnablingExp((yyvsp[-1].bval));
   }
-#line 2279 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2284 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 69: /* BLENDING_EXP: "logic_op" "=" LOGIC_OP ";"  */
@@ -2283,7 +2288,7 @@ yyreduce:
                                     {
     (yyval.blendingExp) = new LogicOpExp((yyvsp[-1].logicOp));
   }
-#line 2287 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2292 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 70: /* BLENDING_EXP: "blend_constants" "=" FLOAT4_VALUE ";"  */
@@ -2291,778 +2296,779 @@ yyreduce:
                                               {
     (yyval.blendingExp) = new BlendConstants((yyvsp[-1].f4val));
   }
-#line 2295 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2300 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
-  case 71: /* BLENDING_EXP: "mrt" ":" MRT_BLENDING_EXP_LIST  */
+  case 71: /* BLENDING_EXP: "mrt" "(" INT_VALUE ")" ":" MRT_BLENDING_EXP_LIST  */
 #line 527 "src/shaders_compiler/parser/parser.y"
-                                          {
+                                                               {
+    (yyvsp[0].mrtBlendingExp)->n = (yyvsp[-3].ival);
     (yyval.blendingExp) = (yyvsp[0].mrtBlendingExp);
   }
-#line 2303 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2309 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 72: /* MRT_BLENDING_EXP_LIST: MRT_BLENDING_EXP MRT_BLENDING_EXP_LIST  */
-#line 533 "src/shaders_compiler/parser/parser.y"
+#line 534 "src/shaders_compiler/parser/parser.y"
                                                      {
     (yyval.mrtBlendingExp) = (yyvsp[-1].mrtBlendingExp);
     (yyval.mrtBlendingExp)->next = (yyvsp[0].mrtBlendingExp);
   }
-#line 2312 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2318 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 73: /* MRT_BLENDING_EXP_LIST: MRT_BLENDING_EXP  */
-#line 537 "src/shaders_compiler/parser/parser.y"
+#line 538 "src/shaders_compiler/parser/parser.y"
                          {
     (yyval.mrtBlendingExp) = (yyvsp[0].mrtBlendingExp);
     (yyval.mrtBlendingExp)->next = nullptr;
   }
-#line 2321 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2327 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 74: /* MRT_BLENDING_EXP: "has_blending" "=" BOOL_VALUE ";"  */
-#line 544 "src/shaders_compiler/parser/parser.y"
+#line 545 "src/shaders_compiler/parser/parser.y"
                                          {
     (yyval.mrtBlendingExp) = new MrtBlendingEnabledExp((yyvsp[-1].bval));
   }
-#line 2329 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2335 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 75: /* MRT_BLENDING_EXP: "src_color_blend_factor" "=" BLEND_FACTOR ";"  */
-#line 547 "src/shaders_compiler/parser/parser.y"
+#line 548 "src/shaders_compiler/parser/parser.y"
                                                      {
     (yyval.mrtBlendingExp) = new MrtSrcColorBlendFactorExp((yyvsp[-1].blendFactor));
   }
-#line 2337 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2343 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 76: /* MRT_BLENDING_EXP: "dst_color_blend_factor" "=" BLEND_FACTOR ";"  */
-#line 550 "src/shaders_compiler/parser/parser.y"
+#line 551 "src/shaders_compiler/parser/parser.y"
                                                      {
     (yyval.mrtBlendingExp) = new MrtDstColorBlendFactorExp((yyvsp[-1].blendFactor));
   }
-#line 2345 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2351 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 77: /* MRT_BLENDING_EXP: "color_blend_op" "=" BLEND_OP ";"  */
-#line 553 "src/shaders_compiler/parser/parser.y"
+#line 554 "src/shaders_compiler/parser/parser.y"
                                           {
     (yyval.mrtBlendingExp) = new MrtColorBlendOpExp((yyvsp[-1].blendOp));
   }
-#line 2353 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2359 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 78: /* MRT_BLENDING_EXP: "src_alpha_blend_factor" "=" BLEND_FACTOR ";"  */
-#line 556 "src/shaders_compiler/parser/parser.y"
+#line 557 "src/shaders_compiler/parser/parser.y"
                                                      {
     (yyval.mrtBlendingExp) = new MrtSrcAlphaBlendFactorExp((yyvsp[-1].blendFactor));
   }
-#line 2361 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2367 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 79: /* MRT_BLENDING_EXP: "dst_alpha_blend_factor" "=" BLEND_FACTOR ";"  */
-#line 559 "src/shaders_compiler/parser/parser.y"
+#line 560 "src/shaders_compiler/parser/parser.y"
                                                      {
     (yyval.mrtBlendingExp) = new MrtDstAlphaBlendFactorExp((yyvsp[-1].blendFactor));
   }
-#line 2369 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2375 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 80: /* MRT_BLENDING_EXP: "alpha_blend_op" "=" BLEND_OP ";"  */
-#line 562 "src/shaders_compiler/parser/parser.y"
+#line 563 "src/shaders_compiler/parser/parser.y"
                                           {
     (yyval.mrtBlendingExp) = new MrtAlphaBlendOpExp((yyvsp[-1].blendOp));
   }
-#line 2377 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2383 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 81: /* BLEND_FACTOR: "zero"  */
-#line 568 "src/shaders_compiler/parser/parser.y"
+#line 569 "src/shaders_compiler/parser/parser.y"
            {
     (yyval.blendFactor) = gapi::BlendFactor::Zero;
   }
-#line 2385 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2391 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 82: /* BLEND_FACTOR: "one"  */
-#line 571 "src/shaders_compiler/parser/parser.y"
+#line 572 "src/shaders_compiler/parser/parser.y"
           {
     (yyval.blendFactor) = gapi::BlendFactor::One;
   }
-#line 2393 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2399 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 83: /* BLEND_FACTOR: "src_color"  */
-#line 574 "src/shaders_compiler/parser/parser.y"
+#line 575 "src/shaders_compiler/parser/parser.y"
                 {
     (yyval.blendFactor) = gapi::BlendFactor::SrcColor;
   }
-#line 2401 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2407 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 84: /* BLEND_FACTOR: "one_minus_src_color"  */
-#line 577 "src/shaders_compiler/parser/parser.y"
+#line 578 "src/shaders_compiler/parser/parser.y"
                           {
     (yyval.blendFactor) = gapi::BlendFactor::OneMinusSrcColor;
   }
-#line 2409 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2415 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 85: /* BLEND_FACTOR: "dst_color"  */
-#line 580 "src/shaders_compiler/parser/parser.y"
+#line 581 "src/shaders_compiler/parser/parser.y"
                 {
     (yyval.blendFactor) = gapi::BlendFactor::DstColor;
   }
-#line 2417 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2423 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 86: /* BLEND_FACTOR: "one_minus_dst_color"  */
-#line 583 "src/shaders_compiler/parser/parser.y"
+#line 584 "src/shaders_compiler/parser/parser.y"
                           {
     (yyval.blendFactor) = gapi::BlendFactor::OneMinusDstColor;
   }
-#line 2425 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2431 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 87: /* BLEND_FACTOR: "src_alpha"  */
-#line 586 "src/shaders_compiler/parser/parser.y"
+#line 587 "src/shaders_compiler/parser/parser.y"
                 {
     (yyval.blendFactor) = gapi::BlendFactor::SrcAlpha;
   }
-#line 2433 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2439 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 88: /* BLEND_FACTOR: "one_minus_src_alpha"  */
-#line 589 "src/shaders_compiler/parser/parser.y"
+#line 590 "src/shaders_compiler/parser/parser.y"
                           {
     (yyval.blendFactor) = gapi::BlendFactor::OneMinusSrcAlpha;
   }
-#line 2441 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2447 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 89: /* BLEND_FACTOR: "dst_alpha"  */
-#line 592 "src/shaders_compiler/parser/parser.y"
+#line 593 "src/shaders_compiler/parser/parser.y"
                 {
     (yyval.blendFactor) = gapi::BlendFactor::DstAlpha;
   }
-#line 2449 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2455 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 90: /* BLEND_FACTOR: "one_minus_dst_alpha"  */
-#line 595 "src/shaders_compiler/parser/parser.y"
+#line 596 "src/shaders_compiler/parser/parser.y"
                           {
     (yyval.blendFactor) = gapi::BlendFactor::OneMinusDstAlpha;
   }
-#line 2457 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2463 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 91: /* BLEND_FACTOR: "constant_color"  */
-#line 598 "src/shaders_compiler/parser/parser.y"
+#line 599 "src/shaders_compiler/parser/parser.y"
                      {
     (yyval.blendFactor) = gapi::BlendFactor::ConstantColor;
   }
-#line 2465 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2471 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 92: /* BLEND_FACTOR: "one_minus_constant_color"  */
-#line 601 "src/shaders_compiler/parser/parser.y"
+#line 602 "src/shaders_compiler/parser/parser.y"
                                {
     (yyval.blendFactor) = gapi::BlendFactor::OneMinusConstantColor;
   }
-#line 2473 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2479 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 93: /* BLEND_FACTOR: "constant_alpha"  */
-#line 604 "src/shaders_compiler/parser/parser.y"
+#line 605 "src/shaders_compiler/parser/parser.y"
                      {
     (yyval.blendFactor) = gapi::BlendFactor::ConstantAlpha;
   }
-#line 2481 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2487 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 94: /* BLEND_FACTOR: "one_minus_constant_alpha"  */
-#line 607 "src/shaders_compiler/parser/parser.y"
+#line 608 "src/shaders_compiler/parser/parser.y"
                                {
     (yyval.blendFactor) = gapi::BlendFactor::OneMinusConstantAlpha;
   }
-#line 2489 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2495 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 95: /* BLEND_FACTOR: "src_alpha_saturate"  */
-#line 610 "src/shaders_compiler/parser/parser.y"
+#line 611 "src/shaders_compiler/parser/parser.y"
                          {
     (yyval.blendFactor) = gapi::BlendFactor::SrcAlphaSaturate;
   }
-#line 2497 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2503 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 96: /* BLEND_FACTOR: "src_one_color"  */
-#line 613 "src/shaders_compiler/parser/parser.y"
+#line 614 "src/shaders_compiler/parser/parser.y"
                     {
     (yyval.blendFactor) = gapi::BlendFactor::SrcOneColor;
   }
-#line 2505 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2511 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 97: /* BLEND_FACTOR: "one_minus_src_one_color"  */
-#line 616 "src/shaders_compiler/parser/parser.y"
+#line 617 "src/shaders_compiler/parser/parser.y"
                               {
     (yyval.blendFactor) = gapi::BlendFactor::OneMinusSrcOneColor;
   }
-#line 2513 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2519 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 98: /* BLEND_FACTOR: "src_one_alpha"  */
-#line 619 "src/shaders_compiler/parser/parser.y"
+#line 620 "src/shaders_compiler/parser/parser.y"
                     {
     (yyval.blendFactor) = gapi::BlendFactor::SrcOneAlpha;
   }
-#line 2521 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2527 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 99: /* BLEND_FACTOR: "one_minus_src_one_alpha"  */
-#line 622 "src/shaders_compiler/parser/parser.y"
+#line 623 "src/shaders_compiler/parser/parser.y"
                               {
     (yyval.blendFactor) = gapi::BlendFactor::OneMinusSrcOneAlpha;
   }
-#line 2529 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2535 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 100: /* BLEND_OP: "add"  */
-#line 628 "src/shaders_compiler/parser/parser.y"
+#line 629 "src/shaders_compiler/parser/parser.y"
           {
     (yyval.blendOp) = gapi::BlendOp::Add;
   }
-#line 2537 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2543 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 101: /* BLEND_OP: "subtract"  */
-#line 631 "src/shaders_compiler/parser/parser.y"
+#line 632 "src/shaders_compiler/parser/parser.y"
                {
     (yyval.blendOp) = gapi::BlendOp::Subtract;
   }
-#line 2545 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2551 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 102: /* BLEND_OP: "reverse_subtract"  */
-#line 634 "src/shaders_compiler/parser/parser.y"
+#line 635 "src/shaders_compiler/parser/parser.y"
                        {
     (yyval.blendOp) = gapi::BlendOp::ReverseSubtract;
   }
-#line 2553 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2559 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 103: /* BLEND_OP: "min"  */
-#line 637 "src/shaders_compiler/parser/parser.y"
+#line 638 "src/shaders_compiler/parser/parser.y"
           {
     (yyval.blendOp) = gapi::BlendOp::Min;
   }
-#line 2561 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2567 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 104: /* BLEND_OP: "max"  */
-#line 640 "src/shaders_compiler/parser/parser.y"
+#line 641 "src/shaders_compiler/parser/parser.y"
           {
     (yyval.blendOp) = gapi::BlendOp::Max;
   }
-#line 2569 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2575 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 105: /* LOGIC_OP: "clear"  */
-#line 646 "src/shaders_compiler/parser/parser.y"
+#line 647 "src/shaders_compiler/parser/parser.y"
             {
     (yyval.logicOp) = gapi::LogicOp::Clear;
   }
-#line 2577 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2583 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 106: /* LOGIC_OP: "and"  */
-#line 649 "src/shaders_compiler/parser/parser.y"
+#line 650 "src/shaders_compiler/parser/parser.y"
           {
     (yyval.logicOp) = gapi::LogicOp::And;
   }
-#line 2585 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2591 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 107: /* LOGIC_OP: "and_reverse"  */
-#line 652 "src/shaders_compiler/parser/parser.y"
+#line 653 "src/shaders_compiler/parser/parser.y"
                   {
     (yyval.logicOp) = gapi::LogicOp::AndReverse;
   }
-#line 2593 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2599 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 108: /* LOGIC_OP: "copy"  */
-#line 655 "src/shaders_compiler/parser/parser.y"
+#line 656 "src/shaders_compiler/parser/parser.y"
            {
     (yyval.logicOp) = gapi::LogicOp::Copy;
   }
-#line 2601 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2607 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 109: /* LOGIC_OP: "and_inverted"  */
-#line 658 "src/shaders_compiler/parser/parser.y"
+#line 659 "src/shaders_compiler/parser/parser.y"
                    {
     (yyval.logicOp) = gapi::LogicOp::AndInverted;
   }
-#line 2609 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2615 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 110: /* LOGIC_OP: "no_op"  */
-#line 661 "src/shaders_compiler/parser/parser.y"
+#line 662 "src/shaders_compiler/parser/parser.y"
             {
     (yyval.logicOp) = gapi::LogicOp::NoOp;
   }
-#line 2617 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2623 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 111: /* LOGIC_OP: "xor"  */
-#line 664 "src/shaders_compiler/parser/parser.y"
+#line 665 "src/shaders_compiler/parser/parser.y"
           {
     (yyval.logicOp) = gapi::LogicOp::Xor;
   }
-#line 2625 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2631 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 112: /* LOGIC_OP: "or"  */
-#line 667 "src/shaders_compiler/parser/parser.y"
+#line 668 "src/shaders_compiler/parser/parser.y"
          {
     (yyval.logicOp) = gapi::LogicOp::Or;
   }
-#line 2633 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2639 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 113: /* LOGIC_OP: "nor"  */
-#line 670 "src/shaders_compiler/parser/parser.y"
+#line 671 "src/shaders_compiler/parser/parser.y"
           {
     (yyval.logicOp) = gapi::LogicOp::Nor;
   }
-#line 2641 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2647 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 114: /* LOGIC_OP: "equivalent"  */
-#line 673 "src/shaders_compiler/parser/parser.y"
+#line 674 "src/shaders_compiler/parser/parser.y"
                  {
     (yyval.logicOp) = gapi::LogicOp::Equivalent;
   }
-#line 2649 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2655 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 115: /* LOGIC_OP: "invert"  */
-#line 676 "src/shaders_compiler/parser/parser.y"
+#line 677 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.logicOp) = gapi::LogicOp::Invert;
   }
-#line 2657 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2663 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 116: /* LOGIC_OP: "or_reverse"  */
-#line 679 "src/shaders_compiler/parser/parser.y"
+#line 680 "src/shaders_compiler/parser/parser.y"
                  {
     (yyval.logicOp) = gapi::LogicOp::OrReverse;
   }
-#line 2665 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2671 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 117: /* LOGIC_OP: "copy_inverted"  */
-#line 682 "src/shaders_compiler/parser/parser.y"
+#line 683 "src/shaders_compiler/parser/parser.y"
                     {
     (yyval.logicOp) = gapi::LogicOp::CopyInverted;
   }
-#line 2673 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2679 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 118: /* LOGIC_OP: "or_inverted"  */
-#line 685 "src/shaders_compiler/parser/parser.y"
+#line 686 "src/shaders_compiler/parser/parser.y"
                   {
     (yyval.logicOp) = gapi::LogicOp::OrInverted;
   }
-#line 2681 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2687 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 119: /* LOGIC_OP: "nand"  */
-#line 688 "src/shaders_compiler/parser/parser.y"
+#line 689 "src/shaders_compiler/parser/parser.y"
            {
     (yyval.logicOp) = gapi::LogicOp::Nand;
   }
-#line 2689 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2695 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 120: /* LOGIC_OP: "set"  */
-#line 691 "src/shaders_compiler/parser/parser.y"
+#line 692 "src/shaders_compiler/parser/parser.y"
           {
     (yyval.logicOp) = gapi::LogicOp::Set;
   }
-#line 2697 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2703 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 121: /* SCOPE_DECLARATION: "scope" TFX_TOKEN_NAME_VAL "{" SCOPE_EXP_LIST "}" ";"  */
-#line 697 "src/shaders_compiler/parser/parser.y"
+#line 698 "src/shaders_compiler/parser/parser.y"
                                                                       {
     compiler.onScopeDeclaration(new ScopeDeclarationExp{(yyvsp[-4].sval), (yyvsp[-2].scopeExp)});
   }
-#line 2705 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2711 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 122: /* SCOPE_EXP_LIST: SCOPE_EXP SCOPE_EXP_LIST  */
-#line 703 "src/shaders_compiler/parser/parser.y"
+#line 704 "src/shaders_compiler/parser/parser.y"
                                        {
     (yyval.scopeExp) = (yyvsp[-1].scopeExp);
     (yyval.scopeExp)->next = (yyvsp[0].scopeExp);
   }
-#line 2714 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2720 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 123: /* SCOPE_EXP_LIST: SCOPE_EXP  */
-#line 707 "src/shaders_compiler/parser/parser.y"
+#line 708 "src/shaders_compiler/parser/parser.y"
                   {
     (yyval.scopeExp) = (yyvsp[0].scopeExp);
     (yyval.scopeExp)->next = nullptr;
   }
-#line 2723 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2729 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 124: /* SCOPE_EXP: "shader" SHADERS_LIST ":" RESOURCE_RESERVE_EXP_LIST  */
-#line 714 "src/shaders_compiler/parser/parser.y"
+#line 715 "src/shaders_compiler/parser/parser.y"
                                                                                {
     (yyval.scopeExp) = new ShadersResourcesReserveExp((yyvsp[-2].shaderExp), (yyvsp[0].resReserveExp));
   }
-#line 2731 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2737 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 125: /* SCOPE_EXP: RESOURCE_TYPE TFX_TOKEN_NAME_VAL "=" ASSIGN_EXP ";"  */
-#line 717 "src/shaders_compiler/parser/parser.y"
+#line 718 "src/shaders_compiler/parser/parser.y"
                                                                           {
     (yyval.scopeExp) = new ResourceDeclarationExp((yyvsp[-4].resourceType), (yyvsp[-3].sval), (yyvsp[-1].resourceAssignExp));
   }
-#line 2739 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2745 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 126: /* SCOPE_EXP: ATTRIBUTE_TYPE TFX_TOKEN_NAME_VAL "=" ASSIGN_EXP ";"  */
-#line 720 "src/shaders_compiler/parser/parser.y"
+#line 721 "src/shaders_compiler/parser/parser.y"
                                                                            {
     (yyval.scopeExp) = new CbufferVarDeclarationExp((yyvsp[-4].attributeType), (yyvsp[-3].sval), (yyvsp[-1].resourceAssignExp));
   }
-#line 2747 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2753 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 127: /* RESOURCE_RESERVE_EXP_LIST: RESOURCE_RESERVE_EXP ";" RESOURCE_RESERVE_EXP_LIST  */
-#line 726 "src/shaders_compiler/parser/parser.y"
+#line 727 "src/shaders_compiler/parser/parser.y"
                                                                 {
   (yyval.resReserveExp) = (yyvsp[-2].resReserveExp);
   (yyval.resReserveExp)->next = (yyvsp[0].resReserveExp);
  }
-#line 2756 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2762 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 128: /* RESOURCE_RESERVE_EXP_LIST: RESOURCE_RESERVE_EXP ";"  */
-#line 730 "src/shaders_compiler/parser/parser.y"
+#line 731 "src/shaders_compiler/parser/parser.y"
                                 {
    (yyval.resReserveExp) = (yyvsp[-1].resReserveExp);
  }
-#line 2764 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2770 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 129: /* RESOURCE_RESERVE_EXP: "register" "(" "texture" "," INT_VALUE "-" INT_VALUE ")"  */
-#line 736 "src/shaders_compiler/parser/parser.y"
+#line 737 "src/shaders_compiler/parser/parser.y"
                                                                      {
     (yyval.resReserveExp) = new RegistersReserveExp(RegistersReserveExp::Register::Texture, (yyvsp[-3].ival), (yyvsp[-1].ival));
 
   }
-#line 2773 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2779 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 130: /* RESOURCE_RESERVE_EXP: "cbuffer" "(" INT_VALUE ")"  */
-#line 740 "src/shaders_compiler/parser/parser.y"
+#line 741 "src/shaders_compiler/parser/parser.y"
                                           {
     (yyval.resReserveExp) = new CBufferReserveExp((yyvsp[-1].ival));
   }
-#line 2781 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2787 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 131: /* RESOURCE_RESERVE_EXP: "descriptor_set" "(" INT_VALUE ")"  */
-#line 743 "src/shaders_compiler/parser/parser.y"
+#line 744 "src/shaders_compiler/parser/parser.y"
                                           {
     (yyval.resReserveExp) = new DescriptorSetReserveExp((yyvsp[-1].ival));
   }
-#line 2789 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2795 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 132: /* ASSIGN_EXP: "extern" "(" TFX_TOKEN_NAME_VAL ")"  */
-#line 749 "src/shaders_compiler/parser/parser.y"
+#line 750 "src/shaders_compiler/parser/parser.y"
                                               {
     (yyval.resourceAssignExp) = new AccessResource(ResourceAccessType::Extern, (yyvsp[-1].sval));
   }
-#line 2797 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2803 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 133: /* ASSIGN_EXP: "channel" "(" TFX_TOKEN_NAME_VAL ")"  */
-#line 752 "src/shaders_compiler/parser/parser.y"
+#line 753 "src/shaders_compiler/parser/parser.y"
                                                {
     (yyval.resourceAssignExp) = new AccessResource(ResourceAccessType::Channel, (yyvsp[-1].sval));
   }
-#line 2805 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2811 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 134: /* RESOURCE_TYPE: "texture2D"  */
-#line 758 "src/shaders_compiler/parser/parser.y"
+#line 759 "src/shaders_compiler/parser/parser.y"
                         {
     (yyval.resourceType) = ResourceType::Texture2D;
   }
-#line 2813 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2819 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 135: /* ATTRIBUTE_TYPE: "int"  */
-#line 764 "src/shaders_compiler/parser/parser.y"
+#line 765 "src/shaders_compiler/parser/parser.y"
                   {
     (yyval.attributeType) = gapi::AttributeType::Int;
   }
-#line 2821 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2827 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 136: /* ATTRIBUTE_TYPE: "int2"  */
-#line 767 "src/shaders_compiler/parser/parser.y"
+#line 768 "src/shaders_compiler/parser/parser.y"
                    {
     (yyval.attributeType) = gapi::AttributeType::Int2;
   }
-#line 2829 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2835 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 137: /* ATTRIBUTE_TYPE: "int3"  */
-#line 770 "src/shaders_compiler/parser/parser.y"
+#line 771 "src/shaders_compiler/parser/parser.y"
                    {
     (yyval.attributeType) = gapi::AttributeType::Int3;
   }
-#line 2837 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2843 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 138: /* ATTRIBUTE_TYPE: "int4"  */
-#line 773 "src/shaders_compiler/parser/parser.y"
+#line 774 "src/shaders_compiler/parser/parser.y"
                    {
     (yyval.attributeType) = gapi::AttributeType::Int4;
   }
-#line 2845 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2851 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 139: /* ATTRIBUTE_TYPE: "float"  */
-#line 776 "src/shaders_compiler/parser/parser.y"
+#line 777 "src/shaders_compiler/parser/parser.y"
                     {
     (yyval.attributeType) = gapi::AttributeType::Float;
   }
-#line 2853 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2859 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 140: /* ATTRIBUTE_TYPE: "float2"  */
-#line 779 "src/shaders_compiler/parser/parser.y"
+#line 780 "src/shaders_compiler/parser/parser.y"
                      {
     (yyval.attributeType) = gapi::AttributeType::Float2;
   }
-#line 2861 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2867 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 141: /* ATTRIBUTE_TYPE: "float3"  */
-#line 782 "src/shaders_compiler/parser/parser.y"
+#line 783 "src/shaders_compiler/parser/parser.y"
                      {
     (yyval.attributeType) = gapi::AttributeType::Float3;
   }
-#line 2869 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2875 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 142: /* ATTRIBUTE_TYPE: "float4"  */
-#line 785 "src/shaders_compiler/parser/parser.y"
+#line 786 "src/shaders_compiler/parser/parser.y"
                      {
     (yyval.attributeType) = gapi::AttributeType::Float4;
   }
-#line 2877 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2883 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 143: /* FLOAT4_VALUE: "float4" "(" TFX_TOKEN_FLOAT_VAL "," TFX_TOKEN_FLOAT_VAL "," TFX_TOKEN_FLOAT_VAL "," TFX_TOKEN_FLOAT_VAL ")"  */
-#line 791 "src/shaders_compiler/parser/parser.y"
+#line 792 "src/shaders_compiler/parser/parser.y"
                                                                                                                                  {
     (yyval.f4val) = float4((yyvsp[-7].fval), (yyvsp[-5].fval), (yyvsp[-3].fval), (yyvsp[-1].fval));
   }
-#line 2885 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2891 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 144: /* INT_VALUE: TFX_TOKEN_INT_VAL  */
-#line 797 "src/shaders_compiler/parser/parser.y"
+#line 798 "src/shaders_compiler/parser/parser.y"
                          {
     (yyval.ival) = (yyvsp[0].ival);
   }
-#line 2893 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2899 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 145: /* BOOL_VALUE: TFX_TOKEN_BOOL_VAL  */
-#line 803 "src/shaders_compiler/parser/parser.y"
+#line 804 "src/shaders_compiler/parser/parser.y"
                           {
     (yyval.bval) = (yyvsp[0].bval);
   }
-#line 2901 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2907 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 146: /* SHADERS_LIST: SHADERS_ELEM "," SHADERS_LIST  */
-#line 808 "src/shaders_compiler/parser/parser.y"
+#line 809 "src/shaders_compiler/parser/parser.y"
                                                    {
     (yyval.shaderExp) = (yyvsp[0].shaderExp);
     (yyval.shaderExp)->shaders = (gapi::ShaderStage)((yyval.shaderExp)->shaders | (yyvsp[-2].shader));
   }
-#line 2910 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2916 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 147: /* SHADERS_LIST: SHADERS_ELEM  */
-#line 812 "src/shaders_compiler/parser/parser.y"
+#line 813 "src/shaders_compiler/parser/parser.y"
                          {
     (yyval.shaderExp) = new ShaderExp((yyvsp[0].shader));
   }
-#line 2918 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2924 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 148: /* SHADERS_ELEM: "vertex"  */
-#line 818 "src/shaders_compiler/parser/parser.y"
+#line 819 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.shader) = gapi::ShaderStage::Vertex;
   }
-#line 2926 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2932 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 149: /* SHADERS_ELEM: "pixel"  */
-#line 821 "src/shaders_compiler/parser/parser.y"
+#line 822 "src/shaders_compiler/parser/parser.y"
             {
     (yyval.shader) = gapi::ShaderStage::Fragment;
   }
-#line 2934 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2940 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 150: /* TARGET_PROFILE: "vs_6_0"  */
-#line 827 "src/shaders_compiler/parser/parser.y"
+#line 828 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::VS_6_0;
   }
-#line 2942 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2948 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 151: /* TARGET_PROFILE: "vs_6_1"  */
-#line 830 "src/shaders_compiler/parser/parser.y"
+#line 831 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::VS_6_1;
   }
-#line 2950 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2956 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 152: /* TARGET_PROFILE: "vs_6_2"  */
-#line 833 "src/shaders_compiler/parser/parser.y"
+#line 834 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::VS_6_2;
   }
-#line 2958 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2964 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 153: /* TARGET_PROFILE: "vs_6_3"  */
-#line 836 "src/shaders_compiler/parser/parser.y"
+#line 837 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::VS_6_3;
   }
-#line 2966 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2972 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 154: /* TARGET_PROFILE: "vs_6_4"  */
-#line 839 "src/shaders_compiler/parser/parser.y"
+#line 840 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::VS_6_4;
   }
-#line 2974 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2980 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 155: /* TARGET_PROFILE: "vs_6_5"  */
-#line 842 "src/shaders_compiler/parser/parser.y"
+#line 843 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::VS_6_5;
   }
-#line 2982 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2988 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 156: /* TARGET_PROFILE: "vs_6_6"  */
-#line 845 "src/shaders_compiler/parser/parser.y"
+#line 846 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::VS_6_6;
   }
-#line 2990 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 2996 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 157: /* TARGET_PROFILE: "vs_6_7"  */
-#line 848 "src/shaders_compiler/parser/parser.y"
+#line 849 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::VS_6_7;
   }
-#line 2998 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 3004 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 158: /* TARGET_PROFILE: "ps_6_0"  */
-#line 851 "src/shaders_compiler/parser/parser.y"
+#line 852 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::PS_6_0;
   }
-#line 3006 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 3012 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 159: /* TARGET_PROFILE: "ps_6_1"  */
-#line 854 "src/shaders_compiler/parser/parser.y"
+#line 855 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::PS_6_1;
   }
-#line 3014 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 3020 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 160: /* TARGET_PROFILE: "ps_6_2"  */
-#line 857 "src/shaders_compiler/parser/parser.y"
+#line 858 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::PS_6_2;
   }
-#line 3022 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 3028 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 161: /* TARGET_PROFILE: "ps_6_3"  */
-#line 860 "src/shaders_compiler/parser/parser.y"
+#line 861 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::PS_6_3;
   }
-#line 3030 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 3036 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 162: /* TARGET_PROFILE: "ps_6_4"  */
-#line 863 "src/shaders_compiler/parser/parser.y"
+#line 864 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::PS_6_4;
   }
-#line 3038 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 3044 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 163: /* TARGET_PROFILE: "ps_6_5"  */
-#line 866 "src/shaders_compiler/parser/parser.y"
+#line 867 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::PS_6_5;
   }
-#line 3046 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 3052 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 164: /* TARGET_PROFILE: "ps_6_6"  */
-#line 869 "src/shaders_compiler/parser/parser.y"
+#line 870 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::PS_6_6;
   }
-#line 3054 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 3060 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
   case 165: /* TARGET_PROFILE: "ps_6_7"  */
-#line 872 "src/shaders_compiler/parser/parser.y"
+#line 873 "src/shaders_compiler/parser/parser.y"
              {
     (yyval.targetProfile) = TargetProfile::PS_6_7;
   }
-#line 3062 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 3068 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
 
-#line 3066 "src/shaders_compiler/parser/parser.tab.cpp"
+#line 3072 "src/shaders_compiler/parser/parser.tab.cpp"
 
       default: break;
     }
@@ -3287,7 +3293,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 876 "src/shaders_compiler/parser/parser.y"
+#line 877 "src/shaders_compiler/parser/parser.y"
 
 
 void sherror(Compiler& compiler, const char* msg) {

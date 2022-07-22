@@ -319,6 +319,25 @@ namespace ShadersSystem
           return mrtState;
         }
 
+        void processMrtBlendings()
+        {
+          size_t mrtCount = 0;
+          for (const auto& mrt: m_MrtBlendingStates)
+            mrtCount = (mrt->n+1 > mrtCount) ? mrt->n+1 : mrtCount;
+
+          if (mrtCount >= gapi::MAX_RENDER_TARGETS)
+            throw std::runtime_error(fmt::format("invalid mrt({}),  max number: {}", mrtCount-1, gapi::MAX_RENDER_TARGETS-1));
+
+          for (size_t i = mrtCount; i < mrtCount; ++i)
+            m_RenderState.blending.attachments.push({});
+
+          for (const MrtBlendingExp* mrt: m_MrtBlendingStates)
+          {
+            gapi::AttachmentBlendState& st = m_RenderState.blending.attachments.get(mrt->n);
+            st = processMrtBlending(mrt);
+          }
+        }
+
         void processBlending(const BlendingExp* exp)
         {
           #define SET_RENDER_STATE(type, state, nodeType, nodeParam) case BlendingExp::Type::type:\
@@ -337,7 +356,8 @@ namespace ShadersSystem
               case BlendingExp::Type::MrtState:
               {
                 const MrtBlendingExp* mrtBlendingExp = reinterpret_cast<const MrtBlendingExp*>(exp);
-                m_RenderState.blending.attachments.push(processMrtBlending(mrtBlendingExp));
+                m_MrtBlendingStates.push_back(mrtBlendingExp);
+                //m_RenderState.blending.attachments.push(processMrtBlending(mrtBlendingExp));
                 break;
               }
             }
@@ -384,6 +404,8 @@ namespace ShadersSystem
             }
             exp = exp->next;
           }
+
+          processMrtBlendings();
 
           #undef SET_RENDER_STATE
         }
@@ -437,6 +459,8 @@ namespace ShadersSystem
 
         eastl::vector_set<string_hash> m_SupportedScopes;
         ByteCodes m_ByteCode;
+
+        eastl::vector<const MrtBlendingExp*> m_MrtBlendingStates;
 
         tfx::RenderState m_RenderState;
         gapi::VertexInputDescription m_Input;
