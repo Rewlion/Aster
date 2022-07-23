@@ -1,4 +1,4 @@
 shaders_list
 {
-  "shaders/test.tfx"
+  "shaders/test.tfx" {}
 }

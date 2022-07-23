@@ -253,6 +253,7 @@ namespace ShadersSystem
           case gapi::AttributeType::Float3: return 1;
 
           case gapi::AttributeType::Int4:
+          case gapi::AttributeType::Float4x4:
           case gapi::AttributeType::Float4: return 0;
 
           default:
@@ -280,7 +281,7 @@ namespace ShadersSystem
         size_t i = 0;
         for (auto& [_, var]: m_Scope.cbufferVariables)
         {
-          const string v = fmt::format("{} {};", getResourceTypeStr(var.type), var.name);
+          const string v = fmt::format("{} {};", gapi::attributeType_to_string(var.type), var.name);
           hlsl += sp + v + "\n";
           const string pad = getCbufferPad(var.type, i++);
           if (pad != "")
@@ -292,30 +293,6 @@ namespace ShadersSystem
                 cbufferStruct, m_Scope.name, m_Scope.cbuffer, m_Scope.descriptorSet);
 
         return hlsl;
-      }
-
-      const char* getResourceTypeStr(const gapi::AttributeType type) const
-      {
-        switch (type)
-        {
-          case gapi::AttributeType::Int: return "int";
-          case gapi::AttributeType::Float: return "float";
-
-          case gapi::AttributeType::Int2: return "int2";
-          case gapi::AttributeType::Float2: return "float2";
-
-          case gapi::AttributeType::Int3: return "int3";
-          case gapi::AttributeType::Float3: return "float3";
-
-          case gapi::AttributeType::Int4: return "int4";
-          case gapi::AttributeType::Float4: return "float4";
-
-          default:
-          {
-            ASSERT(!"unsupported");
-            return 0;
-          }
-        }
       }
 
       string getCbufferPad(const gapi::AttributeType type, const size_t i) const
@@ -334,6 +311,7 @@ namespace ShadersSystem
           case gapi::AttributeType::Float3: return getPadName(1);
 
           case gapi::AttributeType::Int4:
+          case gapi::AttributeType::Float4x4:
           case gapi::AttributeType::Float4: return "";
 
           default:

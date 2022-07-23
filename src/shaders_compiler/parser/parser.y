@@ -210,6 +210,7 @@
 %token TFX_TOKEN_FLOAT2 "float2"
 %token TFX_TOKEN_FLOAT3 "float3"
 %token TFX_TOKEN_FLOAT4 "float4"
+%token TFX_TOKEN_FLOAT4X4 "float4x4"
 %token TFX_TOKEN_INT "int"
 %token TFX_TOKEN_INT2 "int2"
 %token TFX_TOKEN_INT3 "int3"
@@ -445,8 +446,8 @@ INPUT_ATTRIBUTE_LIST
   ;
 
 INPUT_ATTRIBUTE
-  : ATTRIBUTE_TYPE[type] TFX_TOKEN_NAME_VAL[name] ";" {
-    $$ = new InputAttributeExp($type, $name);
+  : ATTRIBUTE_TYPE[type] TFX_TOKEN_NAME_VAL[name] ":" TFX_TOKEN_NAME_VAL[semantic] ";" {
+    $$ = new InputAttributeExp($type, $name, $semantic);
   }
   ;
 
@@ -785,6 +786,9 @@ ATTRIBUTE_TYPE
   }
   | TFX_TOKEN_FLOAT4 {
     $$ = gapi::AttributeType::Float4;
+  }
+  | TFX_TOKEN_FLOAT4X4 {
+    $$ = gapi::AttributeType::Float4x4;
   }
   ;
 

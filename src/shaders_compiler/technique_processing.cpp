@@ -243,7 +243,7 @@ namespace ShadersSystem
               });
 
               offset += attributeType_to_size(attrExp->attributeType);
-              hlsl += fmt::format("  {} {};\n", attributeType_to_string(attrExp->attributeType), attrExp->name);
+              hlsl += fmt::format("  {} {}: {};\n", attributeType_to_string(attrExp->attributeType), attrExp->name, attrExp->semantic);
 
               attrExp = attrExp->next;
             }

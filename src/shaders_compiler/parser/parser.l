@@ -186,6 +186,10 @@ float4 {
   return TFX_TOKEN_FLOAT4;
 }
 
+float4x4 {
+  return TFX_TOKEN_FLOAT4X4;
+}
+
 int {
   return TFX_TOKEN_INT;
 }

@@ -134,11 +134,13 @@ namespace ShadersSystem
   {
     gapi::AttributeType attributeType;
     const char* name;
+    const char* semantic;
     const InputAttributeExp* next;
 
-    InputAttributeExp(const gapi::AttributeType type, const char* name)
+    InputAttributeExp(const gapi::AttributeType type, const char* name, const char* semantic)
       : attributeType(type)
       , name(name)
+      , semantic(semantic)
       , next(nullptr)
     {
     }

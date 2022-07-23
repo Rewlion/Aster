@@ -8,11 +8,11 @@ scope FrameScope {
 
 scope StaticModelScope {
   shader vertex, pixel:
-    descriptor_set(1):
+    descriptor_set(1);
     cbuffer(0);
 
   float4x4 modelTm = channel(model_tm);
-}
+};
 
 technique SceneOpaque {
   support scope FrameScope;
@@ -22,10 +22,10 @@ technique SceneOpaque {
     primitive_topology = triangle_list;
     input:
       buffer(0):
-        float3 pos;
-        float3 tan;
-        float3 normal;
-        float2 uv;
+        float3 pos:    POSITION0;
+        float3 tan:    TEXTURE0;
+        float3 normal: TEXTURE1;
+        float2 uv:     TEXTURE2;
     depth:
       test = yes;
       write = true;
@@ -37,10 +37,10 @@ technique SceneOpaque {
       float4 pos: SV_Position;
     };
 
-    float4 vs_main(StaticMeshVsInput input): SV_Position
+    VsOutput vs_main(SceneOpaque_input input)
     {
-      float4x4 mvp = frame_uniforms.viewProj;
-      mvp = mul(mvp, model_uniforms.modelTm);
+      float4x4 mvp = FrameScope.viewProj;
+      mvp = mul(mvp, StaticModelScope.modelTm);
 
       VsOutput output;
       float4 pos = mul(mvp, float4(input.pos, 1.0));
