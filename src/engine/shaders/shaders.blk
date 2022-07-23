@@ -1,32 +1,4 @@
 shaders_list
 {
-  "shaders/test.hlsl"
-  {
-    vs
-    {
-      text name = "test_vs"
-      text entry = "vs_main"
-    }
-
-    ps
-    {
-      text name = "test_ps"
-      text entry = "ps_main"
-    }
-  }
-  
-  "shaders/scene_opaque.hlsl"
-  {
-    vs
-    {
-      text name = "scene_opaque_vs"
-      text entry = "vs_main"
-    }
-
-    ps
-    {
-      text name = "scene_opaque_ps"
-      text entry = "ps_main"
-    }
-  }
+  "shaders/test.tfx"
 }

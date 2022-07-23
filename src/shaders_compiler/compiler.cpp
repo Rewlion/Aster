@@ -27,7 +27,7 @@ namespace ShadersSystem
 
     if (!f)
     {
-        fprintf(stderr, "can.t open a file");
+        logerror("failed to compile shader module `{}`: can.t open a file", file);
         return false;
     }
 

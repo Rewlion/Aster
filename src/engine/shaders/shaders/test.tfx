@@ -1,0 +1,59 @@
+scope FrameScope {
+  shader vertex, pixel:
+    descriptor_set(0);
+    cbuffer(0);
+
+  float4x4 viewProj = extern(view_proj);
+};
+
+scope StaticModelScope {
+  shader vertex, pixel:
+    descriptor_set(1):
+    cbuffer(0);
+
+  float4x4 modelTm = channel(model_tm);
+}
+
+technique SceneOpaque {
+  support scope FrameScope;
+  support scope StaticModelScope;
+
+  render_state:
+    primitive_topology = triangle_list;
+    input:
+      buffer(0):
+        float3 pos;
+        float3 tan;
+        float3 normal;
+        float2 uv;
+    depth:
+      test = yes;
+      write = true;
+      compare_op = always;
+
+  #hlsl
+    struct VsOutput
+    {
+      float4 pos: SV_Position;
+    };
+
+    float4 vs_main(StaticMeshVsInput input): SV_Position
+    {
+      float4x4 mvp = frame_uniforms.viewProj;
+      mvp = mul(mvp, model_uniforms.modelTm);
+
+      VsOutput output;
+      float4 pos = mul(mvp, float4(input.pos, 1.0));
+
+      return output;
+    }
+
+    float4 ps_main(): SV_Target0
+    {
+      return float4(1.0, 0.5, 1.0, 1.0);
+    }
+  #end
+
+  compile(vs_6_1, vs_main);
+  compile(ps_6_1, ps_main);
+};
