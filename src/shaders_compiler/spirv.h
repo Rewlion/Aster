@@ -79,15 +79,7 @@ namespace spirv
       }
     };
 
-    struct DescriptorSet
-    {
-      eastl::vector<Binding> bindings;
-
-      bool operator==(const DescriptorSet& rvl) const
-      {
-        return bindings == rvl.bindings;
-      }
-    };
+    typedef eastl::vector<vk::DescriptorSetLayoutBinding> DescriptorSet;
 
     struct InputAssembly
     {
@@ -100,20 +92,7 @@ namespace spirv
       }
     };
 
-    struct Reflection
-    {
-      string                       entry;
-      vk::ShaderStageFlagBits      stage;
-      eastl::vector<DescriptorSet> dsets;
-
-      bool operator==(const Reflection& rvl) const
-      {
-        return std::tie(entry, stage, dsets) ==
-               std::tie(rvl.entry, rvl.stage, rvl.dsets);
-      }
-    };
-
     InputAssembly shader_input_to_spirv_ia(const gapi::VertexInputDescription& input);
-    Reflection reflect(const eastl::vector<char>& spirv, const gapi::ShaderStage stage, const string& entry);
+    eastl::vector<DescriptorSet> reflect(const eastl::vector<char>& spirv, const gapi::ShaderStage stage);
   }
 }

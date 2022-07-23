@@ -193,12 +193,16 @@ namespace spirv
     return (type.width / 8) * type.vecsize * type.columns;
   }
 
-  BindingType get_texture_type(const spirv_cross::SPIRType& type)
+  vk::DescriptorType get_texture_type(const spirv_cross::SPIRType& type)
   {
     switch(type.image.dim)
     {
-      case spv::Dim::Dim2D: return BindingType::Texture2D;
-      default:              return BindingType::None;
+      case spv::Dim::Dim2D: return vk::DescriptorType::eSampledImage;
+      default:
+      {
+        ASSERT(!"unsupported type");
+        return vk::DescriptorType::eSampledImage;
+      }
     }
   }
 
@@ -273,7 +277,7 @@ namespace spirv
         continue;
 
       Binding& binding = ret.shaderArguments[nSet].bindings[nBinding];
-      binding.type = get_texture_type(type);
+      //binding.type = get_texture_type(type);
       binding.stages = ret.stage;
       std::snprintf(binding.name, BINDING_NAME_LEN, "%s", texture.name.c_str());
     }
@@ -407,36 +411,58 @@ namespace spirv
       return ia;
     }
 
-    Reflection reflect(const eastl::vector<char>& spirv, const gapi::ShaderStage stage, const string& entry)
+    static vk::ShaderStageFlags get_vk_stage(const gapi::ShaderStage stage)
     {
-      Reflection ret;
+      switch (stage)
+      {
+         case gapi::ShaderStage::Vertex: return vk::ShaderStageFlagBits::eVertex;
+         case gapi::ShaderStage::TessellationControl: return vk::ShaderStageFlagBits::eTessellationControl;
+         case gapi::ShaderStage::TessellationEvaluation: return vk::ShaderStageFlagBits::eTessellationEvaluation;
+         case gapi::ShaderStage::Geometry: return vk::ShaderStageFlagBits::eGeometry;
+         case gapi::ShaderStage::Fragment: return vk::ShaderStageFlagBits::eFragment;
+         case gapi::ShaderStage::Compute: return vk::ShaderStageFlagBits::eCompute;
+         case gapi::ShaderStage::AllGraphics: return vk::ShaderStageFlagBits::eAllGraphics;
+         case gapi::ShaderStage::All: return vk::ShaderStageFlagBits::eAll;
+         case gapi::ShaderStage::Raygen: return vk::ShaderStageFlagBits::eRaygenKHR;
+         case gapi::ShaderStage::AnyHit: return vk::ShaderStageFlagBits::eAnyHitKHR;
+         case gapi::ShaderStage::ClosestHit: return vk::ShaderStageFlagBits::eClosestHitKHR;
+         case gapi::ShaderStage::Miss: return vk::ShaderStageFlagBits::eMissKHR;
+         case gapi::ShaderStage::Intersection: return vk::ShaderStageFlagBits::eIntersectionKHR;
+         case gapi::ShaderStage::Callable: return vk::ShaderStageFlagBits::eCallableKHR;
+         case gapi::ShaderStage::Task: return vk::ShaderStageFlagBits::eTaskNV;
+         case gapi::ShaderStage::Mesh: return vk::ShaderStageFlagBits::eMeshNV;
+
+         default:
+         {
+          ASSERT(!"unsupported");
+          return {};
+         }
+      }
+    }
+
+    eastl::vector<DescriptorSet> reflect(const eastl::vector<char>& spirv, const gapi::ShaderStage stage)
+    {
+      eastl::vector<DescriptorSet> ret;
 
       const uint32_t* code = reinterpret_cast<const uint32_t*>(spirv.data());
       const size_t wordsCount = spirv.size() / sizeof(uint32_t);
 
       spirv_cross::CompilerGLSL glsl{code, wordsCount};
 
-      const spirv_cross::SmallVector<spirv_cross::EntryPoint> entryPoints = glsl.get_entry_points_and_stages();
-      if (entryPoints.size() != 1)
-        logwarn("shader has more than one entry point, using the first one.");
-
-      const spirv_cross::EntryPoint entryPoint = entryPoints[0];
-      ret.entry = entry;
-      ret.stage = get_shader_stage(stage);
-
       const spirv_cross::ShaderResources resources = glsl.get_shader_resources();
 
-      const auto getBinding = [&](unsigned int nSet, unsigned int nBinding) -> Binding&
+      const auto getBinding = [&](unsigned int nSet, unsigned int nBinding) -> vk::DescriptorSetLayoutBinding&
       {
-        if (nSet >= ret.dsets.size())
-          ret.dsets.resize(nSet+1);
+        if (nSet >= ret.size())
+          ret.resize(nSet+1);
 
-        if (nBinding >= ret.dsets[nSet].bindings.size())
-          ret.dsets[nSet].bindings.resize(nSet+1);
+        if (nBinding >= ret[nSet].size())
+          ret[nSet].resize(nSet+1);
 
-        return ret.dsets[nSet].bindings[nBinding];
+        return ret[nSet][nBinding];
       };
 
+      const vk::ShaderStageFlags vkStage = get_vk_stage(stage);
       const auto setupBinding = [&](auto& resources, const auto getResType)
       {
         for (size_t i = 0; i < resources.size(); ++i)
@@ -446,10 +472,11 @@ namespace spirv
           const unsigned int nSet = glsl.get_decoration(res.id, spv::Decoration::DecorationDescriptorSet);
           const unsigned int nBinding = glsl.get_decoration(res.id, spv::Decoration::DecorationBinding);
 
-          Binding& binding = getBinding(nSet, nBinding);
-          binding.type = getResType(res);
-          binding.stages = ret.stage;
-          binding.name = res.name;
+          vk::DescriptorSetLayoutBinding& binding = getBinding(nSet, nBinding);
+          binding.binding = nBinding;
+          binding.stageFlags = vkStage;
+          binding.descriptorType = getResType(res);
+          binding.descriptorCount = 1;
         }
       };
 
@@ -459,8 +486,8 @@ namespace spirv
         return get_texture_type(type);
       };
       setupBinding(resources.separate_images, getTexType);
-      setupBinding(resources.separate_samplers, [](const spirv_cross::Resource& res){return BindingType::Sampler;});
-      setupBinding(resources.uniform_buffers, [](const spirv_cross::Resource& res){return BindingType::UniformBufferDynamic;});
+      setupBinding(resources.separate_samplers, [](const spirv_cross::Resource& res){return vk::DescriptorType::eSampler;});
+      setupBinding(resources.uniform_buffers, [](const spirv_cross::Resource& res){return vk::DescriptorType::eUniformBufferDynamic;});
 
       return ret;
     }
