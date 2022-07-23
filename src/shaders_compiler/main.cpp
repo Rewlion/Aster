@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  std::ofstream out("tools/bin", std::ios::binary);
+  std::ofstream out(outFile, std::ios::binary);
   if (!out.is_open())
   {
     logerror("failed to open {}", outFile);
