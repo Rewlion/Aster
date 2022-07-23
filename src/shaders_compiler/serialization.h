@@ -83,6 +83,12 @@ namespace boost::serialization
       & make_binary_object(&st.blending, sizeof(st.blending));
   }
 
+    template<class Archive>
+    void serialize(Archive& a, spirv::v2::Reflection& r, const unsigned version)
+    {
+      a & r.descriptorSets;
+    }
+
   template<class Archive>
   void serialize(Archive& a, ShadersSystem::TechniqueDeclaration& t, const unsigned version)
   {
@@ -90,7 +96,7 @@ namespace boost::serialization
       & t.byteCode
       & t.renderState
       & t.blobs
-      & t.descriptorSets;
+      & t.reflections;
   }
 
   template<class Archive>

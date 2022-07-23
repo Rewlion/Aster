@@ -166,46 +166,49 @@ namespace ShadersSystem
             .byteCode = std::move(m_ByteCode),
             .renderState = std::move(m_RenderState),
             .blobs = std::move(m_Shaders),
-            .descriptorSets = std::move(m_DescriptorSets)
+            .reflections = std::move(m_Reflections)
           };
         }
 
       private:
         void generateReflection()
         {
-          eastl::vector<spirv::v2::DescriptorSet> dsets;
-
-          const auto mergeBindings = [](eastl::vector<vk::DescriptorSetLayoutBinding>& to, const eastl::vector<vk::DescriptorSetLayoutBinding>& from) {
-            if (to.size() < from.size())
-              to.resize(from.size());
-
-            for (size_t i = 0; i < from.size(); ++i)
-            {
-              if (from[i].stageFlags != vk::ShaderStageFlags{})
-              {
-                if (to[i].stageFlags != vk::ShaderStageFlags{})
-                {
-                  ASSERT(from[i].descriptorType == to[i].descriptorType);
-                  ASSERT(from[i].descriptorCount == to[i].descriptorCount);
-                  to[i].stageFlags |= from[i].stageFlags;
-                }
-                else
-                  to[i] = from[i];
-              }
-            }
-          };
+          // eastl::vector<spirv::v2::DescriptorSet> dsets;
+// 
+          // const auto mergeBindings = [](eastl::vector<vk::DescriptorSetLayoutBinding>& to, const eastl::vector<vk::DescriptorSetLayoutBinding>& from) {
+            // if (to.size() < from.size())
+              // to.resize(from.size());
+// 
+            // for (size_t i = 0; i < from.size(); ++i)
+            // {
+              // if (from[i].stageFlags != vk::ShaderStageFlags{})
+              // {
+                // if (to[i].stageFlags != vk::ShaderStageFlags{})
+                // {
+                  // ASSERT(from[i].descriptorType == to[i].descriptorType);
+                  // ASSERT(from[i].descriptorCount == to[i].descriptorCount);
+                  // to[i].stageFlags |= from[i].stageFlags;
+                // }
+                // else
+                  // to[i] = from[i];
+              // }
+            // }
+          // };
+// 
+          // for (const auto& blob: m_Shaders)
+          // {
+            // const auto shDsets = spirv::v2::reflect(blob.data, blob.stage);
+            // if (dsets.size() < shDsets.size())
+              // dsets.resize(shDsets.size());
+// 
+            // for (size_t i = 0; i < shDsets.size(); ++i)
+              // mergeBindings(dsets[i], shDsets[i]);
+          // }
+// 
+          // m_DescriptorSets = std::move(dsets);
 
           for (const auto& blob: m_Shaders)
-          {
-            const auto shDsets = spirv::v2::reflect(blob.data, blob.stage);
-            if (dsets.size() < shDsets.size())
-              dsets.resize(shDsets.size());
-
-            for (size_t i = 0; i < shDsets.size(); ++i)
-              mergeBindings(dsets[i], shDsets[i]);
-          }
-
-          m_DescriptorSets = std::move(dsets);
+            m_Reflections.push_back(spirv::v2::reflect(blob.data, blob.stage));
         }
 
         void validateStages() const
@@ -497,7 +500,7 @@ namespace ShadersSystem
         gapi::VertexInputDescription m_Input;
         gapi::ShaderStage m_Stages = gapi::ShaderStage(0);
         eastl::vector<ShaderBlob> m_Shaders;
-        eastl::vector<spirv::v2::DescriptorSet> m_DescriptorSets;
+        eastl::vector<spirv::v2::Reflection> m_Reflections;
     };
   }
 

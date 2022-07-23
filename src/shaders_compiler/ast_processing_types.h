@@ -96,7 +96,7 @@ namespace ShadersSystem
     ByteCodes byteCode;
     tfx::RenderState renderState;
     eastl::vector<ShaderBlob> blobs;
-    eastl::vector<spirv::v2::DescriptorSet> descriptorSets;
+    eastl::vector<spirv::v2::Reflection> reflections;
 
     bool operator==(const TechniqueDeclaration& rvl) const
     {
@@ -104,7 +104,7 @@ namespace ShadersSystem
         is_same_byte_code(byteCode, rvl.byteCode) &&
         renderState == rvl.renderState &&
         blobs == rvl.blobs &&
-        descriptorSets == rvl.descriptorSets;
+        reflections == rvl.reflections;
     }
   };
 }

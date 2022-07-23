@@ -440,9 +440,9 @@ namespace spirv
       }
     }
 
-    eastl::vector<DescriptorSet> reflect(const eastl::vector<char>& spirv, const gapi::ShaderStage stage)
+    Reflection reflect(const eastl::vector<char>& spirv, const gapi::ShaderStage stage)
     {
-      eastl::vector<DescriptorSet> ret;
+      Reflection ret;
 
       const uint32_t* code = reinterpret_cast<const uint32_t*>(spirv.data());
       const size_t wordsCount = spirv.size() / sizeof(uint32_t);
@@ -453,13 +453,13 @@ namespace spirv
 
       const auto getBinding = [&](unsigned int nSet, unsigned int nBinding) -> vk::DescriptorSetLayoutBinding&
       {
-        if (nSet >= ret.size())
-          ret.resize(nSet+1);
+        if (nSet >= ret.descriptorSets.size())
+          ret.descriptorSets.resize(nSet+1);
 
-        if (nBinding >= ret[nSet].size())
-          ret[nSet].resize(nSet+1);
+        if (nBinding >= ret.descriptorSets[nSet].size())
+          ret.descriptorSets[nSet].resize(nSet+1);
 
-        return ret[nSet][nBinding];
+        return ret.descriptorSets[nSet][nBinding];
       };
 
       const vk::ShaderStageFlags vkStage = get_vk_stage(stage);
