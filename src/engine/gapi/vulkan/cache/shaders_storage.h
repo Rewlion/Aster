@@ -6,6 +6,7 @@
 #include <engine/types.h>
 #include <engine/utils/fixed_stack.hpp>
 #include <shaders_compiler/spirv.h>
+#include <shaders_compiler/ast_processing_types.h>
 
 #include <vulkan/vulkan.hpp>
 #include <EASTL/hash_map.h>
@@ -16,38 +17,28 @@ namespace gapi::vulkan
 
   struct ShaderModule
   {
-    spirv::Reflection      metadata;
     vk::UniqueShaderModule module;
-  };
-
-  struct ShaderProgramInfo
-  {
-    Utils::FixedStack<vk::PipelineShaderStageCreateInfo,2>
-                                           stages;
-    vk::VertexInputBindingDescription      inputBinding;
-    vk::PipelineVertexInputStateCreateInfo vertexInput;
-    vk::PipelineLayout                     layout;
+    eastl::vector<spirv::v2::DescriptorSet> descriptorSets;
+    string entry;
+    vk::ShaderStageFlagBits stage;
   };
 
   class ShadersStorage
   {
-
     public:
       void init(Device* device);
 
-      const ShaderModule& getShaderModule(const string_hash name);
-
-      const PipelineLayout& getPipelineLayout(const ShaderStagesNames& stages);
-
-      void getShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo);
+      ShaderModuleHandler addModule(const ShadersSystem::ShaderBlob& blob, const spirv::v2::Reflection& reflection);
+      const PipelineLayout* getPipelineLayout(const eastl::vector<ShaderModuleHandler>& modules);
 
     private:
-      void createShaderModules();
+      const ShaderModule* getModule(const ShaderModuleHandler h) const;
+      eastl::vector<spirv::v2::DescriptorSet> getModulesDescriptorSets(const eastl::vector<ShaderModuleHandler>& modules) const;
 
     private:
       Device* m_Device;
 
-      eastl::hash_map<string_hash, ShaderModule> m_ShaderModules;
+      eastl::hash_map<ShaderModuleHandler, ShaderModule> m_ShaderModules;
       eastl::hash_map<string_hash, PipelineLayout> m_PipelineLayouts;
   };
 

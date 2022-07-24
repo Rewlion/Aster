@@ -26,10 +26,6 @@ model_asset
 
   material @("TestMaterial")
   {
-    texture
-    {
-      text name = "cube.container"
-      text binding = "test_texture"
-    }
+    text "test_texture" = "cube.container" @("texture")
   }
 }

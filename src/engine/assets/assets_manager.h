@@ -1,8 +1,7 @@
 #pragma once
 
 #include <engine/gapi/gapi.h>
-#include <engine/materials/materials.h>
-#include <engine/materials/storage.h>
+#include <engine/tfx/tfx.h>
 
 #include <EASTL/hash_map.h>
 
@@ -29,7 +28,7 @@ namespace Engine
   struct ModelAsset
   {
     StaticMesh* mesh;
-    Material* materials[MAX_SUBMESH_COUNT];
+    eastl::vector<tfx::Material> materials;
   };
 
   struct TextureAsset
@@ -55,7 +54,7 @@ namespace Engine
       void loadTextureAsset(const DataBlock& asset);
       void loadStaticMesh(const DataBlock& asset);
       void loadModelAsset(const DataBlock& asset);
-      Material* createMaterial(const DataBlock& matBlk);
+      tfx::Material createMaterial(const DataBlock& matBlk);
     private:
       eastl::hash_map<string_hash, StaticMesh> m_StaticMeshes;
       eastl::hash_map<string_hash, TextureAsset> m_Textures;

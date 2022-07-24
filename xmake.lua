@@ -77,8 +77,8 @@ target("aster-ecs")
 target("aster")
   set_kind("binary")
   add_files("src/aster/**.cpp|**.ecs.cpp")
-  add_deps("aster-ecs", "engine", "engine-materials")
-  add_ldflags("-WHOLEARCHIVE:engine-materials", {force = true})
+  add_deps("aster-ecs", "engine")
+  --add_ldflags("-WHOLEARCHIVE:engine-materials", {force = true})
   set_suffixname("-$(mode)")
   set_targetdir("/game/aster")
 
@@ -87,10 +87,6 @@ target("engine-ecs-generation")
   add_rules("ecs_generation")
   add_files("src/engine/**.ecs.cpp")
 
-target("engine-materials")
-  set_kind("static")
-  add_files("src/engine/materials/**.cpp")
-
 target("engine-assets")
   set_kind("static")
   add_files("src/engine/assets/**.cpp")
@@ -98,6 +94,10 @@ target("engine-assets")
 target("engine-datablock")
   set_kind("static")
   add_files("src/engine/datablock/**.cpp")
+
+target("engine-tfx")
+  set_kind("static")
+  add_files("src/engine/tfx/**.cpp")
 
 target("engine-ecs")
   set_kind("static")
@@ -148,7 +148,8 @@ target("engine")
            "engine-render",
            "engine-scene",
            "engine-utils",
-           "engine-workcycle")
+           "engine-workcycle",
+           "engine-tfx")
 
 target("shaders_compiler")
   set_kind("binary")

@@ -7,9 +7,9 @@
 
 namespace gapi::vulkan
 {
-  void DescriptorsSetManager::init(Device* device)
+  DescriptorsSetManager::DescriptorsSetManager(Device& device)
+    : m_Device(device)
   {
-    m_Device = device;
   }
 
   void DescriptorsSetManager::addPool()
@@ -24,7 +24,7 @@ namespace gapi::vulkan
     ci.pPoolSizes = sizes;
     ci.poolSizeCount = std::size(sizes);
 
-    auto dsPoolUnique = m_Device->m_Device->createDescriptorPoolUnique(ci);
+    auto dsPoolUnique = m_Device.getDevice().createDescriptorPoolUnique(ci);
     VK_CHECK_RES(dsPoolUnique);
 
     m_Pools.push_back(std::move(dsPoolUnique.value));
@@ -43,91 +43,15 @@ namespace gapi::vulkan
     return m_Pools[m_PoolId].get();
   }
 
-  void DescriptorsSetManager::setImage(const vk::ImageView imgView, const size_t set, const size_t binding)
+  bool DescriptorsSetManager::validateBinding(const size_t set, const size_t binding,
+                                              const vk::DescriptorType type) const
   {
-    m_Sets[set].bindings[binding].imgView = imgView;
-    m_Sets[set].bindings[binding].type = vk::DescriptorType::eSampledImage;
-    vk::DescriptorImageInfo imgInfo;
-    imgInfo.imageView = imgView;
-    imgInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-    m_Sets[set].bindings[binding].imgInfo = imgInfo;
-
-    m_DirtySets.set(set);
-  }
-
-  void DescriptorsSetManager::setSampler(const vk::Sampler sampler, const size_t set, const size_t binding)
-  {
-    m_Sets[set].bindings[binding].sampler = sampler;
-    m_Sets[set].bindings[binding].type = vk::DescriptorType::eSampler;
-    vk::DescriptorImageInfo imgInfo;
-    imgInfo.sampler = sampler;
-    m_Sets[set].bindings[binding].imgInfo = imgInfo;
-
-    m_DirtySets.set(set);
-  }
-
-  void DescriptorsSetManager::setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding, const size_t constOffset, const size_t dynamicOffset)
-  {
-    m_Sets[set].bindings[binding].buffer = buffer;
-    m_Sets[set].bindings[binding].type = vk::DescriptorType::eUniformBufferDynamic;
-    m_Sets[set].bindings[binding].dynamicOffset = dynamicOffset;
-    vk::DescriptorBufferInfo bufInfo;
-    bufInfo.buffer = buffer;
-    bufInfo.offset = constOffset;
-    bufInfo.range = VK_WHOLE_SIZE;
-    m_Sets[set].bindings[binding].bufInfo = bufInfo;
-
-    m_DirtySets.set(set);
-  }
-
-  void DescriptorsSetManager::setPipelineLayout(const PipelineLayout* layout)
-  {
-    if (m_PipelineLayout != nullptr)
+    if (set < m_PipelineLayout->dsets.size() &&
+        m_PipelineLayout->dsets[set].size() < binding)
     {
-      for (size_t set = 0; set < std::size(m_PipelineLayout->sets); ++set)
-      {
-        const size_t bindingsCount = std::max(layout->sets[set].getBindingsCount(),
-                                              m_PipelineLayout->sets[set].getBindingsCount());
-        const bool hasDifferentBindings = std::memcmp(&layout->sets[set],
-                                                      &m_PipelineLayout->sets[set],
-                                                      bindingsCount * sizeof(layout->sets[set].bindings[0]));
-        if (hasDifferentBindings)
-          m_DirtySets.set(set);
-      }
-    }
-    m_PipelineLayout = layout;
-  }
-
-  bool DescriptorsSetManager::validateBinding(const size_t set, const size_t binding)
-  {
-    const spirv::BindingType pipelineBindingType = m_PipelineLayout->sets[set].bindings[binding].type;
-    const vk::DescriptorType currentBindingType = m_Sets[set].bindings[binding].type.value();
-
-    switch (pipelineBindingType)
-    {
-      case spirv::BindingType::Sampler:
-      {
-        if (currentBindingType == vk::DescriptorType::eSampler)
-          return true;
-        break;
-      }
-
-      case spirv::BindingType::Texture2D:
-      {
-        if (currentBindingType == vk::DescriptorType::eSampledImage)
-          return true;
-        break;
-      }
-
-      case spirv::BindingType::UniformBufferDynamic:
-      {
-        if (currentBindingType == vk::DescriptorType::eUniformBufferDynamic)
-          return true;
-        break;
-      }
+      return m_PipelineLayout->dsets[set][binding].descriptorType == type;
     }
 
-    //logerror("vulkan: can't set [set:{}, binding:{}], pipeline hasn't declared such binding", set, binding);
     return false;
   }
 
@@ -138,123 +62,180 @@ namespace gapi::vulkan
     dsAi.descriptorSetCount = 1;
     dsAi.pSetLayouts = &m_PipelineLayout->descriptorSetLayouts[set].get();
 
-    auto res = m_Device->m_Device->allocateDescriptorSets(dsAi);
+    auto res = m_Device.getDevice().allocateDescriptorSets(dsAi);
     if (res.result != vk::Result::eSuccess)
     {
       addPool();
       dsAi.descriptorPool = acquirePool();
-      res =  m_Device->m_Device->allocateDescriptorSets(dsAi);
+      res = m_Device.getDevice().allocateDescriptorSets(dsAi);
       VK_CHECK_RES(res);
 
       return res.value[0];
     }
 
-    m_ActiveSets.set(set);
     return res.value[0];
   }
 
-  vk::WriteDescriptorSet DescriptorsSetManager::acquireWriteDescriptorSet(const size_t nSet, const size_t nBinding)
+  void DescriptorsSetManager::insureSetExistance(const size_t set)
   {
-    vk::WriteDescriptorSet write;
-    Binding& binding = m_Sets[nSet].bindings[nBinding];
+    if (m_BindedDsets[set] == vk::DescriptorSet{})
+      m_BindedDsets[set] = acquireSet(set);
+  }
 
-    write.dstSet = m_ActiveDescriptorSets[nSet];
-    write.dstBinding = nBinding;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.descriptorType =  binding.type.value();
+  void DescriptorsSetManager::setImage(const vk::ImageView view, const size_t set, const size_t binding)
+  {
+    m_WriteInfos.push_back(ImageWriteInfo{
+      .view = view,
+      .set = set,
+      .binding = binding
+    });
+  }
 
-    switch (binding.type.value())
+  void DescriptorsSetManager::setSampler(const vk::Sampler sampler, const size_t set, const size_t binding)
+  {
+    m_WriteInfos.push_back(SamplerWriteInfo{
+      .sampler = sampler,
+      .set = set,
+      .binding = binding
+    });
+  }
+
+  void DescriptorsSetManager::setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding, const size_t constOffset)
+  {
+    m_WriteInfos.push_back(UniformBufferWriteInfo{
+      .buffer = buffer,
+      .constOffset = constOffset,
+      .set = set,
+      .binding = binding
+    });
+  }
+
+  namespace
+  {
+    template<class... Ts> struct overload : Ts... { using Ts::operator()...; };
+  }
+
+  DescriptorsSetManager::WritesDescription DescriptorsSetManager::acquireWrites()
+  {
+    WritesDescription writes;
+
+    const auto addWrites = [&](size_t set, size_t binding, vk::DescriptorType dsetType, auto setupInfoPtr) {
+      if (!validateBinding(set, binding, dsetType))
+        return;
+
+      insureSetExistance(set);
+      writes.updateSets.insert(set);
+
+      vk::WriteDescriptorSet write;
+      write.dstSet = m_BindedDsets[set];
+      write.dstBinding = binding;
+      write.dstArrayElement = 0;
+      write.descriptorCount = 1;
+      write.descriptorType = dsetType;
+      setupInfoPtr(write);
+
+      writes.writes.push_back(write);
+    };
+
+    const auto setupSamplerInfo = [&](vk::Sampler sampler) {
+      return [&](vk::WriteDescriptorSet& write) {
+        vk::DescriptorImageInfo imgInfo;
+        imgInfo.sampler = sampler;
+        write.pImageInfo = &writes.imgInfos.back();
+      };
+    };
+
+    const auto setupImageInfo = [&](vk::ImageView view) {
+      return [&](vk::WriteDescriptorSet& write) {
+        vk::DescriptorImageInfo imgInfo;
+        imgInfo.imageView = view;
+        imgInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        writes.imgInfos.push_back(imgInfo);
+        write.pImageInfo = &writes.imgInfos.back();
+      };
+    };
+
+    const auto setupBufferInfo = [&](vk::Buffer buffer, const size_t constOffset) {
+      return [&](vk::WriteDescriptorSet& write) {
+        vk::DescriptorBufferInfo bufInfo;
+        bufInfo.buffer = buffer;
+        bufInfo.offset = constOffset;
+        bufInfo.range = VK_WHOLE_SIZE;
+        writes.bufInfos.push_back(bufInfo);
+        write.pBufferInfo = &writes.bufInfos.back();
+      };
+    };
+
+    for (const auto& wrInfo: m_WriteInfos)
     {
-      case vk::DescriptorType::eSampler:
-      case vk::DescriptorType::eSampledImage:
-      {
-        write.pImageInfo = &binding.imgInfo;
-        break;
-      }
-
-      case vk::DescriptorType::eUniformBufferDynamic:
-      {
-        write.pBufferInfo = &binding.bufInfo;
-        break;
-      }
-
-      default: ASSERT(!"unsupported descriptor type");
+      vk::WriteDescriptorSet write;
+      std::visit(overload{
+        [&](const SamplerWriteInfo& i) {
+          addWrites(i.set, i.binding, vk::DescriptorType::eSampler, setupSamplerInfo(i.sampler));
+        },
+        [&](const ImageWriteInfo& i) {
+          addWrites(i.set, i.binding, vk::DescriptorType::eSampledImage, setupImageInfo(i.view));
+        },
+        [&](const UniformBufferWriteInfo& i) {
+          addWrites(i.set, i.binding, vk::DescriptorType::eUniformBufferDynamic, setupBufferInfo(i.buffer, i.constOffset));
+        }
+      }, wrInfo);
     }
 
-    return write;
+    m_WriteInfos.clear();
+    return writes;
+  }
+
+  void DescriptorsSetManager::setPipelineLayout(const PipelineLayout* layout)
+  {
+    if (m_BindedDsets.size() < layout->dsets.size())
+      m_BindedDsets.resize(layout->dsets.size());
+
+    if (m_PipelineLayout != nullptr)
+    {
+      for (size_t i = 0; i < m_PipelineLayout->dsets.size(); ++i)
+      {
+        if (layout->dsets[i].size() > m_PipelineLayout->dsets[i].size())
+        {
+          m_BindedDsets[i] = vk::DescriptorSet{};
+          continue;
+        }
+
+        const bool hasDifferentBindings = std::memcmp(layout->dsets[i].data(),
+                                                      m_PipelineLayout->dsets[i].data(),
+                                                      layout->dsets[i].size() * sizeof(layout->dsets[i]));
+        if (hasDifferentBindings)
+          m_BindedDsets[i] = vk::DescriptorSet{};
+      }
+    }
+
+    m_PipelineLayout = layout;
   }
 
   void DescriptorsSetManager::updateDescriptorSets(vk::CommandBuffer& cmdBuf)
   {
-    eastl::vector<vk::WriteDescriptorSet> writes;
-    writes.reserve(spirv::MAX_SETS_COUNT * spirv::MAX_BINDING_COUNT);
+    if (!m_PipelineLayout)
+      return;
 
-    for (size_t set = 0; set < spirv::MAX_SETS_COUNT; ++set)
+    WritesDescription writes = acquireWrites();
+    if (!writes.writes.empty())
+      m_Device.getDevice().updateDescriptorSets(writes.writes.size(), writes.writes.data(), 0, nullptr);
+
+    for (size_t i = 0; i < m_BindedDsets.size(); ++i)
     {
-      if (m_DirtySets.isSet(set))
+      const auto& set = m_BindedDsets[i];
+      if (set == vk::DescriptorSet{})
       {
-        m_ActiveDescriptorSets[set] = acquireSet(set);
-        for (size_t binding = 0; binding < m_Sets[set].getBindingsCount(); ++binding)
-        {
-          if (!m_Sets[set].bindings[binding].type.has_value())
-            continue;
-
-          if (!validateBinding(set, binding))
-          {
-            m_Sets[set].bindings[binding].type = std::nullopt;
-            continue;
-          }
-
-          const vk::WriteDescriptorSet write = acquireWriteDescriptorSet(set, binding);
-          writes.push_back(write);
-        }
-      }
-      else
-        if (!m_ActiveSets.isSet(set))
-        {
-          m_ActiveDescriptorSets[set] = acquireSet(set);
-          m_DirtySets.set(set);
-        }
-    }
-
-    if (writes.size() > 0)
-    {
-      m_Device->m_Device->updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
-
-      for (size_t set = 0; set < spirv::MAX_SETS_COUNT; ++set)
-        if (m_DirtySets.isSet(set))
-        {
-          const auto dynamicOffsets = acquireDynamicOffsets(set);
-          cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_PipelineLayout->pipelineLayout.get(),
-                                    set, 1, &m_ActiveDescriptorSets[set], dynamicOffsets.getSize(), dynamicOffsets.getData());
-        }
-    }
-
-    m_DirtySets.resetAll();
-  }
-
-  Utils::FixedStack<uint32_t, spirv::MAX_BINDING_COUNT> DescriptorsSetManager::acquireDynamicOffsets(const size_t nSet)
-  {
-    Utils::FixedStack<uint32_t, spirv::MAX_BINDING_COUNT> dynamicOffsets;
-
-    const auto setDescription = m_Sets[nSet];
-    for (size_t i = 0; i < std::size(setDescription.bindings); ++i)
-    {
-      const auto& bindingDescription = setDescription.bindings[i];
-      if (bindingDescription.type.has_value() &&
-        (bindingDescription.type.value() == vk::DescriptorType::eUniformBufferDynamic))
-      {
-        dynamicOffsets.push(bindingDescription.dynamicOffset);
+        m_BindedDsets[i] = acquireSet(i);
+        writes.updateSets.insert(i);
       }
     }
 
-    return dynamicOffsets;
-  }
-
-  void DescriptorsSetManager::reset()
-  {
-    m_Pools.clear();
-    m_DirtySets.resetAll();
+    for (size_t set: writes.updateSets)
+    {
+      cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
+                                m_PipelineLayout->pipelineLayout.get(),
+                                set, 1, &m_BindedDsets[set], 0, nullptr);
+    }
   }
 }

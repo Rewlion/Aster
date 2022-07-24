@@ -1,59 +1,49 @@
 #pragma once
 
+#include "vulkan.h"
 #include "backend.h"
-#include "compile_context.h"
+#include "cmd_encoder.h"
 #include "frame_gc.h"
 #include "resources.h"
-#include "vulkan.h"
+#include "result.h"
 
 #include <engine/gapi/vulkan/cache/pipelines_storage.h>
+#include <engine/gapi/vulkan/cache/renderpass_storage.h>
 #include <engine/gapi/gapi.h>
 
 #include <vulkan/vulkan.hpp>
 
 namespace gapi
 {
-  extern void           (*gapi_submit_commands)(CommandList&& cmds);
-  extern TextureHandler (*gapi_get_backbuffer)();
-  extern BufferHandler  (*gapi_allocate_buffer)(const size_t size, const int usage);
-  extern void           (*gapi_free_buffer)(const BufferHandler buffer);
-  extern void*          (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size);
-  extern void           (*gapi_unmap_buffer)(const BufferHandler buffer);
-  extern void           (*gapi_copy_buffers_sync)(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size);
-  extern void           (*gapi_write_buffer)(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags);
-  extern TextureHandler (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
-  extern void           (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
-  extern SamplerHandler (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
-  extern void           (*gapi_transit_texture_state)(const TextureHandler texture,
-                                                      const TextureState oldState, const TextureState newState,
-                                                      const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
-                                                      const uint32_t firstArraySlice, const uint32_t arraySliceCount,
-                                                      const bool sync);
+  extern TextureHandler       (*gapi_get_backbuffer)();
+  extern BufferHandler        (*gapi_allocate_buffer)(const size_t size, const int usage);
+  extern void                 (*gapi_free_buffer)(const BufferHandler buffer);
+  extern void                 (*gapi_free_texture)(const TextureHandler texture);
+  extern void*                (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size);
+  extern void                 (*gapi_unmap_buffer)(const BufferHandler buffer);
+  extern void                 (*gapi_copy_buffers_sync)(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size);
+  extern void                 (*gapi_write_buffer)(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags);
+  extern TextureHandler       (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
+  extern void                 (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
+  extern SamplerHandler       (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
+  extern void                 (*gapi_present_backbuffer)();
+  extern Semaphore*           (*gapi_ackquire_backbuffer)();
+  extern ShaderModuleHandler  (*gapi_add_module)(void* blob, void* reflection);
+  extern gapi::CmdEncoder*    (*gapi_allocate_cmd_encoder)();
+  extern Fence*               (*gapi_allocate_fence)();
 }
 
 namespace gapi::vulkan
 {
   static Backend backend;
   static Device device;
-  static CompileContext compileContext;
   static FrameGarbageCollector frameGc;
+  static PipelinesStorage pipelinesStorage;
+  static RenderPassStorage rpStorage;
 
   vk::Device& get_device()
   {
     return device.getDevice();
-  }
-
-  void submit_commands(CommandList&& cmds)
-  {
-    for(const Command& cmd: cmds)
-    {
-      std::visit(
-        [](const auto& c)
-        {
-          compileContext.compileCommand(c);
-        },
-        cmd);
-    }
   }
 
   TextureHandler get_backbuffer()
@@ -69,6 +59,11 @@ namespace gapi::vulkan
   void free_buffer(const BufferHandler buffer)
   {
     device.freeBuffer(buffer);
+  }
+
+  void free_texture(const TextureHandler texture)
+  {
+    device.freeTexture(texture);
   }
 
   void* map_buffer(const BufferHandler buffer, const size_t offset, const size_t size)
@@ -106,22 +101,47 @@ namespace gapi::vulkan
     return device.allocateSampler(allocDesc);
   }
 
-  void transit_texture_state(const TextureHandler texture,
-                             const TextureState oldState, const TextureState newState,
-                             const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
-                             const uint32_t firstArraySlice, const uint32_t arraySliceCount,
-                             const bool sync)
+  void present_backbuffer()
   {
-    compileContext.transitTextureState(texture, oldState, newState, firstMipLevel,
-                                       mipLevelsCount, firstArraySlice, arraySliceCount, sync);
+    device.presentSurfaceImage();
+    frameGc.nextFrame();
+  }
+
+  Semaphore* ackquire_backbuffer()
+  {
+    VulkanSemaphore* s = new VulkanSemaphore();
+    s->semaphore = device.createSemaphore();
+    device.acquireBackbuffer(s->semaphore.get());
+    return s;
+  }
+
+  ShaderModuleHandler add_module(void* blob, void* reflection)
+  {
+    const ShadersSystem::ShaderBlob* b = reinterpret_cast<const ShadersSystem::ShaderBlob*>(blob);
+    const spirv::v2::Reflection* r = reinterpret_cast<const spirv::v2::Reflection*>(reflection);
+    return pipelinesStorage.addModule(*b, *r);
+  }
+
+  gapi::CmdEncoder* allocate_cmd_encoder()
+  {
+    vk::UniqueCommandPool cmdPool = device.allocateCmdPool();
+    return new CmdEncoder(device, frameGc, rpStorage, pipelinesStorage, std::move(cmdPool));
+  }
+
+  Fence* allocate_fence()
+  {
+    VulkanFence* f = new VulkanFence{};
+    f->fence = device.getDevice().createFenceUnique(vk::FenceCreateInfo{});
+    VK_CHECK(device.getDevice().resetFences(1, &f->fence.get()));
+    return f;
   }
 
   void init()
   {
-    gapi_submit_commands = submit_commands;
     gapi_get_backbuffer = get_backbuffer;
     gapi_allocate_buffer = allocate_buffer;
     gapi_free_buffer = free_buffer;
+    gapi_free_texture = free_texture;
     gapi_allocate_texture = allocate_texture;
     gapi_copy_to_texture_sync = copy_to_texture_sync;
     gapi_allocate_sampler = allocate_sampler;
@@ -129,11 +149,17 @@ namespace gapi::vulkan
     gapi_unmap_buffer = unmap_buffer;
     gapi_copy_buffers_sync = copy_buffers_sync;
     gapi_write_buffer = write_buffer;
-    gapi_transit_texture_state = transit_texture_state;
+    gapi_present_backbuffer = present_backbuffer;
+    gapi_ackquire_backbuffer = ackquire_backbuffer;
+    gapi_add_module = add_module;
+    gapi_allocate_cmd_encoder = allocate_cmd_encoder;
+    gapi_allocate_fence = allocate_fence;
 
     backend.init();
+    frameGc.init(&device);
+    rpStorage.init(&device);
+    pipelinesStorage.init(&device);
     device = backend.createDevice(&frameGc);
-    compileContext.init(&device, &frameGc);
   }
 
 }

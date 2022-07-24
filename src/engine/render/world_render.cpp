@@ -25,18 +25,6 @@ namespace Engine::Render
 
     gapi::SamplerAllocationDescription samplerAllocDesc;
     m_ModelSampler = allocate_sampler(samplerAllocDesc);
-
-    m_FrameUniforms = gapi::allocate_buffer(sizeof(FrameUniforms), gapi::BF_CpuVisible | gapi::BF_BindConstant);
-    m_StaticMeshUniforms = gapi::allocate_buffer(sizeof(PerStaticMeshUniform), gapi::BF_CpuVisible | gapi::BF_BindConstant);
-
-    gapi::TextureAllocationDescription allocDesc;
-    allocDesc.format = gapi::TextureFormat::D24_UNORM_S8_UINT;
-    allocDesc.extent = int3{m_WindowSize.x, m_WindowSize.y, 1};
-    allocDesc.mipLevels = 1;
-    allocDesc.arrayLayers = 1;
-    allocDesc.usage = gapi::TextureUsage::DepthStencil;
-    m_RtDepth = gapi::allocate_texture(allocDesc);
-    gapi::transit_texture_state(m_RtDepth, gapi::TextureState::Undefined, gapi::TextureState::DepthWriteStencilRead);
   }
 
   void WorldRender::render(const CameraData& cameraVP)
@@ -48,47 +36,52 @@ namespace Engine::Render
   void WorldRender::beforeRender(const CameraData& camera)
   {
     m_FrameGC.nextFrame();
+    m_FrameData.cmdEncoder.reset(gapi::allocate_cmd_encoder());
     m_FrameData.camera = camera;
-    updateFrameUniforms();
-  }
+    m_FrameData.depth = m_FrameGC.allocate([this](){
+      gapi::TextureAllocationDescription allocDesc;
+      allocDesc.format = gapi::TextureFormat::D24_UNORM_S8_UINT;
+      allocDesc.extent = int3{m_WindowSize.x, m_WindowSize.y, 1};
+      allocDesc.mipLevels = 1;
+      allocDesc.arrayLayers = 1;
+      allocDesc.usage = gapi::TextureUsage::DepthStencil;
+      return gapi::allocate_texture(allocDesc);
+    });
+    m_FrameData.cmdEncoder->transitTextureState(m_FrameData.depth, gapi::TextureState::Undefined, gapi::TextureState::DepthWriteStencilRead);
+    m_FrameData.cmdEncoder->insertSemaphore(gapi::ackquire_backbuffer());
 
-  void WorldRender::updateFrameUniforms()
-  {
-    FrameUniforms uniforms;
-    uniforms.viewProj = m_FrameData.camera.viewProj;
-    uniforms.cameraPos = m_FrameData.camera.pos;
-    uniforms.secSinceStart = Time::get_sec_since_start();
-
-    write_buffer(m_FrameUniforms, &uniforms, 0, sizeof(uniforms), gapi::WR_DISCARD);
-    m_CmdEncoder.bindConstBuffer(m_FrameUniforms, DSET_PER_FRAME, 0);
-
-    m_CmdEncoder.bindSampler(m_ModelSampler, DSET_PER_FRAME, 1);
+    tfx::set_extern("view_proj", m_FrameData.camera.viewProj);
+    tfx::set_extern("camera_pos", m_FrameData.camera.pos);
+    tfx::set_extern("sec_since_start", Time::get_sec_since_start());
+    tfx::activate_scope("FrameScope", m_FrameData.cmdEncoder.get());
+    //m_CmdEncoder.bindSampler(m_ModelSampler, DSET_PER_FRAME, 1);
   }
 
   void WorldRender::renderWorld()
   {
-    gapi::transit_texture_state(gapi::get_backbuffer(), gapi::TextureState::Present, gapi::TextureState::RenderTarget);
+    m_FrameData.cmdEncoder->transitTextureState(gapi::get_backbuffer(), gapi::TextureState::Present, gapi::TextureState::RenderTarget);
 
-    m_CmdEncoder.beginRenderpass(
+    m_FrameData.cmdEncoder->beginRenderpass(
       {
         gapi::RenderPassAttachment{gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::Present}
       },
-      gapi::RenderPassAttachment{m_RtDepth, gapi::TextureState::DepthWriteStencilRead, gapi::TextureState::DepthWriteStencilRead}
+      gapi::RenderPassAttachment{m_FrameData.depth, gapi::TextureState::DepthWriteStencilRead, gapi::TextureState::DepthWriteStencilRead},
+      (gapi::ClearState)(gapi::CLEAR_RT | gapi::CLEAR_DEPTH)
     );
-    m_CmdEncoder.clear(gapi::CLEAR_RT | gapi::CLEAR_DEPTH);
 
     renderOpaque();
 
-    m_CmdEncoder.present();
-    m_CmdEncoder.flush();
+    m_FrameData.cmdEncoder->endRenderpass();
+    m_FrameData.cmdEncoder->flush();
+    gapi::present_backbuffer();
   }
 
   void WorldRender::renderOpaque()
   {
-    renderScene(RenderPassType::Main);
+    renderScene();
   }
 
-  void WorldRender::renderScene(const RenderPassType rpType)
+  void WorldRender::renderScene()
   {
     const auto objects = scene.queueObjects();
     for (const auto& obj: objects)
@@ -99,29 +92,29 @@ namespace Engine::Render
       const mat4 scale = glm::scale(obj.scale);
       const mat4 tr = glm::translate(obj.pos);
 
-      PerStaticMeshUniform meshUniforms;
-      meshUniforms.modelTm = tr * scale * rot;
-      meshUniforms.normalTm = glm::transpose(glm::inverse(meshUniforms.modelTm));
-
-      auto meshConstBuf = m_FrameGC.allocate([](){
-        return gapi::allocate_buffer(sizeof(PerStaticMeshUniform), gapi::BF_CpuVisible | gapi::BF_BindConstant);
-      });
-
-      write_buffer(meshConstBuf, &meshUniforms, 0, sizeof(meshUniforms), gapi::WR_DISCARD);
-      m_CmdEncoder.bindConstBuffer(meshConstBuf, DSET_PER_MODEL, 0);
+      const float4x4 modelTm = tr * scale * rot;
+      const float4x4 normalTm = glm::transpose(glm::inverse(modelTm));
+      tfx::set_channel("model_tm", modelTm);
+      tfx::set_channel("normal_tm", normalTm);
 
       ModelAsset* asset = assets_manager.getModel(obj.model);
 
       for(size_t i = 0; i < asset->mesh->submeshes.getSize(); ++i)
       {
         const Submesh& submesh = asset->mesh->submeshes.get(i);
-        Material* material = asset->materials[i];
-        material->setState(m_CmdEncoder, rpType);
-        material->setParams(m_CmdEncoder);
+        const tfx::Material& material = asset->materials[i];
 
-        m_CmdEncoder.bindVertexBuffer(submesh.vertexBuffer);
-        m_CmdEncoder.bindIndexBuffer(submesh.indexBuffer);
-        m_CmdEncoder.drawIndexed(material->getTopology(), submesh.indexCount, 1, 0, 0, 0);
+        tfx::activate_technique(material.technique, m_FrameData.cmdEncoder.get());
+
+        for (const auto& m: material.params)
+          tfx::set_channel(m.name, m.value);
+
+        tfx::activate_scope("StaticModelScope", m_FrameData.cmdEncoder.get());
+        m_FrameData.cmdEncoder->updateResources();
+
+         m_FrameData.cmdEncoder->bindVertexBuffer(submesh.vertexBuffer);
+         m_FrameData.cmdEncoder->bindIndexBuffer(submesh.indexBuffer);
+         m_FrameData.cmdEncoder->drawIndexed(submesh.indexCount, 1, 0, 0, 0);
       }
     }
   }

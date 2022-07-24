@@ -6,313 +6,175 @@
 #include <engine/assert.h>
 #include <engine/datablock/utils.h>
 #include <engine/gapi/vulkan/device.h>
+#include <engine/gapi/vulkan/gapi_to_vk.h>
 #include <engine/log.h>
 #include <engine/settings.h>
 #include <engine/utils/fs.h>
-#include <shaders_compiler/constants.h>
+#include <shaders_compiler/ast_processing_types.h>
 
 #include <boost/functional/hash.hpp>
 
 #include <filesystem>
 #include <functional>
 
-namespace
-{
-  struct ShaderBlob
-  {
-    char shaderName[spirv::SHADERS_NAME_LEN];
-    const char* blob = nullptr;
-    size_t blobSize = 0;
-    spirv::Reflection reflection;
-  };
-
-  class ShadersBinReader
-  {
-    public:
-      bool Open(const char* file)
-      {
-        m_Bin = Utils::read_file(file);
-        if (m_Bin.size() == 0)
-        {
-          logerror("failed to read shaders bin file: {}", file);
-          return false;
-        }
-
-        m_Offset = 0;
-
-        const uint64_t magic = Read64();
-        if (magic != spirv::SHADERS_MAGIC)
-        {
-          logerror("failed to read shaders bin file: wrong magic");
-          return false;
-        }
-
-        m_ShadersBlobsCount = Read64();
-        if (m_ShadersBlobsCount == 0)
-        {
-          logerror("shaders bin has 0 shaders");
-          return false;
-        }
-
-        m_BlobsStart = m_Offset;
-
-        return true;
-      }
-
-      void ForEach(std::function<void(const ShaderBlob&)> cb)
-      {
-        m_Offset = m_BlobsStart;
-
-        for(size_t i = 0; i < m_ShadersBlobsCount; ++i)
-        {
-          ShaderBlob blob;
-          ReadBuf(blob.shaderName, spirv::SHADERS_NAME_LEN);
-          blob.reflection = Read<spirv::Reflection>();
-          blob.blobSize = Read64();
-          blob.blob = m_Bin.data() + m_Offset;
-          cb(blob);
-          Move(blob.blobSize);
-        }
-      }
-
-    private:
-      void ReadBuf(void* dst, const size_t size)
-      {
-        std::memcpy(dst, m_Bin.data() + m_Offset, size);
-        m_Offset += size;
-      }
-
-      uint64_t Read64()
-      {
-        return Read<uint64_t>();
-      }
-
-      template<class T>
-      T Read()
-      {
-        T buf = *(T*)(m_Bin.data() + m_Offset);
-        Move(sizeof(T));
-        return buf;
-      }
-
-      void Move(const size_t v)
-      {
-        m_Offset += v;
-      }
-
-    private:
-      eastl::vector<char> m_Bin;
-      size_t m_BlobsStart = 0;
-      size_t m_Offset = 0;
-      size_t m_ShadersBlobsCount = 0;
-  };
-}
-
 namespace gapi::vulkan
 {
   void ShadersStorage::init(Device* device)
   {
     m_Device = device;
-
-    createShaderModules();
   }
 
-  void ShadersStorage::createShaderModules()
+  ShaderModuleHandler ShadersStorage::addModule(const ShadersSystem::ShaderBlob& blob, const spirv::v2::Reflection& reflection)
   {
-    const char* shadersBin = "bin/shaders_spirv.bin";
-    log("reading shader modules from {}", shadersBin);
+    const string_hash hash = str_hash(blob.name.c_str());
+    ShaderModuleHandler handler = (ShaderModuleHandler)hash;
 
-    ShadersBinReader bin;
-    ASSERT(bin.Open(shadersBin));
+    if (m_ShaderModules.find(handler) != m_ShaderModules.end())
+      return handler;
 
-    bin.ForEach([&](const ShaderBlob& blob)
-    {
-      vk::ShaderModuleCreateInfo ci;
-      ci.pCode = (uint32_t*)blob.blob;
-      ci.codeSize = blob.blobSize;
+    ShaderModule m;
+    m.entry = blob.entry;
+    m.stage = get_vk_stage(blob.stage);
+    m.descriptorSets = reflection.descriptorSets;
+    vk::ShaderModuleCreateInfo smCi;
+    smCi.pCode = reinterpret_cast<const uint32_t*>(blob.data.data());
+    smCi.codeSize = blob.data.size();
+    m.module = m_Device->m_Device->createShaderModuleUnique(smCi);
 
-      log("creating shader module `{}`", blob.shaderName);
-
-      auto shModule = m_Device->m_Device->createShaderModuleUnique(ci);
-      const string_hash shaderNameHash = str_hash(blob.shaderName);
-
-      m_ShaderModules.insert({
-        shaderNameHash,
-        ShaderModule{
-          std::move(blob.reflection),
-          std::move(shModule)
-        }
-      });
+    m_ShaderModules.insert({
+      handler,
+      std::move(m)
     });
+
+    return handler;
   }
 
-  const ShaderModule& ShadersStorage::getShaderModule(const string_hash name)
-  {
-    const auto it = m_ShaderModules.find(name);
-    if (it != m_ShaderModules.end())
-      return it->second;
 
-    ASSERT(!"shader is not founnd");
-  }
-
-  static size_t HashShadersProgram(const ShaderStagesNames& stages)
+  static size_t hash_shader_stages(const eastl::vector<ShaderModuleHandler>& modules)
   {
     using boost::hash_combine;
     size_t hash = 0;
 
-    for(const auto& name: stages)
-      hash_combine(hash, name);
+    for(const auto& m: modules)
+      hash_combine(hash, m);
 
     return hash;
   }
 
-  const PipelineLayout& ShadersStorage::getPipelineLayout(const ShaderStagesNames& stages)
+
+  const PipelineLayout* ShadersStorage::getPipelineLayout(const eastl::vector<ShaderModuleHandler>& modules)
   {
-    const size_t hash = HashShadersProgram(stages);
-    const auto it = m_PipelineLayouts.find(hash);
+    const string_hash hash = hash_shader_stages(modules);
+
+    auto it = m_PipelineLayouts.find(hash);
     if (it != m_PipelineLayouts.end())
-      return it->second;
+      return &it->second;
 
-    string stageDump;
-    for(const auto& stage: stages)
-      stageDump += stage + " ";
+    eastl::vector<vk::PipelineShaderStageCreateInfo> stagesCi;
+    stagesCi.reserve(modules.size());
+    for (const auto& moduleHandler: modules)
+    {
+      const ShaderModule* sh = getModule(moduleHandler);
+      vk::PipelineShaderStageCreateInfo stageCi;
+      stageCi.module = sh->module.get();
+      stageCi.stage = sh->stage;
+      stageCi.pName = sh->entry.c_str();
+      stagesCi.push_back(stageCi);
+    }
 
-    logerror("vulkan: failed to get pipeline layout for {}", stageDump);
-    return {};
+    eastl::vector<spirv::v2::DescriptorSet> dsets = getModulesDescriptorSets(modules);
+    eastl::vector<vk::UniqueDescriptorSetLayout> dsetLayoutsUnique;
+    eastl::vector<vk::DescriptorSetLayout> dsetLayouts;
+    dsetLayoutsUnique.reserve(dsets.size());
+    dsetLayouts.reserve(dsets.size());
+
+    for (const auto& dset: dsets)
+    {
+      vk::DescriptorSetLayoutCreateInfo ci;
+      ci.bindingCount = dset.size();
+      ci.pBindings = dset.data();
+      vk::UniqueDescriptorSetLayout l = m_Device->m_Device->createDescriptorSetLayoutUnique(ci);
+      dsetLayouts.push_back(l.get());
+      dsetLayoutsUnique.push_back(std::move(l));
+    }
+
+    vk::PipelineLayoutCreateInfo layoutCi;
+    layoutCi.pushConstantRangeCount = 0;
+    layoutCi.pPushConstantRanges = nullptr;
+    layoutCi.pSetLayouts = dsetLayouts.data();
+    layoutCi.setLayoutCount = dsetLayouts.size();
+
+    vk::UniquePipelineLayout layout = m_Device->m_Device->createPipelineLayoutUnique(layoutCi);
+
+    const auto [v,b] = m_PipelineLayouts.insert({
+      hash,
+      PipelineLayout{
+        .pipelineLayout = std::move(layout),
+        .descriptorSetLayouts = std::move(dsetLayoutsUnique),
+        .dsets = std::move(dsets),
+        .stagesCi = std::move(stagesCi)
+      }
+    });
+
+    ASSERT(b);
+    return &v->second;
   }
 
-  void ShadersStorage::getShaderProgramInfo(const ShaderStagesNames& stages, ShaderProgramInfo& programInfo)
+  eastl::vector<spirv::v2::DescriptorSet> ShadersStorage::getModulesDescriptorSets(const eastl::vector<ShaderModuleHandler>& modules) const
   {
-    const ShaderModule* vertexShaderModule = nullptr;
+    eastl::vector<spirv::v2::DescriptorSet> dsets;
 
-    Utils::FixedStack<vk::PushConstantRange, 2> stagesPushConstants;
+    const auto mergeBindings = [](eastl::vector<vk::DescriptorSetLayoutBinding>& to, const eastl::vector<vk::DescriptorSetLayoutBinding>& from) {
+      if (to.size() < from.size())
+        to.resize(from.size());
 
-    for (const auto& shaderName: stages)
-    {
-      const ShaderModule& sm = getShaderModule(shaderName);
-      vk::PipelineShaderStageCreateInfo stage;
-      stage.stage = sm.metadata.stage;
-      stage.module = sm.module.get();
-      stage.pName = sm.metadata.entryName;
-      programInfo.stages.push(stage);
-
-      if (sm.metadata.stage == vk::ShaderStageFlagBits::eVertex)
-        vertexShaderModule = &sm;
-
-      if (sm.metadata.pushConstantsSize != 0)
+      for (size_t i = 0; i < from.size(); ++i)
       {
-        auto pushConstant = vk::PushConstantRange{};
-        pushConstant.offset = 0;
-        pushConstant.size = sm.metadata.pushConstantsSize;
-        pushConstant.stageFlags = sm.metadata.stage;
-        stagesPushConstants.push(pushConstant);
-      }
-    }
-
-    programInfo.inputBinding.binding = 0;
-    programInfo.inputBinding.stride = vertexShaderModule->metadata.inputAssembly.stride;
-    programInfo.inputBinding.inputRate = vk::VertexInputRate::eVertex;
-
-    programInfo.vertexInput.vertexBindingDescriptionCount = vertexShaderModule->metadata.inputAssembly.attributes.getSize() != 0 ? 1 : 0;
-    programInfo.vertexInput.pVertexBindingDescriptions = &programInfo.inputBinding;
-    programInfo.vertexInput.vertexAttributeDescriptionCount = vertexShaderModule->metadata.inputAssembly.attributes.getSize();
-    programInfo.vertexInput.pVertexAttributeDescriptions = vertexShaderModule->metadata.inputAssembly.attributes.getData();
-
-    const size_t programHash = HashShadersProgram(stages);
-    const auto it = m_PipelineLayouts.find(programHash);
-    if (it != m_PipelineLayouts.end())
-    {
-      programInfo.layout = it->second.pipelineLayout.get();
-    }
-    else
-    {
-      spirv::ShaderArgument arguments[spirv::MAX_SETS_COUNT];
-
-      for (const auto& stage: stages)
-      {
-        const auto& shader = getShaderModule(stage).metadata;
-
-        for (int nSet = 0; nSet < spirv::MAX_SETS_COUNT; ++nSet)
-          for (int nBinding = 0; nBinding < spirv::MAX_BINDING_COUNT; ++nBinding)
-          {
-            const auto& binding = shader.shaderArguments[nSet].bindings[nBinding];
-            auto& targetBinding = arguments[nSet].bindings[nBinding];
-
-            if (binding.type != spirv::BindingType::None)
-            {
-              std::snprintf(targetBinding.name, spirv::BINDING_NAME_LEN, "%s", binding.name);
-              targetBinding.type = binding.type;
-              targetBinding.stages = targetBinding.stages | shader.stage;
-            }
-          }
-      }
-
-      PipelineLayout layout;
-      vk::DescriptorSetLayout setLayouts[spirv::MAX_SETS_COUNT];
-      for (size_t nSet = 0; nSet < std::size(arguments); ++nSet )
-      {
-        Utils::FixedStack<vk::DescriptorSetLayoutBinding, spirv::MAX_BINDING_COUNT> bindings;
-        for (size_t nBinding = 0; nBinding < arguments[nSet].getBindingsCount(); ++nBinding)
+        if (from[i].stageFlags != vk::ShaderStageFlags{})
         {
-          const spirv::Binding& binding = arguments[nSet].bindings[nBinding];
-
-          vk::DescriptorSetLayoutBinding bindingDesc;
-          switch(binding.type)
+          if (to[i].stageFlags != vk::ShaderStageFlags{})
           {
-            case spirv::BindingType::Texture2D:
-            {
-              bindingDesc.descriptorType = vk::DescriptorType::eSampledImage;
-              bindingDesc.descriptorCount = 1;
-              break;
-            }
-
-            case spirv::BindingType::Sampler:
-            {
-              bindingDesc.descriptorType = vk::DescriptorType::eSampler;
-              bindingDesc.descriptorCount = 1;
-              break;
-            }
-
-            case spirv::BindingType::UniformBufferDynamic:
-            {
-              bindingDesc.descriptorType = vk::DescriptorType::eUniformBufferDynamic;
-              bindingDesc.descriptorCount = 1;
-              break;
-            }
-
-            default:
-            {
-              bindingDesc.descriptorType = {};
-              bindingDesc.descriptorCount = 0;
-            }
+            ASSERT(from[i].descriptorType == to[i].descriptorType);
+            ASSERT(from[i].descriptorCount == to[i].descriptorCount);
+            to[i].stageFlags |= from[i].stageFlags;
           }
-          bindingDesc.stageFlags = binding.stages;
-          bindingDesc.binding = nBinding;
-          bindings.push(bindingDesc);
+          else
+            to[i] = from[i];
         }
-
-        vk::DescriptorSetLayoutCreateInfo ci;
-        ci.bindingCount = bindings.getSize();
-        ci.pBindings = bindings.getData();
-
-        layout.descriptorSetLayouts[nSet] = m_Device->m_Device->createDescriptorSetLayoutUnique(ci);
-        setLayouts[nSet] = layout.descriptorSetLayouts[nSet].get();
       }
-      std::memcpy(layout.sets, arguments, std::size(arguments) * sizeof(arguments[0]));
+    };
 
-      vk::PipelineLayoutCreateInfo layoutCi;
-      layoutCi.pushConstantRangeCount = stagesPushConstants.getSize();
-      layoutCi.pPushConstantRanges = stagesPushConstants.getData();
-      layoutCi.pSetLayouts = setLayouts;
-      layoutCi.setLayoutCount = std::size(setLayouts);
+    for (const auto mHandler: modules)
+    {
+      auto shIt = m_ShaderModules.find(mHandler);
+      if (shIt == m_ShaderModules.end())
+      {
+        ASSERT(!"no shader module");
+        return {};
+      }
 
-      layout.pipelineLayout = m_Device->m_Device->createPipelineLayoutUnique(layoutCi);
-      programInfo.layout = layout.pipelineLayout.get();
+      const auto& shDsets = shIt->second.descriptorSets;
 
-      m_PipelineLayouts.insert({
-        programHash,
-        std::move(layout)
-      });
+      if (dsets.size() < shDsets.size())
+        dsets.resize(shDsets.size());
+
+      for (size_t i = 0; i < shDsets.size(); ++i)
+        mergeBindings(dsets[i], shDsets[i]);
+    }
+
+    return dsets;
+  }
+
+  const ShaderModule* ShadersStorage::getModule(const ShaderModuleHandler h) const
+  {
+    const auto it = m_ShaderModules.find(h);
+    if (it != m_ShaderModules.end())
+    {
+      return &it->second;
+    }
+    {
+      ASSERT(!"module doesn't exist");
+      return nullptr;
     }
   }
 }

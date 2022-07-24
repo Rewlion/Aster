@@ -1,46 +1,50 @@
 #pragma once
 
-#include "commands.h"
-
 namespace gapi
 {
   class CmdEncoder
   {
     public:
+      virtual ~CmdEncoder(){}
 
-      void beginRenderpass(const RenderTargets& renderTargets, RenderPassAttachment depthStencil);
+      virtual void beginRenderpass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clear) = 0;
 
-      void bindGraphicsShaders(const ShaderStagesNames& stages);
+      virtual void endRenderpass() = 0;
 
-      void draw(const PrimitiveTopology topology, const uint32_t vertexCount,
-                const uint32_t instanceCount, const uint32_t firstVertex, const uint32_t firstInstance);
+      virtual void draw(const uint32_t vertexCount, const uint32_t instanceCount,
+                        const uint32_t firstVertex, const uint32_t firstInstance) = 0;
 
-      void drawIndexed(const PrimitiveTopology topology, const uint32_t indexCount, uint32_t instanceCount,
-                        const uint32_t firstIndex, const uint32_t vertexOffset, const uint32_t firstInstace);
+      virtual void drawIndexed(const uint32_t indexCount, uint32_t instanceCount,
+                               const uint32_t firstIndex, const uint32_t vertexOffset,
+                               const uint32_t firstInstace) = 0;
 
-      void present();
+      virtual void bindVertexBuffer(const BufferHandler buffer) = 0;
 
-      void pushConstants(const void* data, const size_t size, const ShaderStage stage);
+      virtual void bindIndexBuffer(const BufferHandler buffer) = 0;
 
-      void bindVertexBuffer(const BufferHandler buffer);
+      virtual void bindGraphicsPipeline(const GraphicsPipelineDescription& desc) = 0;
 
-      void bindIndexBuffer(const BufferHandler buffer);
+      //virtual void present() = 0;
 
-      void bindConstBuffer(const BufferHandler buffer, const size_t argument, const size_t binding);
+      //virtual void pushConstants(const void* data, const size_t size, const ShaderStage stage) = 0;
 
-      void bindTexture(const TextureHandler texture, const size_t argument, const size_t binding);
+      virtual void bindConstBuffer(const BufferHandler buffer, const size_t set, const size_t binding) = 0;
 
-      void bindSampler(const SamplerHandler sampler, const size_t argument, const size_t binding);
+      virtual void bindTexture(const TextureHandler texture, const size_t set, const size_t binding) = 0;
 
-      void clear(const int clearing);
+      virtual void bindSampler(const SamplerHandler sampler, const size_t set, const size_t binding) = 0;
 
-      void setBlendState(const BlendState& blending);
+      virtual void flush(Fence* signalFence = nullptr) = 0;
 
-      void setDepthStencil(const DepthStencilStateDescription& ds);
+      virtual Semaphore* signalSemaphore() = 0;
 
-      void flush();
+      virtual void insertSemaphore(Semaphore* s) = 0;
 
-    private:
-      CommandList m_Cmds;
+      virtual void transitTextureState(const TextureHandler texture,
+                                       const TextureState oldState, const TextureState newState,
+                                       const uint32_t firstMipLevel = 0, const uint32_t mipLevelsCount = ~(0),
+                                       const uint32_t firstArraySlice = 0, const uint32_t arraySliceCount = ~(0)) = 0;
+
+      virtual void updateResources() = 0;
   };
 }

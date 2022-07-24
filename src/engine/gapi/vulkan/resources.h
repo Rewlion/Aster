@@ -1,5 +1,8 @@
 #pragma once
 
+#include "vulkan.h"
+#include "result.h"
+
 #include <engine/assert.h>
 #include <engine/gapi/resources.h>
 #include <engine/platform/memory.h>
@@ -90,5 +93,25 @@ namespace gapi::vulkan
   struct Sampler
   {
     vk::UniqueSampler sampler;
+  };
+
+  struct VulkanSemaphore: public gapi::Semaphore
+  {
+    virtual ~VulkanSemaphore() override {}
+    vk::UniqueSemaphore semaphore;
+  };
+
+  struct VulkanFence: public gapi::Fence
+  {
+    virtual ~VulkanFence() override {}
+    virtual void wait() override
+    {
+      VK_CHECK(get_device().waitForFences(1, &fence.get(), true, ~0));
+    }
+    virtual void reset() override
+    {
+      VK_CHECK(get_device().resetFences(1, &fence.get()));
+    }
+    vk::UniqueFence fence;
   };
 }

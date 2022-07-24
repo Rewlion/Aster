@@ -13,7 +13,9 @@ namespace Engine::Render
   class FrameGC
   {
     public:
-      using Resource = std::variant<gapi::BufferHandler>;
+      using Resource = std::variant<
+        gapi::BufferHandler,
+        gapi::TextureHandler>;
 
     public:
       template<class T>

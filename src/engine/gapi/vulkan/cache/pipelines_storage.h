@@ -2,6 +2,8 @@
 
 #include "shaders_storage.h"
 
+#include <shaders_compiler/ast_processing_types.h>
+
 namespace gapi
 {
   struct GraphicsPipelineDescription;
@@ -10,15 +12,13 @@ namespace gapi
 namespace gapi::vulkan
 {
   class Device;
-
   class PipelinesStorage
   {
     public:
       void init(Device* device);
       vk::Pipeline getPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass);
-      bool getPipelineLayout(const ShaderStagesNames& stageNames, PipelineLayout const *& layout);
-
-    private:
+      const PipelineLayout* getPipelineLayout(const eastl::vector<ShaderModuleHandler>& modules);
+      ShaderModuleHandler addModule(const ShadersSystem::ShaderBlob& blob, const spirv::v2::Reflection& reflection);
 
     private:
       Device* m_Device = nullptr;

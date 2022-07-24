@@ -25,13 +25,36 @@ namespace gapi
     return hash;
   }
 
+  size_t VertexInputDescription::hash() const
+  {
+    using boost::hash_combine;
+    size_t hash = 0;
+
+    for (const auto& attr: attributes)
+    {
+      hash_combine(hash, attr.offset);
+      hash_combine(hash, attr.location);
+      hash_combine(hash, attr.binding);
+      hash_combine(hash, attr.type);
+    }
+
+    for (const auto& buf: buffers)
+    {
+      hash_combine(hash, buf.stride);
+      hash_combine(hash, buf.binding);
+    }
+
+    return hash;
+  }
+
   size_t GraphicsPipelineDescription::hash() const
   {
     using boost::hash_combine;
     size_t hash = 0;
 
-    for(const string_hash& name: shaderNames)
-      hash_combine(hash, name);
+    for(const auto handler: shaders)
+      hash_combine(hash, handler);
+    hash_combine(hash, ia.hash());
     hash_combine(hash, topology);
     hash_combine(hash, depthStencilState.hash());
     hash_combine(hash, blendState.hash());

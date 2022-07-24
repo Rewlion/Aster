@@ -59,8 +59,11 @@ namespace ShadersSystem
 
   struct ShEndCbuffer: public ShOp
   {
-    ShEndCbuffer()
+    uint8_t dset, binding;
+    ShEndCbuffer(const uint8_t dset, const uint8_t binding)
       : ShOp(ShOpCode::EndCbuffer)
+      , dset(dset)
+      , binding(binding)
     {
     }
   };

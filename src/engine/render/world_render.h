@@ -4,8 +4,9 @@
 
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/gapi/resources.h>
-#include <engine/materials/materials.h>
 #include <engine/work_cycle/camera.h>
+
+#include <memory>
 
 namespace Engine::Render
 {
@@ -23,23 +24,20 @@ namespace Engine::Render
     private:
       struct FrameData
       {
+        std::unique_ptr<gapi::CmdEncoder> cmdEncoder;
         CameraData camera;
+        gapi::TextureHandler depth;
       };
       FrameData m_FrameData;
 
       void beforeRender(const CameraData& camera);
-      void updateFrameUniforms();
       void renderWorld();
       void renderOpaque();
-      void renderScene(const RenderPassType rpType);
+      void renderScene();
     private:
       FrameGC m_FrameGC;
 
       gapi::SamplerHandler m_ModelSampler;
-      gapi::BufferHandler m_FrameUniforms;
-      gapi::BufferHandler m_StaticMeshUniforms;
-
-      gapi::CmdEncoder m_CmdEncoder;
 
       int2 m_WindowSize;
       float m_Aspect;

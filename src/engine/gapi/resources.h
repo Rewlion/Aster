@@ -11,10 +11,12 @@ namespace gapi
   constexpr size_t MAX_RENDER_TARGETS = 8;
 
   using ResourceHandler = uint64_t;
-  enum class TextureHandler: ResourceHandler { Invalid = (ResourceHandler)-1 };
-  enum class SamplerHandler: ResourceHandler { Invalid = (ResourceHandler)-1 };
-  enum class BufferHandler: ResourceHandler { Invalid = (ResourceHandler)-1 };
-  enum class DepthStencilStateHandler: ResourceHandler { Invalid = (ResourceHandler)-1 };
+  constexpr ResourceHandler INVALID_RESOURCE_HANDLER = -1;
+  enum class TextureHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
+  enum class SamplerHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
+  enum class BufferHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
+  enum class DepthStencilStateHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
+  enum class ShaderModuleHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
 
   using index_type = uint32_t;
 
@@ -251,18 +253,6 @@ namespace gapi
     size_t hash() const;
   };
 
-  using ShaderStagesNames = Utils::FixedStack<string_hash, 2>;
-
-  struct GraphicsPipelineDescription
-  {
-    ShaderStagesNames            shaderNames;
-    PrimitiveTopology            topology;
-    DepthStencilStateDescription depthStencilState;
-    BlendState                   blendState;
-
-    size_t hash() const;
-  };
-
   enum BufferUsage
   {
     BF_CpuVisible   = 1,
@@ -445,16 +435,32 @@ namespace gapi
 
     bool operator==(const VertexInputDescription& ia) const;
 
+    size_t hash() const;
+
     eastl::vector<Attribute> attributes;
     eastl::vector<Buffer> buffers;
   };
 
-  struct RenderState
+  struct GraphicsPipelineDescription
   {
-    ShaderStagesNames shaders;
-    PrimitiveTopology topology;
-    DepthStencilStateDescription depthStencil;
-    BlendState blending;
+    eastl::vector<ShaderModuleHandler> shaders;
+    VertexInputDescription             ia;
+    PrimitiveTopology                  topology;
+    DepthStencilStateDescription       depthStencilState;
+    BlendState                         blendState;
+
+    size_t hash() const;
   };
 
+  struct Semaphore
+  {
+    virtual ~Semaphore(){}
+  };
+
+  struct Fence
+  {
+    virtual ~Fence(){}
+    virtual void wait() = 0;
+    virtual void reset() = 0;
+  };
 }

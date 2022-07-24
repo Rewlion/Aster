@@ -1,12 +1,12 @@
 #pragma once
 
 #include "resources.h"
-#include "commands.h"
 
 namespace gapi
 {
+  class CmdEncoder;
+
   void                     init();
-  void                     submit_commands(CommandList&& cmds);
   TextureHandler           get_backbuffer();
   DepthStencilStateHandler create_depth_stencil_state(const DepthStencilStateDescription& desc);
   BufferHandler            allocate_buffer(const size_t size, const int usage);
@@ -17,13 +17,11 @@ namespace gapi
   TextureHandler           allocate_texture(const TextureAllocationDescription& allocDesc);
   void                     copy_to_texture_sync(const void* src, const size_t size, const TextureHandler texture);
   SamplerHandler           allocate_sampler(const SamplerAllocationDescription& allocDesc);
-  void                     transit_texture_state(const TextureHandler texture,
-                                                 const TextureState oldState, const TextureState newState,
-                                                 const uint32_t firstMipLevel = 0, const uint32_t mipLevelsCount = ~(0),
-                                                 const uint32_t firstArraySlice = 0, const uint32_t arraySliceCount = ~(0),
-                                                 const bool sync = false);
-  void                     transit_texture_state(const TextureHandler texture,
-                                                 const TextureState oldState, const TextureState newState,
-                                                 const bool sync);
   void                     free_resource(const BufferHandler buffer);
+  void                     free_resource(const TextureHandler texture);
+  void                     present_backbuffer();
+  Semaphore*               ackquire_backbuffer();
+  ShaderModuleHandler      add_module(void* blob, void* reflection);
+  CmdEncoder*              allocate_cmd_encoder();
+  Fence*                   allocate_fence();
 }

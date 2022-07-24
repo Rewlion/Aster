@@ -1,6 +1,9 @@
 #pragma once
 
+#include "indices.h"
+
 #include <engine/gapi/resources.h>
+#include <engine/platform/memory.h>
 
 #include <vulkan/vulkan.hpp>
 
@@ -270,7 +273,7 @@ namespace gapi::vulkan
     }
   }
 
-   static vk::PipelineStageFlags get_pipeline_stage_for_texture_state(const TextureState state)
+  inline vk::PipelineStageFlags get_pipeline_stage_for_texture_state(const TextureState state)
   {
     switch (state)
     {
@@ -291,7 +294,7 @@ namespace gapi::vulkan
     }
   }
 
-  static vk::ImageLayout get_image_layout_for_texture_state(const TextureState state)
+  inline vk::ImageLayout get_image_layout_for_texture_state(const TextureState state)
   {
     switch (state)
     {
@@ -312,7 +315,7 @@ namespace gapi::vulkan
     }
   }
 
-  static vk::AccessFlags get_image_access_flags(const TextureState state)
+  inline vk::AccessFlags get_image_access_flags(const TextureState state)
   {
     switch (state)
     {
@@ -330,6 +333,55 @@ namespace gapi::vulkan
       case TextureState::Present:                return {};
       case TextureState::TransferDst:            return vk::AccessFlagBits::eTransferWrite;
       default: ASSERT(!"unsupported stage");     return {};
+    }
+  }
+
+  inline vk::ShaderStageFlagBits get_vk_stage(const gapi::ShaderStage stage)
+  {
+    switch (stage)
+    {
+       case gapi::ShaderStage::Vertex: return vk::ShaderStageFlagBits::eVertex;
+       case gapi::ShaderStage::TessellationControl: return vk::ShaderStageFlagBits::eTessellationControl;
+       case gapi::ShaderStage::TessellationEvaluation: return vk::ShaderStageFlagBits::eTessellationEvaluation;
+       case gapi::ShaderStage::Geometry: return vk::ShaderStageFlagBits::eGeometry;
+       case gapi::ShaderStage::Fragment: return vk::ShaderStageFlagBits::eFragment;
+       case gapi::ShaderStage::Compute: return vk::ShaderStageFlagBits::eCompute;
+       case gapi::ShaderStage::AllGraphics: return vk::ShaderStageFlagBits::eAllGraphics;
+       case gapi::ShaderStage::All: return vk::ShaderStageFlagBits::eAll;
+       case gapi::ShaderStage::Raygen: return vk::ShaderStageFlagBits::eRaygenKHR;
+       case gapi::ShaderStage::AnyHit: return vk::ShaderStageFlagBits::eAnyHitKHR;
+       case gapi::ShaderStage::ClosestHit: return vk::ShaderStageFlagBits::eClosestHitKHR;
+       case gapi::ShaderStage::Miss: return vk::ShaderStageFlagBits::eMissKHR;
+       case gapi::ShaderStage::Intersection: return vk::ShaderStageFlagBits::eIntersectionKHR;
+       case gapi::ShaderStage::Callable: return vk::ShaderStageFlagBits::eCallableKHR;
+       case gapi::ShaderStage::Task: return vk::ShaderStageFlagBits::eTaskNV;
+       case gapi::ShaderStage::Mesh: return vk::ShaderStageFlagBits::eMeshNV;
+
+       default:
+       {
+        ASSERT(!"unsupported");
+        return {};
+       }
+    }
+  }
+
+  static vk::Format get_attribute_format(const gapi::AttributeType type)
+  {
+    switch (type)
+    {
+       case gapi::AttributeType::Float:  return vk::Format::eR32Sfloat;
+       case gapi::AttributeType::Float2: return vk::Format::eR32G32Sfloat;
+       case gapi::AttributeType::Float3: return vk::Format::eR32G32B32Sfloat;
+       case gapi::AttributeType::Float4: return vk::Format::eR32G32B32A32Sfloat;
+       case gapi::AttributeType::Int:    return vk::Format::eR32Sint;
+       case gapi::AttributeType::Int2:   return vk::Format::eR32G32Sint;
+       case gapi::AttributeType::Int3:   return vk::Format::eR32G32B32Sint;
+       case gapi::AttributeType::Int4:   return vk::Format::eR32G32B32A32Sint;
+       default:
+       {
+        ASSERT(!"unsupported");
+        break;
+       }
     }
   }
 }

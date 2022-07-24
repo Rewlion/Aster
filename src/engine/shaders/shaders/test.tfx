@@ -4,6 +4,8 @@ scope FrameScope {
     cbuffer(0);
 
   float4x4 viewProj = extern(view_proj);
+  float3 cameraPos = extern(camera_pos);
+  float secSinceStart = extern(sec_since_start);
 };
 
 scope StaticModelScope {
@@ -12,6 +14,7 @@ scope StaticModelScope {
     cbuffer(0);
 
   float4x4 modelTm = channel(model_tm);
+  float4x4 normalTm = channel(normal_tm);
 };
 
 technique SceneOpaque {

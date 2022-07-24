@@ -67,8 +67,10 @@ namespace gapi::vulkan
 
       vk::Extent3D getImageDim(const TextureHandler handler);
 
-      vk::UniqueFence submitGraphicsCmds(vk::CommandBuffer* cmdBuf, const size_t count,
-                                         const vk::Semaphore* waitSemaphores, const size_t waitSemaphoresCount);
+      void submitGraphicsCmds(vk::CommandBuffer* cmdBuf, const size_t count,
+                              const vk::Semaphore* waitSemaphores, const size_t waitSemaphoresCount,
+                              const vk::Semaphore* signalSemaphores, const size_t signalSemaphoresCount,
+                              const vk::Fence signalFence);
 
       void presentSurfaceImage();
 
@@ -86,6 +88,7 @@ namespace gapi::vulkan
       const Buffer& getBuffer(const BufferHandler buffer) const;
 
       TextureHandler allocateTexture(const TextureAllocationDescription& allocDesc);
+      void freeTexture(const TextureHandler texture);
 
       void copyToTextureSync(const void* src, const size_t size, const TextureHandler texture);
 
@@ -106,6 +109,8 @@ namespace gapi::vulkan
       }
 
       Texture& getAllocatedTexture(const TextureHandler texture);
+
+      vk::UniqueCommandPool allocateCmdPool();
 
     private:
       void discardBuffer(Buffer& buffer);

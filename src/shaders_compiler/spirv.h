@@ -32,38 +32,6 @@ namespace spirv
     UniformBufferDynamic = 3
   };
 
-  struct Binding
-  {
-    BindingType          type = BindingType::None;
-    vk::ShaderStageFlags stages;
-    char                 name[BINDING_NAME_LEN];
-  };
-
-  struct ShaderArgument
-  {
-    Binding bindings[MAX_BINDING_COUNT];
-
-    inline size_t getBindingsCount() const
-    {
-      size_t size = 0;
-      for (size_t i = 0; i < std::size(bindings); ++i)
-        if (bindings[i].type != BindingType::None)
-          size = i + 1;
-      return size;
-    }
-  };
-
-  struct Reflection
-  {
-    char                    entryName[SHADERS_STAGE_NAME_LEN];
-    vk::ShaderStageFlagBits stage;
-    InputAssembly           inputAssembly;
-    uint32_t                pushConstantsSize = 0;
-    ShaderArgument          shaderArguments[MAX_SETS_COUNT];
-  };
-
-  Reflection reflect(const eastl::vector<char>& spirv);
-
   namespace v2
   {
     struct Binding

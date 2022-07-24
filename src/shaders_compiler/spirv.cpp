@@ -1,8 +1,9 @@
 #include "spirv.h"
 #include "ast_processing_types.h"
 
-#include <engine/log.h>
 #include <engine/assert.h>
+#include <engine/gapi/vulkan/gapi_to_vk.h>
+#include <engine/log.h>
 
 #include <vulkan/vulkan.hpp>
 #include <SPIRV-Cross/spirv_glsl.hpp>
@@ -206,141 +207,6 @@ namespace spirv
     }
   }
 
-  Reflection reflect(const eastl::vector<char>& spirv)
-  {
-    Reflection ret;
-
-    const uint32_t* code = reinterpret_cast<const uint32_t*>(spirv.data());
-    const size_t wordsCount = spirv.size() / sizeof(uint32_t);
-
-    spirv_cross::CompilerGLSL glsl{code, wordsCount};
-
-    const spirv_cross::SmallVector<spirv_cross::EntryPoint> entryPoints = glsl.get_entry_points_and_stages();
-    if (entryPoints.size() != 1)
-      logwarn("shader has more than one entry point, using the first one.");
-
-    const spirv_cross::EntryPoint entryPoint = entryPoints[0];
-    std::snprintf(ret.entryName, SHADERS_STAGE_NAME_LEN, "%s", entryPoint.name.c_str());
-    ret.stage = get_shader_stage(entryPoint);
-
-    const spirv_cross::ShaderResources resources = glsl.get_shader_resources();
-
-    if (ret.stage == vk::ShaderStageFlagBits::eVertex)
-    {
-      size_t attributeOffset = 0;
-      for(size_t i = 0; i < resources.stage_inputs.size(); ++i)
-      {
-        const spirv_cross::Resource& input = resources.stage_inputs[i];
-        const spirv_cross::SPIRType& type = glsl.get_type(input.type_id);
-
-        vk::VertexInputAttributeDescription attr;
-        attr.location = glsl.get_decoration(input.id, spv::Decoration::DecorationLocation);
-        attr.format = get_format(type);
-        attr.offset = attributeOffset;
-        attr.binding = 0;
-
-        attributeOffset += get_attribute_size(type);
-
-        ret.inputAssembly.attributes.push(attr);
-      }
-      ret.inputAssembly.stride = attributeOffset;
-    }
-
-    if (!resources.push_constant_buffers.empty())
-    {
-      const spirv_cross::Resource& constants = resources.push_constant_buffers[0];
-      const spirv_cross::SPIRType& type = glsl.get_type(constants.type_id);
-
-      ret.pushConstantsSize = glsl.get_declared_struct_size(type);
-    }
-
-    for (size_t i = 0; i < resources.separate_images.size(); ++i)
-    {
-      const spirv_cross::Resource& texture = resources.separate_images[i];
-      const spirv_cross::SPIRType& type = glsl.get_type(texture.type_id);
-
-      const unsigned int nSet = glsl.get_decoration(texture.id, spv::Decoration::DecorationDescriptorSet);
-      const unsigned int nBinding = glsl.get_decoration(texture.id, spv::Decoration::DecorationBinding);
-
-      const auto validate = [&](const char* rangeName, const size_t val, const size_t max)
-                            {
-                              if (val > max)
-                              {
-                                logerror("(set:{} binding:{}) texture {}: has unsupported {} number. Max: {}",
-                                  nSet, nBinding, texture.name.c_str(), rangeName, max);
-                                return false;
-                              }
-                              return true;
-                            };
-
-      if (!validate("set", nSet, MAX_SETS_COUNT) || !validate("binding", nBinding, MAX_BINDING_COUNT))
-        continue;
-
-      Binding& binding = ret.shaderArguments[nSet].bindings[nBinding];
-      //binding.type = get_texture_type(type);
-      binding.stages = ret.stage;
-      std::snprintf(binding.name, BINDING_NAME_LEN, "%s", texture.name.c_str());
-    }
-
-    for (size_t i = 0; i < resources.separate_samplers.size(); ++i)
-    {
-      const spirv_cross::Resource& sampler = resources.separate_samplers[i];
-      const spirv_cross::SPIRType& type = glsl.get_type(sampler.type_id);
-
-      const unsigned int nSet = glsl.get_decoration(sampler.id, spv::Decoration::DecorationDescriptorSet);
-      const unsigned int nBinding = glsl.get_decoration(sampler.id, spv::Decoration::DecorationBinding);
-
-      const auto validate = [&](const char* rangeName, const size_t val, const size_t max)
-                            {
-                              if (val > max)
-                              {
-                                logerror("(set:{} binding:{}) sampler {}: has unsupported {} number. Max: {}",
-                                  nSet, nBinding, sampler.name.c_str(), rangeName, max);
-                                return false;
-                              }
-                              return true;
-                            };
-
-      if (!validate("set", nSet, MAX_SETS_COUNT) || !validate("binding", nBinding, MAX_BINDING_COUNT))
-        continue;
-
-      Binding& binding = ret.shaderArguments[nSet].bindings[nBinding];
-      binding.type = BindingType::Sampler;
-      binding.stages = ret.stage;
-      std::snprintf(binding.name, BINDING_NAME_LEN, "%s", sampler.name.c_str());
-    }
-
-    for (size_t i = 0; i < resources.uniform_buffers.size(); ++i)
-    {
-      const spirv_cross::Resource& uniform = resources.uniform_buffers[i];
-      const spirv_cross::SPIRType& type = glsl.get_type(uniform.type_id);
-
-      const unsigned int nSet = glsl.get_decoration(uniform.id, spv::Decoration::DecorationDescriptorSet);
-      const unsigned int nBinding = glsl.get_decoration(uniform.id, spv::Decoration::DecorationBinding);
-
-      const auto validate = [&](const char* rangeName, const size_t val, const size_t max)
-                            {
-                              if (val > max)
-                              {
-                                logerror("(set:{} binding:{}) uniform {}: has unsupported {} number. Max: {}",
-                                  nSet, nBinding, uniform.name.c_str(), rangeName, max);
-                                return false;
-                              }
-                              return true;
-                            };
-
-      if (!validate("set", nSet, MAX_SETS_COUNT) || !validate("binding", nBinding, MAX_BINDING_COUNT))
-        continue;
-
-      Binding& binding = ret.shaderArguments[nSet].bindings[nBinding];
-      binding.type = BindingType::UniformBufferDynamic;
-      binding.stages = ret.stage;
-      std::snprintf(binding.name, BINDING_NAME_LEN, "%s", uniform.name.c_str());
-    }
-
-    return ret;
-  }
-
   namespace v2
   {
     static vk::ShaderStageFlagBits get_shader_stage(const gapi::ShaderStage stage)
@@ -360,83 +226,6 @@ namespace spirv
       default:
         ASSERT(!"unknown shader stage");
         return vk::ShaderStageFlagBits::eVertex; //make compiler happy
-      }
-    }
-
-    static vk::Format get_attribute_format(const gapi::AttributeType type)
-    {
-      switch (type)
-      {
-         case gapi::AttributeType::Float:  return vk::Format::eR32Sfloat;
-         case gapi::AttributeType::Float2: return vk::Format::eR32G32Sfloat;
-         case gapi::AttributeType::Float3: return vk::Format::eR32G32B32Sfloat;
-         case gapi::AttributeType::Float4: return vk::Format::eR32G32B32A32Sfloat;
-         case gapi::AttributeType::Int:    return vk::Format::eR32Sint;
-         case gapi::AttributeType::Int2:   return vk::Format::eR32G32Sint;
-         case gapi::AttributeType::Int3:   return vk::Format::eR32G32B32Sint;
-         case gapi::AttributeType::Int4:   return vk::Format::eR32G32B32A32Sint;
-         default:
-         {
-          ASSERT(!"unsupported");
-          break;
-         }
-      }
-    }
-
-    InputAssembly shader_input_to_spirv_ia(const gapi::VertexInputDescription& input)
-    {
-      InputAssembly ia;
-      ia.buffers.reserve(input.buffers.size());
-      ia.attributes.reserve(input.attributes.size());
-
-      for (const auto& buffer: input.buffers)
-      {
-        ia.buffers.push_back(vk::VertexInputBindingDescription{
-          buffer.binding,
-          buffer.stride,
-          vk::VertexInputRate::eVertex
-        });
-      }
-
-      for (const auto& attribute: input.attributes)
-      {
-        ia.attributes.push_back(vk::VertexInputAttributeDescription{
-          attribute.location,
-          attribute.binding,
-          get_attribute_format(attribute.type),
-          attribute.offset}
-        );
-      }
-
-      return ia;
-    }
-
-    static vk::ShaderStageFlags get_vk_stage(const gapi::ShaderStage stage)
-    {
-      switch (stage)
-      {
-         case gapi::ShaderStage::Vertex: return vk::ShaderStageFlagBits::eVertex;
-         case gapi::ShaderStage::TessellationControl: return vk::ShaderStageFlagBits::eTessellationControl;
-         case gapi::ShaderStage::TessellationEvaluation: return vk::ShaderStageFlagBits::eTessellationEvaluation;
-         case gapi::ShaderStage::Geometry: return vk::ShaderStageFlagBits::eGeometry;
-         case gapi::ShaderStage::Fragment: return vk::ShaderStageFlagBits::eFragment;
-         case gapi::ShaderStage::Compute: return vk::ShaderStageFlagBits::eCompute;
-         case gapi::ShaderStage::AllGraphics: return vk::ShaderStageFlagBits::eAllGraphics;
-         case gapi::ShaderStage::All: return vk::ShaderStageFlagBits::eAll;
-         case gapi::ShaderStage::Raygen: return vk::ShaderStageFlagBits::eRaygenKHR;
-         case gapi::ShaderStage::AnyHit: return vk::ShaderStageFlagBits::eAnyHitKHR;
-         case gapi::ShaderStage::ClosestHit: return vk::ShaderStageFlagBits::eClosestHitKHR;
-         case gapi::ShaderStage::Miss: return vk::ShaderStageFlagBits::eMissKHR;
-         case gapi::ShaderStage::Intersection: return vk::ShaderStageFlagBits::eIntersectionKHR;
-         case gapi::ShaderStage::Callable: return vk::ShaderStageFlagBits::eCallableKHR;
-         case gapi::ShaderStage::Task: return vk::ShaderStageFlagBits::eTaskNV;
-         case gapi::ShaderStage::Mesh: return vk::ShaderStageFlagBits::eMeshNV;
-
-         default:
-         {
-          ASSERT(!"unsupported");
-          return {};
-         }
       }
     }
 
@@ -462,7 +251,7 @@ namespace spirv
         return ret.descriptorSets[nSet][nBinding];
       };
 
-      const vk::ShaderStageFlags vkStage = get_vk_stage(stage);
+      const vk::ShaderStageFlags vkStage = gapi::vulkan::get_vk_stage(stage);
       const auto setupBinding = [&](auto& resources, const auto getResType)
       {
         for (size_t i = 0; i < resources.size(); ++i)

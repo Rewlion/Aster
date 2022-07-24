@@ -1,5 +1,0 @@
-test_pipeline
-{
-  text vs = "test_vs"
-  text ps = "test_ps"
-}

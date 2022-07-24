@@ -383,7 +383,7 @@ namespace ShadersSystem
         {
           byteCode.push_back(ShBeginCbuffer(m_Scope.name));
           byteCode.insert(byteCode.begin(), cbufferVars.begin(), cbufferVars.end());
-          byteCode.push_back(ShEndCbuffer());
+          byteCode.push_back(ShEndCbuffer(m_Scope.descriptorSet, m_Scope.cbuffer));
         }
 
         m_Scope.byteCode = std::move(byteCode);

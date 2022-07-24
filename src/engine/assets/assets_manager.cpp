@@ -5,8 +5,6 @@
 #include <engine/log.h>
 #include <engine/settings.h>
 #include <engine/utils/fs.h>
-#include <engine/materials/materials.h>
-#include <engine/materials/storage.h>
 
 #include <algorithm>
 #include <filesystem>
@@ -107,15 +105,13 @@ namespace Engine
     ModelAsset model;
     model.mesh = &meshIt->second;
 
-    Utils::FixedStack<const DataBlock*, MAX_SUBMESH_COUNT> materials;
-    for (const DataBlock& material: asset.getChildBlocks())
-      if (material.getName() == "material")
-        materials.push(&material);
-
-    ASSERT(materials.getSize() == model.mesh->submeshes.getSize());
-
-    for (size_t i = 0; i < model.mesh->submeshes.getSize(); ++i)
-      model.materials[i] = createMaterial(*materials.get(i));
+    for (const auto& material: asset.getChildBlocks())
+    {
+      if (material.getName() != "material")
+        continue;
+      tfx::Material m = createMaterial(material);
+      model.materials.push_back(std::move(m));
+    }
 
     m_ModelAssets.insert({
       str_hash(name.c_str()),
@@ -123,35 +119,27 @@ namespace Engine
     });
   }
 
-  Material* AssetsManager::createMaterial(const DataBlock& matBlk)
+  tfx::Material AssetsManager::createMaterial(const DataBlock& matBlk)
   {
-    const string matName = matBlk.getAnnotation();
-    Material* material = MaterialsStorage::constructMaterial(matName);
+    tfx::Material material;
+    material.technique = matBlk.getAnnotation();
 
-    Material::Params matParams;
-
-    for (const auto& param: matBlk.getChildBlocks())
+    for (const auto& attribute: matBlk.getAttributes())
     {
-      if (param.getName() == "texture")
-      {
-        const string textureName = param.getText("name");
-        TextureAsset texture;
-        bool r = getTexture(str_hash(textureName.c_str()), texture);
-        ASSERT(r != false);
-
-        Material::Param matParam;
-        matParam.name = param.getText("binding");
-        matParam.type = Material::BindingType::Texture;
-        matParam.handler = (gapi::ResourceHandler)texture.texture;
-
-        matParams.push(matParam);
+      if (attribute.type != DataBlock::ValueType::Text || attribute.annotation != "texture")
         continue;
-      }
 
-      ASSERT(!"unsupported type");
+      const string textureName = std::get<string>(attribute.as);
+      TextureAsset asset;
+      bool r = getTexture(str_hash(textureName.c_str()), asset);
+      ASSERT(r != false);
+
+      material.params.push_back(tfx::ParamDescription{
+        .name = attribute.name,
+        .value = asset.texture
+      });
     }
 
-    material->addParams(matParams);
     return material;
   }
 }

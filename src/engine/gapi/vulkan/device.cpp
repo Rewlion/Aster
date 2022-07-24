@@ -49,9 +49,11 @@ namespace gapi::vulkan
     m_Swapchain = Swapchain(swpCi);
 
     swapchainInitCmdBuf.end();
-    vk::UniqueFence fence = submitGraphicsCmds(&swapchainInitCmdBuf, 1 , nullptr, 0);
-    m_Device->waitForFences(1, &fence.get(), true, ~(0));
+    vk::UniqueFence fence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
+    VK_CHECK(m_Device->resetFences(1, &fence.get()));
 
+    submitGraphicsCmds(&swapchainInitCmdBuf, 1 , nullptr, 0, nullptr, 0, fence.get());
+    VK_CHECK(m_Device->waitForFences(1, &fence.get(), true, ~0));
   }
 
   vk::CommandBuffer Device::allocateCmdBuffer(vk::CommandPool pool)
@@ -146,11 +148,11 @@ namespace gapi::vulkan
     return {0,0,0};
   }
 
-  vk::UniqueFence Device::submitGraphicsCmds(vk::CommandBuffer* cmdBuf, const size_t count,
-                                             const vk::Semaphore* waitSemaphores, const size_t waitSemaphoresCount)
+  void Device::submitGraphicsCmds(vk::CommandBuffer* cmdBuf, const size_t count,
+                                             const vk::Semaphore* waitSemaphores, const size_t waitSemaphoresCount,
+                                             const vk::Semaphore* signalSemaphores, const size_t signalSemaphoresCount,
+                                             const vk::Fence signalFence)
   {
-    vk::UniqueFence renderJobWaitFence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
-
     const vk::PipelineStageFlags waitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
     vk::SubmitInfo submit;
@@ -159,9 +161,9 @@ namespace gapi::vulkan
     submit.pWaitSemaphores = waitSemaphores;
     submit.waitSemaphoreCount = waitSemaphoresCount;
     submit.pWaitDstStageMask = &waitStage;
-    m_GraphicsQueue.submit(submit, renderJobWaitFence.get());
-
-    return renderJobWaitFence;
+    submit.signalSemaphoreCount = signalSemaphoresCount;
+    submit.pSignalSemaphores = signalSemaphores;
+    m_GraphicsQueue.submit(submit, signalFence);
   }
 
   void Device::presentSurfaceImage()
@@ -437,6 +439,15 @@ namespace gapi::vulkan
     return handler;
   }
 
+  void Device::freeTexture(const TextureHandler texture)
+  {
+    const size_t id = (size_t)texture;
+    ASSERT(m_AllocatedTextures.contains(id));
+
+    m_AllocatedTextures.remove(id);
+  }
+
+
   void Device::copyToTextureSync(const void* src, const size_t size, const TextureHandler texture)
   {
     TextureHandlerInternal handler;
@@ -545,5 +556,13 @@ namespace gapi::vulkan
     ASSERT(m_AllocatedTextures.contains(textureId));
 
     return m_AllocatedTextures.get(textureId);
+  }
+
+  vk::UniqueCommandPool Device::allocateCmdPool()
+  {
+    vk::CommandPoolCreateInfo ci;
+    ci.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+    ci.queueFamilyIndex = m_QueueIndices.graphics;
+    return m_Device->createCommandPoolUnique(ci);
   }
 }

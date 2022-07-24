@@ -3,6 +3,7 @@
 #include <engine/assert.h>
 #include <engine/log.h>
 #include <engine/gapi/gapi.h>
+#include <engine/gapi/cmd_encoder.h>
 
 #include <ktx/ktx.h>
 
@@ -35,9 +36,19 @@ namespace Engine
       }
     );
 
-    transit_texture_state(asset.texture, gapi::TextureState::Undefined, gapi::TextureState::TransferDst, true);
+    std::unique_ptr<gapi::CmdEncoder> encoder(gapi::allocate_cmd_encoder());
+
+    gapi::Fence* fence = gapi::allocate_fence();
+    encoder->transitTextureState(asset.texture, gapi::TextureState::Undefined, gapi::TextureState::TransferDst, true);
+    encoder->flush(fence);
+    fence->wait();
+    fence->reset();
+
     copy_to_texture_sync(texture->pData, texture->dataSize, asset.texture);
-    transit_texture_state(asset.texture, gapi::TextureState::TransferDst, gapi::TextureState::ShaderRead);
+
+    encoder->transitTextureState(asset.texture, gapi::TextureState::TransferDst, gapi::TextureState::ShaderRead);
+    encoder->flush(fence);
+    fence->wait();
 
     ktxTexture_Destroy(texture);
 

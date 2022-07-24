@@ -8,11 +8,11 @@
 
 namespace gapi
 {
-  void                     (*gapi_submit_commands)(CommandList&& cmds);
   TextureHandler           (*gapi_get_backbuffer)();
   DepthStencilStateHandler (*gapi_create_depth_stencil_state)(const DepthStencilStateDescription& desc);
   BufferHandler            (*gapi_allocate_buffer)(const size_t size, const int usage);
   void                     (*gapi_free_buffer)(const BufferHandler buffer);
+  void                     (*gapi_free_texture)(const TextureHandler texture);
   void*                    (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size);
   void                     (*gapi_unmap_buffer)(const BufferHandler buffer);
   void                     (*gapi_copy_buffers_sync)(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size);
@@ -21,11 +21,11 @@ namespace gapi
   void                     (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
   void                     (*gapi_bind_texture)(const TextureHandler texture, const size_t set, const size_t binding);
   SamplerHandler           (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
-  void                     (*gapi_transit_texture_state)(const TextureHandler texture,
-                                                         const TextureState oldState, const TextureState newState,
-                                                         const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
-                                                         const uint32_t firstArraySlice, const uint32_t arraySliceCount,
-                                                         const bool sync);
+  void                     (*gapi_present_backbuffer)();
+  Semaphore*               (*gapi_ackquire_backbuffer)();
+  ShaderModuleHandler      (*gapi_add_module)(void* blob, void* reflection);
+  CmdEncoder*              (*gapi_allocate_cmd_encoder)();
+  Fence*                   (*gapi_allocate_fence)();
 
   void init()
   {
@@ -34,11 +34,6 @@ namespace gapi
       vulkan::init();
     else
       ASSERT(!"unknown graphics api");
-  }
-
-  void submit_commands(CommandList&& cmds)
-  {
-    gapi_submit_commands(std::move(cmds));
   }
 
   TextureHandler get_backbuffer()
@@ -91,25 +86,43 @@ namespace gapi
     return gapi_allocate_sampler(allocDesc);
   }
 
-  void transit_texture_state(const TextureHandler texture,
-                             const TextureState oldState, const TextureState newState,
-                             const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
-                             const uint32_t firstArraySlice, const uint32_t arraySliceCount,
-                             const bool sync)
-  {
-    gapi_transit_texture_state(texture, oldState, newState, firstMipLevel,
-                               mipLevelsCount, firstArraySlice, arraySliceCount, sync);
-  }
-
-  void transit_texture_state(const TextureHandler texture,
-                             const TextureState oldState, const TextureState newState,
-                             const bool sync)
-  {
-    gapi_transit_texture_state(texture, oldState, newState, 0, ~(0), 0, ~(0), sync);
-  }
-
   void free_resource(const BufferHandler buffer)
   {
     gapi_free_buffer(buffer);
+  }
+
+  void free_texture(const TextureHandler texture)
+  {
+    gapi_free_texture(texture);
+  }
+
+  void free_resource(const TextureHandler texture)
+  {
+    gapi_free_texture(texture);
+  }
+
+  void present_backbuffer()
+  {
+    gapi_present_backbuffer();
+  }
+
+  Semaphore* ackquire_backbuffer()
+  {
+    return gapi_ackquire_backbuffer();
+  }
+
+  ShaderModuleHandler add_module(void* blob, void* reflection)
+  {
+    return gapi_add_module(blob, reflection);
+  }
+
+  CmdEncoder* allocate_cmd_encoder()
+  {
+    return gapi_allocate_cmd_encoder();
+  }
+
+  Fence* allocate_fence()
+  {
+    return gapi_allocate_fence();
   }
 }

@@ -8,8 +8,9 @@ namespace gapi::vulkan
 {
   struct PipelineLayout
   {
-    vk::UniquePipelineLayout      pipelineLayout;
-    vk::UniqueDescriptorSetLayout descriptorSetLayouts[spirv::MAX_SETS_COUNT];
-    spirv::ShaderArgument         sets[spirv::MAX_SETS_COUNT];
+    vk::UniquePipelineLayout                         pipelineLayout;
+    eastl::vector<vk::UniqueDescriptorSetLayout>     descriptorSetLayouts;
+    eastl::vector<spirv::v2::DescriptorSet>          dsets;
+    eastl::vector<vk::PipelineShaderStageCreateInfo> stagesCi;
   };
 }

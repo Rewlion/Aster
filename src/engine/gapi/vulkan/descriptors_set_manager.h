@@ -4,9 +4,11 @@
 
 #include <shaders_compiler/spirv.h>
 #include <engine/utils/bit_capacity.hpp>
+#include <engine/utils/state_tracker.hpp>
 
 #include <vulkan/vulkan.hpp>
 #include <EASTL/vector.h>
+#include <EASTL/vector_set.h>
 
 #include <optional>
 
@@ -18,67 +20,63 @@ namespace gapi::vulkan
   class DescriptorsSetManager
   {
     public:
-      void init(Device* device);
+      DescriptorsSetManager(Device& device);
 
       void setPipelineLayout(const PipelineLayout* layout);
 
       void setImage(const vk::ImageView imgView, const size_t set, const size_t binding);
       void setSampler(const vk::Sampler sampler, const size_t set, const size_t binding);
-      void setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding, const size_t constOffset, const size_t dynamicOffset);
+      void setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding, const size_t constOffset);
 
       void updateDescriptorSets(vk::CommandBuffer& cmdBuf);
-
-      void reset();
     private:
       bool validateBinding(const size_t set, const size_t binding);
 
+      struct SamplerWriteInfo
+      {
+        const vk::Sampler sampler;
+        const size_t set;
+        const size_t binding;
+      };
+      struct ImageWriteInfo
+      {
+        const vk::ImageView view;
+        const size_t set;
+        const size_t binding;
+      };
+      struct UniformBufferWriteInfo
+      {
+        const vk::Buffer buffer;
+        const size_t constOffset;
+        const size_t set;
+        const size_t binding;
+      };
+      struct WritesDescription
+      {
+        eastl::vector<vk::DescriptorImageInfo> imgInfos;
+        eastl::vector<vk::DescriptorBufferInfo> bufInfos;
+        eastl::vector<vk::WriteDescriptorSet> writes;
+        eastl::vector_set<size_t> updateSets;
+      };
+
+      typedef std::variant<SamplerWriteInfo, ImageWriteInfo,
+                           UniformBufferWriteInfo> WriteInfo;
+
+      bool validateBinding(const size_t set, const size_t binding, const vk::DescriptorType type) const;
+      void insureSetExistance(const size_t set);
+      WritesDescription acquireWrites();
+
       vk::DescriptorSet acquireSet(const size_t set);
-
       void addPool();
-
       vk::DescriptorPool& acquirePool();
 
-      struct Binding
-      {
-        std::optional<vk::DescriptorType> type;
-
-        vk::ImageView imgView;
-        vk::Sampler sampler;
-        vk::Buffer buffer;
-
-        vk::DescriptorImageInfo imgInfo;
-        vk::DescriptorBufferInfo bufInfo;
-        size_t dynamicOffset = 0;
-      };
-
-      struct Set
-      {
-        Binding bindings[spirv::MAX_BINDING_COUNT];
-
-        inline size_t getBindingsCount() const
-        {
-          size_t size = 0;
-          for (size_t i = 0; i < spirv::MAX_BINDING_COUNT; ++i)
-            if (bindings[i].type.has_value())
-              size = i + 1;
-          return size;
-        }
-      };
-
-      vk::WriteDescriptorSet acquireWriteDescriptorSet(const size_t nSet, const size_t nBinding);
-
-      Utils::FixedStack<uint32_t, spirv::MAX_BINDING_COUNT> acquireDynamicOffsets(const size_t nSet);
-
-    private:
-      Device* m_Device = nullptr;
+      Device& m_Device;
       const PipelineLayout* m_PipelineLayout;
       eastl::vector<vk::UniqueDescriptorPool> m_Pools;
       size_t m_PoolId = 0;
 
-      Utils::BitCapacity<spirv::MAX_SETS_COUNT> m_DirtySets;
-      Utils::BitCapacity<spirv::MAX_SETS_COUNT> m_ActiveSets;
-      Set m_Sets[spirv::MAX_SETS_COUNT];
+      eastl::vector<vk::DescriptorSet> m_BindedDsets;
+      eastl::vector<WriteInfo> m_WriteInfos;
 
-      vk::DescriptorSet m_ActiveDescriptorSets[spirv::MAX_SETS_COUNT];
   };
 }

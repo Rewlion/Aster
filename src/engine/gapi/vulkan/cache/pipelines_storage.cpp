@@ -1,5 +1,6 @@
 #include "pipelines_storage.h"
 
+#include <engine/algorithm/hash.h>
 #include <engine/log.h>
 #include <engine/gapi/resources.h>
 #include <engine/gapi/vulkan/device.h>
@@ -7,6 +8,20 @@
 #include <engine/gapi/vulkan/traits.h>
 
 #include <boost/functional/hash.hpp>
+
+namespace
+{
+  struct InputAssembly
+  {
+    eastl::vector<vk::VertexInputBindingDescription> buffers;
+    eastl::vector<vk::VertexInputAttributeDescription> attributes;
+
+    bool operator==(const InputAssembly& rvl) const
+    {
+      return std::tie(buffers, attributes) == std::tie(rvl.buffers, rvl.attributes);
+    }
+  };
+}
 
 namespace boost
 {
@@ -27,6 +42,34 @@ namespace gapi::vulkan
     m_ShadersStorage.init(device);
   }
 
+  static InputAssembly shader_input_to_spirv_ia(const gapi::VertexInputDescription& input)
+  {
+    InputAssembly ia;
+    ia.buffers.reserve(input.buffers.size());
+    ia.attributes.reserve(input.attributes.size());
+
+    for (const auto& buffer: input.buffers)
+    {
+      ia.buffers.push_back(vk::VertexInputBindingDescription{
+        buffer.binding,
+        buffer.stride,
+        vk::VertexInputRate::eVertex
+      });
+    }
+
+    for (const auto& attribute: input.attributes)
+    {
+      ia.attributes.push_back(vk::VertexInputAttributeDescription{
+        attribute.location,
+        attribute.binding,
+        get_attribute_format(attribute.type),
+        attribute.offset}
+      );
+    }
+
+    return ia;
+  }
+
   vk::Pipeline PipelinesStorage::getPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass)
   {
     using boost::hash_combine;
@@ -40,8 +83,14 @@ namespace gapi::vulkan
 
     vk::GraphicsPipelineCreateInfo ci;
 
-    ShaderProgramInfo programInfo;
-    m_ShadersStorage.getShaderProgramInfo(description.shaderNames, programInfo);
+    const PipelineLayout* layout = m_ShadersStorage.getPipelineLayout(description.shaders);
+
+    InputAssembly ia = shader_input_to_spirv_ia(description.ia);
+    vk::PipelineVertexInputStateCreateInfo vertexInputCi;
+    vertexInputCi.pVertexBindingDescriptions = ia.buffers.data();
+    vertexInputCi.vertexBindingDescriptionCount = ia.buffers.size();
+    vertexInputCi.pVertexAttributeDescriptions = ia.attributes.data();
+    vertexInputCi.vertexAttributeDescriptionCount = ia.attributes.size();
 
     vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCi;
     inputAssemblyCi.topology = get_primitive_topology(description.topology);
@@ -74,9 +123,9 @@ namespace gapi::vulkan
     dynamicStateCi.pDynamicStates = dynamicStates;
     dynamicStateCi.dynamicStateCount = std::size(dynamicStates);
 
-    ci.stageCount = programInfo.stages.getSize();
-    ci.pStages = programInfo.stages.getData();
-    ci.pVertexInputState = &programInfo.vertexInput;
+    ci.stageCount = layout->stagesCi.size();
+    ci.pStages = layout->stagesCi.data();
+    ci.pVertexInputState = &vertexInputCi;
     ci.pInputAssemblyState = &inputAssemblyCi;
     ci.pTessellationState = nullptr;
     ci.pViewportState = &viewportCi;
@@ -85,7 +134,7 @@ namespace gapi::vulkan
     ci.pDepthStencilState = &depthStencilCi;
     ci.pColorBlendState = &blendingCi;
     ci.pDynamicState = &dynamicStateCi;
-    ci.layout = programInfo.layout;
+    ci.layout = layout->pipelineLayout.get();
     ci.renderPass = rp;
     ci.subpass = subpass;
 
@@ -103,9 +152,13 @@ namespace gapi::vulkan
     return pipeline;
   }
 
-  bool PipelinesStorage::getPipelineLayout(const ShaderStagesNames& stageNames, PipelineLayout const *& layout)
+  ShaderModuleHandler PipelinesStorage::addModule(const ShadersSystem::ShaderBlob& blob, const spirv::v2::Reflection& reflection)
   {
-    layout = &m_ShadersStorage.getPipelineLayout(stageNames);
-    return true;
+    return m_ShadersStorage.addModule(blob, reflection);
+  }
+
+  const PipelineLayout* PipelinesStorage::getPipelineLayout(const eastl::vector<ShaderModuleHandler>& modules)
+  {
+    return m_ShadersStorage.getPipelineLayout(modules);
   }
 }
