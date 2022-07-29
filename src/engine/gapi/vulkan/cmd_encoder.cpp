@@ -214,6 +214,7 @@ namespace gapi::vulkan
 
   void CmdEncoder::flush(Fence* signalFence)
   {
+    ASSERT(m_CmdBuf != vk::CommandBuffer{});
     m_CmdBuf.end();
 
     vk::Fence fence;
@@ -233,6 +234,7 @@ namespace gapi::vulkan
 
     m_QueuedWaitSemaphores.clear();
     m_QueuedSignalSemaphores.clear();
+    m_CmdBuf = vk::CommandBuffer{};
   }
 
   Semaphore* CmdEncoder::signalSemaphore()

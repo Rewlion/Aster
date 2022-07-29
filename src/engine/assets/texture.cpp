@@ -39,7 +39,7 @@ namespace Engine
     std::unique_ptr<gapi::CmdEncoder> encoder(gapi::allocate_cmd_encoder());
 
     gapi::Fence* fence = gapi::allocate_fence();
-    encoder->transitTextureState(asset.texture, gapi::TextureState::Undefined, gapi::TextureState::TransferDst, true);
+    encoder->transitTextureState(asset.texture, gapi::TextureState::Undefined, gapi::TextureState::TransferDst);
     encoder->flush(fence);
     fence->wait();
     fence->reset();
