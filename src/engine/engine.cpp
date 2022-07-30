@@ -10,6 +10,7 @@
 #include <engine/level.h>
 #include <engine/render/world_render.h>
 #include <engine/settings.h>
+#include <engine/tfx/tfx.h>
 #include <engine/time.h>
 #include <engine/types.h>
 #include <engine/window.h>
@@ -29,8 +30,11 @@ namespace Engine
     assets_manager.init();
     Input::manager.init();
 
+    const DataBlock* settings = Engine::get_app_settings();
+    tfx::load_materials_bin(settings->getChildBlock("graphics")->getText("materials_bin"));
+
     ECS::init_ecs_from_settings();
-    load_level( Engine::get_app_settings()->getText("init_level") );
+    load_level(settings->getText("init_level") );
 
     Render::world_render.init();
   }
