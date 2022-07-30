@@ -195,8 +195,26 @@ namespace gapi::vulkan
   void CmdEncoder::bindGraphicsPipeline(const GraphicsPipelineDescription& desc)
   {
     insureActiveCmd();
+
+    const size_t bindedRtCount = m_RenderPassState.renderTargets.getSize();
+    const size_t blendingRtCount = desc.blendState.attachments.getSize();
+
+    vk::Pipeline pipeline;
+    if (blendingRtCount >= bindedRtCount)
+    {
+      pipeline = m_PipelinesStorage.getPipeline(desc, m_RenderPassState.rp, 0);
+    }
+    else
+    {
+      GraphicsPipelineDescription pipeDesc = desc;
+      const size_t missingBlendings = bindedRtCount - blendingRtCount;
+      for (size_t i = 0; i < missingBlendings; ++i)
+        pipeDesc.blendState.attachments.push({});
+
+      pipeline = m_PipelinesStorage.getPipeline(pipeDesc, m_RenderPassState.rp, 0);
+    }
+
     m_GraphicsPipelineState.layout = m_PipelinesStorage.getPipelineLayout(desc.shaders);
-    const vk::Pipeline pipeline = m_PipelinesStorage.getPipeline(desc, m_RenderPassState.rp, 0);
     m_CmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 
     vk::Viewport vp;

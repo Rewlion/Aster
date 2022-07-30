@@ -279,21 +279,21 @@ namespace tfx
   {
     const string_hash h = str_hash(name.c_str());
     const auto it = scopes_storage.find(h);
-    if (it != scopes_storage.end())
-    {
-      Processor pr;
-      pr.activateScope(it->second, cmd_encoder);
-    }
+
+    ASSERT((it != scopes_storage.end()));
+
+    Processor pr;
+    pr.activateScope(it->second, cmd_encoder);
   }
 
   void activate_technique(const string& name, gapi::CmdEncoder* cmd_encoder)
   {
     const string_hash h = str_hash(name.c_str());
     const auto it = techniques_storage.find(h);
-    if (it != techniques_storage.end())
-    {
-      Processor pr;
-      pr.activateTechnique(it->second, cmd_encoder);
-    }
+
+    ASSERT(it != techniques_storage.end());
+
+    Processor pr;
+    pr.activateTechnique(it->second, cmd_encoder);
   }
 }

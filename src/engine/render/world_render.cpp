@@ -112,9 +112,11 @@ namespace Engine::Render
         tfx::activate_scope("StaticModelScope", m_FrameData.cmdEncoder.get());
         m_FrameData.cmdEncoder->updateResources();
 
-         m_FrameData.cmdEncoder->bindVertexBuffer(submesh.vertexBuffer);
-         m_FrameData.cmdEncoder->bindIndexBuffer(submesh.indexBuffer);
-         m_FrameData.cmdEncoder->drawIndexed(submesh.indexCount, 1, 0, 0, 0);
+        m_FrameData.cmdEncoder->bindVertexBuffer(submesh.vertexBuffer);
+        m_FrameData.cmdEncoder->bindIndexBuffer(submesh.indexBuffer);
+        m_FrameData.cmdEncoder->drawIndexed(submesh.indexCount, 1, 0, 0, 0);
+
+        m_FrameData.cmdEncoder->flush();
       }
     }
   }
