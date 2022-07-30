@@ -158,6 +158,7 @@ namespace gapi::vulkan
     {
       insureActiveCmd();
       m_CmdBuf.endRenderPass();
+      m_RenderPassState.rp = vk::RenderPass{};
     }
   }
 
