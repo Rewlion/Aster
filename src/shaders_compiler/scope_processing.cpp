@@ -233,10 +233,32 @@ namespace ShadersSystem
         for (auto& [nameHash, var]: m_Scope.cbufferVariables)
         {
           var.offset = offset;
-          offset += getCbufferPadSize(var.type);
+          offset += getCbufferPlacingSize(var.type);
         }
 
         m_Scope.cbufferSize = offset;
+      }
+
+      size_t getCbufferPlacingSize(const gapi::AttributeType type)
+      {
+        switch (type)
+        {
+          case gapi::AttributeType::Int:
+          case gapi::AttributeType::Int2:
+          case gapi::AttributeType::Int3:
+          case gapi::AttributeType::Int4:
+          case gapi::AttributeType::Float:
+          case gapi::AttributeType::Float2:
+          case gapi::AttributeType::Float3:
+          case gapi::AttributeType::Float4: return 4;
+          case gapi::AttributeType::Float4x4: return 4*4;
+
+          default:
+          {
+            ASSERT(!"unsupported");
+            return 0;
+          }
+        }
       }
 
       size_t getCbufferPadSize(const gapi::AttributeType type)
