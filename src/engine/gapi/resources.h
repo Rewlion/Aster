@@ -396,8 +396,6 @@ namespace gapi
     {
       return !(*this == rvl);
     }
-
-    size_t hash() const;
   };
 
   using RenderTargets = Utils::FixedStack<RenderPassAttachment, MAX_RENDER_TARGETS>;

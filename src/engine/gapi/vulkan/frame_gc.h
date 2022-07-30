@@ -69,8 +69,11 @@ namespace gapi::vulkan
         frameId = (frameId + 1) % SWAPCHAIN_IMAGES_COUNT;
         {
           auto& waitFences = frameResources[frameId].waitFences;
-          VK_CHECK(device->getDevice().waitForFences(waitFences.size(), waitFences.data(), true, -1));
-          waitFences.clear();
+          if (waitFences.size() > 0)
+          {
+            VK_CHECK(device->getDevice().waitForFences(waitFences.size(), waitFences.data(), true, -1));
+            waitFences.clear();
+          }
         }
 
         frameResources[frameId].buffers.clear();

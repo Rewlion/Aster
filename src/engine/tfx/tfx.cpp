@@ -199,7 +199,7 @@ namespace tfx
         std::move(s)
       });
 
-      log("loaded scope `{}`", matScope.name);
+      log("loaded scope `{}`:{}", matScope.name, h);
     }
   }
 
@@ -280,7 +280,7 @@ namespace tfx
     const string_hash h = str_hash(name.c_str());
     const auto it = scopes_storage.find(h);
 
-    ASSERT((it != scopes_storage.end()));
+    ASSERT_FMT(it != scopes_storage.end(), "Missing scope: `{}`:h", name,h);
 
     Processor pr;
     pr.activateScope(it->second, cmd_encoder);
@@ -291,7 +291,7 @@ namespace tfx
     const string_hash h = str_hash(name.c_str());
     const auto it = techniques_storage.find(h);
 
-    ASSERT(it != techniques_storage.end());
+    ASSERT_FMT(it != techniques_storage.end(), "Missing material `{}`", name);
 
     Processor pr;
     pr.activateTechnique(it->second, cmd_encoder);

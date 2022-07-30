@@ -1,6 +1,7 @@
 #pragma once
 
 #include <engine/assert.h>
+#include <engine/log.h>
 
 namespace Utils
 {
@@ -26,7 +27,7 @@ namespace Utils
 
       inline void set(const size_t i)
       {
-        ASSERT(i < N);
+        ASSERT_FMT(i < N, "{} >= {} (i >= container size)", i, N);
         BatchType& batch = getBatch(i);
         const size_t j = getPosInBatch(i);
         batch |= 0x1ull << j;
@@ -34,7 +35,7 @@ namespace Utils
 
       inline void reset(const size_t i)
       {
-        ASSERT(i < N);
+        ASSERT_FMT(i < N, "{} >= {} (i >= container size)", i, N);
         BatchType& batch = getBatch(i);
         const size_t j = getPosInBatch(i);
         batch &= ~(0x1ull << j);
@@ -42,7 +43,7 @@ namespace Utils
 
       inline bool isSet(const size_t i)
       {
-        ASSERT(i < N);
+        ASSERT_FMT(i < N, "{} >= {} (i >= container size)", i, N);
         BatchType& batch = getBatch(i);
         const size_t j = getPosInBatch(i);
         size_t bit = 0x1ull & (batch >> j);

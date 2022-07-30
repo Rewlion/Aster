@@ -28,7 +28,7 @@ model_asset
   text name = "damaged_helmet"
   text mesh = "damaged_helmet"
 
-  material @("SceneOpaqueMaterial")
+  material @("SceneOpaque")
   {
     text "albedo" = "damaged_helmet.albedo" @("texture")
     text "metal_roughness" = "damaged_helmet.metal_roughness" @("texture")

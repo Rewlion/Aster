@@ -8,15 +8,6 @@ static_mesh
 {
   text bin = "bin/assets/cube/cube.gltf"
   text name = "cube"
-
-  material @("TestMaterial")
-  {
-    texture
-    {
-      text name = "cube.container"
-      text binding = "test_texture"
-    }
-  }
 }
 
 model_asset
@@ -24,7 +15,7 @@ model_asset
   text name = "cube"
   text mesh = "cube"
 
-  material @("TestMaterial")
+  material @("SceneOpaque")
   {
     text "test_texture" = "cube.container" @("texture")
   }

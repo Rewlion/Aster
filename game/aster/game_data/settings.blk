@@ -16,7 +16,7 @@ graphics
 {
   text gapi = "vulkan"
   text resolution = "1980x1024"
-  text materials_bin = "game_data/bin/shaders_spirv.bin"
+  text materials_bin = "bin/shaders_spirv.bin"
 }
 
 vulkan

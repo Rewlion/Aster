@@ -441,10 +441,13 @@ namespace gapi::vulkan
 
   void Device::freeTexture(const TextureHandler texture)
   {
-    const size_t id = (size_t)texture;
-    ASSERT(m_AllocatedTextures.contains(id));
+    TextureHandlerInternal handler;
+    handler.as.handler = uint64_t(texture);
+    uint32_t textureId = handler.as.typed.id;
 
-    m_AllocatedTextures.remove(id);
+    ASSERT(m_AllocatedTextures.contains(textureId));
+
+    m_AllocatedTextures.remove(textureId);
   }
 
 
