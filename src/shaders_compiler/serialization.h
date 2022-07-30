@@ -4,28 +4,6 @@
 
 namespace boost::serialization
 {
-  template <class Archive>
-  void save(Archive& a, const ShadersSystem::ByteCodes& bc, const unsigned int version)
-  {
-    const size_t count = bc.size();
-  	a & count
-      & make_binary_object(bc.data(), bc.size() * sizeof(bc[0]));
-  }
-
-  template <class Archive>
-  void load(Archive& a, ShadersSystem::ByteCodes& bc, const unsigned int version)
-  {
-  	size_t count = 0;
-    a & count;
-    bc.reserve(count);
-    a & make_binary_object(bc.data(), count * sizeof(bc[0]));
-  }
-
-  template <class Archive>
-  void serialize(Archive& a, ShadersSystem::ByteCodes& bc, const unsigned int version)
-  {
-  	split_free(a, bc, version);
-  }
 
   template<class Archive>
   void serialize(Archive& a, gapi::VertexInputDescription::Buffer& vib, const unsigned version)
@@ -108,6 +86,12 @@ namespace boost::serialization
       & s.byteCode;
   }
 
+  template<class Archive, class T>
+  void serialize(Archive &a, vk::Flags<T>& flags, const unsigned version)
+  {
+    a & make_binary_object(&flags, sizeof(flags));
+  }
+
   template<class Archive>
   void serialize(Archive &a, ShadersSystem::MaterialsBin& bin, const unsigned version)
   {
@@ -119,8 +103,9 @@ namespace boost::serialization
   void save(Archive& a, const eastl::vector<T>& vec, const unsigned int version)
   {
     const size_t count = vec.size();
-    a & count
-      & make_binary_object(vec.data(), count * sizeof(vec[0]));
+    a & count;
+    for (size_t i = 0 ; i < count; ++i)
+      a & vec[i];
   }
 
   template <class Archive, class T>
@@ -128,12 +113,38 @@ namespace boost::serialization
   {
     size_t count = 0;
     a & count;
-    vec.reserve(count);
-    a & make_binary_object(vec.data(), count * sizeof(vec[0]));
+    vec.resize(count);
+    for (size_t i = 0 ; i < count; ++i)
+      a & vec[i];
   }
 
   template<class Archive, class T>
   void serialize(Archive& a, eastl::vector<T>& vec, const unsigned version)
+  {
+    split_free(a, vec, version);
+  }
+
+  template <class Archive>
+  void save(Archive& a, const eastl::vector<ShadersSystem::ShByteCode>& vec, const unsigned int version)
+  {
+    const size_t count = vec.size();
+    a & count
+      & make_binary_object(vec.data(), count * sizeof(vec[0]));
+  }
+
+  typedef std::variant<int,float> KK;
+
+  template <class Archive>
+  void load(Archive& a, eastl::vector<ShadersSystem::ShByteCode>& vec, const unsigned int version)
+  {
+    size_t count = 0;
+    a & count;
+    vec.resize(count);
+    a & make_binary_object(vec.data(), count * sizeof(vec[0]));
+  }
+
+  template<class Archive>
+  void serialize(Archive& a, eastl::vector<ShadersSystem::ShByteCode>& vec, const unsigned version)
   {
     split_free(a, vec, version);
   }

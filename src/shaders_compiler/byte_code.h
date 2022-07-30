@@ -22,6 +22,7 @@ namespace ShadersSystem
   struct ShOp
   {
     ShOpCode op;
+    ShOp() = default;
     ShOp(const ShOpCode op)
       : op(op)
     {
@@ -35,6 +36,7 @@ namespace ShadersSystem
     uint8_t dset, binding;
     char resourceName[RESOURCE_MAX_NAME_LEN];
 
+    ShBindResource() = default;
     ShBindResource(const ResourceAccessType accessType, const ResourceType type, const string& resName,
                    const uint8_t dset, const uint8_t binding)
       : ShOp(ShOpCode::BindResource)
@@ -50,6 +52,7 @@ namespace ShadersSystem
   struct ShBeginCbuffer: public ShOp
   {
     char scopeName[RESOURCE_MAX_NAME_LEN];
+    ShBeginCbuffer() = default;
     ShBeginCbuffer(const string& scope)
       : ShOp(ShOpCode::BeginCbuffer)
     {
@@ -60,6 +63,7 @@ namespace ShadersSystem
   struct ShEndCbuffer: public ShOp
   {
     uint8_t dset, binding;
+    ShEndCbuffer() = default;
     ShEndCbuffer(const uint8_t dset, const uint8_t binding)
       : ShOp(ShOpCode::EndCbuffer)
       , dset(dset)
@@ -75,6 +79,7 @@ namespace ShadersSystem
     gapi::AttributeType type;
     char resourceName[RESOURCE_MAX_NAME_LEN];
 
+    ShBindCbufferVar() = default;
     ShBindCbufferVar(const uint16_t offset, const ResourceAccessType accessType, const gapi::AttributeType type, const string& resName)
       : ShOp(ShOpCode::BindCbufferVar)
       , accessType(accessType)
@@ -88,6 +93,7 @@ namespace ShadersSystem
   struct ShActivateScope: public ShOp
   {
     char scopeName[RESOURCE_MAX_NAME_LEN];
+    ShActivateScope() = default;
     ShActivateScope(const string& name)
       : ShOp(ShOpCode::ActivateScope)
     {

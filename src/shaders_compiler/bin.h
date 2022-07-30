@@ -8,6 +8,7 @@ namespace ShadersSystem
   {
     struct Scope
     {
+      Scope() = default;
       Scope(const ShadersSystem::ScopeDeclaration& sc)
         : name(sc.name)
         , cbufferReg(sc.cbuffer)
