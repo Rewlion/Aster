@@ -232,6 +232,7 @@ namespace gapi::vulkan
 
   void CmdEncoder::flush(Fence* signalFence)
   {
+    ASSERT(m_RenderPassState.rp == vk::RenderPass{});
     ASSERT(m_CmdBuf != vk::CommandBuffer{});
     m_CmdBuf.end();
 
