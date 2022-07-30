@@ -173,40 +173,6 @@ namespace ShadersSystem
       private:
         void generateReflection()
         {
-          // eastl::vector<spirv::v2::DescriptorSet> dsets;
-
-          // const auto mergeBindings = [](eastl::vector<vk::DescriptorSetLayoutBinding>& to, const eastl::vector<vk::DescriptorSetLayoutBinding>& from) {
-          //   if (to.size() < from.size())
-          //     to.resize(from.size());
-
-          //   for (size_t i = 0; i < from.size(); ++i)
-          //   {
-          //     if (from[i].stageFlags != vk::ShaderStageFlags{})
-          //     {
-          //       if (to[i].stageFlags != vk::ShaderStageFlags{})
-          //       {
-          //         ASSERT(from[i].descriptorType == to[i].descriptorType);
-          //         ASSERT(from[i].descriptorCount == to[i].descriptorCount);
-          //         to[i].stageFlags |= from[i].stageFlags;
-          //       }
-          //       else
-          //         to[i] = from[i];
-          //     }
-          //   }
-          // };
-
-          // for (const auto& blob: m_Shaders)
-          // {
-          //   const auto shDsets = spirv::v2::reflect(blob.data, blob.stage);
-          //   if (dsets.size() < shDsets.size())
-          //     dsets.resize(shDsets.size());
-
-          //   for (size_t i = 0; i < shDsets.size(); ++i)
-          //     mergeBindings(dsets[i], shDsets[i]);
-          // }
-
-          // m_DescriptorSets = std::move(dsets);
-
           for (const auto& blob: m_Shaders)
             m_Reflections.push_back(spirv::v2::reflect(blob.data, blob.stage));
         }

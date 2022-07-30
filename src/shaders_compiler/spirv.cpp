@@ -246,7 +246,7 @@ namespace spirv
           ret.descriptorSets.resize(nSet+1);
 
         if (nBinding >= ret.descriptorSets[nSet].size())
-          ret.descriptorSets[nSet].resize(nSet+1);
+          ret.descriptorSets[nSet].resize(nBinding+1);
 
         return ret.descriptorSets[nSet][nBinding];
       };
