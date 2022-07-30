@@ -156,10 +156,10 @@ namespace gapi::vulkan
     gapi_allocate_fence = allocate_fence;
 
     backend.init();
+    device = backend.createDevice(&frameGc);
     frameGc.init(&device);
     rpStorage.init(&device);
     pipelinesStorage.init(&device);
-    device = backend.createDevice(&frameGc);
   }
 
 }

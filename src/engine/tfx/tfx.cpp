@@ -208,7 +208,8 @@ namespace tfx
     for (const auto& t: mat_techniques)
     {
       const string_hash h = str_hash(t.name.c_str());
-      ASSERT(techniques_storage.find(h) == techniques_storage.end());
+      ASSERT_FMT(techniques_storage.find(h) == techniques_storage.end(), "technique {} already exist", t.name);
+
       eastl::vector<gapi::ShaderModuleHandler> modules;
       modules.reserve(t.blobs.size());
       for (size_t i = 0; i < t.blobs.size(); ++i)
@@ -280,7 +281,7 @@ namespace tfx
     const string_hash h = str_hash(name.c_str());
     const auto it = scopes_storage.find(h);
 
-    ASSERT_FMT(it != scopes_storage.end(), "Missing scope: `{}`:h", name,h);
+    ASSERT_FMT(it != scopes_storage.end(), "Missing scope: `{}`:{}", name,h);
 
     Processor pr;
     pr.activateScope(it->second, cmd_encoder);

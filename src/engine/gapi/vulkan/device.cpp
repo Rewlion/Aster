@@ -445,6 +445,7 @@ namespace gapi::vulkan
     handler.as.handler = uint64_t(texture);
     uint32_t textureId = handler.as.typed.id;
 
+    ASSERT_FMT(handler.as.typed.type == (uint64_t)TextureType::Allocated, "only allocated textures can be freed");
     ASSERT(m_AllocatedTextures.contains(textureId));
 
     m_AllocatedTextures.remove(textureId);

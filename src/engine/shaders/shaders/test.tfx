@@ -46,7 +46,7 @@ technique SceneOpaque {
       mvp = mul(mvp, StaticModelScope.modelTm);
 
       VsOutput output;
-      float4 pos = mul(mvp, float4(input.pos, 1.0));
+      output.pos = mul(mvp, float4(input.pos, 1.0));
 
       return output;
     }

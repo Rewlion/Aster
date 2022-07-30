@@ -168,7 +168,6 @@ namespace gapi::vulkan
 
     for (const auto& wrInfo: m_WriteInfos)
     {
-      vk::WriteDescriptorSet write;
       std::visit(overload{
         [&](const SamplerWriteInfo& i) {
           addWrites(i.set, i.binding, vk::DescriptorType::eSampler, setupSamplerInfo(i.sampler));
