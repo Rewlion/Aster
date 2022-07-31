@@ -276,7 +276,7 @@ namespace spirv
       };
       setupBinding(resources.separate_images, getTexType);
       setupBinding(resources.separate_samplers, [](const spirv_cross::Resource& res){return vk::DescriptorType::eSampler;});
-      setupBinding(resources.uniform_buffers, [](const spirv_cross::Resource& res){return vk::DescriptorType::eUniformBufferDynamic;});
+      setupBinding(resources.uniform_buffers, [](const spirv_cross::Resource& res){return vk::DescriptorType::eUniformBuffer;});
 
       return ret;
     }

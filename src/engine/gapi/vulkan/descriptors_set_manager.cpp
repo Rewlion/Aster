@@ -176,7 +176,7 @@ namespace gapi::vulkan
           addWrites(i.set, i.binding, vk::DescriptorType::eSampledImage, setupImageInfo(i.view));
         },
         [&](const UniformBufferWriteInfo& i) {
-          addWrites(i.set, i.binding, vk::DescriptorType::eUniformBufferDynamic, setupBufferInfo(i.buffer, i.constOffset));
+          addWrites(i.set, i.binding, vk::DescriptorType::eUniformBuffer, setupBufferInfo(i.buffer, i.constOffset));
         }
       }, wrInfo);
     }
