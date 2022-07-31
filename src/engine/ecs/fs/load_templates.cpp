@@ -78,7 +78,7 @@ namespace Engine::ECS
     {
       templateDump = templateDump + "\n" + "component:" + comp.name;
     }
-    log("added template {}", templateDump);
+    loginfo("added template {}", templateDump);
 
     manager.addTemplate(str_hash(tmpl.getName().c_str()), templateDesc);
   }

@@ -133,14 +133,14 @@ namespace Engine::ECS
       }
 
     private:
-      eastl::fixed_vector<Archetype, 128, true> m_Archetypes;
+      eastl::vector<Archetype> m_Archetypes;
       eastl::vector_map<template_name_id, archetype_id> m_TemplateToArhetypeMap;
       eastl::vector_map<event_hash_name, eastl::vector<RegisteredEventQueryInfo>> m_EventHandleQueries;
 
       uint64_t m_NextEntityId = 1;
       eastl::vector_map<uint64_t, EntityInfo> m_EntitiesInfo;
 
-      eastl::fixed_vector<RegisteredQueryInfo, 128, true> m_RegisteredQueues;
+      eastl::vector<RegisteredQueryInfo> m_RegisteredQueues;
 
       EventsQueue m_EventsQueue;
   };

@@ -40,4 +40,9 @@ namespace Engine
     LOGGER = spdlog::logger("", {console_sink, file_sink});
     LOGGER.set_pattern("%H:%M:%S [%^%L%$] %v");
   }
+
+  spdlog::logger* get_logger()
+  {
+    return &LOGGER;
+  }
 }

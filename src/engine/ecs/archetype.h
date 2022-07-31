@@ -67,7 +67,7 @@ namespace Engine::ECS
       bool getFreeChunk(chunk_id& chunkId, block_id& blockId);
 
     private:
-      eastl::fixed_vector<Chunk, 16, true> m_Chunks;
+      eastl::vector<Chunk> m_Chunks;
       size_t m_BlockSize;
   };
 

@@ -127,6 +127,11 @@ namespace tfx
               m_CmdEncoder->bindTexture((gapi::TextureHandler)h, bc.dset, bc.binding);
               break;
             }
+            default:
+            {
+              ASSERT_FMT(false, "unsupported byte code `{}`", bc.type);
+              break;
+            }
           }
         }
 
@@ -211,7 +216,7 @@ namespace tfx
         std::move(s)
       });
 
-      log("loaded scope `{}`:{}", matScope.name, h);
+      loginfo("loaded scope `{}`:{}", matScope.name, h);
     }
   }
 
@@ -245,13 +250,13 @@ namespace tfx
         }
       });
 
-      log("loaded technique `{}`", t.name);
+      loginfo("loaded technique `{}`", t.name);
     }
   }
 
   void load_materials_bin(const string& file)
   {
-    log("loading materials bin {}", file);
+    loginfo("loading materials bin {}", file);
     std::ifstream from(file, std::ios::binary);
     if (!from.is_open())
     {
@@ -263,11 +268,11 @@ namespace tfx
     boost::archive::binary_iarchive archive(from);
     archive & mat_bin;
 
-    log("loading tfx scopes");
+    loginfo("loading tfx scopes");
     load_scopes(mat_bin.scopes);
-    log("loading tfx techniques");
+    loginfo("loading tfx techniques");
     load_techniques(mat_bin.techniques);
-    log("successfuly loaded materials bin");
+    loginfo("successfuly loaded materials bin");
   }
 
 

@@ -18,7 +18,7 @@ namespace gapi::vulkan
     , m_Pools(std::move(rvl.m_Pools))
     , m_PoolId(rvl.m_PoolId)
     , m_BindedDsets(std::move(rvl.m_BindedDsets))
-    , m_WriteInfos(std::move(m_WriteInfos))
+    , m_WriteInfos(std::move(rvl.m_WriteInfos))
   {
   }
 
@@ -120,79 +120,75 @@ namespace gapi::vulkan
     });
   }
 
-  namespace
+  void DescriptorsSetManager::WriteDescsBuilder::processWrite(size_t set, size_t binding,
+    vk::DescriptorType dsetType,
+    std::function<void(vk::WriteDescriptorSet&)> setupInfoPtr)
   {
-    template<class... Ts> struct overload : Ts... { using Ts::operator()...; };
+    if (!m_DsetManager.validateBinding(set, binding, dsetType))
+        return;
+
+    m_DsetManager.insureSetExistance(set);
+    m_Writes.updateSets.insert(set);
+
+    vk::WriteDescriptorSet write;
+    write.dstSet = m_DsetManager.m_BindedDsets[set];
+    write.dstBinding = binding;
+    write.dstArrayElement = 0;
+    write.descriptorCount = 1;
+    write.descriptorType = dsetType;
+    setupInfoPtr(write);
+
+    m_Writes.writes.push_back(write);
   }
+
+  void DescriptorsSetManager::WriteDescsBuilder::process(const SamplerWriteInfo& i)
+  {
+    const auto infoSetuper = [&](vk::WriteDescriptorSet& write) {
+      vk::DescriptorImageInfo imgInfo;
+      imgInfo.sampler = i.sampler;
+      m_Writes.imgInfos.push_back(imgInfo);
+      write.pImageInfo = &m_Writes.imgInfos.back();
+    };
+    processWrite(i.set, i.binding, vk::DescriptorType::eSampler, infoSetuper);
+  }
+
+  void DescriptorsSetManager::WriteDescsBuilder::process(const ImageWriteInfo& i)
+  {
+    const auto infoSetuper = [&](vk::WriteDescriptorSet& write) {
+      vk::DescriptorImageInfo imgInfo;
+      imgInfo.imageView = i.view;
+      imgInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+      m_Writes.imgInfos.push_back(imgInfo);
+      write.pImageInfo = &m_Writes.imgInfos.back();
+    };
+    processWrite(i.set, i.binding, vk::DescriptorType::eSampledImage, infoSetuper);
+  }
+
+  void DescriptorsSetManager::WriteDescsBuilder::process(const UniformBufferWriteInfo& i)
+  {
+    const auto infoSetuper = [&](vk::WriteDescriptorSet& write) {
+        vk::DescriptorBufferInfo bufInfo;
+        bufInfo.buffer = i.buffer;
+        bufInfo.offset = i.constOffset;
+        bufInfo.range = VK_WHOLE_SIZE;
+        m_Writes.bufInfos.push_back(bufInfo);
+        write.pBufferInfo = &m_Writes.bufInfos.back();
+      };
+    processWrite(i.set, i.binding, vk::DescriptorType::eUniformBuffer, infoSetuper);
+  }
+
 
   DescriptorsSetManager::WritesDescription DescriptorsSetManager::acquireWrites()
   {
-    WritesDescription writes;
-
-    const auto addWrites = [&](size_t set, size_t binding, vk::DescriptorType dsetType, auto setupInfoPtr) {
-      if (!validateBinding(set, binding, dsetType))
-        return;
-
-      insureSetExistance(set);
-      writes.updateSets.insert(set);
-
-      vk::WriteDescriptorSet write;
-      write.dstSet = m_BindedDsets[set];
-      write.dstBinding = binding;
-      write.dstArrayElement = 0;
-      write.descriptorCount = 1;
-      write.descriptorType = dsetType;
-      setupInfoPtr(write);
-
-      writes.writes.push_back(write);
-    };
-
-    const auto setupSamplerInfo = [&](vk::Sampler sampler) {
-      return [&](vk::WriteDescriptorSet& write) {
-        vk::DescriptorImageInfo imgInfo;
-        imgInfo.sampler = sampler;
-        write.pImageInfo = &writes.imgInfos.back();
-      };
-    };
-
-    const auto setupImageInfo = [&](vk::ImageView view) {
-      return [&](vk::WriteDescriptorSet& write) {
-        vk::DescriptorImageInfo imgInfo;
-        imgInfo.imageView = view;
-        imgInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-        writes.imgInfos.push_back(imgInfo);
-        write.pImageInfo = &writes.imgInfos.back();
-      };
-    };
-
-    const auto setupBufferInfo = [&](vk::Buffer buffer, const size_t constOffset) {
-      return [&](vk::WriteDescriptorSet& write) {
-        vk::DescriptorBufferInfo bufInfo;
-        bufInfo.buffer = buffer;
-        bufInfo.offset = constOffset;
-        bufInfo.range = VK_WHOLE_SIZE;
-        writes.bufInfos.push_back(bufInfo);
-        write.pBufferInfo = &writes.bufInfos.back();
-      };
-    };
+    WriteDescsBuilder writesBuilder(*this);
 
     for (const auto& wrInfo: m_WriteInfos)
-    {
-      std::visit(overload{
-        [&](const SamplerWriteInfo& i) {
-          addWrites(i.set, i.binding, vk::DescriptorType::eSampler, setupSamplerInfo(i.sampler));
-        },
-        [&](const ImageWriteInfo& i) {
-          addWrites(i.set, i.binding, vk::DescriptorType::eSampledImage, setupImageInfo(i.view));
-        },
-        [&](const UniformBufferWriteInfo& i) {
-          addWrites(i.set, i.binding, vk::DescriptorType::eUniformBuffer, setupBufferInfo(i.buffer, i.constOffset));
-        }
+      std::visit([&](auto& v){
+        writesBuilder.process(v);
       }, wrInfo);
-    }
 
     m_WriteInfos.clear();
-    return writes;
+    return writesBuilder.gatherWrites();
   }
 
   void DescriptorsSetManager::setPipelineLayout(const PipelineLayout* layout)

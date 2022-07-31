@@ -228,9 +228,9 @@ namespace gapi::vulkan
   {
     switch (filter)
     {
-      case ImageFilter::Nearest: vk::Filter::eNearest;
-      case ImageFilter::Linear:  vk::Filter::eLinear;
-      case ImageFilter::Cubic:   vk::Filter::eCubicEXT;
+      case ImageFilter::Nearest: return vk::Filter::eNearest;
+      case ImageFilter::Linear:  return vk::Filter::eLinear;
+      case ImageFilter::Cubic:   return vk::Filter::eCubicEXT;
 
       default: return {};
     }
@@ -379,7 +379,7 @@ namespace gapi::vulkan
        default:
        {
         ASSERT(!"unsupported");
-        break;
+        return {};
        }
     }
   }

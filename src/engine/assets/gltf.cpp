@@ -1,5 +1,3 @@
-#pragma once
-
 #include "assets_manager.h"
 
 #include <engine/assert.h>

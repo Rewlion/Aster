@@ -25,7 +25,6 @@ namespace gapi::vulkan
   {
     GraphicsPipelineDescription description;
     vk::Extent2D viewport;
-    const PipelineLayout* layout;
   };
 
   class CmdEncoder: public gapi::CmdEncoder

@@ -4,7 +4,7 @@
 
 namespace ShadersSystem
 {
-  static class ScopeProcessor
+  class ScopeProcessor
   {
     public:
       ScopeProcessor(Compiler& c)
@@ -194,9 +194,6 @@ namespace ShadersSystem
 
         for (auto&[_, resource]: m_Scope.declaredResources)
         {
-          const auto throwErr = [&resource](const char* msg){
-            throw std::runtime_error(fmt::format(msg,resource.name));
-          };
           resource.dset = m_Scope.descriptorSet;
           switch (resource.type)
           {
@@ -209,10 +206,12 @@ namespace ShadersSystem
             case ResourceType::Texture2D:
             {
               if (!hasTextures)
-                throwErr("failed to declare texture2D {}: there is no texture declared in scope");
+                 throw std::runtime_error(fmt::format(
+                  "failed to declare texture2D {}: there is no texture declared in scope", resource.name));
 
               if (currentTexReg > texturesEnd)
-                throwErr("failed to declare texture2D {}: all texture slots are already in use");
+                throw std::runtime_error(fmt::format(
+                  "failed to declare texture2D {}: all texture slots are already in use", resource.name));
 
               resource.binding = currentTexReg++;
               break;
@@ -396,6 +395,11 @@ namespace ShadersSystem
             {
               const ByteCodes var = generateByteCodeForTexture(res);
               byteCode.insert(byteCode.end(), var.begin(), var.end());
+              break;
+            }
+            default:
+            {
+              ASSERT(!"unsupported type");
               break;
             }
           }

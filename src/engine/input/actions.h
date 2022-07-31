@@ -3,7 +3,7 @@
 #include <engine/types.h>
 #include <engine/algorithm/hash.h>
 
-#include <EASTL/fixed_vector.h>
+#include <EASTL/vector.h>
 #include <EASTL/vector_map.h>
 
 namespace Engine::Input
@@ -43,16 +43,16 @@ namespace Engine::Input
 
   struct ActionSetMappings
   {
-    eastl::fixed_vector<ButtonMapping, 256> buttons;
-    eastl::fixed_vector<AnalogMapping, 16> analogs;
+    eastl::vector<ButtonMapping> buttons;
+    eastl::vector<AnalogMapping> analogs;
   };
 
   struct ActionSet
   {
     string name;
 
-    eastl::fixed_vector<ButtonAction, 256> buttons;
-    eastl::fixed_vector<AnalogAction, 16> analogs;
+    eastl::vector<ButtonAction> buttons;
+    eastl::vector<AnalogAction> analogs;
   };
 
 }

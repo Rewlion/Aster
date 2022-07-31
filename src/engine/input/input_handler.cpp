@@ -31,7 +31,12 @@ namespace Engine::Input
         const string_hash actionHash = str_hash(action.name.c_str());
         const int buttonId = std::get<int>(action.as);
 
-        mappings.buttons.emplace_back(actionHash, action.name, buttonId, ButtonStatus::Release);
+        mappings.buttons.push_back(ButtonMapping{
+          .action = actionHash,
+          .actionName = action.name,
+          .buttonId = (char)buttonId,
+          .status = ButtonStatus::Release
+        });
       }
 
       const DataBlock* analogs = actionSet.getChildBlock("Analog");
@@ -41,7 +46,11 @@ namespace Engine::Input
         const string_hash actionHash = str_hash(name.c_str());
         const int deviceId = action.getInt("device");
 
-        mappings.analogs.emplace_back(actionHash, name, deviceId);
+        mappings.analogs.push_back(AnalogMapping{
+          .action = actionHash,
+          .actionName = name,
+          .device = (char)deviceId
+        });
       }
 
       m_Mappings.insert({
@@ -66,7 +75,7 @@ namespace Engine::Input
       dmp += actionSetInfo;
     }
 
-    log(dmp);
+    loginfo(dmp);
   }
 
   void InputHandler::processInput()
@@ -110,7 +119,7 @@ namespace Engine::Input
   {
     if (m_Mappings.end() != m_Mappings.find(actionSet))
     {
-      log("setting ActionSet:{}", actionSet);
+      loginfo("setting ActionSet:{}", actionSet);
       m_ActiveSet = actionSet;
     }
     else

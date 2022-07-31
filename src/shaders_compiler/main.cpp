@@ -49,14 +49,14 @@ int main(int argc, char** argv)
   DataBlock* shadersList = shadersBlk.getChildBlock("shaders_list");
 
   const string outFile = outputDir + "/shaders_spirv.bin";
-  log("compiling shaders to {}", outFile);
+  loginfo("compiling shaders to {}", outFile);
   fs::remove(outFile);
 
   std::error_code ec;
   fs::create_directories(outputDir, ec);
   if (ec)
   {
-    log("failed to create output directory `{}`:{}", outputDir, ec.message());
+    loginfo("failed to create output directory `{}`:{}", outputDir, ec.message());
     return -1;
   }
 
@@ -72,7 +72,7 @@ int main(int argc, char** argv)
   for (const auto& shader: shadersList->getChildBlocks())
   {
     const auto shFile = blkDir + "/" + shader.getName();
-    log("compiling {}", shFile);
+    loginfo("compiling {}", shFile);
     compiler.compileModuleFromFile(shFile);
   }
 
@@ -80,6 +80,6 @@ int main(int argc, char** argv)
   boost::archive::binary_oarchive archive(out);
   archive << mBin;
 
-  log("done");
+  loginfo("done");
   return 0;
 }

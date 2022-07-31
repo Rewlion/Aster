@@ -1,5 +1,3 @@
-#pragma once
-
 #include "gapi.h"
 
 #include <engine/assert.h>

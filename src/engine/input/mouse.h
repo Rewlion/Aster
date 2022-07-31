@@ -7,7 +7,7 @@ namespace Engine::Input
   class Mouse: public InputHandler
   {
     public:
-      bool getAnalogStatus(const string_hash action, float2& delta) const;
+      virtual bool getAnalogStatus(const string_hash action, float2& delta) const override;
 
     private:
       virtual void processAnalogInput() override;

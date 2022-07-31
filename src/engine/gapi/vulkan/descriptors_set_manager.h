@@ -4,12 +4,12 @@
 
 #include <shaders_compiler/spirv.h>
 #include <engine/utils/bit_capacity.hpp>
-#include <engine/utils/state_tracker.hpp>
 
 #include <EASTL/vector.h>
 #include <EASTL/vector_set.h>
 
 #include <optional>
+#include <functional>
 
 namespace gapi::vulkan
 {
@@ -59,6 +59,27 @@ namespace gapi::vulkan
         eastl::vector<vk::DescriptorBufferInfo> bufInfos;
         eastl::vector<vk::WriteDescriptorSet> writes;
         eastl::vector_set<size_t> updateSets;
+      };
+      friend class WriteDescsBuilder;
+      class WriteDescsBuilder
+      {
+        public:
+          WriteDescsBuilder(DescriptorsSetManager& dsetManager)
+            : m_DsetManager(dsetManager)
+          {
+          }
+          void process(const SamplerWriteInfo& i);
+          void process(const ImageWriteInfo& i);
+          void process(const UniformBufferWriteInfo& i);
+
+          inline WritesDescription&& gatherWrites() { return std::move(m_Writes); }
+        private:
+          void processWrite(size_t set, size_t binding,
+                            vk::DescriptorType dsetType,
+                            std::function<void(vk::WriteDescriptorSet&)> setupInfoPtr);
+        private:
+          DescriptorsSetManager& m_DsetManager;
+          WritesDescription m_Writes;
       };
 
       typedef std::variant<SamplerWriteInfo, ImageWriteInfo,

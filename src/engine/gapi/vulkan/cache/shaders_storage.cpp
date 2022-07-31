@@ -1,5 +1,3 @@
-#pragma once
-
 #include "shaders_storage.h"
 
 #include <engine/algorithm/hash.h>

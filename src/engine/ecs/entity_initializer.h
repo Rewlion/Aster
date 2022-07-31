@@ -6,7 +6,7 @@
 #include <engine/types.h>
 #include <engine/assert.h>
 
-#include <EASTL/fixed_vector.h>
+#include <EASTL/vector.h>
 
 namespace Engine::ECS
 {

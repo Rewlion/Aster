@@ -66,7 +66,7 @@ namespace Engine
     const string file = asset.getText("bin");
     const string name = asset.getText("name");
 
-    log("asset manager: loading texture: {} as {}", file, name);
+    loginfo("asset manager: loading texture: {} as {}", file, name);
     const string_hash nameHash = str_hash(name.c_str());
 
     TextureAsset textureAsset = loadTexture(file);
@@ -81,7 +81,7 @@ namespace Engine
     const string file = asset.getText("bin");
     const string name = asset.getText("name");
 
-    log("asset manager: loading static_mesh: {} as {}", file, name);
+    loginfo("asset manager: loading static_mesh: {} as {}", file, name);
     const string_hash nameHash = str_hash(name.c_str());
 
     StaticMesh staticMeshAsset = loadGltf(file);
@@ -97,7 +97,7 @@ namespace Engine
     const string mesh = asset.getText("mesh");
     const string_hash meshHash = str_hash(mesh.c_str());
 
-    log("asset manager: loading model_asset: {}", name);
+    loginfo("asset manager: loading model_asset: {}", name);
 
     const auto meshIt = m_StaticMeshes.find(meshHash);
     ASSERT(meshIt != m_StaticMeshes.end());

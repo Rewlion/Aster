@@ -22,7 +22,7 @@ namespace Engine::Input
     for(const auto& analog: set.analogs)
       analogs += "    " + analog.name + "\n";
 
-    log("added ActionSet `{}`\n  Buttons:\n{}  Analogs:\n{}", set.name, buttons, analogs);
+    loginfo("added ActionSet `{}`\n  Buttons:\n{}  Analogs:\n{}", set.name, buttons, analogs);
   }
 
   void InputManager::init()
@@ -30,7 +30,7 @@ namespace Engine::Input
     string inputFile = Engine::get_app_settings()->getText("input_settings");
     ASSERT(inputFile != "");
 
-    log("loading input settings from {}", inputFile);
+    loginfo("loading input settings from {}", inputFile);
 
     DataBlock inputSettings;
     const bool inputLoaded = load_blk_from_file(&inputSettings, inputFile.c_str());
@@ -63,7 +63,7 @@ namespace Engine::Input
         const string actionName = button.getName();
         if (actionName != "")
         {
-          actionSet.buttons.emplace_back(actionName);
+          actionSet.buttons.push_back(ButtonAction{.name = actionName});
         }
         else
         {
@@ -78,7 +78,7 @@ namespace Engine::Input
         const string actionName = analog.getName();
         if (actionName != "")
         {
-          actionSet.analogs.emplace_back(actionName);
+          actionSet.analogs.push_back(AnalogAction{.name = actionName});
         }
         else
         {

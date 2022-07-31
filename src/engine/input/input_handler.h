@@ -2,7 +2,6 @@
 
 #include "actions.h"
 
-#include <EASTL/fixed_vector.h>
 #include <EASTL/vector_map.h>
 #include <EASTL/optional.h>
 

@@ -52,8 +52,9 @@ namespace Engine::ECS
       .chunkId = chunkId
     };
 
+    const uint64_t id = eid.id;
     m_EntitiesInfo.insert({
-      eid.id,
+      id,
       eInfo
     });
   }
@@ -134,13 +135,19 @@ namespace Engine::ECS
       auto it = m_EventHandleQueries.find(queryDesc.event);
       if (it != m_EventHandleQueries.end())
       {
-        it->second.emplace_back(queryDesc.eventCb, eastl::move(desiredArchetypes));
+        it->second.push_back(RegisteredEventQueryInfo{
+          .eventCb = queryDesc.eventCb,
+          .archetypes = eastl::move(desiredArchetypes)
+        });
       }
     }
     else
     {
       if (desiredArchetypes.size() > 0)
-        m_RegisteredQueues.emplace_back(queryDesc.cb, desiredArchetypes);
+        m_RegisteredQueues.push_back(RegisteredQueryInfo{
+          .cb = queryDesc.cb,
+          .archetypes = eastl::move(desiredArchetypes)
+        });
     }
   }
 
@@ -189,10 +196,10 @@ namespace Engine::ECS
 
   void init_ecs_from_settings()
   {
-    log("initialization of ECS");
+    loginfo("initialization of ECS");
     DataBlock* settings = get_app_settings();
 
-    log("init events");
+    loginfo("init events");
     DataBlock* events = settings->getChildBlock("events");
     for(const auto& attr: events->getAttributes())
     {
@@ -200,18 +207,18 @@ namespace Engine::ECS
       {
         const string eventName = std::get<string>(attr.as);
         manager.registerEvent(str_hash(eventName.c_str()));
-        log("registered event `{}`", eventName);
+        loginfo("registered event `{}`", eventName);
       }
     }
 
-    log("init templates");
+    loginfo("init templates");
     DataBlock* templates = settings->getChildBlock("entity_templates");
     for(const auto& attr: templates->getAttributes())
     {
       if (attr.type == DataBlock::ValueType::Text)
       {
         const string blkWithTemplates = std::get<string>(attr.as);
-        log("reading templates from {}", blkWithTemplates);
+        loginfo("reading templates from {}", blkWithTemplates);
 
         add_templates_from_blk(manager, blkWithTemplates);
       }

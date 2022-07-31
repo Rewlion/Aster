@@ -2,7 +2,7 @@
 
 #include "types.h"
 
-#include <EASTL/fixed_vector.h>
+#include <EASTL/vector.h>
 
 #include <EASTL/functional.h>
 
@@ -17,8 +17,8 @@ namespace Engine::ECS
   using QueryCb = void(*)(class ComponentsAccessor&);
   using EventQueryCb = void(*)(struct Event*, class ComponentsAccessor&);
   using DirectQueryCb = eastl::function<void(class ComponentsAccessor&)>;
-  using QueryComponents = eastl::fixed_vector<QueryComponentDescription, 16, true>;
-  using DesiredArchetypes = eastl::fixed_vector<archetype_id, 4, true>;
+  using QueryComponents = eastl::vector<QueryComponentDescription>;
+  using DesiredArchetypes = eastl::vector<archetype_id>;
 
   struct QueryDescription
   {

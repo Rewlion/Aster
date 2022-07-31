@@ -447,6 +447,11 @@ namespace ShadersSystem
                 processRenderState(rsExp);
                 break;
               }
+              default:
+              {
+                ASSERT(!"unsupported type");
+                break;
+              }
             }
             exp = exp->next;
           }

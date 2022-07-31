@@ -36,7 +36,7 @@ namespace Engine
     gapi::TextureHandler texture;
   };
 
-  enum class AssetHandler: uint64_t { Invalid = -1 };
+  enum class AssetHandler: uint64_t { Invalid = uint64_t(~0) };
 
   class AssetsManager
   {

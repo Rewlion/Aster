@@ -62,6 +62,12 @@ DataBlock BlkParser::ConstructBlock(const Ast::AnnotatedParam* paramList)
         dbk.m_ChildBlocks.push_back(childDbk);
         break;
       }
+
+      default:
+      {
+        ASSERT(!"unsupported param in bkl");
+        break;
+      }
     }
   }
   return dbk;

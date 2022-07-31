@@ -96,6 +96,11 @@ namespace
               init.init_component(componentName, std::move(value));
               break;
             }
+            case DataBlock::ValueType::None:
+            {
+              ASSERT(!"no value inside datablock");
+              break;
+            }
           }
         }
       }

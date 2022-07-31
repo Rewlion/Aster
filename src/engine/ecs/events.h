@@ -6,7 +6,7 @@
 #include <engine/assert.h>
 #include <engine/platform/memory.h>
 
-#include <EASTL/fixed_vector.h>
+#include <EASTL/vector.h>
 
 #include <type_traits>
 
@@ -70,7 +70,7 @@ namespace Engine::ECS
         ASSERT(storageEnd < EVENTS_QUEUE_BUFFER_SIZE);
 
         uint8_t* rawStorage = &m_Buffer[storageBegin];
-        typedef std::remove_reference<T>::type unrefT;
+        typedef typename std::remove_reference<T>::type unrefT;
         unrefT* storage = new(rawStorage) unrefT;
 
         *storage = eastl::forward<T>(event);
