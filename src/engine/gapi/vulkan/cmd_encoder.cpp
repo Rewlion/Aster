@@ -236,14 +236,16 @@ namespace gapi::vulkan
   {
     ASSERT(m_RenderPassState.rp == vk::RenderPass{});
     ASSERT(m_CmdBuf != vk::CommandBuffer{});
-    m_CmdBuf.end();
+    VK_CHECK(m_CmdBuf.end());
 
     vk::Fence fence;
     if (!signalFence)
     {
-      vk::UniqueFence f = m_Device.getDevice().createFenceUnique(vk::FenceCreateInfo{});
-      fence = f.get();
-      m_FrameGc.addWaitFence(std::move(f));
+      auto f = m_Device.getDevice().createFenceUnique(vk::FenceCreateInfo{});
+      VK_CHECK_RES(f);
+
+      fence = f.value.get();
+      m_FrameGc.addWaitFence(std::move(f.value));
     }
     else
       fence = reinterpret_cast<VulkanFence*>(signalFence)->fence.get();

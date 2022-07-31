@@ -1,12 +1,11 @@
 #pragma once
 
-#define VULKAN_HPP_NO_EXCEPTIONS 1
+#include "vulkan.h"
 
 #include <shaders_compiler/spirv.h>
 #include <engine/utils/bit_capacity.hpp>
 #include <engine/utils/state_tracker.hpp>
 
-#include <vulkan/vulkan.hpp>
 #include <EASTL/vector.h>
 #include <EASTL/vector_set.h>
 

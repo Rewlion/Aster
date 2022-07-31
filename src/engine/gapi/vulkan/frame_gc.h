@@ -5,7 +5,6 @@
 #include "result.h"
 
 #include <EASTL/vector.h>
-#include "vulkan/vulkan.hpp"
 
 namespace gapi::vulkan
 {

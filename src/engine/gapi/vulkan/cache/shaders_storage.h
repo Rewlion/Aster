@@ -1,5 +1,7 @@
 #pragma once
 
+#include <engine/gapi/vulkan/vulkan.h>
+
 #include <engine/assert.h>
 #include <engine/gapi/resources.h>
 #include <engine/gapi/vulkan/pipeline_layout.h>
@@ -8,7 +10,6 @@
 #include <shaders_compiler/spirv.h>
 #include <shaders_compiler/ast_processing_types.h>
 
-#include <vulkan/vulkan.hpp>
 #include <EASTL/hash_map.h>
 
 namespace gapi::vulkan

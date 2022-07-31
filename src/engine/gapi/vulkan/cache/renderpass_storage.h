@@ -1,8 +1,8 @@
 #pragma once
 
+#include <engine/gapi/vulkan/vulkan.h>
 #include <engine/gapi/resources.h>
 
-#include <vulkan/vulkan.hpp>
 #include <EASTL/hash_map.h>
 
 namespace gapi::vulkan

@@ -1,5 +1,6 @@
 #include "backend.h"
 #include "surface.h"
+#include "result.h"
 
 #include <engine/assert.h>
 #include <engine/settings.h>
@@ -42,7 +43,10 @@ namespace gapi::vulkan
     ci.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
     ci.pfnUserCallback = VkDebugCallback;
 
-    return m_Instance->createDebugUtilsMessengerEXTUnique(ci, nullptr, m_Loader);
+    auto res = m_Instance->createDebugUtilsMessengerEXTUnique(ci, nullptr, m_Loader);
+    VK_CHECK_RES(res);
+
+    return std::move(res.value);
   }
 
   vk::UniqueInstance Backend::createInstance()
@@ -71,7 +75,10 @@ namespace gapi::vulkan
       .setEnabledLayerCount((uint32_t)validationLayers.size())
       .setPpEnabledLayerNames(validationLayers.data());
 
-    return vk::createInstanceUnique(instanceCreateInfo);
+    auto res = vk::createInstanceUnique(instanceCreateInfo);
+    VK_CHECK_RES(res);
+
+    return std::move(res.value);
   }
 
   void Backend::init()
@@ -88,7 +95,9 @@ namespace gapi::vulkan
   vk::PhysicalDevice Backend::getSuitablePhysicalDevice() const
   {
     vk::PhysicalDevice physicalDevice = nullptr;
-    for (const vk::PhysicalDevice& device : m_Instance->enumeratePhysicalDevices())
+    const auto devices = m_Instance->enumeratePhysicalDevices();
+    VK_CHECK_RES(devices);
+    for (const vk::PhysicalDevice& device : devices.value)
     {
       vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
 
@@ -123,7 +132,10 @@ namespace gapi::vulkan
       if (validQueue(indices.transfer, vk::QueueFlagBits::eTransfer))
         indices.transfer = familyIndex;
 
-      if (indices.present == size_t(-1) && properties.queueCount > 0 && m_PhysicalDevice.getSurfaceSupportKHR(familyIndex, *m_Surface))
+      const auto hasSurfaceSupportKHR = m_PhysicalDevice.getSurfaceSupportKHR(familyIndex, *m_Surface);
+      VK_CHECK_RES(hasSurfaceSupportKHR);
+
+      if (indices.present == size_t(-1) && properties.queueCount > 0 && hasSurfaceSupportKHR.value)
         indices.present = familyIndex;
     }
 
@@ -185,21 +197,29 @@ namespace gapi::vulkan
         .setPpEnabledExtensionNames(deviceExtensions)
         .setEnabledExtensionCount(std::size(deviceExtensions));
 
-    vk::UniqueDevice device =  m_PhysicalDevice.createDeviceUnique(deviceCreateInfo);
+    auto device =  m_PhysicalDevice.createDeviceUnique(deviceCreateInfo);
+    VK_CHECK_RES(device);
 
     const int2 wndSize = Engine::Window::get_window_size();
+
+    auto surfaceCaps = m_PhysicalDevice.getSurfaceCapabilitiesKHR(*m_Surface);
+    VK_CHECK_RES(surfaceCaps);
+    auto surfaceFormats = m_PhysicalDevice.getSurfaceFormatsKHR(*m_Surface);
+    VK_CHECK_RES(surfaceFormats);
+    auto surfacePresentModes = m_PhysicalDevice.getSurfacePresentModesKHR(*m_Surface);
+    VK_CHECK_RES(surfacePresentModes);
 
     Device::CreateInfo deviceCi{
       .instance = *m_Instance,
       .surface = *m_Surface,
-      .device = eastl::move(device),
+      .device = eastl::move(device.value),
       .deviceProperties = m_PhysicalDevice.getProperties(),
       .queueIndices = m_QueueIndices,
       .memoryIndices = m_MemoryIndices,
 
-      .surfaceCapabilities = m_PhysicalDevice.getSurfaceCapabilitiesKHR(*m_Surface),
-      .surfaceFormats = m_PhysicalDevice.getSurfaceFormatsKHR(*m_Surface),
-      .surfacePresentModes = m_PhysicalDevice.getSurfacePresentModesKHR(*m_Surface),
+      .surfaceCapabilities = std::move(surfaceCaps.value),
+      .surfaceFormats = std::move(surfaceFormats.value),
+      .surfacePresentModes = std::move(surfacePresentModes.value),
 
       .swapchainImageExtent = vk::Extent2D{(uint32_t)wndSize.x, (uint32_t)wndSize.y}
     };

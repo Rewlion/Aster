@@ -7,7 +7,6 @@
 #include <engine/types.h>
 #include <engine/utils/fixed_pool.hpp>
 
-#include <vulkan/vulkan.hpp>
 #include <EASTL/vector.h>
 #include <vector>
 

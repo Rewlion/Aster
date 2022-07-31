@@ -1,11 +1,10 @@
 #pragma once
 
+#include "vulkan.h"
 #include "indices.h"
 
 #include <engine/gapi/resources.h>
 #include <engine/platform/memory.h>
-
-#include <vulkan/vulkan.hpp>
 
 namespace gapi::vulkan
 {

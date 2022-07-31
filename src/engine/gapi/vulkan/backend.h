@@ -3,8 +3,6 @@
 #include "indices.h"
 #include "device.h"
 
-#include <vulkan/vulkan.hpp>
-
 using UniqueDynamicDbgUtilsMessenger = vk::UniqueHandle<vk::DebugUtilsMessengerEXT,vk::DispatchLoaderDynamic>;
 
 namespace gapi::vulkan

@@ -39,7 +39,10 @@ namespace gapi::vulkan
     vk::ShaderModuleCreateInfo smCi;
     smCi.pCode = reinterpret_cast<const uint32_t*>(blob.data.data());
     smCi.codeSize = blob.data.size();
-    m.module = m_Device->m_Device->createShaderModuleUnique(smCi);
+
+    auto mod = m_Device->m_Device->createShaderModuleUnique(smCi);
+    VK_CHECK_RES(mod);
+    m.module = std::move(mod.value);
 
     m_ShaderModules.insert({
       handler,
@@ -93,9 +96,10 @@ namespace gapi::vulkan
       vk::DescriptorSetLayoutCreateInfo ci;
       ci.bindingCount = dset.size();
       ci.pBindings = dset.data();
-      vk::UniqueDescriptorSetLayout l = m_Device->m_Device->createDescriptorSetLayoutUnique(ci);
-      dsetLayouts.push_back(l.get());
-      dsetLayoutsUnique.push_back(std::move(l));
+      auto l = m_Device->m_Device->createDescriptorSetLayoutUnique(ci);
+      VK_CHECK_RES(l);
+      dsetLayouts.push_back(l.value.get());
+      dsetLayoutsUnique.push_back(std::move(l.value));
     }
 
     vk::PipelineLayoutCreateInfo layoutCi;
@@ -104,12 +108,13 @@ namespace gapi::vulkan
     layoutCi.pSetLayouts = dsetLayouts.data();
     layoutCi.setLayoutCount = dsetLayouts.size();
 
-    vk::UniquePipelineLayout layout = m_Device->m_Device->createPipelineLayoutUnique(layoutCi);
+    auto layout = m_Device->m_Device->createPipelineLayoutUnique(layoutCi);
+    VK_CHECK_RES(layout);
 
     const auto [v,b] = m_PipelineLayouts.insert({
       hash,
       PipelineLayout{
-        .pipelineLayout = std::move(layout),
+        .pipelineLayout = std::move(layout.value),
         .descriptorSetLayouts = std::move(dsetLayoutsUnique),
         .dsets = std::move(dsets),
         .stagesCi = std::move(stagesCi)

@@ -1,5 +1,8 @@
 #pragma once
 
+#define VULKAN_HPP_NO_EXCEPTIONS 1
+#include <vulkan/vulkan.hpp>
+
 namespace vk
 {
   class Device;

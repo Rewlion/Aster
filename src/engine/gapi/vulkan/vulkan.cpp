@@ -11,8 +11,6 @@
 #include <engine/gapi/vulkan/cache/renderpass_storage.h>
 #include <engine/gapi/gapi.h>
 
-#include <vulkan/vulkan.hpp>
-
 namespace gapi
 {
   extern TextureHandler       (*gapi_get_backbuffer)();
@@ -131,7 +129,10 @@ namespace gapi::vulkan
   Fence* allocate_fence()
   {
     VulkanFence* f = new VulkanFence{};
-    f->fence = device.getDevice().createFenceUnique(vk::FenceCreateInfo{});
+    auto fence = device.getDevice().createFenceUnique(vk::FenceCreateInfo{});
+    VK_CHECK_RES(fence);
+
+    f->fence = std::move(fence.value);
     VK_CHECK(device.getDevice().resetFences(1, &f->fence.get()));
     return f;
   }

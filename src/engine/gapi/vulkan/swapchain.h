@@ -1,8 +1,8 @@
 #pragma once
 
+#include "vulkan.h"
 #include "resources.h"
 
-#include <vulkan/vulkan.hpp>
 
 namespace gapi::vulkan
 {

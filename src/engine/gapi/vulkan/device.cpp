@@ -29,7 +29,9 @@ namespace gapi::vulkan
                                 .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer)
                                 .setQueueFamilyIndex(index);
 
-                              return m_Device->createCommandPoolUnique(cmdPoolCreateInfo);
+                              auto pool = m_Device->createCommandPoolUnique(cmdPoolCreateInfo);
+                              VK_CHECK_RES(pool);
+                              return std::move(pool.value);
                             };
 
     m_GraphicsCmdPool = createPool(ci.queueIndices.graphics);
@@ -48,12 +50,13 @@ namespace gapi::vulkan
     swpCi.initCmdBuf = &swapchainInitCmdBuf;
     m_Swapchain = Swapchain(swpCi);
 
-    swapchainInitCmdBuf.end();
-    vk::UniqueFence fence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
-    VK_CHECK(m_Device->resetFences(1, &fence.get()));
+    VK_CHECK(swapchainInitCmdBuf.end());
+    auto fence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
+    VK_CHECK_RES(fence);
+    VK_CHECK(m_Device->resetFences(1, &fence.value.get()));
 
-    submitGraphicsCmds(&swapchainInitCmdBuf, 1 , nullptr, 0, nullptr, 0, fence.get());
-    VK_CHECK(m_Device->waitForFences(1, &fence.get(), true, ~0));
+    submitGraphicsCmds(&swapchainInitCmdBuf, 1 , nullptr, 0, nullptr, 0, fence.value.get());
+    VK_CHECK(m_Device->waitForFences(1, &fence.value.get(), true, ~0));
   }
 
   vk::CommandBuffer Device::allocateCmdBuffer(vk::CommandPool pool)
@@ -63,12 +66,14 @@ namespace gapi::vulkan
       .setLevel(vk::CommandBufferLevel::ePrimary)
       .setCommandBufferCount(1);
 
-    auto cmdBuf = std::move(m_Device->allocateCommandBuffersUnique(allocInfo)[0]);
+    auto r = m_Device->allocateCommandBuffersUnique(allocInfo);
+    VK_CHECK_RES(r);
+    auto cmdBuf = std::move(r.value[0]);
 
-    cmdBuf->begin(
+    VK_CHECK(cmdBuf->begin(
       vk::CommandBufferBeginInfo()
       .setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-    );
+    ));
 
     const auto ret = cmdBuf.get();
     m_FrameGc->addCmdBuffer(std::move(cmdBuf));
@@ -163,7 +168,7 @@ namespace gapi::vulkan
     submit.pWaitDstStageMask = &waitStage;
     submit.signalSemaphoreCount = signalSemaphoresCount;
     submit.pSignalSemaphores = signalSemaphores;
-    m_GraphicsQueue.submit(submit, signalFence);
+    VK_CHECK(m_GraphicsQueue.submit(submit, signalFence));
   }
 
   void Device::presentSurfaceImage()
@@ -243,16 +248,20 @@ namespace gapi::vulkan
 
     b.alignedBlockSize = bufferCi.size / b.maxDiscards;
 
-    b.buffer = m_Device->createBufferUnique(bufferCi);
+    auto bufRes = m_Device->createBufferUnique(bufferCi);
+    VK_CHECK_RES(bufRes);
+    b.buffer = std::move(bufRes.value);
     const vk::MemoryRequirements memRec = m_Device->getBufferMemoryRequirements(b.buffer.get());
 
     vk::MemoryAllocateInfo allocInfo;
     allocInfo.allocationSize = memRec.size;
     allocInfo.memoryTypeIndex = get_memory_index(m_MemoryIndices, usage);
 
-    b.memory = m_Device->allocateMemoryUnique(allocInfo);
+    auto memRes = m_Device->allocateMemoryUnique(allocInfo);
+    VK_CHECK_RES(memRes);
+    b.memory = std::move(memRes.value);
 
-    m_Device->bindBufferMemory(b.buffer.get(), b.memory.get(), 0);
+    VK_CHECK(m_Device->bindBufferMemory(b.buffer.get(), b.memory.get(), 0));
 
     return b;
   }
@@ -321,16 +330,17 @@ namespace gapi::vulkan
     region.dstOffset = dstOffset;
     cmdBuf.copyBuffer(src, dst, 1, &region);
 
-    cmdBuf.end();
+    VK_CHECK(cmdBuf.end());
 
     vk::SubmitInfo submitInfo;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &cmdBuf;
 
-    vk::UniqueFence fence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
-    VK_CHECK(m_Device->resetFences(1, &fence.get()));
-    VK_CHECK(m_TransferQueue.submit(1, &submitInfo, fence.get()));
-    VK_CHECK(m_Device->waitForFences(1, &fence.get(), true, ~0));
+    auto fence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
+    VK_CHECK_RES(fence);
+    VK_CHECK(m_Device->resetFences(1, &fence.value.get()));
+    VK_CHECK(m_TransferQueue.submit(1, &submitInfo, fence.value.get()));
+    VK_CHECK(m_Device->waitForFences(1, &fence.value.get(), true, ~0));
   }
 
   void Device::writeToStagingBuffer(const Buffer& buffer, const void* src, const size_t offset, const size_t size)
@@ -401,7 +411,9 @@ namespace gapi::vulkan
 
     ci.initialLayout = vk::ImageLayout::eUndefined;
 
-    resource.img = m_Device->createImageUnique(ci);
+    auto img = m_Device->createImageUnique(ci);
+    VK_CHECK_RES(img);
+    resource.img = std::move(img.value);
     resource.format = ci.format;
 
     const vk::MemoryRequirements memRec = m_Device->getImageMemoryRequirements(resource.img.get());
@@ -410,9 +422,11 @@ namespace gapi::vulkan
     allocInfo.allocationSize = memRec.size;
     allocInfo.memoryTypeIndex = m_MemoryIndices.deviceLocalMemory;
 
-    resource.memory = m_Device->allocateMemoryUnique(allocInfo);
+    auto memRes = m_Device->allocateMemoryUnique(allocInfo);
+    VK_CHECK_RES(memRes);
+    resource.memory = std::move(memRes.value);
 
-    m_Device->bindImageMemory(resource.img.get(), resource.memory.get(), 0);
+    VK_CHECK(m_Device->bindImageMemory(resource.img.get(), resource.memory.get(), 0));
 
     vk::ImageSubresourceRange subresRange;
     subresRange.aspectMask = get_image_aspect_flags(ci.format);
@@ -427,7 +441,9 @@ namespace gapi::vulkan
     viewCi.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA);
     viewCi.subresourceRange = subresRange;
 
-    resource.view = m_Device->createImageViewUnique(viewCi);
+    auto view = m_Device->createImageViewUnique(viewCi);
+    VK_CHECK_RES(view);
+    resource.view = std::move(view.value);
 
     size_t id = ~0;
     m_AllocatedTextures.add(std::move(resource), id);
@@ -482,18 +498,17 @@ namespace gapi::vulkan
 
     cmdBuf.copyBufferToImage(stagingBuf.buffer.get(), toTexture.img.get(), vk::ImageLayout::eTransferDstOptimal, 1, &copyDesc);
 
-    cmdBuf.end();
+    VK_CHECK(cmdBuf.end());
 
     vk::SubmitInfo submitInfo;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &cmdBuf;
 
-    vk::UniqueFence fence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
-    ASSERT(vk::Result::eSuccess == m_Device->resetFences(1, &fence.get()));
-
-    ASSERT(vk::Result::eSuccess == m_TransferQueue.submit(1, &submitInfo, fence.get()));
-
-    ASSERT(vk::Result::eSuccess == m_Device->waitForFences(1, &fence.get(), true, ~0));
+    auto fence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
+    VK_CHECK_RES(fence);
+    ASSERT(vk::Result::eSuccess == m_Device->resetFences(1, &fence.value.get()));
+    ASSERT(vk::Result::eSuccess == m_TransferQueue.submit(1, &submitInfo, fence.value.get()));
+    ASSERT(vk::Result::eSuccess == m_Device->waitForFences(1, &fence.value.get(), true, ~0));
   }
 
   SamplerHandler Device::allocateSampler(const SamplerAllocationDescription& allocDesc)
@@ -516,7 +531,9 @@ namespace gapi::vulkan
     samplerCi.unnormalizedCoordinates = allocDesc.unnormalizedCoordinates;
 
     Sampler sampler;
-    sampler.sampler = m_Device->createSamplerUnique(samplerCi);
+    auto sRes = m_Device->createSamplerUnique(samplerCi);
+    VK_CHECK_RES(sRes);
+    sampler.sampler = std::move(sRes.value);
 
     size_t id = (size_t)(~0);
     const bool allocated = m_AllocatedSamplers.add(std::move(sampler), id);
@@ -547,7 +564,9 @@ namespace gapi::vulkan
     const auto semaphoreCi = vk::SemaphoreCreateInfo()
       .setPNext(&semaphoreTypeCi);
 
-    return m_Device->createSemaphoreUnique(semaphoreCi);
+    auto sem = m_Device->createSemaphoreUnique(semaphoreCi);
+    VK_CHECK_RES(sem);
+    return std::move(sem.value);
   }
 
   Texture& Device::getAllocatedTexture(const TextureHandler texture)
@@ -567,6 +586,10 @@ namespace gapi::vulkan
     vk::CommandPoolCreateInfo ci;
     ci.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
     ci.queueFamilyIndex = m_QueueIndices.graphics;
-    return m_Device->createCommandPoolUnique(ci);
+
+    auto pool = m_Device->createCommandPoolUnique(ci);
+    VK_CHECK_RES(pool);
+
+    return std::move(pool.value);
   }
 }

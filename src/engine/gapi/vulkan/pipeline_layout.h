@@ -1,8 +1,8 @@
 #pragma once
 
-#include <shaders_compiler/spirv.h>
+#include "vulkan.h"
 
-#include <vulkan/vulkan.hpp>
+#include <shaders_compiler/spirv.h>
 
 namespace gapi::vulkan
 {

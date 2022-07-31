@@ -7,7 +7,6 @@
 #include <engine/gapi/resources.h>
 #include <engine/platform/memory.h>
 
-#include <vulkan/vulkan.hpp>
 #include <stdint.h>
 
 

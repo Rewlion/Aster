@@ -36,7 +36,10 @@ namespace gapi::vulkan
           .setClipped(true)
           .setOldSwapchain(nullptr);
 
-    return ci.device.createSwapchainKHRUnique(swapchainCreateInfo);
+    auto swp = ci.device.createSwapchainKHRUnique(swapchainCreateInfo);
+    VK_CHECK_RES(swp);
+
+    return std::move(swp.value);
   }
 
   vk::SurfaceFormatKHR Swapchain::getSuitableSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) const
@@ -81,7 +84,9 @@ namespace gapi::vulkan
 
   void Swapchain::setSwapchainResources(vk::CommandBuffer& initCmdBuf)
   {
-    std::vector<vk::Image> images = m_Device.getSwapchainImagesKHR(*m_Swapchain);
+    auto imgRes = m_Device.getSwapchainImagesKHR(*m_Swapchain);
+    VK_CHECK_RES(imgRes);
+    const std::vector<vk::Image>& images = imgRes.value;
     for (size_t i = 0; i < images.size(); ++i)
     {
       m_SwapchainResources.images[i] = images[i];
@@ -100,7 +105,10 @@ namespace gapi::vulkan
         .setFormat(m_SurfaceFormat.format)
         .setComponents(compMap)
         .setSubresourceRange(subresourceRange);
-      m_SwapchainResources.views[i] = m_Device.createImageViewUnique(imgViewCi);
+
+      auto view = m_Device.createImageViewUnique(imgViewCi);
+      VK_CHECK_RES(view);
+      m_SwapchainResources.views[i] = std::move(view.value);
 
       vk::ImageMemoryBarrier layoutBarrier;
       layoutBarrier.image = images[i];
