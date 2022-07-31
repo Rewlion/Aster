@@ -19,6 +19,7 @@ namespace tfx
   {
     struct Scope
     {
+      string name;
       const ShadersSystem::ByteCodes& byteCode;
       eastl::vector<uint8_t> cpuCbuffer;
       gapi::BufferHandler gpuCbuffer;
@@ -26,9 +27,19 @@ namespace tfx
 
     struct Technique
     {
+      string name;
       const ShadersSystem::ByteCodes& byteCode;
       gapi::GraphicsPipelineDescription graphicsPipelineDesc;
     };
+
+    template<class T>
+    string dump_storage_table(const T& t, const string& table_name)
+    {
+      string resources;
+      for (const auto& [h, res]: t)
+        resources += fmt::format("  name:{} hash:{}\n", res.name, h);
+      return fmt::format("storage: {}\n", table_name);
+    }
 
     ShadersSystem::MaterialsBin mat_bin;
     eastl::hash_map<string_hash, Scope> scopes_storage;
@@ -184,6 +195,7 @@ namespace tfx
       ASSERT(scopes_storage.find(h) == scopes_storage.end());
 
       Scope s{
+        .name = matScope.name,
         .byteCode = matScope.byteCode
       };
 
@@ -221,6 +233,7 @@ namespace tfx
       techniques_storage.insert({
         h,
         Technique{
+          .name = t.name,
           .byteCode = t.byteCode,
           .graphicsPipelineDesc = {
             .shaders = std::move(modules),
@@ -281,7 +294,7 @@ namespace tfx
     const string_hash h = str_hash(name.c_str());
     const auto it = scopes_storage.find(h);
 
-    ASSERT_FMT(it != scopes_storage.end(), "Missing scope: `{}`:{}", name,h);
+    ASSERT_FMT(it != scopes_storage.end(), "Missing scope: `{}`:{}\n{}", name,h, dump_storage_table(scopes_storage, "scopes_storage"));
 
     Processor pr;
     pr.activateScope(it->second, cmd_encoder);

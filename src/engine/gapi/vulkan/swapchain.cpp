@@ -16,6 +16,18 @@ namespace gapi::vulkan
     setSwapchainResources(*ci.initCmdBuf);
   }
 
+  Swapchain& Swapchain::operator=(Swapchain&& rvl)
+  {
+    m_Device = rvl.m_Device;
+    m_PresentQueue = rvl.m_PresentQueue;
+    m_SurfaceFormat = rvl.m_SurfaceFormat;
+    m_SurfaceExtent = rvl.m_SurfaceExtent;
+    m_Swapchain = std::move(rvl.m_Swapchain);
+    m_SwapchainResources = std::move(rvl.m_SwapchainResources);
+    frameId = rvl.frameId;
+    return *this;
+  }
+
   vk::UniqueSwapchainKHR Swapchain::createSwapchain(
     const CreateInfo& ci,
     const vk::SurfaceFormatKHR& surfaceFormat,

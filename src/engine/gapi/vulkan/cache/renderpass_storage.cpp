@@ -195,7 +195,8 @@ namespace gapi::vulkan
     rpCi.subpassCount = 1;
     rpCi.pSubpasses = &subpassDesc;
 
-
-    return m_Device->m_Device->createRenderPassUnique(rpCi);
+    auto rp = m_Device->m_Device->createRenderPassUnique(rpCi);
+    VK_CHECK_RES(rp);
+    return std::move(rp.value);
   }
 }

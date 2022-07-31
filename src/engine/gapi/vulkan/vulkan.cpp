@@ -11,6 +11,8 @@
 #include <engine/gapi/vulkan/cache/renderpass_storage.h>
 #include <engine/gapi/gapi.h>
 
+#include <memory>
+
 namespace gapi
 {
   extern TextureHandler       (*gapi_get_backbuffer)();
@@ -34,82 +36,82 @@ namespace gapi
 namespace gapi::vulkan
 {
   static Backend backend;
-  static Device device;
+  static std::unique_ptr<Device> device;
   static FrameGarbageCollector frameGc;
   static PipelinesStorage pipelinesStorage;
   static RenderPassStorage rpStorage;
 
   vk::Device& get_device()
   {
-    return device.getDevice();
+    return device->getDevice();
   }
 
   TextureHandler get_backbuffer()
   {
-    return device.getBackbuffer();
+    return device->getBackbuffer();
   }
 
   BufferHandler allocate_buffer(const size_t size, const int usage)
   {
-    return device.allocateBuffer(size, usage);
+    return device->allocateBuffer(size, usage);
   }
 
   void free_buffer(const BufferHandler buffer)
   {
-    device.freeBuffer(buffer);
+    device->freeBuffer(buffer);
   }
 
   void free_texture(const TextureHandler texture)
   {
-    device.freeTexture(texture);
+    device->freeTexture(texture);
   }
 
   void* map_buffer(const BufferHandler buffer, const size_t offset, const size_t size)
   {
-    return device.mapBuffer(buffer, offset, size);
+    return device->mapBuffer(buffer, offset, size);
   }
 
   void unmap_buffer(const BufferHandler buffer)
   {
-    device.unmapBuffer(buffer);
+    device->unmapBuffer(buffer);
   }
 
   void copy_buffers_sync(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size)
   {
-    device.copyBuffersSync(src, srcOffset, dst, dstOffset, size);
+    device->copyBuffersSync(src, srcOffset, dst, dstOffset, size);
   }
 
   void write_buffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags)
   {
-    device.writeBuffer(buffer, src, offset, size, flags);
+    device->writeBuffer(buffer, src, offset, size, flags);
   }
 
   TextureHandler allocate_texture(const TextureAllocationDescription& allocDesc)
   {
-    return device.allocateTexture(allocDesc);
+    return device->allocateTexture(allocDesc);
   }
 
   void copy_to_texture_sync(const void* src, const size_t size, const TextureHandler texture)
   {
-    device.copyToTextureSync(src, size, texture);
+    device->copyToTextureSync(src, size, texture);
   }
 
   SamplerHandler allocate_sampler(const SamplerAllocationDescription& allocDesc)
   {
-    return device.allocateSampler(allocDesc);
+    return device->allocateSampler(allocDesc);
   }
 
   void present_backbuffer()
   {
-    device.presentSurfaceImage();
+    device->presentSurfaceImage();
     frameGc.nextFrame();
   }
 
   Semaphore* ackquire_backbuffer()
   {
     VulkanSemaphore* s = new VulkanSemaphore();
-    s->semaphore = device.createSemaphore();
-    device.acquireBackbuffer(s->semaphore.get());
+    s->semaphore = device->createSemaphore();
+    device->acquireBackbuffer(s->semaphore.get());
     return s;
   }
 
@@ -122,18 +124,18 @@ namespace gapi::vulkan
 
   gapi::CmdEncoder* allocate_cmd_encoder()
   {
-    vk::UniqueCommandPool cmdPool = device.allocateCmdPool();
-    return new CmdEncoder(device, frameGc, rpStorage, pipelinesStorage, std::move(cmdPool));
+    vk::UniqueCommandPool cmdPool = device->allocateCmdPool();
+    return new CmdEncoder(*device, frameGc, rpStorage, pipelinesStorage, std::move(cmdPool));
   }
 
   Fence* allocate_fence()
   {
     VulkanFence* f = new VulkanFence{};
-    auto fence = device.getDevice().createFenceUnique(vk::FenceCreateInfo{});
+    auto fence = device->getDevice().createFenceUnique(vk::FenceCreateInfo{});
     VK_CHECK_RES(fence);
 
     f->fence = std::move(fence.value);
-    VK_CHECK(device.getDevice().resetFences(1, &f->fence.get()));
+    VK_CHECK(device->getDevice().resetFences(1, &f->fence.get()));
     return f;
   }
 
@@ -157,10 +159,10 @@ namespace gapi::vulkan
     gapi_allocate_fence = allocate_fence;
 
     backend.init();
-    device = backend.createDevice(&frameGc);
-    frameGc.init(&device);
-    rpStorage.init(&device);
-    pipelinesStorage.init(&device);
+    device.reset(backend.createDevice(&frameGc));
+    frameGc.init(device.get());
+    rpStorage.init(device.get());
+    pipelinesStorage.init(device.get());
   }
 
 }

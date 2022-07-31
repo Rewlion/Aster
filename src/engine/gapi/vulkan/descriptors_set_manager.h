@@ -20,6 +20,9 @@ namespace gapi::vulkan
   {
     public:
       DescriptorsSetManager(Device& device);
+      DescriptorsSetManager(DescriptorsSetManager&& rvl);
+
+      const DescriptorsSetManager& operator=(const DescriptorsSetManager& rvl) = delete;
 
       void setPipelineLayout(const PipelineLayout* layout);
 
@@ -69,6 +72,7 @@ namespace gapi::vulkan
       void addPool();
       vk::DescriptorPool& acquirePool();
 
+    private:
       Device& m_Device;
       const PipelineLayout* m_PipelineLayout;
       eastl::vector<vk::UniqueDescriptorPool> m_Pools;

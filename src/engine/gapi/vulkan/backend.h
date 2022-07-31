@@ -13,7 +13,7 @@ namespace gapi::vulkan
   {
     public:
       void init();
-      Device createDevice(FrameGarbageCollector* frameGc);
+      Device* createDevice(FrameGarbageCollector* frameGc);
 
     private:
       eastl::vector<const char*> getValidationLayers();

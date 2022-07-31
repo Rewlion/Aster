@@ -27,6 +27,8 @@ namespace gapi::vulkan
   class ShadersStorage
   {
     public:
+      const ShadersStorage& operator=(const ShadersStorage& rvl) = delete;
+
       void init(Device* device);
 
       ShaderModuleHandler addModule(const ShadersSystem::ShaderBlob& blob, const spirv::v2::Reflection& reflection);

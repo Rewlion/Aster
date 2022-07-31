@@ -5,6 +5,8 @@ namespace gapi
   class CmdEncoder
   {
     public:
+      const CmdEncoder& operator=(const CmdEncoder& rvl) = delete;
+
       virtual ~CmdEncoder(){}
 
       virtual void beginRenderpass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clear) = 0;

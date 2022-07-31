@@ -12,6 +12,16 @@ namespace gapi::vulkan
   {
   }
 
+  DescriptorsSetManager::DescriptorsSetManager(DescriptorsSetManager&& rvl)
+    : m_Device(rvl.m_Device)
+    , m_PipelineLayout(rvl.m_PipelineLayout)
+    , m_Pools(std::move(rvl.m_Pools))
+    , m_PoolId(rvl.m_PoolId)
+    , m_BindedDsets(std::move(rvl.m_BindedDsets))
+    , m_WriteInfos(std::move(m_WriteInfos))
+  {
+  }
+
   void DescriptorsSetManager::addPool()
   {
     vk::DescriptorPoolSize sizes[] = {

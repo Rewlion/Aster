@@ -44,6 +44,8 @@ namespace gapi::vulkan
       Device() = default;
       Device(CreateInfo&&, FrameGarbageCollector*);
 
+      const Device& operator=(const Device& rvl) = delete;
+
       inline uint8_t getBackbufferId() const { return m_Swapchain.getBackbufferId(); }
       inline TextureHandler getBackbuffer() const
       {

@@ -15,6 +15,8 @@ namespace gapi::vulkan
   class PipelinesStorage
   {
     public:
+      const PipelinesStorage& operator=(const PipelinesStorage& rvl) = delete;
+
       void init(Device* device);
       vk::Pipeline getPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass);
       const PipelineLayout* getPipelineLayout(const eastl::vector<ShaderModuleHandler>& modules);

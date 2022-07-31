@@ -171,7 +171,7 @@ namespace gapi::vulkan
     return memoryIndices;
   }
 
-  Device Backend::createDevice(FrameGarbageCollector* frameGc)
+  Device* Backend::createDevice(FrameGarbageCollector* frameGc)
   {
     eastl::vector_set<size_t> uniqueQueueFamilyIndices = { m_QueueIndices.graphics, m_QueueIndices.present, m_QueueIndices.transfer };
 
@@ -223,6 +223,6 @@ namespace gapi::vulkan
 
       .swapchainImageExtent = vk::Extent2D{(uint32_t)wndSize.x, (uint32_t)wndSize.y}
     };
-    return Device(std::move(deviceCi), frameGc);
+    return new Device(std::move(deviceCi), frameGc);
   }
 }

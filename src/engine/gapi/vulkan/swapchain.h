@@ -26,6 +26,9 @@ namespace gapi::vulkan
       Swapchain() = default;
       Swapchain(const CreateInfo& ci);
 
+      const Swapchain& operator=(const Swapchain& rvl) = delete;
+      Swapchain& operator=(Swapchain&& rvl);
+
       void present();
 
       inline uint8_t getBackbufferId() const
