@@ -19,7 +19,6 @@ namespace gapi::vulkan
     , m_PipelineLayout(rvl.m_PipelineLayout)
     , m_Pools(std::move(rvl.m_Pools))
     , m_PoolId(rvl.m_PoolId)
-    , m_BindedDsets(std::move(rvl.m_BindedDsets))
     , m_WriteInfos(std::move(rvl.m_WriteInfos))
   {
   }
@@ -88,12 +87,6 @@ namespace gapi::vulkan
     return res.value[0];
   }
 
-  void DescriptorsSetManager::insureSetExistance(const size_t set)
-  {
-    if (m_BindedDsets[set] == vk::DescriptorSet{})
-      m_BindedDsets[set] = acquireSet(set);
-  }
-
   void DescriptorsSetManager::setImage(const vk::ImageView view, const size_t set, const size_t binding)
   {
     m_WriteInfos.push_back(ImageWriteInfo{
@@ -122,129 +115,130 @@ namespace gapi::vulkan
     });
   }
 
-  void DescriptorsSetManager::WriteDescsBuilder::processWrite(size_t set, size_t binding,
-    vk::DescriptorType dsetType,
-    std::function<void(vk::WriteDescriptorSet&)> setupInfoPtr)
+  namespace
   {
-    if (!m_DsetManager.validateBinding(set, binding, dsetType))
-        return;
-
-    m_DsetManager.insureSetExistance(set);
-    m_Writes.updateSets.insert(set);
-
-    vk::WriteDescriptorSet write;
-    write.dstSet = m_DsetManager.m_BindedDsets[set];
-    write.dstBinding = binding;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.descriptorType = dsetType;
-    setupInfoPtr(write);
-
-    m_Writes.writes.push_back(write);
+    template<class... Ts> struct overload : Ts... { using Ts::operator()...; };
+    template<class... Ts> overload(Ts...) -> overload<Ts...>;
   }
 
-  void DescriptorsSetManager::WriteDescsBuilder::process(const SamplerWriteInfo& i)
+  void DescriptorsSetManager::updateDescriptorSets(vk::CommandBuffer& cmdBuf)
   {
-    const auto infoSetuper = [&](vk::WriteDescriptorSet& write) {
-      vk::DescriptorImageInfo imgInfo;
-      imgInfo.sampler = i.sampler;
-      m_Writes.imgInfos.push_back(imgInfo);
-      write.pImageInfo = &m_Writes.imgInfos.back();
+    ASSERT(m_PipelineLayout != nullptr);
+
+    eastl::vector<vk::DescriptorImageInfo> imgInfos;
+    imgInfos.reserve(m_WriteInfos.size());
+    eastl::vector<vk::DescriptorBufferInfo> bufInfos;
+    bufInfos.reserve(m_WriteInfos.size());
+
+    const auto cbInvoker = [this](const auto& cb, const auto& info, vk::DescriptorType type) {
+      if (!validateBinding(info.set, info.binding, type))
+            return;
+      cb(info, type);
     };
-    processWrite(i.set, i.binding, vk::DescriptorType::eSampler, infoSetuper);
-  }
 
-  void DescriptorsSetManager::WriteDescsBuilder::process(const ImageWriteInfo& i)
-  {
-    const auto infoSetuper = [&](vk::WriteDescriptorSet& write) {
-      vk::DescriptorImageInfo imgInfo;
-      imgInfo.imageView = i.view;
-      imgInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-      m_Writes.imgInfos.push_back(imgInfo);
-      write.pImageInfo = &m_Writes.imgInfos.back();
-    };
-    processWrite(i.set, i.binding, vk::DescriptorType::eSampledImage, infoSetuper);
-  }
-
-  void DescriptorsSetManager::WriteDescsBuilder::process(const UniformBufferWriteInfo& i)
-  {
-    const auto infoSetuper = [&](vk::WriteDescriptorSet& write) {
-        vk::DescriptorBufferInfo bufInfo;
-        bufInfo.buffer = i.buffer;
-        bufInfo.offset = i.constOffset;
-        bufInfo.range = VK_WHOLE_SIZE;
-        m_Writes.bufInfos.push_back(bufInfo);
-        write.pBufferInfo = &m_Writes.bufInfos.back();
+    const auto processSampler = [&](const auto& cb) {
+      return [&](const SamplerWriteInfo& info) {
+        cbInvoker(cb, info, vk::DescriptorType::eSampler);
       };
-    processWrite(i.set, i.binding, vk::DescriptorType::eUniformBuffer, infoSetuper);
-  }
+    };
 
+    const auto processImage = [&](const auto& cb) {
+      return [&](const ImageWriteInfo& info) {
+        cbInvoker(cb, info,vk::DescriptorType::eSampledImage);
+      };
+    };
 
-  DescriptorsSetManager::WritesDescription DescriptorsSetManager::acquireWrites()
-  {
-    WriteDescsBuilder writesBuilder(*this);
+    const auto processUniformBuffer = [&](const auto& cb) {
+      return [&](const UniformBufferWriteInfo& info) {
+        cbInvoker(cb, info, vk::DescriptorType::eUniformBuffer);
+      };
+    };
 
     for (const auto& wrInfo: m_WriteInfos)
-      std::visit([&](auto& v){
-        writesBuilder.process(v);
+    {
+      std::visit(overload{
+        processSampler([&](const auto& info, vk::DescriptorType type){
+          vk::DescriptorImageInfo imgInfo;
+          imgInfo.sampler = info.sampler;
+          imgInfos.push_back(imgInfo);
+        }),
+        processImage([&](const auto& info, vk::DescriptorType type){
+          vk::DescriptorImageInfo imgInfo;
+          imgInfo.imageView = info.view;
+          imgInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+          imgInfos.push_back(imgInfo);
+        }),
+        processUniformBuffer([&](const auto& info, vk::DescriptorType type){
+          vk::DescriptorBufferInfo bufInfo;
+          bufInfo.buffer = info.buffer;
+          bufInfo.offset = info.constOffset;
+          bufInfo.range = VK_WHOLE_SIZE;
+          bufInfos.push_back(bufInfo);
+        })
       }, wrInfo);
+    }
+
+    std::vector<vk::DescriptorSet> updateSets;
+    const auto getDset = [&](size_t set) {
+      if (updateSets.size() <= set)
+        updateSets.resize(set+1);
+
+      vk::DescriptorSet& updatingSet = updateSets[set];
+
+      if (updatingSet == vk::DescriptorSet{})
+        updatingSet = acquireSet(set);
+
+      return updatingSet;
+    };
+
+    eastl::vector<vk::WriteDescriptorSet> writes;
+    writes.reserve(m_WriteInfos.size());
+    size_t bufIdx = 0, imgIdx = 0;
+    const auto addWrite = [&](const auto& info, vk::DescriptorType type){
+      vk::WriteDescriptorSet write;
+      write.dstSet = getDset(info.set);
+      write.dstBinding = info.binding;
+      write.dstArrayElement = 0;
+      write.descriptorCount = 1;
+      write.descriptorType = type;
+
+      if (type == vk::DescriptorType::eUniformBuffer)
+        write.pBufferInfo = &bufInfos[bufIdx++];
+      else
+        write.pImageInfo = &imgInfos[imgIdx++];
+
+      writes.push_back(write);
+    };
+
+    for (const auto& wrInfo: m_WriteInfos)
+    {
+      std::visit(overload{
+        processSampler(addWrite),
+        processImage(addWrite),
+        processUniformBuffer(addWrite)
+      }, wrInfo);
+    }
 
     m_WriteInfos.clear();
-    return writesBuilder.gatherWrites();
+
+    if (!writes.empty())
+    {
+      m_Device.getDevice().updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
+      for (size_t set = 0; set < updateSets.size(); ++set)
+      {
+        if (updateSets[set] != vk::DescriptorSet{})
+        {
+          cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
+                                    m_PipelineLayout->pipelineLayout.get(),
+                                    set, 1, &updateSets[set], 0, nullptr);
+        }
+      }
+    }
   }
 
   void DescriptorsSetManager::setPipelineLayout(const PipelineLayout* layout)
   {
     ASSERT(layout != nullptr);
-
-    if (m_BindedDsets.size() < layout->dsets.size())
-      m_BindedDsets.resize(layout->dsets.size());
-
-    if (m_PipelineLayout != nullptr)
-    {
-      for (size_t i = 0; i < m_PipelineLayout->dsets.size(); ++i)
-      {
-        if (layout->dsets[i].size() > m_PipelineLayout->dsets[i].size())
-        {
-          m_BindedDsets[i] = vk::DescriptorSet{};
-          continue;
-        }
-
-        const bool hasDifferentBindings = std::memcmp(layout->dsets[i].data(),
-                                                      m_PipelineLayout->dsets[i].data(),
-                                                      layout->dsets[i].size() * sizeof(layout->dsets[i]));
-        if (hasDifferentBindings)
-          m_BindedDsets[i] = vk::DescriptorSet{};
-      }
-    }
-
     m_PipelineLayout = layout;
-  }
-
-  void DescriptorsSetManager::updateDescriptorSets(vk::CommandBuffer& cmdBuf)
-  {
-    if (!m_PipelineLayout)
-      return;
-
-    WritesDescription writes = acquireWrites();
-    if (!writes.writes.empty())
-      m_Device.getDevice().updateDescriptorSets(writes.writes.size(), writes.writes.data(), 0, nullptr);
-
-    for (size_t i = 0; i < m_BindedDsets.size(); ++i)
-    {
-      const auto& set = m_BindedDsets[i];
-      if (set == vk::DescriptorSet{})
-      {
-        m_BindedDsets[i] = acquireSet(i);
-        writes.updateSets.insert(i);
-      }
-    }
-
-    for (size_t set: writes.updateSets)
-    {
-      cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
-                                m_PipelineLayout->pipelineLayout.get(),
-                                set, 1, &m_BindedDsets[set], 0, nullptr);
-    }
   }
 }
