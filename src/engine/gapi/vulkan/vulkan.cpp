@@ -1,5 +1,3 @@
-#pragma once
-
 #include "vulkan.h"
 #include "backend.h"
 #include "cmd_encoder.h"
