@@ -9,6 +9,8 @@ namespace gapi::vulkan
 {
   DescriptorsSetManager::DescriptorsSetManager(Device& device)
     : m_Device(device)
+    , m_PipelineLayout(nullptr)
+    , m_PoolId(0)
   {
   }
 
@@ -193,6 +195,8 @@ namespace gapi::vulkan
 
   void DescriptorsSetManager::setPipelineLayout(const PipelineLayout* layout)
   {
+    ASSERT(layout != nullptr);
+
     if (m_BindedDsets.size() < layout->dsets.size())
       m_BindedDsets.resize(layout->dsets.size());
 
