@@ -1,6 +1,8 @@
 #pragma once
 
-#define VULKAN_HPP_ASSERT_ON_RESULT(b)
+#ifndef VULKAN_HPP_ASSERT_ON_RESULT
+  #define VULKAN_HPP_ASSERT_ON_RESULT(b)
+#endif
 #define VULKAN_HPP_NO_EXCEPTIONS 1
 #include <vulkan/vulkan.hpp>
 

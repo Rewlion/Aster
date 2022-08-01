@@ -426,7 +426,7 @@ namespace ShadersSystem
         if (it == m_Scope.cbufferVariables.end())
           throw std::runtime_error(fmt::format("failed to generate byte code for cbuffer var `{}`", res.name));
 
-        ShByteCode b = ShBindCbufferVar(it->second.offset, assignNode->accessType, res.type, res.name);
+        ShByteCode b = ShBindCbufferVar(it->second.offset, assignNode->accessType, res.type, assignNode->resourceName);
         bc.push_back(b);
 
         return bc;
