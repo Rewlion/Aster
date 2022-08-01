@@ -149,12 +149,17 @@ namespace tfx
         void processByteCode(const ShadersSystem::ShBindCbufferVar& bc)
         {
           const auto& [param, resourceExist] = getParam(bc.accessType, bc.resourceName);
+
           uint8_t* cbufferDataStart = m_Scope->cpuCbuffer.data() + bc.offset;
 
           #define SETUP_CBUFFER_VAR(AttrType, T, def) \
             case gapi::AttributeType::AttrType:\
             {\
               const T value = resourceExist && std::holds_alternative<T>(param) ? std::get<T>(param) : def;\
+              const size_t start = bc.offset;\
+              const size_t ending = start + sizeof(T);\
+              const size_t validRange =  m_Scope->cpuCbuffer.size();\
+              ASSERT_FMT( ending <= validRange, "Cbuffer placing is out of range. validRange: [0,{}), placing range: [{},{}). Variable name: {}", validRange, start, ending, bc.resourceName);\
               *(T*)(cbufferDataStart) = value;\
               break;\
             }
