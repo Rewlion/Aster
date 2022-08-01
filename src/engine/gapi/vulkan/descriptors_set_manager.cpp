@@ -58,8 +58,8 @@ namespace gapi::vulkan
   bool DescriptorsSetManager::validateBinding(const size_t set, const size_t binding,
                                               const vk::DescriptorType type) const
   {
-    if (set < m_PipelineLayout->dsets.size() &&
-        m_PipelineLayout->dsets[set].size() < binding)
+    if ((set < m_PipelineLayout->dsets.size()) &&
+        (binding < m_PipelineLayout->dsets[set].size()))
     {
       return m_PipelineLayout->dsets[set][binding].descriptorType == type;
     }
