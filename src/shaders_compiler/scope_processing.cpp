@@ -249,8 +249,8 @@ namespace ShadersSystem
           case gapi::AttributeType::Float:
           case gapi::AttributeType::Float2:
           case gapi::AttributeType::Float3:
-          case gapi::AttributeType::Float4: return 4;
-          case gapi::AttributeType::Float4x4: return 4*4;
+          case gapi::AttributeType::Float4: return 4*4;
+          case gapi::AttributeType::Float4x4: return (4*4)*4;
 
           default:
           {
