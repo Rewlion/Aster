@@ -305,6 +305,7 @@ namespace gapi::vulkan
       m_FrameGc->addMemory(std::move(buffer.memory));
 
       buffer = allocateBufferInternal(buffer.blockSize, buffer.usage);
+      buffer.isFirstDiscard = false;
     }
   }
 
