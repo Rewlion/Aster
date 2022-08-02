@@ -35,10 +35,6 @@ technique SceneOpaque {
         float3 tan:    TEXTURE0;
         float3 normal: TEXTURE1;
         float2 uv:     TEXTURE2;
-    depth:
-      test = yes;
-      write = true;
-      compare_op = always;
 
   #hlsl
     struct VsOutput

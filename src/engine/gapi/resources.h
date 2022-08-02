@@ -126,9 +126,9 @@ namespace gapi
 
   struct DepthStencilStateDescription
   {
-    bool      depthTestEnabled      = false;
-    bool      depthWriteEnabled     = false;
-    CompareOp depthOp               = CompareOp::Never;
+    bool      depthTestEnabled      = true;
+    bool      depthWriteEnabled     = true;
+    CompareOp depthOp               = CompareOp::LessOrEqual;
     bool      stencilTestEnabled    = false;
     StencilOp stencilFailOp         = StencilOp::Keep;
     StencilOp stencilPassOp         = StencilOp::Keep;
