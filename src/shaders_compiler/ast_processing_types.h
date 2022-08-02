@@ -61,7 +61,6 @@ namespace ShadersSystem
   {
     string fileDeclaration;
     string name;
-    gapi::ShaderStage shaders;
 
     uint8_t cbuffer = NO_CBUFFER;
     uint16_t cbufferSize = 0;
@@ -79,7 +78,6 @@ namespace ShadersSystem
     {
       return
         name == rvl.name &&
-        shaders == rvl.shaders &&
         cbuffer == rvl.cbuffer &&
         cbufferSize == rvl.cbufferSize &&
         descriptorSet == rvl.descriptorSet &&

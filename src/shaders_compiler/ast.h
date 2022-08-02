@@ -616,33 +616,16 @@ namespace ShadersSystem
     }
   };
 
-  struct ShaderExp: public ResourceReserveExp
-  {
-    gapi::ShaderStage shaders;
-    ShaderExp(const gapi::ShaderStage shader)
-      : ResourceReserveExp(ResourceReserveExp::Type::Shader)
-      , shaders(shader)
-    {
-    }
-  };
-
   struct ShadersResourcesReserveExp: public ScopeExp
   {
-    const ShaderExp* shaders;
     const ResourceReserveExp* exps;
-    ShadersResourcesReserveExp(const ShaderExp* shaders, ResourceReserveExp* exps)
+    ShadersResourcesReserveExp(ResourceReserveExp* exps)
       : ScopeExp(ScopeExp::Type::ShadersResourcesReserve)
-      , shaders(shaders)
       , exps(exps)
     {
     }
     virtual ~ShadersResourcesReserveExp()
     {
-      if (shaders)
-      {
-        delete shaders;
-        shaders = nullptr;
-      }
       if (exps)
       {
         delete exps;

@@ -1,5 +1,5 @@
 scope FrameScope {
-  shader vertex, pixel:
+  reserve:
     descriptor_set(0);
     cbuffer(0);
     register(sampler, 1-2);
@@ -12,7 +12,7 @@ scope FrameScope {
 };
 
 scope StaticModelScope {
-  shader vertex, pixel:
+  reserve:
     descriptor_set(1);
     cbuffer(0);
     register(texture, 1-2);

@@ -96,16 +96,8 @@ scope {
   return TFX_TOKEN_SCOPE;
 }
 
-shader {
-  return TFX_TOKEN_SHADER;
-}
-
-vertex {
-  return TFX_TOKEN_SHADER_VERTEX;
-}
-
-pixel {
-  return TFX_TOKEN_SHADER_PIXEL;
+reserve {
+  return TFX_TOKEN_RESERVE;
 }
 
 register {

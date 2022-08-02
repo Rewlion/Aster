@@ -71,7 +71,6 @@ namespace ShadersSystem
 
       void addShadersResourcesReserve(const ShadersResourcesReserveExp& resourcesReserve)
       {
-        m_Scope.shaders = resourcesReserve.shaders->shaders;
         const ResourceReserveExp* exp = resourcesReserve.exps;
         while (exp != nullptr)
         {

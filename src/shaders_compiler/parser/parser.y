@@ -44,9 +44,7 @@
 
   ShadersResourcesReserveExp* shadersResourcesReserve;
   ResourceReserveExp* resReserveExp;
-  gapi::ShaderStage shader;
   DescriptorSetReserveExp* dsetExp;
-  ShaderExp* shaderExp;
 
   ResourceDeclaration* resourceDeclaration;
   ResourceType resourceType;
@@ -89,9 +87,7 @@
 %token TFX_TOKEN_INPUT "input"
 %token TFX_TOKEN_BUFFER "buffer"
 %token TFX_TOKEN_SCOPE "scope"
-%token TFX_TOKEN_SHADER "shader"
-%token TFX_TOKEN_SHADER_VERTEX "vertex"
-%token TFX_TOKEN_SHADER_PIXEL "pixel"
+%token TFX_TOKEN_RESERVE "reserve"
 %token TFX_TOKEN_REGISTER "register"
 %token TFX_TOKEN_TEXTURE "texture"
 %token TFX_TOKEN_SAMPLER "sampler"
@@ -220,8 +216,6 @@
 
 %type <techniqueExp>         TECHNIQUE_EXP
 %type <techniqueExp>         TECHNIQUE_EXP_LIST
-%type <shaderExp>            SHADERS_LIST
-%type <shader>               SHADERS_ELEM
 %type <scopeExp>             SCOPE_EXP
 %type <scopeExp>             SCOPE_EXP_LIST
 %type <resReserveExp>        RESOURCE_RESERVE_EXP
@@ -714,8 +708,8 @@ SCOPE_EXP_LIST
   ;
 
 SCOPE_EXP
-  : TFX_TOKEN_SHADER SHADERS_LIST[shaders] ":" RESOURCE_RESERVE_EXP_LIST[exps] {
-    $$ = new ShadersResourcesReserveExp($shaders, $exps);
+  : "reserve" ":" RESOURCE_RESERVE_EXP_LIST[exps] {
+    $$ = new ShadersResourcesReserveExp($exps);
   }
   | RESOURCE_TYPE[type] TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
     $$ = new ResourceDeclarationExp($type, $name, $exps);
@@ -814,25 +808,6 @@ BOOL_VALUE
   : TFX_TOKEN_BOOL_VAL[v] {
     $$ = $v;
   }
-
-SHADERS_LIST
-  : SHADERS_ELEM[shader] "," SHADERS_LIST[shaders] {
-    $$ = $shaders;
-    $$->shaders = (gapi::ShaderStage)($$->shaders | $shader);
-  }
-  | SHADERS_ELEM[shader] {
-    $$ = new ShaderExp($shader);
-  }
-  ;
-
-SHADERS_ELEM
-  : "vertex" {
-    $$ = gapi::ShaderStage::Vertex;
-  }
-  | "pixel" {
-    $$ = gapi::ShaderStage::Fragment;
-  }
-  ;
 
 TARGET_PROFILE
   : "vs_6_0" {
