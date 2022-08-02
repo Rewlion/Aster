@@ -12,6 +12,9 @@ scope StaticModelScope {
   shader vertex, pixel:
     descriptor_set(1);
     cbuffer(0);
+    register(texture, 1-2);
+
+  Texture2D albedo = channel(model_albedo);
 
   float4x4 modelTm = channel(model_tm);
   float4x4 normalTm = channel(normal_tm);

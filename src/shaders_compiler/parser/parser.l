@@ -206,7 +206,7 @@ int4 {
   return TFX_TOKEN_INT4;
 }
 
-texture2D {
+Texture2D {
   return TFX_TOKEN_TEXTURE2D;
 }
 

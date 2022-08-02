@@ -215,7 +215,7 @@
 %token TFX_TOKEN_INT2 "int2"
 %token TFX_TOKEN_INT3 "int3"
 %token TFX_TOKEN_INT4 "int4"
-%token TFX_TOKEN_TEXTURE2D "texture2D"
+%token TFX_TOKEN_TEXTURE2D "Texture2D"
 
 %type <techniqueExp>         TECHNIQUE_EXP
 %type <techniqueExp>         TECHNIQUE_EXP_LIST

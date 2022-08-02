@@ -268,7 +268,7 @@ enum yysymbol_kind_t
   YYSYMBOL_TFX_TOKEN_INT2 = 143,           /* "int2"  */
   YYSYMBOL_TFX_TOKEN_INT3 = 144,           /* "int3"  */
   YYSYMBOL_TFX_TOKEN_INT4 = 145,           /* "int4"  */
-  YYSYMBOL_TFX_TOKEN_TEXTURE2D = 146,      /* "texture2D"  */
+  YYSYMBOL_TFX_TOKEN_TEXTURE2D = 146,      /* "Texture2D"  */
   YYSYMBOL_YYACCEPT = 147,                 /* $accept  */
   YYSYMBOL_MODULE_EXPRESSIONS = 148,       /* MODULE_EXPRESSIONS  */
   YYSYMBOL_MODULE_EXPRESSION = 149,        /* MODULE_EXPRESSION  */
@@ -753,7 +753,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
   "vs_6_4", "vs_6_5", "vs_6_6", "vs_6_7", "ps_6_0", "ps_6_1", "ps_6_2",
   "ps_6_3", "ps_6_4", "ps_6_5", "ps_6_6", "ps_6_7", "float", "float2",
   "float3", "float4", "float4x4", "int", "int2", "int3", "int4",
-  "texture2D", "$accept", "MODULE_EXPRESSIONS", "MODULE_EXPRESSION",
+  "Texture2D", "$accept", "MODULE_EXPRESSIONS", "MODULE_EXPRESSION",
   "TECHNIQUE_DECLARATION", "TECHNIQUE_EXP_LIST", "TECHNIQUE_EXP",
   "RENDER_STATE_EXP_LIST", "RENDER_STATE_EXP", "DEPTH_EXP_LIST",
   "DEPTH_EXP", "STENCIL_EXP_LIST", "STENCIL_EXP", "PRIMITIVE_TOPOLOGY",
@@ -2811,7 +2811,7 @@ yyreduce:
 #line 2812 "src/shaders_compiler/parser/parser.tab.cpp"
     break;
 
-  case 134: /* RESOURCE_TYPE: "texture2D"  */
+  case 134: /* RESOURCE_TYPE: "Texture2D"  */
 #line 760 "src/shaders_compiler/parser/parser.y"
                         {
     (yyval.resourceType) = ResourceType::Texture2D;

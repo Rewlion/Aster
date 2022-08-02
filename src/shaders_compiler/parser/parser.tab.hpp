@@ -213,7 +213,7 @@ extern int shdebug;
     TFX_TOKEN_INT2 = 398,          /* "int2"  */
     TFX_TOKEN_INT3 = 399,          /* "int3"  */
     TFX_TOKEN_INT4 = 400,          /* "int4"  */
-    TFX_TOKEN_TEXTURE2D = 401      /* "texture2D"  */
+    TFX_TOKEN_TEXTURE2D = 401      /* "Texture2D"  */
   };
   typedef enum shtokentype shtoken_kind_t;
 #endif
