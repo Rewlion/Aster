@@ -487,7 +487,7 @@ namespace ShadersSystem
     };
   }
 
-  void Compiler::onTechniqueDeclaration(TechniqueDeclarationExp* exp)
+  bool Compiler::onTechniqueDeclaration(TechniqueDeclarationExp* exp)
   {
     try {
       m_GC.push_back(std::unique_ptr<Node>(exp));
@@ -516,15 +516,17 @@ namespace ShadersSystem
         });
 
       m_Bin.techniques.push_back(tp.getTechniqueDecription());
+      return true;
     }
     catch (std::exception& e)
     {
       markCompilationFailed();
       logerror("technique declaration error: {}", e.what());
+      return false;
     }
   }
 
-  void Compiler::onTechniqueMacroDeclaration(TechniqueMacroDeclarationExp* exp)
+  bool Compiler::onTechniqueMacroDeclaration(TechniqueMacroDeclarationExp* exp)
   {
     try {
       m_GC.push_back(std::unique_ptr<Node>(exp));
@@ -537,10 +539,13 @@ namespace ShadersSystem
         nameHash,
         exp
       });
+
+      return true;
     } catch (std::exception& e)
     {
       markCompilationFailed();
       logerror("technique macro `{}` declaration error: {}", exp->name, e.what());
+      return false;
     }
   }
 }

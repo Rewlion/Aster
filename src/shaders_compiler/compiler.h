@@ -20,9 +20,9 @@ namespace ShadersSystem
       bool compileModuleFromFile(const string& file);
 
       inline void markCompilationFailed() { m_IsCompilationOk = false; }
-      void onScopeDeclaration(ScopeDeclarationExp*);
-      void onTechniqueMacroDeclaration(TechniqueMacroDeclarationExp*);
-      void onTechniqueDeclaration(TechniqueDeclarationExp*);
+      bool onScopeDeclaration(ScopeDeclarationExp*);
+      bool onTechniqueMacroDeclaration(TechniqueMacroDeclarationExp*);
+      bool onTechniqueDeclaration(TechniqueDeclarationExp*);
 
       bool hasScope(const string& scope) const;
       string getScopeHlsl(const string& scope) const;

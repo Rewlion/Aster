@@ -269,12 +269,16 @@ MODULE_EXPRESSION
 
 TECHNIQUE_MACRO_DECLARATION
   : "technique_macro" TFX_TOKEN_NAME_VAL[name] "{" TECHNIQUE_EXP_LIST[exps] "}" ";" {
-    compiler.onTechniqueMacroDeclaration(new TechniqueMacroDeclarationExp{$name, $exps});
+    const bool isOk = compiler.onTechniqueMacroDeclaration(new TechniqueMacroDeclarationExp{$name, $exps});
+    if (!isOk)
+      YYABORT;
 }
 
 TECHNIQUE_DECLARATION
   : "technique" TFX_TOKEN_NAME_VAL[name] "{" TECHNIQUE_EXP_LIST[exps] "}" ";" {
-    compiler.onTechniqueDeclaration(new TechniqueDeclarationExp{$name, $exps});
+    const bool isOk = compiler.onTechniqueDeclaration(new TechniqueDeclarationExp{$name, $exps});
+    if (!isOk)
+      YYABORT;
   }
   ;
 
@@ -703,7 +707,9 @@ LOGIC_OP
 
 SCOPE_DECLARATION
   : "scope" TFX_TOKEN_NAME_VAL[name] "{" SCOPE_EXP_LIST[exps] "}" ";" {
-    compiler.onScopeDeclaration(new ScopeDeclarationExp{$name, $exps});
+    const bool isOk = compiler.onScopeDeclaration(new ScopeDeclarationExp{$name, $exps});
+    if (!isOk)
+      YYABORT;
   }
   ;
 
@@ -873,5 +879,6 @@ TARGET_PROFILE
 %%
 
 void sherror(Compiler& compiler, const char* msg) {
-  logerror("[{}] shader technique parsing error: {} {}", "<todo>", shlineno, msg);
+  logerror("{}: {}", shlineno, msg);
+  compiler.markCompilationFailed();
 }

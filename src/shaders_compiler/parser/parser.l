@@ -1,6 +1,8 @@
 %{
     #define YY_DECL int shlex(ShadersSystem::Compiler& compiler)
 
+    #include <engine/log.h>
+
     #include <stdio.h>
     #include "parser.tab.hpp"
 
@@ -644,6 +646,8 @@ ps_6_7 {
   return TFX_TOKEN_NAME_VAL;
 }
 
-. { printf("Syntax error in line %d, `%s`\n", yylineno, yytext); exit(1); }
+. { 
+  const string error =  fmt::format("lexical error in `{}`", yytext);
+  sherror(compiler, error.c_str());}
 
 %%

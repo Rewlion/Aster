@@ -489,7 +489,7 @@ namespace ShadersSystem
       ScopeDeclaration m_Scope;
   };
 
-  void Compiler::onScopeDeclaration(ScopeDeclarationExp* exp)
+  bool Compiler::onScopeDeclaration(ScopeDeclarationExp* exp)
   {
     try
     {
@@ -524,11 +524,14 @@ namespace ShadersSystem
         });
 
       m_Bin.scopes.push_back(MaterialsBin::Scope{scope});
+
+      return true;
     }
     catch (std::exception& e)
     {
       markCompilationFailed();
       logerror("scope declaration error: {}", e.what());
+      return false;
     }
   }
 }

@@ -73,7 +73,9 @@ int main(int argc, char** argv)
   {
     const auto shFile = blkDir + "/" + shader.getName();
     loginfo("compiling {}", shFile);
-    compiler.compileModuleFromFile(shFile);
+    const bool isOk = compiler.compileModuleFromFile(shFile);
+    if (!isOk)
+      return -1;
   }
 
   const ShadersSystem::MaterialsBin& mBin = compiler.getMaterialsBins();
