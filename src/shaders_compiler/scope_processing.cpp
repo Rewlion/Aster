@@ -386,7 +386,7 @@ namespace ShadersSystem
 
             case ResourceType::Texture2D:
             {
-              hlsl += fmt::format("Texture2D<float4> {}: register(t{}, space{});\n",
+              hlsl += fmt::format("Texture2D {}: register(t{}, space{});\n",
                 var.name, var.binding, var.dset);
               break;
             }
