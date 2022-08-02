@@ -201,6 +201,12 @@ namespace ShadersSystem
           m_SupportedScopes.insert(nameHash);
         }
 
+        void processTechniqueMacroInvoke(const string& techniqueName)
+        {
+          const auto& macroDecl = m_Compiler.getTechniqueMacroDeclaration(techniqueName);
+          processExps(*macroDecl.techniqueExps);
+        }
+
         void processScopeSupportExp(const string& scope, const bool activate)
         {
           if (m_Compiler.hasScope(scope))
@@ -417,6 +423,12 @@ namespace ShadersSystem
           {
             switch (exp->type)
             {
+              case TechniqueExp::Type::MacroInvoke:
+              {
+                const TechniqueMacroInvokeExp* mExp = reinterpret_cast<const TechniqueMacroInvokeExp*>(exp);
+                processTechniqueMacroInvoke(mExp->techniqueName);
+                break;
+              }
               case TechniqueExp::Type::ScopeSupport:
               {
                 const ScopeSupportExp* scExp = reinterpret_cast<const ScopeSupportExp*>(exp);
@@ -509,6 +521,26 @@ namespace ShadersSystem
     {
       markCompilationFailed();
       logerror("technique declaration error: {}", e.what());
+    }
+  }
+
+  void Compiler::onTechniqueMacroDeclaration(TechniqueMacroDeclarationExp* exp)
+  {
+    try {
+      m_GC.push_back(std::unique_ptr<Node>(exp));
+      const string_hash nameHash = str_hash(exp->name);
+
+      if (m_Module.macros.find(nameHash) != m_Module.macros.end())
+        throw std::runtime_error(fmt::format("macro is already declared"));
+
+      m_Module.macros.insert({
+        nameHash,
+        exp
+      });
+    } catch (std::exception& e)
+    {
+      markCompilationFailed();
+      logerror("technique macro `{}` declaration error: {}", exp->name, e.what());
     }
   }
 }

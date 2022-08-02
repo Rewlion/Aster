@@ -21,10 +21,12 @@ namespace ShadersSystem
 
       inline void markCompilationFailed() { m_IsCompilationOk = false; }
       void onScopeDeclaration(ScopeDeclarationExp*);
+      void onTechniqueMacroDeclaration(TechniqueMacroDeclarationExp*);
       void onTechniqueDeclaration(TechniqueDeclarationExp*);
 
       bool hasScope(const string& scope) const;
       string getScopeHlsl(const string& scope) const;
+      const TechniqueMacroDeclarationExp& getTechniqueMacroDeclaration(const string& macroName) const;
 
       inline const MaterialsBin& getMaterialsBins() const
       {
@@ -41,6 +43,7 @@ namespace ShadersSystem
       {
         eastl::vector_set<string_hash> declaredScopes;
         eastl::vector_set<string_hash> declaredTechniques;
+        eastl::vector_map<string_hash, TechniqueMacroDeclarationExp*> macros;
       };
       ModuleResources m_Module;
 

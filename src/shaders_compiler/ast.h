@@ -31,6 +31,7 @@ namespace ShadersSystem
       Hlsl,
       Compile,
       RenderState,
+      MacroInvoke,
     };
 
     TechniqueExp* next;
@@ -50,6 +51,52 @@ namespace ShadersSystem
         next = nullptr;
       }
     }
+  };
+
+  struct TechniqueMacroDeclarationExp: public Node
+  {
+    TechniqueMacroDeclarationExp(const char* name, const TechniqueExp* exps)
+      : name(name)
+      , techniqueExps(exps)
+    {
+    }
+
+    virtual ~TechniqueMacroDeclarationExp()
+    {
+      if (techniqueExps)
+      {
+        delete techniqueExps;
+        techniqueExps = nullptr;
+      }
+      if (name)
+      {
+        delete name;
+        name = nullptr;
+      }
+    }
+
+    const TechniqueExp* techniqueExps;
+    const char* name;
+  };
+
+  struct TechniqueMacroInvokeExp: public TechniqueExp
+  {
+    TechniqueMacroInvokeExp(const char* techniqueName)
+      : TechniqueExp(TechniqueExp::Type::MacroInvoke)
+      , techniqueName(techniqueName)
+    {
+    }
+
+    virtual ~TechniqueMacroInvokeExp()
+    {
+      if (techniqueName)
+      {
+        delete techniqueName;
+        techniqueName = nullptr;
+      }
+    }
+
+    const char* techniqueName;
   };
 
   struct ScopeSupportExp: public TechniqueExp

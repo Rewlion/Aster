@@ -210,6 +210,10 @@ technique {
   return TFX_TOKEN_TECHNIQUE;
 }
 
+technique_macro {
+  return TFX_TOKEN_TECHNIQUE_MACRO;
+}
+
 activate {
   return TFX_TOKEN_ACTIVATE;
 }

@@ -96,6 +96,7 @@
 %token TFX_TOKEN_CHANNEL "channel"
 %token TFX_TOKEN_DESCRIPTOR_SET "descriptor_set"
 %token TFX_TOKEN_TECHNIQUE "technique"
+%token TFX_TOKEN_TECHNIQUE_MACRO "technique_macro"
 %token TFX_TOKEN_SUPPORT "support"
 %token TFX_TOKEN_ACTIVATE "activate"
 %token TFX_TOKEN_COMPILE "compile"
@@ -262,7 +263,14 @@ MODULE_EXPRESSION
   }
   | TECHNIQUE_DECLARATION {
   }
+  | TECHNIQUE_MACRO_DECLARATION {
+  }
   ;
+
+TECHNIQUE_MACRO_DECLARATION
+  : "technique_macro" TFX_TOKEN_NAME_VAL[name] "{" TECHNIQUE_EXP_LIST[exps] "}" ";" {
+    compiler.onTechniqueMacroDeclaration(new TechniqueMacroDeclarationExp{$name, $exps});
+}
 
 TECHNIQUE_DECLARATION
   : "technique" TFX_TOKEN_NAME_VAL[name] "{" TECHNIQUE_EXP_LIST[exps] "}" ";" {
@@ -295,6 +303,9 @@ TECHNIQUE_EXP
   }
   | "render_state" ":" RENDER_STATE_EXP_LIST[rs] {
     $$ = $rs;
+  }
+  | TFX_TOKEN_NAME_VAL[name] "(" ")" ";" {
+    $$ = new TechniqueMacroInvokeExp($name);
   }
   ;
 

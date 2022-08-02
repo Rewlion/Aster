@@ -23,10 +23,7 @@ scope StaticModelScope {
   float4x4 normalTm = channel(normal_tm);
 };
 
-technique SceneOpaque {
-  support scope FrameScope;
-  support scope StaticModelScope;
-
+technique_macro INIT_STATIC_MESH {
   render_state:
     primitive_topology = triangle_list;
     input:
@@ -35,6 +32,13 @@ technique SceneOpaque {
         float3 tan:    TEXTURE0;
         float3 normal: TEXTURE1;
         float2 uv:     TEXTURE2;
+};
+
+technique SceneOpaque {
+  support scope FrameScope;
+  support scope StaticModelScope;
+
+  INIT_STATIC_MESH();
 
   #hlsl
     struct VsOutput

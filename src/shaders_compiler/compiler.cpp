@@ -21,6 +21,16 @@ namespace ShadersSystem
     return m_DeclaredScopes.find(str_hash(scope.c_str())) != m_DeclaredScopes.end();
   }
 
+  const TechniqueMacroDeclarationExp& Compiler::getTechniqueMacroDeclaration(const string& macroName) const
+  {
+    const string_hash nameHash = str_hash(macroName.c_str());
+    const auto it = m_Module.macros.find(nameHash);
+    if (it != m_Module.macros.end())
+      return *it->second;
+    else
+      throw std::runtime_error(fmt::format("technique macro `{}` is not declared", macroName));
+  }
+
   bool Compiler::compileModuleFromFile(const string& file)
   {
     FILE* f = fopen(file.c_str(), "r");
