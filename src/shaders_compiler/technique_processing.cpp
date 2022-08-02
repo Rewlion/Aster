@@ -236,7 +236,7 @@ namespace ShadersSystem
             while (attrExp)
             {
               m_RenderState.ia.attributes.push_back(gapi::VertexInputDescription::Attribute{
-                .offset = 0,
+                .offset = offset,
                 .location = location++,
                 .binding = (uint8_t)bExp->reg,
                 .type = attrExp->attributeType
