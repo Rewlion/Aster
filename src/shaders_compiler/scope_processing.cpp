@@ -113,6 +113,12 @@ namespace ShadersSystem
                   break;
                 }
 
+                case RegistersReserveExp::Register::Sampler:
+                {
+                  m_Scope.samplerRegisters = r;
+                  break;
+                }
+
                 default:
                 {
                   ASSERT(!"unsupported");
@@ -143,6 +149,7 @@ namespace ShadersSystem
 
         switch (resourceDeclaration.resourceType)
         {
+          case ResourceType::Sampler:
           case ResourceType::Texture2D:
           {
             m_Scope.declaredResources.insert({
@@ -192,6 +199,10 @@ namespace ShadersSystem
         const size_t texturesEnd = hasTextures ? m_Scope.textureRegisters.value().end : 0;
         size_t currentTexReg = hasTextures ? m_Scope.textureRegisters.value().begin : 0;
 
+        const bool hasSamplers = m_Scope.samplerRegisters.has_value();
+        const size_t samplersEnd = hasSamplers ? m_Scope.samplerRegisters.value().end : 0;
+        size_t currentSamplerReg = hasSamplers ? m_Scope.samplerRegisters.value().begin : 0;
+
         for (auto&[_, resource]: m_Scope.declaredResources)
         {
           resource.dset = m_Scope.descriptorSet;
@@ -203,15 +214,29 @@ namespace ShadersSystem
               break;
             }
 
+            case ResourceType::Sampler:
+            {
+              if (!hasSamplers)
+                 throw std::runtime_error(fmt::format(
+                  "failed to declare sampler {}: there is no samplers declared in scope", resource.name));
+
+              if (currentSamplerReg > samplersEnd)
+                throw std::runtime_error(fmt::format(
+                  "failed to declare sampler {}: all sampler slots are already in use", resource.name));
+
+              resource.binding = currentSamplerReg++;
+              break;
+            }
+
             case ResourceType::Texture2D:
             {
               if (!hasTextures)
                  throw std::runtime_error(fmt::format(
-                  "failed to declare texture2D {}: there is no texture declared in scope", resource.name));
+                  "failed to declare Texture2D {}: there is no texture declared in scope", resource.name));
 
               if (currentTexReg > texturesEnd)
                 throw std::runtime_error(fmt::format(
-                  "failed to declare texture2D {}: all texture slots are already in use", resource.name));
+                  "failed to declare Texture2D {}: all texture slots are already in use", resource.name));
 
               resource.binding = currentTexReg++;
               break;
@@ -353,6 +378,13 @@ namespace ShadersSystem
 
           switch (var.type)
           {
+            case ResourceType::Sampler:
+            {
+              hlsl += fmt::format("sampler {}: register(s{}, space{});\n",
+                var.name, var.binding, var.dset);
+              break;
+            }
+
             case ResourceType::Texture2D:
             {
               hlsl += fmt::format("Texture2D<float4> {}: register(t{}, space{});\n",
@@ -391,9 +423,10 @@ namespace ShadersSystem
             {
               break;
             }
+            case ResourceType::Sampler:
             case ResourceType::Texture2D:
             {
-              const ByteCodes var = generateByteCodeForTexture(res);
+              const ByteCodes var = generateByteCodeForResourceDeclaration(res);
               byteCode.insert(byteCode.end(), var.begin(), var.end());
               break;
             }
@@ -432,7 +465,7 @@ namespace ShadersSystem
         return bc;
       }
 
-      ByteCodes generateByteCodeForTexture(const ResourceDeclaration& res) const
+      ByteCodes generateByteCodeForResourceDeclaration(const ResourceDeclaration& res) const
       {
         ByteCodes bc;
         ASSERT(res.assignExp->type == ResourceAssignExp::Type::Access);
@@ -441,7 +474,7 @@ namespace ShadersSystem
         ShByteCode b = ShBindResource(
           assignNode->accessType,
           res.type,
-          res.name,
+          assignNode->resourceName,
           res.dset,
           res.binding
         );

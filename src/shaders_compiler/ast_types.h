@@ -12,10 +12,11 @@ namespace ShadersSystem
 {
   enum class ResourceType: uint8_t
   {
-    None = 0,
-    Cbuffer = 1,
-    Texture2D = 2,
-    CbufferVar = 3
+    None,
+    Cbuffer,
+    Texture2D,
+    CbufferVar,
+    Sampler
   };
 
   enum class ResourceAccessType: uint8_t

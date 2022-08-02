@@ -53,8 +53,8 @@ namespace Engine::Render
     tfx::set_extern("view_proj", m_FrameData.camera.viewProj);
     tfx::set_extern("camera_pos", m_FrameData.camera.pos);
     tfx::set_extern("sec_since_start", Time::get_sec_since_start());
+    tfx::set_extern("model_sampler", m_ModelSampler);
     tfx::activate_scope("FrameScope", m_FrameData.cmdEncoder.get());
-    //m_CmdEncoder.bindSampler(m_ModelSampler, DSET_PER_FRAME, 1);
   }
 
   void WorldRender::renderWorld()

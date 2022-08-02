@@ -2,6 +2,9 @@ scope FrameScope {
   shader vertex, pixel:
     descriptor_set(0);
     cbuffer(0);
+    register(sampler, 1-2);
+
+  sampler modelSampler = extern(model_sampler);
 
   float4x4 viewProj = extern(view_proj);
   float3 cameraPos = extern(camera_pos);
@@ -14,7 +17,7 @@ scope StaticModelScope {
     cbuffer(0);
     register(texture, 1-2);
 
-  Texture2D albedo = channel(model_albedo);
+  Texture2D albedo = channel(albedo);
 
   float4x4 modelTm = channel(model_tm);
   float4x4 normalTm = channel(normal_tm);
@@ -41,6 +44,7 @@ technique SceneOpaque {
     struct VsOutput
     {
       float4 pos: SV_Position;
+      float2 uv: TEXTURE0;
     };
 
     VsOutput vs_main(SceneOpaque_input input)
@@ -50,13 +54,14 @@ technique SceneOpaque {
 
       VsOutput output;
       output.pos = mul(mvp, float4(input.pos, 1.0));
+      output.uv = input.uv;
 
       return output;
     }
 
-    float4 ps_main(): SV_Target0
+    float4 ps_main(VsOutput input): SV_Target0
     {
-      return float4(1.0, 0.5, 1.0, 1.0);
+      return albedo.Sample(modelSampler, input.uv);
     }
   #end
 

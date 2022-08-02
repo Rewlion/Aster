@@ -665,8 +665,9 @@ namespace ShadersSystem
   {
     enum class Register
     {
-      None = 0,
-      Texture = 1
+      None,
+      Texture,
+      Sampler
     };
     Register registerType;
     int beginRange;

@@ -94,6 +94,7 @@
 %token TFX_TOKEN_SHADER_PIXEL "pixel"
 %token TFX_TOKEN_REGISTER "register"
 %token TFX_TOKEN_TEXTURE "texture"
+%token TFX_TOKEN_SAMPLER "sampler"
 %token TFX_TOKEN_CBUFFER "cbuffer"
 %token TFX_TOKEN_EXTERN "extern"
 %token TFX_TOKEN_CHANNEL "channel"
@@ -737,7 +738,9 @@ RESOURCE_RESERVE_EXP_LIST
 RESOURCE_RESERVE_EXP
   : "register" "(" "texture" "," INT_VALUE[v0] "-" INT_VALUE[v1] ")" {
     $$ = new RegistersReserveExp(RegistersReserveExp::Register::Texture, $v0, $v1);
-
+  }
+  | "register" "(" "sampler" "," INT_VALUE[v0] "-" INT_VALUE[v1] ")" {
+    $$ = new RegistersReserveExp(RegistersReserveExp::Register::Sampler, $v0, $v1);
   }
   | "cbuffer" "(" INT_VALUE[register] ")" {
     $$ = new CBufferReserveExp($register);
@@ -759,6 +762,9 @@ ASSIGN_EXP
 RESOURCE_TYPE
   : TFX_TOKEN_TEXTURE2D {
     $$ = ResourceType::Texture2D;
+  }
+  | TFX_TOKEN_SAMPLER {
+    $$ = ResourceType::Sampler;
   }
   ;
 

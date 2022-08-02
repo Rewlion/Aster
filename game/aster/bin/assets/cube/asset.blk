@@ -17,6 +17,6 @@ model_asset
 
   material @("SceneOpaque")
   {
-    text "test_texture" = "cube.container" @("texture")
+    text "albedo" = "cube.container" @("texture")
   }
 }

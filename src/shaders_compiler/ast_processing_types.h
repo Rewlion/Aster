@@ -67,6 +67,7 @@ namespace ShadersSystem
     uint16_t cbufferSize = 0;
     uint8_t descriptorSet;
     std::optional<RegistersReserve> textureRegisters;
+    std::optional<RegistersReserve> samplerRegisters;
 
     CbufferVars cbufferVariables;
     eastl::vector_map<string_hash, ResourceDeclaration> declaredResources;

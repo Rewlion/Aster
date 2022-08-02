@@ -116,6 +116,10 @@ texture {
   return TFX_TOKEN_TEXTURE;
 }
 
+sampler {
+  return TFX_TOKEN_SAMPLER;
+}
+
 input {
   return TFX_TOKEN_INPUT;
 }

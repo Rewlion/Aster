@@ -14,7 +14,8 @@ namespace tfx
       float,float2,float3,float4,
       float4x4,
       gapi::TextureHandler,
-      gapi::BufferHandler> Param;
+      gapi::BufferHandler,
+      gapi::SamplerHandler> Param;
 
   struct RenderState
   {
