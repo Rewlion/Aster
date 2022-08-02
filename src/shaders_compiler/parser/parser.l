@@ -4,12 +4,15 @@
     #include <engine/log.h>
 
     #include <stdio.h>
+    #include <filesystem>
     #include "parser.tab.hpp"
 
     void sherror(ShadersSystem::Compiler& compiler, const char* msg);
     extern int shlex(ShadersSystem::Compiler& compiler);
 
     string codeBuf;
+
+    namespace fs = std::filesystem;
 %}
 
 %option yylineno
@@ -19,6 +22,7 @@
 %option prefix="sh"
 
 %x hlsl
+%x include
 
 %%
 
@@ -40,6 +44,41 @@
   shlval.sval = strdup(codeBuf.c_str());
   return TFX_TOKEN_HLSL_CODE;
 }
+
+
+<include>[ \t]* {
+
+}
+
+<include>["][^ \t\r\n]+["] {
+  char* fileName = yytext + 1;
+  fileName[strlen(yytext) - 2] = '\0';
+
+  const string currentDir = fs::path(compiler.getCurrentCompilationFile()).parent_path().string();
+  const string file = fmt::format("{}/{}", currentDir, fileName);
+  yyin = fopen( file.c_str(), "r" );
+
+  if (!yyin)
+  {
+    const string error = fmt::format("can't include file `{}`: File not found", fileName);
+    sherror(compiler, error.c_str());
+    yyterminate();
+  }
+
+	yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
+  BEGIN(INITIAL);
+}
+
+<include>. {
+  const std::string error = fmt::format("unexpected string: {}", yytext);
+  sherror(compiler, error.c_str());
+  yyterminate();
+}
+
+#include[ ] {
+  BEGIN(include);
+}
+
 
 <<EOF>> {
   fclose(yyin);

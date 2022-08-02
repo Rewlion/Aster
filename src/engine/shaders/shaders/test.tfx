@@ -1,3 +1,5 @@
+#include "test_include.tfx"
+
 scope FrameScope {
   reserve:
     descriptor_set(0);
@@ -21,17 +23,6 @@ scope StaticModelScope {
 
   float4x4 modelTm = channel(model_tm);
   float4x4 normalTm = channel(normal_tm);
-};
-
-technique_macro INIT_STATIC_MESH {
-  render_state:
-    primitive_topology = triangle_list;
-    input:
-      buffer(0):
-        float3 pos:    POSITION0;
-        float3 tan:    TEXTURE0;
-        float3 normal: TEXTURE1;
-        float2 uv:     TEXTURE2;
 };
 
 technique SceneOpaque {

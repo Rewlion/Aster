@@ -1,0 +1,10 @@
+technique_macro INIT_STATIC_MESH {
+  render_state:
+    primitive_topology = triangle_list;
+    input:
+      buffer(0):
+        float3 pos:    POSITION0;
+        float3 tan:    TEXTURE0;
+        float3 normal: TEXTURE1;
+        float2 uv:     TEXTURE2;
+};

@@ -7,7 +7,10 @@
 #include <dxc/dxcapi.h>
 
 #include <exception>
+#include <filesystem>
 #include <wrl/client.h>
+
+namespace fs = std::filesystem;
 
 namespace ShadersSystem
 {
@@ -283,8 +286,8 @@ namespace ShadersSystem
 
           try
           {
-            string currentDir = "";
-            ShaderBlob blob = compile_shader_stage(m_Hlsl, compileExp.targetProfile, stage, shaderName, compileExp.entry,currentDir);
+            const string currentDir = fs::path(m_Compiler.getCurrentCompilationFile()).parent_path().string();
+            ShaderBlob blob = compile_shader_stage(m_Hlsl, compileExp.targetProfile, stage, shaderName, compileExp.entry, currentDir);
             m_Shaders.push_back(std::move(blob));
           }
           catch (std::exception&)

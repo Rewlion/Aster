@@ -33,6 +33,11 @@ namespace ShadersSystem
         return m_Bin;
       }
 
+      inline const string& getCurrentCompilationFile() const
+      {
+        return m_CurrentCompilationFile;
+      }
+
     private:
       string m_CurrentCompilationFile;
       bool m_IsCompilationOk = true;
