@@ -1,0 +1,113 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "tfx",
+	"patterns": [
+    {"include": "#hlsl"},
+    {"include": "#type_decl"},
+    {"include": "#macro_invoke"},
+    {"include": "#constants"},
+		{"include": "#keywords" },
+		{"include": "#strings" },
+    {"include": "#names"},
+    {"include": "#operators"}
+	],
+	"repository": {
+    "hlsl": {
+      "name": "meta.embedded.block.hlsl",
+      "begin":"#hlsl",
+      "beginCaptures": {"0" : {"name":"keyword.control.hlsl"}},
+      "end":"#end",
+      "endCaptures": {"0" : {"name":"keyword.control.hlsl"}},
+      "patterns": [{"include": "source.hlsl"}]
+    },
+    "macro_invoke": {
+      "patterns": [{
+        "match": "([a-zA-Z_][0-9a-zA-Z\\-_.]*)\\(\\)",
+        "name": "support.function.macro.invoke"
+      }]
+    },
+    "constants":{
+      "patterns": [
+        {
+          "match": "[0-9]+|[0-9]?\\.[0-9]+[f]?",
+          "name": "constant.numeric"
+        },
+        {
+          "name": "constant.bool",
+          "match": "\\b(true|false|yes|no)\\b"
+        },
+        {
+          "name": "constant.other.technique.op",
+          "match": "\\b(never|less|equal|less_or_equal|greater|not_equal|greater_or_equal|always|keep|zero|replace|inc_and_clamp|dec_and_clamp|invert|inc_and_wrap|dec_and_wrap)\\b"
+        },
+        {
+          "name": "constant.other.technique.color_op",
+          "match": "\\b(one|src_color|one_minus_src_color|dst_color|one_minus_dst_color|src_alpha|one_minus_src_alpha|dst_alpha|one_minus_dst_alpha|constant_color|one_minus_constant_alpha|constant_alpha|one_minus_constant_alpha|src_alpha_saturate|src_one_color|one_minus_src_one_color|src_one_alpha|one_minus_src_one_alpha)\\b"
+        },
+        {
+          "name": "constant.other.technique.blend_op",
+          "match": "\\b(add|subtract|reverse_subtract|min|max|clear|and|and_reverse|copy|and_inverted|no_op|xor|or|nor|equivalent|or_reverse|copy_inverted|or_inverted|nand|set)\\b"
+        },
+        {
+          "name": "constant.other.technique.primitive_topology",
+          "match": "\\b(point_list|line_list|line_strip|triangle_list|triangle_fan|line_list_with_adjacency|line_strip_with_adjacency|triangle_list_with_adjacency|triangle_strip_with_adjacency|patch_list)\\b"
+        }
+      ]
+    },
+		"keywords": {
+			"patterns": [
+        {
+          "name": "keyword.control.scope",
+          "match": "\\b(reserve)\\b"
+        },
+        {
+          "name": "entity.name.function.scope",
+          "match": "\\b(register|cbuffer|descriptor_set|extern|channel)\\b"
+        },
+        {
+          "name": "entity.name.function.technique",
+          "match": "\\b(render_state|support|activate|compile|input|buffer|depth|stencil|blending|mrt)\\b"
+        },
+        {
+          "name": "entity.name.type.attribute",
+          "match": "\\b(void|float|float2|float3|float4|float4x4|int|int2|int3|int4|Texture2D|sampler|texture)\\b"
+        }
+      ]
+		},
+		"strings": {
+			"name": "string.quoted.double.tfx",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.tfx",
+					"match": "\\\\."
+				}
+			]
+		},
+    "names":{
+      "patterns": [{
+        "match": "[a-zA-Z_][0-9a-zA-Z\\-_.]*",
+        "name": "variable"
+      }]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name" : "keyword.control.operator",
+          "match": "[#][a-zA-Z]+"
+        }
+      ]
+    },
+    "type_decl": {
+      "patterns": [{
+        "match": "(\\bscope|technique_macro|technique\\b)[ \\t]*([a-zA-Z_][0-9a-zA-Z\\-_.]*)",
+        "captures": {
+          "1": { "name":  "storage.type.decl.type" },
+          "2": { "name": "entity.name.type.decl.name" }
+        }
+      }]
+    }
+	},
+	"scopeName": "source.tfx"
+}

@@ -1,0 +1,28 @@
+{
+  "name": "tfx",
+  "displayName": "TFX syntax",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.69.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "tfx",
+      "aliases": ["tfx", "tfx"],
+      "extensions": [".tfx"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "tfx",
+      "scopeName": "source.tfx",
+      "path": "./syntaxes/tfx.tmLanguage.json",
+      "embeddedLanguages": {
+        "meta.embedded.block.hlsl": "HLSL"
+      }
+    }]
+  }
+}
