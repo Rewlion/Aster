@@ -513,12 +513,14 @@ namespace ShadersSystem
           throw std::runtime_error(fmt::format("failed to redeclare a technique `{}`", tq.name));
       }
       else
+      {
         m_DeclaredTechniques.insert({
           nameHash,
           tq
         });
+        m_Bin.techniques.push_back(tp.getTechniqueDecription());
+      }
 
-      m_Bin.techniques.push_back(tp.getTechniqueDecription());
       return true;
     }
     catch (std::exception& e)

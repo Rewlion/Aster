@@ -518,12 +518,14 @@ namespace ShadersSystem
             s.name, declaredSc->second.fileDeclaration));
       }
       else
+      {
         m_DeclaredScopes.insert({
           scopeNameHash,
           scope
         });
+        m_Bin.scopes.push_back(MaterialsBin::Scope{scope});
+      }
 
-      m_Bin.scopes.push_back(MaterialsBin::Scope{scope});
 
       return true;
     }
