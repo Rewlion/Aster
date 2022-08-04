@@ -74,7 +74,7 @@ namespace boost::serialization
       & t.byteCode
       & t.renderState
       & t.blobs
-      & t.reflections;
+      & t.dsets;
   }
 
   template<class Archive>

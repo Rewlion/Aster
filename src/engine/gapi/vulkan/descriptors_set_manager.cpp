@@ -124,6 +124,8 @@ namespace gapi::vulkan
   void DescriptorsSetManager::updateDescriptorSets(vk::CommandBuffer& cmdBuf)
   {
     ASSERT(m_PipelineLayout != nullptr);
+    if (m_WriteInfos.empty())
+      return;    
 
     eastl::vector<vk::DescriptorImageInfo> imgInfos;
     imgInfos.reserve(m_WriteInfos.size());

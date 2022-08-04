@@ -247,9 +247,11 @@ namespace tfx
       modules.reserve(t.blobs.size());
       for (size_t i = 0; i < t.blobs.size(); ++i)
       {
-        const gapi::ShaderModuleHandler mh = gapi::add_module((void*)&t.blobs[i], (void*)&t.reflections[i]);
+        const gapi::ShaderModuleHandler mh = gapi::add_module((void*)&t.blobs[i]);
         modules.push_back(mh);
       }
+
+      gapi::PipelineLayoutHandler layout = gapi::add_pipeline_layout((void*)&t.dsets);
 
       techniques_storage.insert({
         h,
@@ -257,6 +259,7 @@ namespace tfx
           .name = t.name,
           .byteCode = t.byteCode,
           .graphicsPipelineDesc = {
+            .layout = layout,
             .shaders = std::move(modules),
             .ia = t.renderState.ia,
             .topology = t.renderState.topology,

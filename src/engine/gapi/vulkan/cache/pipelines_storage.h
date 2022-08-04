@@ -19,8 +19,9 @@ namespace gapi::vulkan
 
       void init(Device* device);
       vk::Pipeline getPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass);
-      const PipelineLayout* getPipelineLayout(const eastl::vector<ShaderModuleHandler>& modules);
-      ShaderModuleHandler addModule(const ShadersSystem::ShaderBlob& blob, const spirv::v2::Reflection& reflection);
+      PipelineLayoutHandler addPipelineLayout(const eastl::vector<spirv::v2::DescriptorSet>& dsets);
+      const PipelineLayout& getPipelineLayout(const PipelineLayoutHandler h);
+      ShaderModuleHandler addModule(const ShadersSystem::ShaderBlob& blob);
 
     private:
       Device* m_Device = nullptr;

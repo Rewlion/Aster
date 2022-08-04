@@ -21,6 +21,11 @@ namespace ShadersSystem
     return m_DeclaredScopes.find(str_hash(scope.c_str())) != m_DeclaredScopes.end();
   }
 
+  const ScopeDeclaration& Compiler::getScope(const string& scope)
+  {
+    return m_DeclaredScopes.find(str_hash(scope.c_str()))->second;
+  }
+
   const TechniqueMacroDeclarationExp& Compiler::getTechniqueMacroDeclaration(const string& macroName) const
   {
     const string_hash nameHash = str_hash(macroName.c_str());

@@ -26,6 +26,7 @@ namespace ShadersSystem
 
       bool hasScope(const string& scope) const;
       string getScopeHlsl(const string& scope) const;
+      const ScopeDeclaration& getScope(const string& scope);
       const TechniqueMacroDeclarationExp& getTechniqueMacroDeclaration(const string& macroName) const;
 
       inline const MaterialsBin& getMaterialsBins() const

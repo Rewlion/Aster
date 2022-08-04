@@ -14,6 +14,7 @@
 namespace ShadersSystem
 {
   struct InputDescription;
+  struct ScopeDeclaration;
 }
 
 namespace spirv
@@ -70,6 +71,6 @@ namespace spirv
     };
 
     InputAssembly shader_input_to_spirv_ia(const gapi::VertexInputDescription& input);
-    Reflection reflect(const eastl::vector<char>& spirv, const gapi::ShaderStage stage);
+    eastl::vector<DescriptorSet> reflect(const eastl::vector<const ShadersSystem::ScopeDeclaration*> scopes, const gapi::ShaderStage stages);
   }
 }

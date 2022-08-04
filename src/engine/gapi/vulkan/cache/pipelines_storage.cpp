@@ -83,8 +83,6 @@ namespace gapi::vulkan
 
     vk::GraphicsPipelineCreateInfo ci;
 
-    const PipelineLayout* layout = m_ShadersStorage.getPipelineLayout(description.shaders);
-
     InputAssembly ia = shader_input_to_spirv_ia(description.ia);
     vk::PipelineVertexInputStateCreateInfo vertexInputCi;
     vertexInputCi.pVertexBindingDescriptions = ia.buffers.data();
@@ -123,8 +121,11 @@ namespace gapi::vulkan
     dynamicStateCi.pDynamicStates = dynamicStates;
     dynamicStateCi.dynamicStateCount = std::size(dynamicStates);
 
-    ci.stageCount = layout->stagesCi.size();
-    ci.pStages = layout->stagesCi.data();
+    const PipelineLayout& layout = m_ShadersStorage.getPipelineLayout(description.layout);
+    const eastl::vector<vk::PipelineShaderStageCreateInfo>& cis = m_ShadersStorage.getShaderStagesCreateInfos(description.shaders);
+
+    ci.stageCount = cis.size();
+    ci.pStages = cis.data();
     ci.pVertexInputState = &vertexInputCi;
     ci.pInputAssemblyState = &inputAssemblyCi;
     ci.pTessellationState = nullptr;
@@ -134,7 +135,7 @@ namespace gapi::vulkan
     ci.pDepthStencilState = &depthStencilCi;
     ci.pColorBlendState = &blendingCi;
     ci.pDynamicState = &dynamicStateCi;
-    ci.layout = layout->pipelineLayout.get();
+    ci.layout = layout.pipelineLayout.get();
     ci.renderPass = rp;
     ci.subpass = subpass;
 
@@ -152,13 +153,19 @@ namespace gapi::vulkan
     return pipeline;
   }
 
-  ShaderModuleHandler PipelinesStorage::addModule(const ShadersSystem::ShaderBlob& blob, const spirv::v2::Reflection& reflection)
+  ShaderModuleHandler PipelinesStorage::addModule(const ShadersSystem::ShaderBlob& blob)
   {
-    return m_ShadersStorage.addModule(blob, reflection);
+    return m_ShadersStorage.addModule(blob);
   }
 
-  const PipelineLayout* PipelinesStorage::getPipelineLayout(const eastl::vector<ShaderModuleHandler>& modules)
+  PipelineLayoutHandler PipelinesStorage::addPipelineLayout(const eastl::vector<spirv::v2::DescriptorSet>& dsets)
   {
-    return m_ShadersStorage.getPipelineLayout(modules);
+    return m_ShadersStorage.addPipelineLayout(dsets);
   }
+
+  const PipelineLayout& PipelinesStorage::getPipelineLayout(const PipelineLayoutHandler h)
+  {
+    return m_ShadersStorage.getPipelineLayout(h);
+  }
+
 }

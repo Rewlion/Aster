@@ -21,7 +21,8 @@ namespace gapi
   SamplerHandler           (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
   void                     (*gapi_present_backbuffer)();
   Semaphore*               (*gapi_ackquire_backbuffer)();
-  ShaderModuleHandler      (*gapi_add_module)(void* blob, void* reflection);
+  ShaderModuleHandler      (*gapi_add_module)(void* blob);
+  PipelineLayoutHandler    (*gapi_add_pipeline_layout)(void* dsets);
   CmdEncoder*              (*gapi_allocate_cmd_encoder)();
   Fence*                   (*gapi_allocate_fence)();
 
@@ -109,9 +110,14 @@ namespace gapi
     return gapi_ackquire_backbuffer();
   }
 
-  ShaderModuleHandler add_module(void* blob, void* reflection)
+  ShaderModuleHandler add_module(void* blob)
   {
-    return gapi_add_module(blob, reflection);
+    return gapi_add_module(blob);
+  }
+
+  PipelineLayoutHandler add_pipeline_layout(void* dsets)
+  {
+    return gapi_add_pipeline_layout(dsets);
   }
 
   CmdEncoder* allocate_cmd_encoder()

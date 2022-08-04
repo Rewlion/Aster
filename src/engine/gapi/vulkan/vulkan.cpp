@@ -13,22 +13,23 @@
 
 namespace gapi
 {
-  extern TextureHandler       (*gapi_get_backbuffer)();
-  extern BufferHandler        (*gapi_allocate_buffer)(const size_t size, const int usage);
-  extern void                 (*gapi_free_buffer)(const BufferHandler buffer);
-  extern void                 (*gapi_free_texture)(const TextureHandler texture);
-  extern void*                (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size);
-  extern void                 (*gapi_unmap_buffer)(const BufferHandler buffer);
-  extern void                 (*gapi_copy_buffers_sync)(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size);
-  extern void                 (*gapi_write_buffer)(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags);
-  extern TextureHandler       (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
-  extern void                 (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
-  extern SamplerHandler       (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
-  extern void                 (*gapi_present_backbuffer)();
-  extern Semaphore*           (*gapi_ackquire_backbuffer)();
-  extern ShaderModuleHandler  (*gapi_add_module)(void* blob, void* reflection);
-  extern gapi::CmdEncoder*    (*gapi_allocate_cmd_encoder)();
-  extern Fence*               (*gapi_allocate_fence)();
+  extern TextureHandler        (*gapi_get_backbuffer)();
+  extern BufferHandler         (*gapi_allocate_buffer)(const size_t size, const int usage);
+  extern void                  (*gapi_free_buffer)(const BufferHandler buffer);
+  extern void                  (*gapi_free_texture)(const TextureHandler texture);
+  extern void*                 (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size);
+  extern void                  (*gapi_unmap_buffer)(const BufferHandler buffer);
+  extern void                  (*gapi_copy_buffers_sync)(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size);
+  extern void                  (*gapi_write_buffer)(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags);
+  extern TextureHandler        (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
+  extern void                  (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
+  extern SamplerHandler        (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
+  extern void                  (*gapi_present_backbuffer)();
+  extern Semaphore*            (*gapi_ackquire_backbuffer)();
+  extern ShaderModuleHandler   (*gapi_add_module)(void* blob);
+  extern PipelineLayoutHandler (*gapi_add_pipeline_layout)(void* dsets);
+  extern gapi::CmdEncoder*     (*gapi_allocate_cmd_encoder)();
+  extern Fence*                (*gapi_allocate_fence)();
 }
 
 namespace gapi::vulkan
@@ -113,11 +114,17 @@ namespace gapi::vulkan
     return s;
   }
 
-  ShaderModuleHandler add_module(void* blob, void* reflection)
+  ShaderModuleHandler add_module(void* blob)
   {
     const ShadersSystem::ShaderBlob* b = reinterpret_cast<const ShadersSystem::ShaderBlob*>(blob);
-    const spirv::v2::Reflection* r = reinterpret_cast<const spirv::v2::Reflection*>(reflection);
-    return pipelinesStorage.addModule(*b, *r);
+    return pipelinesStorage.addModule(*b);
+  }
+
+  PipelineLayoutHandler add_pipeline_layout(void* ds)
+  {
+    const eastl::vector<spirv::v2::DescriptorSet>* dsets =
+      reinterpret_cast<const eastl::vector<spirv::v2::DescriptorSet>*>(ds);
+    return pipelinesStorage.addPipelineLayout(*dsets);
   }
 
   gapi::CmdEncoder* allocate_cmd_encoder()
@@ -153,6 +160,7 @@ namespace gapi::vulkan
     gapi_present_backbuffer = present_backbuffer;
     gapi_ackquire_backbuffer = ackquire_backbuffer;
     gapi_add_module = add_module;
+    gapi_add_pipeline_layout = add_pipeline_layout;
     gapi_allocate_cmd_encoder = allocate_cmd_encoder;
     gapi_allocate_fence = allocate_fence;
 

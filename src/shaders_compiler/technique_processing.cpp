@@ -2,6 +2,7 @@
 #include "spirv.h"
 
 #include <engine/log.h>
+#include <engine/gapi/vulkan/resources.h>
 
 #include <Unknwn.h>
 #include <dxc/dxcapi.h>
@@ -158,7 +159,7 @@ namespace ShadersSystem
           m_TechniqueName = string(tDecl.name);
           processExps(*tDecl.exps);
           validateStages();
-          generateReflection();
+          generateReflections();
         }
 
         TechniqueDeclaration getTechniqueDecription() const
@@ -169,17 +170,11 @@ namespace ShadersSystem
             .byteCode = std::move(m_ByteCode),
             .renderState = std::move(m_RenderState),
             .blobs = std::move(m_Shaders),
-            .reflections = std::move(m_Reflections)
+            .dsets = std::move(m_DescriptorSets)
           };
         }
 
       private:
-        void generateReflection()
-        {
-          for (const auto& blob: m_Shaders)
-            m_Reflections.push_back(spirv::v2::reflect(blob.data, blob.stage));
-        }
-
         void validateStages() const
         {
           if (m_Stages == 0)
@@ -195,6 +190,26 @@ namespace ShadersSystem
             throw std::runtime_error("graphics stages are not complete");
         }
 
+        void generateReflections()
+        {
+          eastl::vector<const ShadersSystem::ScopeDeclaration*> scopes;
+          for (const auto& n: m_SupportedScopeNames)
+            scopes.push_back(&m_Compiler.getScope(n));
+
+          m_DescriptorSets = spirv::v2::reflect(scopes, m_Stages);
+        }
+
+        vk::DescriptorSetLayoutBinding& accessDsetBinding(const size_t set, const size_t binding)
+        {
+          if (m_DescriptorSets.size() <= set)
+            m_DescriptorSets.resize(set+1);
+
+          if (m_DescriptorSets[set].size() <= binding)
+            m_DescriptorSets[set].resize(binding+1);
+
+          return m_DescriptorSets[set][binding];
+        }
+
         void insureScopeNotSupportedYet(const string& name)
         {
           const string_hash nameHash = str_hash(name.c_str());
@@ -202,6 +217,7 @@ namespace ShadersSystem
             throw std::runtime_error(fmt::format("can't support scope {}: it's already declared as supported", name));
 
           m_SupportedScopes.insert(nameHash);
+          m_SupportedScopeNames.push_back(name);
         }
 
         void processTechniqueMacroInvoke(const string& techniqueName)
@@ -478,6 +494,7 @@ namespace ShadersSystem
         Compiler& m_Compiler;
 
         eastl::vector_set<string_hash> m_SupportedScopes;
+        eastl::vector<string> m_SupportedScopeNames;
         ByteCodes m_ByteCode;
 
         eastl::vector<const MrtBlendingExp*> m_MrtBlendingStates;
@@ -486,7 +503,7 @@ namespace ShadersSystem
         gapi::VertexInputDescription m_Input;
         gapi::ShaderStage m_Stages = gapi::ShaderStage(0);
         eastl::vector<ShaderBlob> m_Shaders;
-        eastl::vector<spirv::v2::Reflection> m_Reflections;
+        eastl::vector<spirv::v2::DescriptorSet> m_DescriptorSets;
     };
   }
 

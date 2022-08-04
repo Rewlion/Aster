@@ -19,7 +19,6 @@ namespace gapi::vulkan
   struct ShaderModule
   {
     vk::UniqueShaderModule module;
-    eastl::vector<spirv::v2::DescriptorSet> descriptorSets;
     string entry;
     vk::ShaderStageFlagBits stage;
   };
@@ -31,18 +30,19 @@ namespace gapi::vulkan
 
       void init(Device* device);
 
-      ShaderModuleHandler addModule(const ShadersSystem::ShaderBlob& blob, const spirv::v2::Reflection& reflection);
-      const PipelineLayout* getPipelineLayout(const eastl::vector<ShaderModuleHandler>& modules);
+      ShaderModuleHandler addModule(const ShadersSystem::ShaderBlob& blob);
+      PipelineLayoutHandler addPipelineLayout(const eastl::vector<spirv::v2::DescriptorSet>& dsets);
+      const PipelineLayout& getPipelineLayout(const PipelineLayoutHandler h);
+      eastl::vector<vk::PipelineShaderStageCreateInfo> getShaderStagesCreateInfos(const eastl::vector<ShaderModuleHandler>& modules) const;
 
     private:
       const ShaderModule* getModule(const ShaderModuleHandler h) const;
-      eastl::vector<spirv::v2::DescriptorSet> getModulesDescriptorSets(const eastl::vector<ShaderModuleHandler>& modules) const;
 
     private:
       Device* m_Device;
 
       eastl::hash_map<ShaderModuleHandler, ShaderModule> m_ShaderModules;
-      eastl::hash_map<string_hash, PipelineLayout> m_PipelineLayouts;
+      eastl::vector<PipelineLayout> m_PipelineLayouts;
   };
 
 };

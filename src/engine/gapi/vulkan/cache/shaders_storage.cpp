@@ -22,7 +22,7 @@ namespace gapi::vulkan
     m_Device = device;
   }
 
-  ShaderModuleHandler ShadersStorage::addModule(const ShadersSystem::ShaderBlob& blob, const spirv::v2::Reflection& reflection)
+  ShaderModuleHandler ShadersStorage::addModule(const ShadersSystem::ShaderBlob& blob)
   {
     const string_hash hash = str_hash(blob.name.c_str());
     ShaderModuleHandler handler = (ShaderModuleHandler)hash;
@@ -30,17 +30,17 @@ namespace gapi::vulkan
     if (m_ShaderModules.find(handler) != m_ShaderModules.end())
       return handler;
 
-    ShaderModule m;
-    m.entry = blob.entry;
-    m.stage = get_vk_stage(blob.stage);
-    m.descriptorSets = reflection.descriptorSets;
     vk::ShaderModuleCreateInfo smCi;
     smCi.pCode = reinterpret_cast<const uint32_t*>(blob.data.data());
     smCi.codeSize = blob.data.size();
 
     auto mod = m_Device->m_Device->createShaderModuleUnique(smCi);
     VK_CHECK_RES(mod);
+
+    ShaderModule m;
     m.module = std::move(mod.value);
+    m.entry = blob.entry;
+    m.stage = get_vk_stage(blob.stage);
 
     m_ShaderModules.insert({
       handler,
@@ -50,40 +50,8 @@ namespace gapi::vulkan
     return handler;
   }
 
-
-  static size_t hash_shader_stages(const eastl::vector<ShaderModuleHandler>& modules)
+  PipelineLayoutHandler ShadersStorage::addPipelineLayout(const eastl::vector<spirv::v2::DescriptorSet>& dsets)
   {
-    using boost::hash_combine;
-    size_t hash = 0;
-
-    for(const auto& m: modules)
-      hash_combine(hash, m);
-
-    return hash;
-  }
-
-
-  const PipelineLayout* ShadersStorage::getPipelineLayout(const eastl::vector<ShaderModuleHandler>& modules)
-  {
-    const string_hash hash = hash_shader_stages(modules);
-
-    auto it = m_PipelineLayouts.find(hash);
-    if (it != m_PipelineLayouts.end())
-      return &it->second;
-
-    eastl::vector<vk::PipelineShaderStageCreateInfo> stagesCi;
-    stagesCi.reserve(modules.size());
-    for (const auto& moduleHandler: modules)
-    {
-      const ShaderModule* sh = getModule(moduleHandler);
-      vk::PipelineShaderStageCreateInfo stageCi;
-      stageCi.module = sh->module.get();
-      stageCi.stage = sh->stage;
-      stageCi.pName = sh->entry.c_str();
-      stagesCi.push_back(stageCi);
-    }
-
-    eastl::vector<spirv::v2::DescriptorSet> dsets = getModulesDescriptorSets(modules);
     eastl::vector<vk::UniqueDescriptorSetLayout> dsetLayoutsUnique;
     eastl::vector<vk::DescriptorSetLayout> dsetLayouts;
     dsetLayoutsUnique.reserve(dsets.size());
@@ -109,68 +77,35 @@ namespace gapi::vulkan
     auto layout = m_Device->m_Device->createPipelineLayoutUnique(layoutCi);
     VK_CHECK_RES(layout);
 
-    const auto [v,b] = m_PipelineLayouts.insert({
-      hash,
+    m_PipelineLayouts.push_back({
       PipelineLayout{
         .pipelineLayout = std::move(layout.value),
         .descriptorSetLayouts = std::move(dsetLayoutsUnique),
         .dsets = std::move(dsets),
-        .stagesCi = std::move(stagesCi)
       }
     });
 
-    ASSERT(b);
-    return &v->second;
+    return PipelineLayoutHandler{m_PipelineLayouts.size()-1};
   }
 
-  eastl::vector<spirv::v2::DescriptorSet> ShadersStorage::getModulesDescriptorSets(const eastl::vector<ShaderModuleHandler>& modules) const
+  static size_t hash_shader_stages(const eastl::vector<ShaderModuleHandler>& modules)
   {
-    eastl::vector<spirv::v2::DescriptorSet> dsets;
+    using boost::hash_combine;
+    size_t hash = 0;
 
-    const auto mergeBindings = [](eastl::vector<vk::DescriptorSetLayoutBinding>& to, const eastl::vector<vk::DescriptorSetLayoutBinding>& from) {
-      if (to.size() < from.size())
-      {
-        size_t i = to.size();
-        to.resize(from.size());
-        for (; i < from.size(); ++i)
-          to[i].binding = i;
-      }
+    for(const auto& m: modules)
+      hash_combine(hash, m);
 
-      for (size_t i = 0; i < from.size(); ++i)
-      {
-        if (from[i].stageFlags != vk::ShaderStageFlags{})
-        {
-          if (to[i].stageFlags != vk::ShaderStageFlags{})
-          {
-            ASSERT(from[i].descriptorType == to[i].descriptorType);
-            ASSERT(from[i].descriptorCount == to[i].descriptorCount);
-            to[i].stageFlags |= from[i].stageFlags;
-          }
-          else
-            to[i] = from[i];
-        }
-      }
-    };
+    return hash;
+  }
 
-    for (const auto mHandler: modules)
-    {
-      auto shIt = m_ShaderModules.find(mHandler);
-      if (shIt == m_ShaderModules.end())
-      {
-        ASSERT(!"no shader module");
-        return {};
-      }
 
-      const auto& shDsets = shIt->second.descriptorSets;
+  const PipelineLayout& ShadersStorage::getPipelineLayout(const PipelineLayoutHandler h)
+  {
+    const size_t id = (size_t)h;
+    ASSERT_FMT(id < m_PipelineLayouts.size(), "invalid pipeline layout id (id:{} >= max:{})", id, m_PipelineLayouts.size());
 
-      if (dsets.size() < shDsets.size())
-        dsets.resize(shDsets.size());
-
-      for (size_t i = 0; i < shDsets.size(); ++i)
-        mergeBindings(dsets[i], shDsets[i]);
-    }
-
-    return dsets;
+    return m_PipelineLayouts[id];
   }
 
   const ShaderModule* ShadersStorage::getModule(const ShaderModuleHandler h) const
@@ -184,5 +119,21 @@ namespace gapi::vulkan
       ASSERT(!"module doesn't exist");
       return nullptr;
     }
+  }
+
+  eastl::vector<vk::PipelineShaderStageCreateInfo> ShadersStorage::getShaderStagesCreateInfos(const eastl::vector<ShaderModuleHandler>& modules) const
+  {
+    eastl::vector<vk::PipelineShaderStageCreateInfo> cis;
+    cis.reserve(modules.size());
+    for (const auto& shHandler: modules)
+    {
+      const ShaderModule* m = getModule(shHandler);
+      cis.push_back(vk::PipelineShaderStageCreateInfo{}
+        .setModule(m->module.get())
+        .setPName(m->entry.c_str())
+        .setStage(m->stage)
+      );
+    }
+    return cis;
   }
 }

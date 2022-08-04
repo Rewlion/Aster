@@ -17,6 +17,7 @@ namespace gapi
   enum class BufferHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
   enum class DepthStencilStateHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
   enum class ShaderModuleHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
+  enum class PipelineLayoutHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
 
   using index_type = uint32_t;
 
@@ -441,6 +442,7 @@ namespace gapi
 
   struct GraphicsPipelineDescription
   {
+    PipelineLayoutHandler              layout;
     eastl::vector<ShaderModuleHandler> shaders;
     VertexInputDescription             ia;
     PrimitiveTopology                  topology;
