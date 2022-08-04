@@ -15,7 +15,7 @@ model_asset
   text name = "cube"
   text mesh = "cube"
 
-  material @("SceneOpaque")
+  material @("TestStaticMesh")
   {
     text "albedo" = "cube.container" @("texture")
   }

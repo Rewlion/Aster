@@ -1,4 +1,5 @@
 shaders_list
 {
   "shaders/test.tfx" {}
+  "shaders/scene_opaque.tfx" {}
 }

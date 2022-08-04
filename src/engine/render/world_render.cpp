@@ -9,9 +9,6 @@
 #include <engine/time.h>
 #include <engine/window.h>
 
-#include <engine/shaders/shaders/frame_uniforms.hlsl>
-#include <engine/shaders/shaders/mesh_uniforms.hlsl>
-
 #include <glm/gtx/transform.hpp>
 
 namespace Engine::Render

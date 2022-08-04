@@ -1,0 +1,23 @@
+scope StaticModelScope {
+  reserve:
+    descriptor_set(1);
+    cbuffer(0);
+    register(texture, 1-3);
+
+  Texture2D albedoTex = channel(albedo);
+  Texture2D metalRoughnessTex = channel(metal_roughness);
+  Texture2D normalTex = channel(normal);
+
+  float4x4 modelTm = channel(model_tm);
+  float4x4 normalTm = channel(normal_tm);
+};
+
+technique_macro USE_STATIC_MESH {
+  render_state:
+    input:
+      buffer(0):
+        float3 pos:    POSITION0;
+        float3 tan:    TEXTURE0;
+        float3 normal: TEXTURE1;
+        float2 uv:     TEXTURE2;
+};

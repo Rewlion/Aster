@@ -1,35 +1,11 @@
-#include "test_include.tfx"
+#include "frame.inc.tfx"
+#include "mesh.inc.tfx"
 
-scope FrameScope {
-  reserve:
-    descriptor_set(0);
-    cbuffer(0);
-    register(sampler, 1-2);
-
-  sampler modelSampler = extern(model_sampler);
-
-  float4x4 viewProj = extern(view_proj);
-  float3 cameraPos = extern(camera_pos);
-  float secSinceStart = extern(sec_since_start);
-};
-
-scope StaticModelScope {
-  reserve:
-    descriptor_set(1);
-    cbuffer(0);
-    register(texture, 1-2);
-
-  Texture2D albedo = channel(albedo);
-
-  float4x4 modelTm = channel(model_tm);
-  float4x4 normalTm = channel(normal_tm);
-};
-
-technique SceneOpaque {
+technique TestStaticMesh {
   support scope FrameScope;
   support scope StaticModelScope;
 
-  INIT_STATIC_MESH();
+  USE_STATIC_MESH();
 
   #hlsl
     struct VsOutput
@@ -38,7 +14,7 @@ technique SceneOpaque {
       float2 uv: TEXTURE0;
     };
 
-    VsOutput vs_main(SceneOpaque_input input)
+    VsOutput vs_main(TestStaticMesh_input input)
     {
       float4x4 mvp = FrameScope.viewProj;
       mvp = mul(mvp, StaticModelScope.modelTm);
@@ -52,7 +28,7 @@ technique SceneOpaque {
 
     float4 ps_main(VsOutput input): SV_Target0
     {
-      return albedo.Sample(modelSampler, input.uv);
+      return albedoTex.Sample(modelSampler, input.uv);
     }
   #end
 
