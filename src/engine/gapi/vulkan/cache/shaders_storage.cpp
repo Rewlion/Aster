@@ -129,7 +129,12 @@ namespace gapi::vulkan
 
     const auto mergeBindings = [](eastl::vector<vk::DescriptorSetLayoutBinding>& to, const eastl::vector<vk::DescriptorSetLayoutBinding>& from) {
       if (to.size() < from.size())
+      {
+        size_t i = to.size();
         to.resize(from.size());
+        for (; i < from.size(); ++i)
+          to[i].binding = i;
+      }
 
       for (size_t i = 0; i < from.size(); ++i)
       {
