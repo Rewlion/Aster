@@ -31,9 +31,10 @@ namespace fg
       void execute(gapi::CmdEncoder& encoder);
 
     private:
+      void createResource(const VirtualResourceHandle h);
       VirtualResource& getVirtualResource(const VirtualResourceHandle h);
       const VirtualResource& getVirtualResource(const VirtualResourceHandle h) const;
-      bool isImportedResource(const VirtualResourceHandle h);
+      bool isImportedResource(const VirtualResourceHandle h) const;
 
       VirtualResourceHandle cloneResource(const VirtualResourceHandle h, Node* producer);
       VirtualResourceHandle createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc, Node* producer);

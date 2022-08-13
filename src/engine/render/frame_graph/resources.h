@@ -2,7 +2,7 @@
 
 #include "handles.h"
 
-#include <engine/gapi/resources.h>
+#include <engine/gapi/resource_wrappers.h>
 
 namespace fg
 {
@@ -21,7 +21,7 @@ namespace fg
   {
     std::string_view name;
     gapi::TextureAllocationDescription allocDesc;
-    gapi::TextureHandler handle;
+    gapi::TextureWrapper handle;
     bool isImported;
   };
 
@@ -29,7 +29,7 @@ namespace fg
   {
     std::string_view name;
     gapi::BufferAllocationDescription allocDesc;
-    gapi::BufferHandler handle;
+    gapi::BufferWrapper handle;
     bool isImported;
   };
 

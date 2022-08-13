@@ -1,5 +1,8 @@
 #include "world_render.h"
 
+#include <engine/render/frame_graph/frame_graph.h>
+#include <engine/render/frame_graph/blackboard.hpp>
+
 #include <engine/algorithm/hash.h>
 #include <engine/assets/assets_manager.h>
 #include <engine/gapi/gapi.h>
@@ -52,6 +55,42 @@ namespace Engine::Render
     tfx::set_extern("sec_since_start", Time::get_sec_since_start());
     tfx::set_extern("model_sampler", m_ModelSampler);
     tfx::activate_scope("FrameScope", m_FrameData.cmdEncoder.get());
+    /////////////////////////////////////
+    fg::Blackboard bb;
+    
+    fg::FrameGraph fg;
+    struct D
+    {
+      fg::VirtualResourceHandle out;
+    };
+    bb.add<D>() = fg.addCallbackPass<D>(
+      "some_node",
+      [&](fg::RenderPassBuilder& builder, D& data){
+        data.out = builder.createTexture("some_texture", {});
+        data.out = builder.write(data.out);
+      },
+      [](const D& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder){
+        logerror("SOME_NODE!");
+      }
+    );
+
+    struct B
+    {
+      fg::VirtualResourceHandle input;
+    };
+    fg.addCallbackPass<B>(
+      "some_node_2",
+      [&](fg::RenderPassBuilder& builder, B& data){
+        D& input = bb.get<D>();
+        data.input = builder.read(input.out);
+      },
+      [](const B& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
+        logerror("SOME_NODE_2!!!");
+      }
+    );
+
+    fg.compile();
+    fg.execute(*m_FrameData.cmdEncoder);
   }
 
   void WorldRender::renderWorld()

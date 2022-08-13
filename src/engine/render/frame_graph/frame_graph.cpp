@@ -15,8 +15,27 @@ namespace fg
     RenderPassResources rpResources(*this);
     for (const size_t id: m_Order)
     {
+      for (const auto& vResHandle: m_RenderPassPins[id].creates)
+        createResource(vResHandle);
+
       Node& rp = *m_RenderPasses[id];
       rp.exec(rpResources, encoder);
+    }
+  }
+
+  void FrameGraph::createResource(const VirtualResourceHandle h)
+  {
+    const VirtualResource& vr = m_VirtualResources[(size_t)h];
+    Resource& r = m_Resources[(size_t)vr.resourceId];
+    if (std::holds_alternative<TextureResource>(r))
+    {
+      TextureResource& res = std::get<TextureResource>(r);
+      res.handle = gapi::TextureWrapper(gapi::allocate_texture(res.allocDesc));
+    }
+    else
+    {
+      BufferResource& res = std::get<BufferResource>(r);
+      res.handle = gapi::BufferWrapper(gapi::allocate_buffer(res.allocDesc.size, res.allocDesc.usage));
     }
   }
 
@@ -30,7 +49,7 @@ namespace fg
     return const_cast<FrameGraph&>(*this).getVirtualResource(h);
   }
 
-  bool FrameGraph::isImportedResource(const VirtualResourceHandle h)
+  bool FrameGraph::isImportedResource(const VirtualResourceHandle h) const
   {
     const VirtualResource& vr = m_VirtualResources[(size_t)h];
     const Resource& r = m_Resources[(size_t)vr.resourceId];
