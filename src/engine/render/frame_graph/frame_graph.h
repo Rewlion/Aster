@@ -1,14 +1,12 @@
 #pragma once
 
-#include <engine/gapi/resources.h>
+#include "concepts.hpp"
+#include "render_pass.h"
+#include "render_pass_pins.h"
+#include "render_pass_builder.h"
+#include "resources.h"
 
-#include <EASTL/bitvector.h>
-#include <EASTL/vector.h>
-#include <EASTL/vector_map.h>
-
-#include <functional>
-#include <stdint.h>
-#include <variant>
+#include <memory>
 
 namespace gapi
 {
@@ -17,140 +15,37 @@ namespace gapi
 
 namespace fg
 {
-  struct TextureResource
-  {
-    const char* name = nullptr;
-    gapi::TextureHandler handler = gapi::TextureHandler::Invalid;
-    gapi::TextureState currentState = gapi::TextureState::Undefined;
-  };
-
-  class ResourceAccessor
-  {
-    friend class FrameGraph;
-    public:
-      ResourceAccessor(eastl::vector_map<string_hash, TextureResource>&& allocated_textures,
-                       eastl::vector_map<string_hash, TextureResource*>&& texture_aliases);
-
-      gapi::TextureHandler getTexture(const string_hash name_hash);
-
-    private:
-      TextureResource* getTextureResource(const string_hash name_hash);
-
-    private:
-      eastl::vector_map<string_hash, TextureResource> m_AllocatedTextures;
-      eastl::vector_map<string_hash, TextureResource*> m_TextureAliases;
-  };
-
-  using Callback = std::function<void(ResourceAccessor&, gapi::CmdEncoder&)>;
-
-  struct TexturePinDeclaration
-  {
-    const char* name;
-    string_hash nameHash;
-    gapi::TextureState state;
-  };
-
-  struct TextureCreationDeclaration
-  {
-    const char* name;
-    string_hash nameHash;
-    const gapi::TextureAllocationDescription& desc;
-  };
-
-  class Node
-  {
-    friend class FrameGraph;
-    friend class FrameGraphBuilder;
-
-    public:
-      using Id = uint16_t;
-    public:
-      Node(const Id id, const char* name);
-
-      Node& createTexture(const char* out_name, gapi::TextureState out_state, const gapi::TextureAllocationDescription& desc);
-      Node& readTexture(const char* in_name, gapi::TextureState in_state);
-      Node& writeTexture(const char* in_name, gapi::TextureState in_state, const char* out_name);
-      Node& setCallback(Callback&& cb);
-
-      inline const eastl::vector<Id>& getParents() const { return m_Parents; }
-      inline Id getId() const { return m_Id; }
-
-    private:
-      const Id m_Id;
-      const char* m_Name;
-      Callback m_Cb;
-
-      eastl::vector<TexturePinDeclaration> m_OutputTextures;
-      eastl::vector<TexturePinDeclaration> m_InputTextures;
-      eastl::vector<TextureCreationDeclaration> m_CreatesTextures;
-
-      struct ResourceAlias
-      {
-        const char* oldName;
-        string_hash oldNameHash;
-        const char* newName;
-        string_hash newNameHash;
-      };
-      eastl::vector<ResourceAlias> m_TextureAliases;
-
-      eastl::vector<Id> m_Parents;
-  };
-
   class FrameGraph
   {
+    friend class RenderPassBuilder;
+    friend class TopologicalSorter;
+    friend class RenderPassResources;
+
     public:
-      FrameGraph(ResourceAccessor&& resAccessor, eastl::vector<Node>&& nodes, eastl::vector<Node::Id>&& order);
+      template<class Data, class SetupCallback, class ExecCallback>
+      requires SetupCbConcept<SetupCallback, Data> &&
+               ExecCbConcept<ExecCallback, Data>
+      Data& addCallbackPass(const std::string_view name, SetupCallback&& setup, ExecCallback&& exec);
 
-      void execute(gapi::CmdEncoder* cmd_encoder);
-
-    private:
-      void transitNodeResources(const Node& node);
-
-    private:
-      ResourceAccessor m_ResourceAccessor;
-      eastl::vector<Node> m_Nodes;
-      eastl::vector<Node::Id> m_Order;
-
-      gapi::CmdEncoder* m_CmdEncoder;
-  };
-
-  class TopologicalSorter
-  {
-    public:
-      TopologicalSorter(eastl::vector<Node>&);
-      eastl::vector<Node::Id> sort();
-    private:
-      void dfs(const size_t id);
+      void compile();
+      void execute(gapi::CmdEncoder& encoder);
 
     private:
-      eastl::vector<Node>& m_Nodes;
-      eastl::bitvector<eastl::allocator, uint64_t> m_VisitSet;
-      eastl::vector<Node::Id> m_ReverseOrder;
+      VirtualResource& getVirtualResource(const VirtualResourceHandle h);
+      const VirtualResource& getVirtualResource(const VirtualResourceHandle h) const;
+      bool isImportedResource(const VirtualResourceHandle h);
 
-  };
-
-  class FrameGraphBuilder
-  {
-    public:
-      Node& addNode(const char* name)
-      {
-        const Node::Id id = m_Nodes.size();
-        m_Nodes.emplace_back(id, name);
-        return m_Nodes.back();
-      }
-
-      FrameGraph build();
+      VirtualResourceHandle cloneResource(const VirtualResourceHandle h, Node* producer);
+      VirtualResourceHandle createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc, Node* producer);
+      VirtualResourceHandle createBuffer(const std::string_view name, const gapi::BufferAllocationDescription& desc, Node* producer);
 
     private:
-      void linkNodes();
-      void topologicalSortNodes();
-      void allocateResources();
-      FrameGraph constructFrameGraph();
-
-    private:
-      eastl::vector<Node> m_Nodes;
-      eastl::vector<Node::Id> m_SortedOrder;
-      eastl::vector_map<string_hash, TextureResource> m_AllocatedTextures;
-      eastl::vector_map<string_hash, TextureResource*> m_TextureAliases;
+      eastl::vector<std::unique_ptr<Node>> m_RenderPasses;
+      eastl::vector<RenderPassPins> m_RenderPassPins;
+      eastl::vector<Resource> m_Resources;
+      eastl::vector<VirtualResource> m_VirtualResources;
+      eastl::vector<size_t> m_Order;
   };
 }
+
+#include "frame_graph.inc"
