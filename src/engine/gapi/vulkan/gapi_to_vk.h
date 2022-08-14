@@ -165,6 +165,7 @@ namespace gapi::vulkan
     {
       case TextureFormat::R8G8B8A8_SNORM: return vk::Format::eR8G8B8A8Snorm;
       case TextureFormat::R8G8B8A8_UNORM: return vk::Format::eR8G8B8A8Unorm;
+      case TextureFormat::R32G32B32A32_S: return vk::Format::eR32G32B32A32Sfloat;
       case TextureFormat::D24_UNORM_S8_UINT: return vk::Format::eD24UnormS8Uint;
       default: return vk::Format::eUndefined;
     }
@@ -177,6 +178,7 @@ namespace gapi::vulkan
       case vk::Format::eB8G8R8A8Srgb:
       case vk::Format::eR8G8B8A8Snorm:
       case vk::Format::eR8G8B8A8Unorm: return vk::ImageAspectFlagBits::eColor;
+      case vk::Format::eR32G32B32A32Sfloat: return vk::ImageAspectFlagBits::eColor;
       case vk::Format::eD24UnormS8Uint: return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
       default: {
         ASSERT(!"unsupported format");

@@ -34,9 +34,9 @@ technique ProcessGbuffer {
     float4 vs_main(uint id: SV_VertexID) : SV_Position
     {
       float2 vertices[4] = {
-        float2(1.0f, 1.0f),
         float2(1.0f, -1.0f),
         float2(-1.0f, -1.0f),
+        float2(1.0f, 1.0f),
         float2(-1.0f, 1.0f)
       };
 
@@ -50,7 +50,7 @@ technique ProcessGbuffer {
       float4 albedo = float4(gbufferAlbedo.Sample(modelSampler, tc).rgb, 1.0);
       float3 normal = gbufferNormal.Sample(modelSampler, tc).rgb / 0.5f - 1.0f;
       float3 worldPos = gbufferWorldPos.Sample(modelSampler, tc).rgb;
-      float2 metalRoughness = gbufferWorldPos.Sample(modelSampler, tc).rg;
+      float2 metalRoughness = gbufferMetalRoughness.Sample(modelSampler, tc).rg;
 
       Gbuffer g = (Gbuffer)0;
       init_albedo(g, albedo);

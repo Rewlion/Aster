@@ -21,6 +21,55 @@ scene
     float3 rot = -90.0, 0.0, 0.0
     text model = "damaged_helmet"
   }
+
+  object
+  {
+    float3 pos = 5.0 , 0.0 , 5.0
+    float3 rot = -90.0, 0.0, 0.0
+    text model = "damaged_helmet"
+  }
+
+  object
+  {
+    float3 pos = 5.0 , 5.0 , 5.0
+    float3 rot = -90.0, 0.0, 0.0
+    text model = "damaged_helmet"
+  }
+  
+  object
+  {
+    float3 pos = 5.0 , 0.0 , 0.0
+    float3 rot = -90.0, 0.0, 0.0
+    text model = "damaged_helmet"
+  }
+
+  object
+  {
+    float3 pos = 0.0 , 0.0 , -5.0
+    float3 rot = -90.0, 0.0, 0.0
+    text model = "damaged_helmet"
+  }
+
+  object
+  {
+    float3 pos = -5.0 , 0.0 , -5.0
+    float3 rot = -90.0, 0.0, 0.0
+    text model = "damaged_helmet"
+  }
+
+  object
+  {
+    float3 pos = -5.0 , -5.0 , -5.0
+    float3 rot = -90.0, 0.0, 0.0
+    text model = "damaged_helmet"
+  }
+  
+  object
+  {
+    float3 pos = -5.0 , 0.0 , 0.0
+    float3 rot = -90.0, 0.0, 0.0
+    text model = "damaged_helmet"
+  }
 }
 
 entity @("template1")

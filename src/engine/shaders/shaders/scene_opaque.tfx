@@ -32,7 +32,7 @@ technique SceneOpaque {
       return output;
     }
 
-    float4 ps_main(VsOutput input): SV_Target0
+    GbufferOutput ps_main(VsOutput input)
     {
       float4 albedo = albedoTex.Sample(modelSampler, input.uv);
       float3 metalRoughness = metalRoughnessTex.Sample(modelSampler, input.uv).rgb;

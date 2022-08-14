@@ -290,9 +290,10 @@ namespace gapi
 
   enum class TextureFormat: uint32_t
   {
-    R8G8B8A8_SNORM = 1,
-    R8G8B8A8_UNORM = 2,
-    D24_UNORM_S8_UINT = 3,
+    R8G8B8A8_SNORM,
+    R8G8B8A8_UNORM,
+    R32G32B32A32_S,
+    D24_UNORM_S8_UINT,
   };
 
   enum class ImageFilter

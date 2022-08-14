@@ -13,6 +13,7 @@
 #include <engine/window.h>
 
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 namespace Engine::Render
 {
@@ -48,6 +49,7 @@ namespace Engine::Render
     tfx::set_extern("camera_pos", m_FrameData.camera.pos);
     tfx::set_extern("sec_since_start", Time::get_sec_since_start());
     tfx::set_extern("model_sampler", m_ModelSampler);
+    tfx::set_extern("viewport_size", float2(m_WindowSize.x, m_WindowSize.y));
     tfx::activate_scope("FrameScope", m_FrameData.cmdEncoder.get());
   }
 
@@ -62,8 +64,24 @@ namespace Engine::Render
         allocDesc.mipLevels = 1;
         allocDesc.arrayLayers = 1;
         allocDesc.usage = gapi::TextureUsage::DepthStencil;
+
         data.depth = builder.createTexture("gbuffer_depth", allocDesc);
         data.depth = builder.write(data.depth);
+
+        allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
+        allocDesc.usage = (gapi::TextureUsage)((uint32_t)gapi::TextureUsage::RenderTarget | (uint32_t)gapi::TextureUsage::Uniform);
+        data.albedo = builder.createTexture("gbuffer_albedo", allocDesc);
+        data.albedo = builder.write(data.albedo);
+
+        data.normal = builder.createTexture("gbuffer_normal", allocDesc);
+        data.normal = builder.write(data.normal);
+
+        data.metalRoughness = builder.createTexture("gbuffer_metal_roughness", allocDesc);
+        data.metalRoughness = builder.write(data.metalRoughness);
+
+        allocDesc.format = gapi::TextureFormat::R32G32B32A32_S;
+        data.worldPos = builder.createTexture("gbuffer_world_pos", allocDesc);
+        data.worldPos = builder.write(data.worldPos);
       },
       [this](const blackboard::Gbuffer& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
         renderOpaque(data, resources);
@@ -72,28 +90,63 @@ namespace Engine::Render
 
     m_FrameData.fg->compile();
     m_FrameData.fg->execute(*m_FrameData.cmdEncoder);
-
+    m_FrameData.cmdEncoder->flush();
     gapi::present_backbuffer();
   }
 
   void WorldRender::renderOpaque(const blackboard::Gbuffer& gbuffer, const fg::RenderPassResources& resources)
   {
     const gapi::TextureHandler depth = resources.getTexture(gbuffer.depth);
+    const gapi::TextureHandler albedo = resources.getTexture(gbuffer.albedo);
+    const gapi::TextureHandler normal = resources.getTexture(gbuffer.normal);
+    const gapi::TextureHandler worldPos = resources.getTexture(gbuffer.worldPos);
+    const gapi::TextureHandler metalRoughness = resources.getTexture(gbuffer.metalRoughness);
     m_FrameData.cmdEncoder->transitTextureState(depth, gapi::TextureState::Undefined, gapi::TextureState::DepthWriteStencilRead);
+    m_FrameData.cmdEncoder->transitTextureState(albedo, gapi::TextureState::Undefined, gapi::TextureState::RenderTarget);
+    m_FrameData.cmdEncoder->transitTextureState(normal, gapi::TextureState::Undefined, gapi::TextureState::RenderTarget);
+    m_FrameData.cmdEncoder->transitTextureState(worldPos, gapi::TextureState::Undefined, gapi::TextureState::RenderTarget);
+    m_FrameData.cmdEncoder->transitTextureState(metalRoughness, gapi::TextureState::Undefined, gapi::TextureState::RenderTarget);
 
-    m_FrameData.cmdEncoder->transitTextureState(gapi::get_backbuffer(), gapi::TextureState::Present, gapi::TextureState::RenderTarget);
     m_FrameData.cmdEncoder->beginRenderpass(
       {
-        gapi::RenderPassAttachment{gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::Present}
+        gapi::RenderPassAttachment{albedo, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget},
+        gapi::RenderPassAttachment{normal, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget},
+        gapi::RenderPassAttachment{worldPos, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget},
+        gapi::RenderPassAttachment{metalRoughness, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget},
       },
       gapi::RenderPassAttachment{depth, gapi::TextureState::DepthWriteStencilRead, gapi::TextureState::DepthWriteStencilRead},
       (gapi::ClearState)(gapi::CLEAR_RT | gapi::CLEAR_DEPTH)
     );
 
     renderScene();
+    m_FrameData.cmdEncoder->endRenderpass();
+
+    m_FrameData.cmdEncoder->transitTextureState(albedo, gapi::TextureState::RenderTarget, gapi::TextureState::ShaderRead);
+    m_FrameData.cmdEncoder->transitTextureState(normal, gapi::TextureState::RenderTarget, gapi::TextureState::ShaderRead);
+    m_FrameData.cmdEncoder->transitTextureState(worldPos, gapi::TextureState::RenderTarget, gapi::TextureState::ShaderRead);
+    m_FrameData.cmdEncoder->transitTextureState(metalRoughness, gapi::TextureState::RenderTarget, gapi::TextureState::ShaderRead);
+
+    m_FrameData.cmdEncoder->transitTextureState(gapi::get_backbuffer(), gapi::TextureState::Present, gapi::TextureState::RenderTarget);
+    m_FrameData.cmdEncoder->beginRenderpass(
+      {
+        gapi::RenderPassAttachment{gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::Present},
+      },
+      {},
+      gapi::ClearState::CLEAR_NONE
+    );
+
+    tfx::set_extern("gbuffer_albedo", albedo);
+    tfx::set_extern("gbuffer_normal", normal);
+    tfx::set_extern("gbuffer_world_pos", worldPos);
+    tfx::set_extern("gbuffer_metal_roughness", metalRoughness);
+
+    tfx::activate_scope("ProcessGbufferScope", m_FrameData.cmdEncoder.get());
+    tfx::activate_technique("ProcessGbuffer", m_FrameData.cmdEncoder.get());
+    m_FrameData.cmdEncoder->updateResources();
+    m_FrameData.cmdEncoder->draw(4, 1, 0, 0);
 
     m_FrameData.cmdEncoder->endRenderpass();
-    m_FrameData.cmdEncoder->flush();
+
   }
 
   void WorldRender::renderScene()
@@ -129,6 +182,7 @@ namespace Engine::Render
 
         m_FrameData.cmdEncoder->bindVertexBuffer(submesh.vertexBuffer);
         m_FrameData.cmdEncoder->bindIndexBuffer(submesh.indexBuffer);
+
         m_FrameData.cmdEncoder->drawIndexed(submesh.indexCount, 1, 0, 0, 0);
       }
     }

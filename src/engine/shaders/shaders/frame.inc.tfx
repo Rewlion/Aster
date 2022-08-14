@@ -9,5 +9,14 @@ scope FrameScope {
   float4x4 viewProj = extern(view_proj);
   float3 cameraPos = extern(camera_pos);
   float secSinceStart = extern(sec_since_start);
+  float2 viewPortSize = extern(viewport_size);
 };
 
+technique_macro USE_FRAME_HELPERS {
+  #hlsl
+    float2 get_screen_space_coords(float2 viewport_coords)
+    {
+      return viewport_coords / FrameScope.viewPortSize;
+    }
+  #end
+};
