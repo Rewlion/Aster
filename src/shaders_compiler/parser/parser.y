@@ -107,6 +107,7 @@
 %token TFX_TOKEN_PT_LINE_STRIP "line_strip"
 %token TFX_TOKEN_PT_TRIANGLE_LIST "triangle_list"
 %token TFX_TOKEN_PT_TRIANGLE_FAN "triangle_fan"
+%token TFX_TOKEN_PT_TRIANGLE_STRIP "triangle_strip"
 %token TFX_TOKEN_PT_LINE_LIST_WITH_ADJACENCY "line_list_with_adjacency"
 %token TFX_TOKEN_PT_LINE_STRIP_WITH_ADJACENCY "line_strip_with_adjacency"
 %token TFX_TOKEN_PT_TRIANGLE_LIST_WITH_ADJACENCY "triangle_list_with_adjacency"
@@ -409,6 +410,9 @@ PRIMITIVE_TOPOLOGY
   }
   | "triangle_fan" {
     $$ = gapi::PrimitiveTopology::TriangleFan;
+  }
+  | "triangle_strip" {
+    $$ = gapi::PrimitiveTopology::TriangleStrip;
   }
   | "line_list_with_adjacency" {
     $$ = gapi::PrimitiveTopology::LineListWithAdjacency;

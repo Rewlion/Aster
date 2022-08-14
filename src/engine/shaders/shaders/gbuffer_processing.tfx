@@ -1,0 +1,68 @@
+#include "gbuffer.inc.tfx"
+#include "frame.inc.tfx"
+
+scope ProcessGbufferScope {
+  reserve:
+    descriptor_set(3);
+    register(texture, 0-3);
+
+  Texture2D gbufferAlbedo = extern(gbuffer_albedo);
+  Texture2D gbufferNormal = extern(gbuffer_normal);
+  Texture2D gbufferWorldPos = extern(gbuffer_world_pos);
+  Texture2D gbufferMetalRoughness = extern(gbuffer_metal_roughness);
+};
+
+technique ProcessGbuffer {
+  support scope ProcessGbufferScope;
+  support scope FrameScope;
+
+  render_state:
+    primitive_topology = triangle_strip;
+    depth:
+     test = no;
+     write = no;
+
+  USE_FRAME_HELPERS();
+  USE_GBUFFER();
+
+  #hlsl
+    struct VsOutput{
+      float4 pos: SV_Position;
+      float2 uv: TEXTURE0;
+    };
+
+    float4 vs_main(uint id: SV_VertexID) : SV_Position
+    {
+      float2 vertices[4] = {
+        float2(1.0f, 1.0f),
+        float2(1.0f, -1.0f),
+        float2(-1.0f, -1.0f),
+        float2(-1.0f, 1.0f)
+      };
+
+      return float4(vertices[id], 0, 1.0);
+    }
+
+    float4 ps_main(float4 input: SV_Position): SV_Target0
+    {
+      float2 tc = get_screen_space_coords(input.xy);
+
+      float4 albedo = float4(gbufferAlbedo.Sample(modelSampler, tc).rgb, 1.0);
+      float3 normal = gbufferNormal.Sample(modelSampler, tc).rgb / 0.5f - 1.0f;
+      float3 worldPos = gbufferWorldPos.Sample(modelSampler, tc).rgb;
+      float2 metalRoughness = gbufferWorldPos.Sample(modelSampler, tc).rg;
+
+      Gbuffer g = (Gbuffer)0;
+      init_albedo(g, albedo);
+      init_metal(g, metalRoughness.r);
+      init_roughness(g, metalRoughness.g);
+      init_normal(g, normal);
+      init_worldPos(g, worldPos);
+
+      return process_gbuffer(g);
+    }
+  #end
+
+  compile(vs_6_1, vs_main);
+  compile(ps_6_1, ps_main);
+};

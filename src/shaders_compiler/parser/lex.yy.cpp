@@ -633,8 +633,8 @@ static void yynoreturn yy_fatal_error ( const char* msg  );
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
-#define YY_NUM_RULES 158
-#define YY_END_OF_BUFFER 159
+#define YY_NUM_RULES 159
+#define YY_END_OF_BUFFER 160
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -644,100 +644,100 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[859] =
     {   0,
-       10,   10,    0,    0,    5,    5,  159,  157,   10,   10,
-      157,   15,   16,   19,   20,  157,   36,   12,   13,   14,
-       11,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,   17,   18,    2,    3,
-        2,    7,    5,  158,    7,   10,    0,    0,    9,   37,
-       36,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,   34,  156,  132,  156,  156,  156,  156,  156,  156,
+       10,   10,    0,    0,    5,    5,  160,  158,   10,   10,
+      158,   15,   16,   19,   20,  158,   36,   12,   13,   14,
+       11,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,   17,   18,    2,    3,
+        2,    7,    5,  159,    7,   10,    0,    0,    9,   37,
+       36,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,   34,  157,  133,  157,  157,  157,  157,  157,  157,
 
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,    0,    5,    0,    0,    0,    9,   37,  156,
-      156,  120,  156,  156,  126,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,   43,  156,  156,
-      156,  156,  156,  124,  123,   95,  156,  156,  156,  133,
-      156,  102,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  139,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  131,   35,
-      156,    0,    6,    0,    0,  156,  156,  156,  156,  156,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,    0,    5,    0,    0,    0,    9,   37,  157,
+      157,  121,  157,  157,  127,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,   43,  157,  157,
+      157,  157,  157,  125,  124,   96,  157,  157,  157,  134,
+      157,  103,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  140,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  132,   35,
+      157,    0,    6,    0,    0,  157,  157,  157,  157,  157,
 
-      156,  156,  156,  156,  156,  156,  156,  156,  128,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,   44,   45,   46,  156,   82,   75,  156,
-      156,  138,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,   67,  156,  156,   33,
-      156,  156,   83,    4,    1,    0,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  125,  156,  156,  156,
-      156,  156,  156,  156,   65,  156,  156,  156,   76,  156,
-      156,  156,   32,   38,  156,  156,  156,  156,   26,  156,
+      157,  157,  157,  157,  157,  157,  157,  157,  129,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,   44,   45,   46,  157,   83,   76,  157,
+      157,  139,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,   68,  157,  157,   33,
+      157,  157,   84,    4,    1,    0,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  126,  157,  157,  157,
+      157,  157,  157,  157,   66,  157,  157,  157,   77,  157,
+      157,  157,   32,   38,  157,  157,  157,  157,   26,  157,
 
-      156,  156,  156,   74,  130,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,   21,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,   68,    0,  156,  156,  156,   81,  156,  156,
-      156,  156,   27,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,   29,  156,   39,
-       40,   41,  156,  156,  156,  156,   87,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  148,
-      149,  150,  151,  152,  153,  154,  155,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
+      157,  157,  157,   75,  131,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,   21,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,   69,    0,  157,  157,  157,   82,  157,  157,
+      157,  157,   27,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,   29,  157,   39,
+       40,   41,  157,  157,  157,  157,   88,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  149,
+      150,  151,  152,  153,  154,  155,  156,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
 
-      156,  156,  156,  140,  141,  142,  143,  144,  145,  146,
-      147,    0,  156,  156,  156,  156,  156,  156,  156,   28,
-       30,  156,  156,   52,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,   69,  156,   78,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,   70,  156,  156,
-      156,   73,  156,  156,   84,   22,  156,   25,  156,  156,
-      156,   66,  156,   51,  156,   24,  156,    0,  156,   50,
-      156,  156,  156,  156,   90,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,   42,  156,  156,  156,
-      156,  156,  156,  156,   93,  156,  156,  156,  156,  156,
+      157,  157,  157,  141,  142,  143,  144,  145,  146,  147,
+      148,    0,  157,  157,  157,  157,  157,  157,  157,   28,
+       30,  157,  157,   52,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,   70,  157,   79,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,   71,  157,  157,
+      157,   74,  157,  157,   85,   22,  157,   25,  157,  157,
+      157,   67,  157,   51,  157,   24,  157,    0,  157,   50,
+      157,  157,  157,  157,   91,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,   42,  157,  157,  157,
+      157,  157,  157,  157,   94,  157,  157,  157,  157,  157,
 
-      156,  156,   23,  156,  156,  156,  156,  156,  121,  156,
-      156,    8,   47,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,   86,  156,  156,  109,  105,  156,  156,  156,
-      156,   85,  156,   56,  156,  156,   79,  156,  156,  156,
-      156,  156,  156,  156,  156,  107,  103,  156,  156,   48,
-      156,  156,  156,  156,  156,  156,   72,  156,  156,  156,
-      156,  156,  156,  156,  156,  134,  156,  156,  156,  156,
-      156,   57,  156,  156,  156,  135,   64,   55,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  127,  156,  156,  156,  156,  156,  156,  156,  156,
+      157,  157,   23,  157,  157,  157,  157,  157,  122,  157,
+      157,    8,   47,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,   87,  157,  157,  110,  106,  157,  157,  157,
+      157,   86,  157,   56,  157,  157,   80,  157,  157,  157,
+      157,  157,  157,  157,  157,  108,  104,  157,  157,   48,
+      157,  157,  157,  157,  157,  157,   73,  157,  157,  157,
+      157,  157,  157,  157,  157,  135,  157,  157,  157,  157,
+      157,   57,  157,  157,  157,  136,   65,   55,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  128,  157,  157,  157,  157,  157,  157,  157,  157,
 
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  137,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  129,  156,  156,  156,
-      156,  156,   89,  156,  156,  156,  156,  156,   91,   88,
-      156,  156,  156,  156,  156,  156,  156,  156,   53,  156,
-      156,  156,  156,  156,  156,  156,   59,  156,  156,  156,
-      156,  156,  156,  156,  136,   71,  156,  156,  156,  156,
-       77,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  118,  116,  156,   58,  156,  101,  156,   98,
-      113,  111,   31,  156,  156,  156,  156,  156,  156,  156,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  138,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  130,  157,  157,  157,
+      157,  157,   90,  157,  157,  157,  157,  157,   92,   89,
+      157,  157,  157,  157,  157,  157,  157,  157,   53,  157,
+      157,  157,  157,  157,  157,  157,   59,  157,  157,  157,
+      157,  157,  157,  157,  137,   72,  157,  157,  157,  157,
+       78,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  119,  117,  157,   58,  157,  102,  157,   99,
+      114,  112,   31,  157,  157,  157,  157,  157,  157,  157,
 
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-       94,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,   49,  156,
-      156,  156,  156,   80,  156,  156,   92,  156,  156,  156,
-      156,  156,  156,  156,  122,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,   54,  156,  115,  156,
-      156,  156,  156,  156,  156,  156,  156,  110,  106,  108,
-      104,  156,  156,  156,  156,  156,  156,  156,  156,  156,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,   60,
+       95,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,   49,  157,
+      157,  157,  157,   81,  157,  157,   93,  157,  157,  157,
+      157,  157,  157,  157,  123,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,   54,  157,  116,  157,
+      157,  157,  157,  157,  157,  157,  157,  111,  107,  109,
+      105,  157,  157,  157,  157,  157,  157,  157,  157,  157,
 
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  156,  156,  156,  156,  156,  156,  156,  156,  156,
-      156,  100,   97,  156,  156,  156,  156,  156,  156,   99,
-       96,  156,  156,  156,  156,  156,  156,  119,  117,  156,
-      156,   60,  156,  114,  112,  156,  156,   61,  156,  156,
-      156,  156,  156,  156,   62,  156,   63,    0
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  157,  157,  157,  157,  157,  157,  157,  157,  157,
+      157,  101,   98,  157,  157,  157,  157,  157,  157,  100,
+       97,  157,  157,  157,  157,  157,  157,  120,  118,  157,
+      157,   61,  157,  115,  113,  157,  157,   62,  157,  157,
+      157,  157,  157,  157,   63,  157,   64,    0
     } ;
 
 static const YY_CHAR yy_ec[256] =
@@ -1201,7 +1201,7 @@ static const flex_int16_t yy_chk[968] =
     } ;
 
 /* Table of booleans, true if rule could match eol. */
-static const flex_int32_t yy_rule_can_match_eol[159] =
+static const flex_int32_t yy_rule_can_match_eol[160] =
     {   0,
 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -1210,7 +1210,8 @@ static const flex_int32_t yy_rule_can_match_eol[159] =
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        };
 
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
@@ -1242,10 +1243,10 @@ char *yytext;
     string codeBuf;
 
     namespace fs = std::filesystem;
-#line 1245 "src/shaders_compiler/parser/lex.yy.cpp"
+#line 1246 "src/shaders_compiler/parser/lex.yy.cpp"
 #define YY_NO_UNISTD_H 1
 
-#line 1248 "src/shaders_compiler/parser/lex.yy.cpp"
+#line 1249 "src/shaders_compiler/parser/lex.yy.cpp"
 
 #define INITIAL 0
 #define hlsl 1
@@ -1467,7 +1468,7 @@ YY_DECL
 #line 27 "src/shaders_compiler/parser/parser.l"
 
 
-#line 1470 "src/shaders_compiler/parser/lex.yy.cpp"
+#line 1471 "src/shaders_compiler/parser/lex.yy.cpp"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1984,695 +1985,702 @@ case 60:
 YY_RULE_SETUP
 #line 298 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_PT_LINE_LIST_WITH_ADJACENCY;
+  return TFX_TOKEN_PT_TRIANGLE_STRIP;
 }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
 #line 302 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_PT_LINE_STRIP_WITH_ADJACENCY;
+  return TFX_TOKEN_PT_LINE_LIST_WITH_ADJACENCY;
 }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
 #line 306 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_PT_TRIANGLE_LIST_WITH_ADJACENCY;
+  return TFX_TOKEN_PT_LINE_STRIP_WITH_ADJACENCY;
 }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
 #line 310 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_PT_TRIANGLE_STRIP_WITH_ADJACENCY;
+  return TFX_TOKEN_PT_TRIANGLE_LIST_WITH_ADJACENCY;
 }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
 #line 314 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_PT_PATCH_LIST;
+  return TFX_TOKEN_PT_TRIANGLE_STRIP_WITH_ADJACENCY;
 }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
 #line 318 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_DEPTH;
+  return TFX_TOKEN_PT_PATCH_LIST;
 }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
 #line 322 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_STENCIL;
+  return TFX_TOKEN_DEPTH;
 }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
 #line 326 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TEST;
+  return TFX_TOKEN_STENCIL;
 }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
 #line 330 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_WRITE;
+  return TFX_TOKEN_TEST;
 }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
 #line 334 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_FAIL_OP;
+  return TFX_TOKEN_WRITE;
 }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
 #line 338 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_PASS_OP;
+  return TFX_TOKEN_FAIL_OP;
 }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
 #line 342 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_DEPTH_FAIL_OP;
+  return TFX_TOKEN_PASS_OP;
 }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
 #line 346 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_COMPARE_OP;
+  return TFX_TOKEN_DEPTH_FAIL_OP;
 }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
 #line 350 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_REFERENCE_VALUE;
+  return TFX_TOKEN_COMPARE_OP;
 }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
 #line 354 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_NEVER;
+  return TFX_TOKEN_REFERENCE_VALUE;
 }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
 #line 358 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_LESS;
+  return TFX_TOKEN_NEVER;
 }
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
 #line 362 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_EQUAL;
+  return TFX_TOKEN_LESS;
 }
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
 #line 366 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_LESS_OR_EQUAL;
+  return TFX_TOKEN_EQUAL;
 }
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
 #line 370 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_GREATER;
+  return TFX_TOKEN_LESS_OR_EQUAL;
 }
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
 #line 374 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_NOT_EQUAL;
+  return TFX_TOKEN_GREATER;
 }
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
 #line 378 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_GREATER_OR_EQUAL;
+  return TFX_TOKEN_NOT_EQUAL;
 }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
 #line 382 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ALWAYS;
+  return TFX_TOKEN_GREATER_OR_EQUAL;
 }
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
 #line 386 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_KEEP;
+  return TFX_TOKEN_ALWAYS;
 }
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
 #line 390 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ZERO;
+  return TFX_TOKEN_KEEP;
 }
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
 #line 394 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_REPLACE;
+  return TFX_TOKEN_ZERO;
 }
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
 #line 398 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_INCREMENT_AND_CLAMP;
+  return TFX_TOKEN_REPLACE;
 }
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
 #line 402 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_DECREMENT_AND_CLAMP;
+  return TFX_TOKEN_INCREMENT_AND_CLAMP;
 }
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
 #line 406 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_INVERT;
+  return TFX_TOKEN_DECREMENT_AND_CLAMP;
 }
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
 #line 410 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_INCREMENT_AND_WRAP;
+  return TFX_TOKEN_INVERT;
 }
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
 #line 414 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_DECREMENT_AND_WRAP;
+  return TFX_TOKEN_INCREMENT_AND_WRAP;
 }
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
 #line 418 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_BLENDING;
+  return TFX_TOKEN_DECREMENT_AND_WRAP;
 }
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
 #line 422 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_HAS_BLANDING;
+  return TFX_TOKEN_BLENDING;
 }
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
 #line 426 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_LOGIC_OP_ENABLED;
+  return TFX_TOKEN_HAS_BLANDING;
 }
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
 #line 430 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_LOGIC_OP;
+  return TFX_TOKEN_LOGIC_OP_ENABLED;
 }
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
 #line 434 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_BLEND_CONSTANTS;
+  return TFX_TOKEN_LOGIC_OP;
 }
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
 #line 438 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_MRT;
+  return TFX_TOKEN_BLEND_CONSTANTS;
 }
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
 #line 442 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_SRC_COLOR_BLEND_FACTOR;
+  return TFX_TOKEN_MRT;
 }
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
 #line 446 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_DST_COLOR_BLEND_FACTOR;
+  return TFX_TOKEN_SRC_COLOR_BLEND_FACTOR;
 }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
 #line 450 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_COLOR_BLEND_OP;
+  return TFX_TOKEN_DST_COLOR_BLEND_FACTOR;
 }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
 #line 454 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_SRC_ALPHA_BLEND_FACTOR;
+  return TFX_TOKEN_COLOR_BLEND_OP;
 }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
 #line 458 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_DST_ALPHA_BLEND_FACTOR;
+  return TFX_TOKEN_SRC_ALPHA_BLEND_FACTOR;
 }
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
 #line 462 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ALPHA_BLEND_OP;
+  return TFX_TOKEN_DST_ALPHA_BLEND_FACTOR;
 }
 	YY_BREAK
 case 102:
 YY_RULE_SETUP
 #line 466 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ONE;
+  return TFX_TOKEN_ALPHA_BLEND_OP;
 }
 	YY_BREAK
 case 103:
 YY_RULE_SETUP
 #line 470 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_SRC_COLOR;
+  return TFX_TOKEN_ONE;
 }
 	YY_BREAK
 case 104:
 YY_RULE_SETUP
 #line 474 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ONE_MINUS_SRC_COLOR;
+  return TFX_TOKEN_SRC_COLOR;
 }
 	YY_BREAK
 case 105:
 YY_RULE_SETUP
 #line 478 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_DST_COLOR;
+  return TFX_TOKEN_ONE_MINUS_SRC_COLOR;
 }
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
 #line 482 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ONE_MINUS_DST_COLOR;
+  return TFX_TOKEN_DST_COLOR;
 }
 	YY_BREAK
 case 107:
 YY_RULE_SETUP
 #line 486 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_SRC_ALPHA;
+  return TFX_TOKEN_ONE_MINUS_DST_COLOR;
 }
 	YY_BREAK
 case 108:
 YY_RULE_SETUP
 #line 490 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ONE_MINUS_SRC_ALPHA;
+  return TFX_TOKEN_SRC_ALPHA;
 }
 	YY_BREAK
 case 109:
 YY_RULE_SETUP
 #line 494 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_DST_ALPHA;
+  return TFX_TOKEN_ONE_MINUS_SRC_ALPHA;
 }
 	YY_BREAK
 case 110:
 YY_RULE_SETUP
 #line 498 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ONE_MINUS_DST_ALPHA;
+  return TFX_TOKEN_DST_ALPHA;
 }
 	YY_BREAK
 case 111:
 YY_RULE_SETUP
 #line 502 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_CONSTANT_COLOR;
+  return TFX_TOKEN_ONE_MINUS_DST_ALPHA;
 }
 	YY_BREAK
 case 112:
 YY_RULE_SETUP
 #line 506 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ONE_MINUS_CONSTANT_COLOR;
+  return TFX_TOKEN_CONSTANT_COLOR;
 }
 	YY_BREAK
 case 113:
 YY_RULE_SETUP
 #line 510 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_CONSTANT_ALPHA;
+  return TFX_TOKEN_ONE_MINUS_CONSTANT_COLOR;
 }
 	YY_BREAK
 case 114:
 YY_RULE_SETUP
 #line 514 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ONE_MINUS_CONSTANT_ALPHA;
+  return TFX_TOKEN_CONSTANT_ALPHA;
 }
 	YY_BREAK
 case 115:
 YY_RULE_SETUP
 #line 518 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_SRC_ALPHA_SATURATE;
+  return TFX_TOKEN_ONE_MINUS_CONSTANT_ALPHA;
 }
 	YY_BREAK
 case 116:
 YY_RULE_SETUP
 #line 522 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_SRC_ONE_COLOR;
+  return TFX_TOKEN_SRC_ALPHA_SATURATE;
 }
 	YY_BREAK
 case 117:
 YY_RULE_SETUP
 #line 526 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ONE_MINUS_SRC_ONE_COLOR;
+  return TFX_TOKEN_SRC_ONE_COLOR;
 }
 	YY_BREAK
 case 118:
 YY_RULE_SETUP
 #line 530 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_SRC_ONE_ALPHA;
+  return TFX_TOKEN_ONE_MINUS_SRC_ONE_COLOR;
 }
 	YY_BREAK
 case 119:
 YY_RULE_SETUP
 #line 534 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ONE_MINUS_SRC_ONE_ALPHA;
+  return TFX_TOKEN_SRC_ONE_ALPHA;
 }
 	YY_BREAK
 case 120:
 YY_RULE_SETUP
 #line 538 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_ADD;
+  return TFX_TOKEN_ONE_MINUS_SRC_ONE_ALPHA;
 }
 	YY_BREAK
 case 121:
 YY_RULE_SETUP
 #line 542 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_SUBTRACT;
+  return TFX_TOKEN_ADD;
 }
 	YY_BREAK
 case 122:
 YY_RULE_SETUP
 #line 546 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_REVERSE_SUBTRACT;
+  return TFX_TOKEN_SUBTRACT;
 }
 	YY_BREAK
 case 123:
 YY_RULE_SETUP
 #line 550 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_MIN;
+  return TFX_TOKEN_REVERSE_SUBTRACT;
 }
 	YY_BREAK
 case 124:
 YY_RULE_SETUP
 #line 554 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_MAX;
+  return TFX_TOKEN_MIN;
 }
 	YY_BREAK
 case 125:
 YY_RULE_SETUP
 #line 558 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_CLEAR;
+  return TFX_TOKEN_MAX;
 }
 	YY_BREAK
 case 126:
 YY_RULE_SETUP
 #line 562 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_AND;
+  return TFX_TOKEN_CLEAR;
 }
 	YY_BREAK
 case 127:
 YY_RULE_SETUP
 #line 566 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_AND_REVERSE;
+  return TFX_TOKEN_AND;
 }
 	YY_BREAK
 case 128:
 YY_RULE_SETUP
 #line 570 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_COPY;
+  return TFX_TOKEN_AND_REVERSE;
 }
 	YY_BREAK
 case 129:
 YY_RULE_SETUP
 #line 574 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_AND_INVERTED;
+  return TFX_TOKEN_COPY;
 }
 	YY_BREAK
 case 130:
 YY_RULE_SETUP
 #line 578 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_NO_OP;
+  return TFX_TOKEN_AND_INVERTED;
 }
 	YY_BREAK
 case 131:
 YY_RULE_SETUP
 #line 582 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_XOR;
+  return TFX_TOKEN_NO_OP;
 }
 	YY_BREAK
 case 132:
 YY_RULE_SETUP
 #line 586 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_OR;
+  return TFX_TOKEN_XOR;
 }
 	YY_BREAK
 case 133:
 YY_RULE_SETUP
 #line 590 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_NOR;
+  return TFX_TOKEN_OR;
 }
 	YY_BREAK
 case 134:
 YY_RULE_SETUP
 #line 594 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_EQUIVALENT;
+  return TFX_TOKEN_NOR;
 }
 	YY_BREAK
 case 135:
 YY_RULE_SETUP
 #line 598 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_OR_REVERSE;
+  return TFX_TOKEN_EQUIVALENT;
 }
 	YY_BREAK
 case 136:
 YY_RULE_SETUP
 #line 602 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_COPY_INVERTED;
+  return TFX_TOKEN_OR_REVERSE;
 }
 	YY_BREAK
 case 137:
 YY_RULE_SETUP
 #line 606 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_OR_INVERTED;
+  return TFX_TOKEN_COPY_INVERTED;
 }
 	YY_BREAK
 case 138:
 YY_RULE_SETUP
 #line 610 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_NAND;
+  return TFX_TOKEN_OR_INVERTED;
 }
 	YY_BREAK
 case 139:
 YY_RULE_SETUP
 #line 614 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_SET;
+  return TFX_TOKEN_NAND;
 }
 	YY_BREAK
 case 140:
 YY_RULE_SETUP
-#line 619 "src/shaders_compiler/parser/parser.l"
+#line 618 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_VS_6_0;
+  return TFX_TOKEN_SET;
 }
 	YY_BREAK
 case 141:
 YY_RULE_SETUP
 #line 623 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_VS_6_1;
+  return TFX_TOKEN_TARGET_VS_6_0;
 }
 	YY_BREAK
 case 142:
 YY_RULE_SETUP
 #line 627 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_VS_6_2;
+  return TFX_TOKEN_TARGET_VS_6_1;
 }
 	YY_BREAK
 case 143:
 YY_RULE_SETUP
 #line 631 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_VS_6_3;
+  return TFX_TOKEN_TARGET_VS_6_2;
 }
 	YY_BREAK
 case 144:
 YY_RULE_SETUP
 #line 635 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_VS_6_4;
+  return TFX_TOKEN_TARGET_VS_6_3;
 }
 	YY_BREAK
 case 145:
 YY_RULE_SETUP
 #line 639 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_VS_6_5;
+  return TFX_TOKEN_TARGET_VS_6_4;
 }
 	YY_BREAK
 case 146:
 YY_RULE_SETUP
 #line 643 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_VS_6_6;
+  return TFX_TOKEN_TARGET_VS_6_5;
 }
 	YY_BREAK
 case 147:
 YY_RULE_SETUP
 #line 647 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_VS_6_7;
+  return TFX_TOKEN_TARGET_VS_6_6;
 }
 	YY_BREAK
 case 148:
 YY_RULE_SETUP
 #line 651 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_PS_6_0;
+  return TFX_TOKEN_TARGET_VS_6_7;
 }
 	YY_BREAK
 case 149:
 YY_RULE_SETUP
 #line 655 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_PS_6_1;
+  return TFX_TOKEN_TARGET_PS_6_0;
 }
 	YY_BREAK
 case 150:
 YY_RULE_SETUP
 #line 659 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_PS_6_2;
+  return TFX_TOKEN_TARGET_PS_6_1;
 }
 	YY_BREAK
 case 151:
 YY_RULE_SETUP
 #line 663 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_PS_6_3;
+  return TFX_TOKEN_TARGET_PS_6_2;
 }
 	YY_BREAK
 case 152:
 YY_RULE_SETUP
 #line 667 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_PS_6_4;
+  return TFX_TOKEN_TARGET_PS_6_3;
 }
 	YY_BREAK
 case 153:
 YY_RULE_SETUP
 #line 671 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_PS_6_5;
+  return TFX_TOKEN_TARGET_PS_6_4;
 }
 	YY_BREAK
 case 154:
 YY_RULE_SETUP
 #line 675 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_PS_6_6;
+  return TFX_TOKEN_TARGET_PS_6_5;
 }
 	YY_BREAK
 case 155:
 YY_RULE_SETUP
 #line 679 "src/shaders_compiler/parser/parser.l"
 {
-  return TFX_TOKEN_TARGET_PS_6_7;
+  return TFX_TOKEN_TARGET_PS_6_6;
 }
 	YY_BREAK
 case 156:
 YY_RULE_SETUP
 #line 683 "src/shaders_compiler/parser/parser.l"
 {
-  shlval.sval = strdup(yytext);
-  return TFX_TOKEN_NAME_VAL;
+  return TFX_TOKEN_TARGET_PS_6_7;
 }
 	YY_BREAK
 case 157:
 YY_RULE_SETUP
-#line 688 "src/shaders_compiler/parser/parser.l"
-{ 
-  const string error =  fmt::format("lexical error in `{}`", yytext);
-  sherror(compiler, error.c_str());}
+#line 687 "src/shaders_compiler/parser/parser.l"
+{
+  shlval.sval = strdup(yytext);
+  return TFX_TOKEN_NAME_VAL;
+}
 	YY_BREAK
 case 158:
 YY_RULE_SETUP
 #line 692 "src/shaders_compiler/parser/parser.l"
+{ 
+  const string error =  fmt::format("lexical error in `{}`", yytext);
+  sherror(compiler, error.c_str());}
+	YY_BREAK
+case 159:
+YY_RULE_SETUP
+#line 696 "src/shaders_compiler/parser/parser.l"
 ECHO;
 	YY_BREAK
-#line 2675 "src/shaders_compiler/parser/lex.yy.cpp"
+#line 2683 "src/shaders_compiler/parser/lex.yy.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -3688,6 +3696,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 692 "src/shaders_compiler/parser/parser.l"
+#line 696 "src/shaders_compiler/parser/parser.l"
 
 

@@ -295,6 +295,10 @@ triangle_fan {
   return TFX_TOKEN_PT_TRIANGLE_FAN;
 }
 
+triangle_strip {
+  return TFX_TOKEN_PT_TRIANGLE_STRIP;
+}
+
 line_list_with_adjacency {
   return TFX_TOKEN_PT_LINE_LIST_WITH_ADJACENCY;
 }
