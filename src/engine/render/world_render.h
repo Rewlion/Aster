@@ -4,12 +4,26 @@
 
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/gapi/resources.h>
+#include <engine/render/frame_graph/blackboard.hpp>
+#include <engine/render/frame_graph/frame_graph.h>
 #include <engine/work_cycle/camera.h>
 
 #include <memory>
 
+namespace fg
+{
+  class RenderPassResources;
+}
+
 namespace Engine::Render
 {
+  constexpr size_t FRAMES_COUNT = 2;
+
+  namespace blackboard
+  {
+    struct Gbuffer;
+  }
+
   class WorldRender
   {
     public:
@@ -26,16 +40,18 @@ namespace Engine::Render
       {
         std::unique_ptr<gapi::CmdEncoder> cmdEncoder;
         CameraData camera;
-        gapi::TextureHandler depth;
+        fg::Blackboard blackboard;
+        fg::FrameGraph* fg;
       };
       FrameData m_FrameData;
 
       void beforeRender(const CameraData& camera);
       void renderWorld();
-      void renderOpaque();
+      void renderOpaque(const blackboard::Gbuffer&, const fg::RenderPassResources&);
       void renderScene();
     private:
-      FrameGC m_FrameGC;
+      size_t m_FrameId = 0;
+      fg::FrameGraph m_FrameGraphs[FRAMES_COUNT];
 
       gapi::SamplerHandler m_ModelSampler;
 

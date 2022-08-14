@@ -1,13 +1,13 @@
 #include "world_render.h"
-
-#include <engine/render/frame_graph/frame_graph.h>
-#include <engine/render/frame_graph/blackboard.hpp>
+#include "blackboard_components.h"
 
 #include <engine/algorithm/hash.h>
 #include <engine/assets/assets_manager.h>
 #include <engine/gapi/gapi.h>
 #include <engine/log.h>
 #include <engine/math.h>
+#include <engine/render/frame_graph/blackboard.hpp>
+#include <engine/render/frame_graph/frame_graph.h>
 #include <engine/scene/scene.h>
 #include <engine/time.h>
 #include <engine/window.h>
@@ -35,19 +35,13 @@ namespace Engine::Render
 
   void WorldRender::beforeRender(const CameraData& camera)
   {
-    m_FrameGC.nextFrame();
+    m_FrameId = (m_FrameId+1) % FRAMES_COUNT;
+    m_FrameGraphs[m_FrameId] = fg::FrameGraph{};
+    m_FrameData.fg = &m_FrameGraphs[m_FrameId];
+    m_FrameData.blackboard = fg::Blackboard{};
+
     m_FrameData.cmdEncoder.reset(gapi::allocate_cmd_encoder());
     m_FrameData.camera = camera;
-    m_FrameData.depth = m_FrameGC.allocate([this](){
-      gapi::TextureAllocationDescription allocDesc;
-      allocDesc.format = gapi::TextureFormat::D24_UNORM_S8_UINT;
-      allocDesc.extent = int3{m_WindowSize.x, m_WindowSize.y, 1};
-      allocDesc.mipLevels = 1;
-      allocDesc.arrayLayers = 1;
-      allocDesc.usage = gapi::TextureUsage::DepthStencil;
-      return gapi::allocate_texture(allocDesc);
-    });
-    m_FrameData.cmdEncoder->transitTextureState(m_FrameData.depth, gapi::TextureState::Undefined, gapi::TextureState::DepthWriteStencilRead);
     m_FrameData.cmdEncoder->insertSemaphore(gapi::ackquire_backbuffer());
 
     tfx::set_extern("view_proj", m_FrameData.camera.viewProj);
@@ -55,66 +49,51 @@ namespace Engine::Render
     tfx::set_extern("sec_since_start", Time::get_sec_since_start());
     tfx::set_extern("model_sampler", m_ModelSampler);
     tfx::activate_scope("FrameScope", m_FrameData.cmdEncoder.get());
-    /////////////////////////////////////
-    fg::Blackboard bb;
-    
-    fg::FrameGraph fg;
-    struct D
-    {
-      fg::VirtualResourceHandle out;
-    };
-    bb.add<D>() = fg.addCallbackPass<D>(
-      "some_node",
-      [&](fg::RenderPassBuilder& builder, D& data){
-        data.out = builder.createTexture("some_texture", {});
-        data.out = builder.write(data.out);
-      },
-      [](const D& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder){
-        logerror("SOME_NODE!");
-      }
-    );
-
-    struct B
-    {
-      fg::VirtualResourceHandle input;
-    };
-    fg.addCallbackPass<B>(
-      "some_node_2",
-      [&](fg::RenderPassBuilder& builder, B& data){
-        D& input = bb.get<D>();
-        data.input = builder.read(input.out);
-      },
-      [](const B& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
-        logerror("SOME_NODE_2!!!");
-      }
-    );
-
-    fg.compile();
-    fg.execute(*m_FrameData.cmdEncoder);
   }
 
   void WorldRender::renderWorld()
   {
-    m_FrameData.cmdEncoder->transitTextureState(gapi::get_backbuffer(), gapi::TextureState::Present, gapi::TextureState::RenderTarget);
+    m_FrameData.blackboard.add<blackboard::Gbuffer>() = m_FrameData.fg->addCallbackPass<blackboard::Gbuffer>(
+      "gbuffer_main_pass",
+      [&](fg::RenderPassBuilder& builder, blackboard::Gbuffer& data){
+        gapi::TextureAllocationDescription allocDesc;
+        allocDesc.format = gapi::TextureFormat::D24_UNORM_S8_UINT;
+        allocDesc.extent = int3{m_WindowSize.x, m_WindowSize.y, 1};
+        allocDesc.mipLevels = 1;
+        allocDesc.arrayLayers = 1;
+        allocDesc.usage = gapi::TextureUsage::DepthStencil;
+        data.depth = builder.createTexture("gbuffer_depth", allocDesc);
+        data.depth = builder.write(data.depth);
+      },
+      [this](const blackboard::Gbuffer& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
+        renderOpaque(data, resources);
+      }
+    );
 
+    m_FrameData.fg->compile();
+    m_FrameData.fg->execute(*m_FrameData.cmdEncoder);
+
+    gapi::present_backbuffer();
+  }
+
+  void WorldRender::renderOpaque(const blackboard::Gbuffer& gbuffer, const fg::RenderPassResources& resources)
+  {
+    const gapi::TextureHandler depth = resources.getTexture(gbuffer.depth);
+    m_FrameData.cmdEncoder->transitTextureState(depth, gapi::TextureState::Undefined, gapi::TextureState::DepthWriteStencilRead);
+
+    m_FrameData.cmdEncoder->transitTextureState(gapi::get_backbuffer(), gapi::TextureState::Present, gapi::TextureState::RenderTarget);
     m_FrameData.cmdEncoder->beginRenderpass(
       {
         gapi::RenderPassAttachment{gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::Present}
       },
-      gapi::RenderPassAttachment{m_FrameData.depth, gapi::TextureState::DepthWriteStencilRead, gapi::TextureState::DepthWriteStencilRead},
+      gapi::RenderPassAttachment{depth, gapi::TextureState::DepthWriteStencilRead, gapi::TextureState::DepthWriteStencilRead},
       (gapi::ClearState)(gapi::CLEAR_RT | gapi::CLEAR_DEPTH)
     );
 
-    renderOpaque();
+    renderScene();
 
     m_FrameData.cmdEncoder->endRenderpass();
     m_FrameData.cmdEncoder->flush();
-    gapi::present_backbuffer();
-  }
-
-  void WorldRender::renderOpaque()
-  {
-    renderScene();
   }
 
   void WorldRender::renderScene()

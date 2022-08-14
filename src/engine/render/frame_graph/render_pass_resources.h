@@ -2,6 +2,8 @@
 
 #include "handles.h"
 
+#include <engine/gapi/resources.h>
+
 namespace fg
 {
   class FrameGraph;
