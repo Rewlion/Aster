@@ -2,6 +2,9 @@
 #include "topological_sorter.h"
 #include "render_pass_resources.h"
 
+#include <engine/assert.h>
+#include <engine/log.h>
+
 namespace fg
 {
   void FrameGraph::compile()
@@ -57,6 +60,22 @@ namespace fg
       return std::get<TextureResource>(r).isImported;
     else
       return std::get<BufferResource>(r).isImported;
+  }
+
+  gapi::TextureHandler FrameGraph::getTexture(const VirtualResourceHandle h) const
+  {
+    const VirtualResource& vr = m_VirtualResources[(size_t)h];
+    const Resource& r = m_Resources[(size_t)vr.resourceId];
+    ASSERT_FMT(std::holds_alternative<TextureResource>(r), "FG: failed to get texture {}: it's not a texture handle", (size_t)h);
+    return std::get<TextureResource>(r).handle;
+  }
+
+  gapi::BufferHandler FrameGraph::getBuffer(const VirtualResourceHandle h) const
+  {
+    const VirtualResource& vr = m_VirtualResources[(size_t)h];
+    const Resource& r = m_Resources[(size_t)vr.resourceId];
+    ASSERT_FMT(std::holds_alternative<BufferResource>(r), "FG: failed to get buffer {}: it's not a buffer handle", (size_t)h);
+    return std::get<BufferResource>(r).handle;
   }
 
   VirtualResourceHandle FrameGraph::cloneResource(const VirtualResourceHandle h, Node* producer)
