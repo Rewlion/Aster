@@ -49,6 +49,7 @@ namespace Engine::Render
       void renderWorld();
       void renderOpaque(const blackboard::Gbuffer&, const fg::RenderPassResources&);
       void renderScene();
+      void resolveGbuffer(const blackboard::Gbuffer&, const fg::RenderPassResources&);
     private:
       size_t m_FrameId = 0;
       fg::FrameGraph m_FrameGraphs[FRAMES_COUNT];
