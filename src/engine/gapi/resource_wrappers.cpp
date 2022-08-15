@@ -10,6 +10,7 @@ namespace gapi
   TextureWrapper::TextureWrapper(TextureWrapper&& rvl)
     : m_Handle(rvl.m_Handle)
   {
+    this->~TextureWrapper();
     rvl.m_Handle = TextureHandler::Invalid;
   }
 
@@ -37,6 +38,7 @@ namespace gapi
   BufferWrapper::BufferWrapper(BufferWrapper&& rvl)
     : m_Handle(rvl.m_Handle)
   {
+    this->~BufferWrapper();
     rvl.m_Handle = BufferHandler::Invalid;
   }
 
