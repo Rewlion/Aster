@@ -2,10 +2,18 @@
 
 #include "handles.h"
 
+#include <engine/gapi/resources.h>
+
 #include <EASTL/vector.h>
 
 namespace fg
 {
+  struct TextureState
+  {
+    VirtualResourceHandle vResId;
+    gapi::TextureState beginState;
+  };
+
   struct RenderPassPins
   {
     inline VirtualResourceHandle write(const VirtualResourceHandle h)
@@ -38,6 +46,14 @@ namespace fg
       return h < (VirtualResourceHandle)creates.size();
     }
 
+    inline void demandTextureState(const VirtualResourceHandle h, const gapi::TextureState begin_state)
+    {
+      beginTextureStates.push_back(TextureState{
+        .vResId = h,
+        .beginState = begin_state
+      });
+    }
+
     inline void setSideEffect()
     {
       sideEffect = true;
@@ -52,5 +68,7 @@ namespace fg
     eastl::vector<VirtualResourceHandle> writes;
     eastl::vector<VirtualResourceHandle> reads;
     eastl::vector<VirtualResourceHandle> creates;
+
+    eastl::vector<TextureState> beginTextureStates;
   };
 }

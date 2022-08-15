@@ -3,6 +3,7 @@
 #include "render_pass_resources.h"
 
 #include <engine/assert.h>
+#include <engine/gapi/cmd_encoder.h>
 #include <engine/log.h>
 
 namespace fg
@@ -20,6 +21,9 @@ namespace fg
     {
       for (const auto& vResHandle: m_RenderPassPins[id].creates)
         createResource(vResHandle);
+
+      for (const auto& [vResHandle, beginState]: m_RenderPassPins[id].beginTextureStates)
+        transitTextureState(vResHandle, beginState, encoder);
 
       Node& rp = *m_RenderPasses[id];
       rp.exec(rpResources, encoder);
@@ -39,6 +43,18 @@ namespace fg
     {
       BufferResource& res = std::get<BufferResource>(r);
       res.handle = gapi::BufferWrapper(gapi::allocate_buffer(res.allocDesc.size, res.allocDesc.usage));
+    }
+  }
+
+  void FrameGraph::transitTextureState(const VirtualResourceHandle h, const gapi::TextureState begin_state, gapi::CmdEncoder& encoder)
+  {
+    const VirtualResource& vr = m_VirtualResources[(size_t)h];
+    Resource& r = m_Resources[(size_t)vr.resourceId];
+    TextureResource& tex = std::get<TextureResource>(r);
+    if (begin_state != tex.currentState)
+    {
+      encoder.transitTextureState(tex.handle, tex.currentState, begin_state);
+      tex.currentState = begin_state;
     }
   }
 
@@ -99,6 +115,7 @@ namespace fg
       .name = name,
       .allocDesc = desc,
       .handle = gapi::TextureHandler::Invalid,
+      .currentState = gapi::TextureState::Undefined,
       .isImported = false
     });
 

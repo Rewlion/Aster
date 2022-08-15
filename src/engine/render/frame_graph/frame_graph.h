@@ -33,6 +33,7 @@ namespace fg
 
     private:
       void createResource(const VirtualResourceHandle h);
+      void transitTextureState(const VirtualResourceHandle h, const gapi::TextureState begin_state, gapi::CmdEncoder& encoder);
       VirtualResource& getVirtualResource(const VirtualResourceHandle h);
       const VirtualResource& getVirtualResource(const VirtualResourceHandle h) const;
       bool isImportedResource(const VirtualResourceHandle h) const;

@@ -2,6 +2,8 @@
 
 #include "handles.h"
 
+#include <engine/gapi/resources.h>
+
 #include <string_view>
 
 namespace gapi
@@ -21,8 +23,8 @@ namespace fg
     public:
       RenderPassBuilder(FrameGraph& fg, RenderPassPins& pins, Node& node);
 
-      [[nodiscard]] VirtualResourceHandle read(const VirtualResourceHandle resource);
-      [[nodiscard]] VirtualResourceHandle write(const VirtualResourceHandle resource);
+      [[nodiscard]] VirtualResourceHandle read(const VirtualResourceHandle resource, const gapi::TextureState begin_state);
+      [[nodiscard]] VirtualResourceHandle write(const VirtualResourceHandle resource,  const gapi::TextureState begin_state);
 
       [[nodiscard]] VirtualResourceHandle createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc);
       [[nodiscard]] VirtualResourceHandle createBuffer(const std::string_view name, const gapi::BufferAllocationDescription& desc);

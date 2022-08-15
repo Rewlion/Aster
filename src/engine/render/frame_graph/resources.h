@@ -22,6 +22,7 @@ namespace fg
     std::string_view name;
     gapi::TextureAllocationDescription allocDesc;
     gapi::TextureWrapper handle;
+    gapi::TextureState currentState;
     bool isImported;
   };
 

@@ -11,15 +11,18 @@ namespace fg
   {
   }
 
-  VirtualResourceHandle RenderPassBuilder::read(const VirtualResourceHandle resource)
+  VirtualResourceHandle RenderPassBuilder::read(const VirtualResourceHandle resource, const gapi::TextureState begin_state)
   {
+    m_Pins.demandTextureState(resource, begin_state);
     return m_Pins.read(resource);
   }
 
-  VirtualResourceHandle RenderPassBuilder::write(const VirtualResourceHandle resource)
+  VirtualResourceHandle RenderPassBuilder::write(const VirtualResourceHandle resource, const gapi::TextureState begin_state)
   {
     if (m_FrameGraph.isImportedResource(resource))
       m_Pins.setSideEffect();
+
+    m_Pins.demandTextureState(resource, begin_state);
 
     if (m_Pins.hasCreate(resource))
       return resource;
