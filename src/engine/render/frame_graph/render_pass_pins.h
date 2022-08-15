@@ -31,6 +31,11 @@ namespace fg
       return hasCreate(h) ? h : creates.emplace_back(h);
     }
 
+    inline VirtualResourceHandle import(const VirtualResourceHandle h)
+    {
+      return hasImport(h) ? h : imports.emplace_back(h);
+    }
+
     inline bool hasWrite(const VirtualResourceHandle h)
     {
       return h < (VirtualResourceHandle)writes.size();
@@ -44,6 +49,11 @@ namespace fg
     inline bool hasCreate(const VirtualResourceHandle h)
     {
       return h < (VirtualResourceHandle)creates.size();
+    }
+
+    inline bool hasImport(const VirtualResourceHandle h)
+    {
+      return h < (VirtualResourceHandle)imports.size();
     }
 
     inline void demandTextureState(const VirtualResourceHandle h, const gapi::TextureState begin_state)
@@ -68,6 +78,7 @@ namespace fg
     eastl::vector<VirtualResourceHandle> writes;
     eastl::vector<VirtualResourceHandle> reads;
     eastl::vector<VirtualResourceHandle> creates;
+    eastl::vector<VirtualResourceHandle> imports;
 
     eastl::vector<TextureState> beginTextureStates;
   };

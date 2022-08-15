@@ -3,6 +3,7 @@
 #include "render_pass_resources.h"
 
 #include <engine/assert.h>
+#include <engine/gapi/gapi.h>
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/log.h>
 
@@ -37,12 +38,12 @@ namespace fg
     if (std::holds_alternative<TextureResource>(r))
     {
       TextureResource& res = std::get<TextureResource>(r);
-      res.handle = gapi::TextureWrapper(gapi::allocate_texture(res.allocDesc));
+      res.handle = gapi::allocate_texture(res.allocDesc);
     }
     else
     {
       BufferResource& res = std::get<BufferResource>(r);
-      res.handle = gapi::BufferWrapper(gapi::allocate_buffer(res.allocDesc.size, res.allocDesc.usage));
+      res.handle = gapi::allocate_buffer(res.allocDesc.size, res.allocDesc.usage);
     }
   }
 
@@ -108,15 +109,37 @@ namespace fg
     return nh;
   }
 
+  VirtualResourceHandle FrameGraph::importTexture(const std::string_view name, gapi::TextureHandler h, const gapi::TextureState current_state, Node* producer)
+  {
+    const ResourceHandle resId = (ResourceHandle)m_Resources.size();
+    m_Resources.push_back(TextureResource{
+      name,
+      {},
+      h,
+      current_state,
+      true
+    });
+
+    const VirtualResourceHandle vResId = (VirtualResourceHandle)m_VirtualResources.size();
+    m_VirtualResources.push_back(VirtualResource{
+      .resourceId = resId,
+      .version = 0,
+      .producer = producer,
+      .lastAccessor = nullptr
+    });
+
+    return vResId;
+  }
+
   VirtualResourceHandle FrameGraph::createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc, Node* producer)
   {
     const ResourceHandle resId = (ResourceHandle)m_Resources.size();
     m_Resources.push_back(TextureResource{
-      .name = name,
-      .allocDesc = desc,
-      .handle = gapi::TextureHandler::Invalid,
-      .currentState = gapi::TextureState::Undefined,
-      .isImported = false
+      name,
+      desc,
+      gapi::TextureHandler::Invalid,
+      gapi::TextureState::Undefined,
+      false
     });
 
     const VirtualResourceHandle vResId = (VirtualResourceHandle)m_VirtualResources.size();
@@ -134,10 +157,10 @@ namespace fg
   {
     const ResourceHandle resId = (ResourceHandle)m_Resources.size();
     m_Resources.push_back(BufferResource{
-      .name = name,
-      .allocDesc = desc,
-      .handle = gapi::BufferHandler::Invalid,
-      .isImported = false
+      name,
+      desc,
+      gapi::BufferHandler::Invalid,
+      false
     });
 
     const VirtualResourceHandle vResId = (VirtualResourceHandle)m_VirtualResources.size();

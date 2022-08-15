@@ -41,6 +41,7 @@ namespace fg
       gapi::BufferHandler getBuffer(const VirtualResourceHandle h) const;
 
       VirtualResourceHandle cloneResource(const VirtualResourceHandle h, Node* producer);
+      VirtualResourceHandle importTexture(const std::string_view name, gapi::TextureHandler h, const gapi::TextureState current_state, Node* producer);
       VirtualResourceHandle createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc, Node* producer);
       VirtualResourceHandle createBuffer(const std::string_view name, const gapi::BufferAllocationDescription& desc, Node* producer);
 

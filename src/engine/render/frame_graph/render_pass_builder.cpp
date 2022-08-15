@@ -31,6 +31,12 @@ namespace fg
     return m_Pins.write(m_FrameGraph.cloneResource(resource, &m_Node));
   }
 
+  VirtualResourceHandle RenderPassBuilder::importTexture(const std::string_view name, gapi::TextureHandler h, const gapi::TextureState current_state)
+  {
+    const VirtualResourceHandle vResId = m_FrameGraph.importTexture(name, h, current_state, &m_Node);
+    return m_Pins.import(vResId);
+  }
+
   VirtualResourceHandle RenderPassBuilder::createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc)
   {
     const VirtualResourceHandle h = m_FrameGraph.createTexture(name, desc, &m_Node);

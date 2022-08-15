@@ -2,7 +2,7 @@
 
 #include "handles.h"
 
-#include <engine/gapi/resource_wrappers.h>
+#include <engine/gapi/resources.h>
 
 namespace fg
 {
@@ -19,18 +19,39 @@ namespace fg
 
   struct TextureResource
   {
+    TextureResource(const std::string_view name,
+                    const gapi::TextureAllocationDescription& alloc_desc,
+                    const gapi::TextureHandler h,
+                    const gapi::TextureState current_state,
+                    const bool is_imported);
+    TextureResource(TextureResource&& rvl);
+    ~TextureResource();
+
+    const TextureResource& operator=(const TextureResource&) = delete;
+    TextureResource& operator=(TextureResource&&);
+
     std::string_view name;
     gapi::TextureAllocationDescription allocDesc;
-    gapi::TextureWrapper handle;
+    gapi::TextureHandler handle;
     gapi::TextureState currentState;
     bool isImported;
   };
 
   struct BufferResource
   {
+    BufferResource(const std::string_view name,
+                    const gapi::BufferAllocationDescription& alloc_desc,
+                    const gapi::BufferHandler h,
+                    const bool is_imported);
+    BufferResource(BufferResource&& rvl);
+    ~BufferResource();
+
+    const BufferResource& operator=(const BufferResource&) = delete;
+    BufferResource& operator=(BufferResource&&);
+
     std::string_view name;
     gapi::BufferAllocationDescription allocDesc;
-    gapi::BufferWrapper handle;
+    gapi::BufferHandler handle;
     bool isImported;
   };
 

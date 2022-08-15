@@ -26,6 +26,7 @@ namespace fg
       [[nodiscard]] VirtualResourceHandle read(const VirtualResourceHandle resource, const gapi::TextureState begin_state);
       [[nodiscard]] VirtualResourceHandle write(const VirtualResourceHandle resource,  const gapi::TextureState begin_state);
 
+      [[nodiscard]] VirtualResourceHandle importTexture(const std::string_view name, gapi::TextureHandler h, const gapi::TextureState current_state);
       [[nodiscard]] VirtualResourceHandle createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc);
       [[nodiscard]] VirtualResourceHandle createBuffer(const std::string_view name, const gapi::BufferAllocationDescription& desc);
 
