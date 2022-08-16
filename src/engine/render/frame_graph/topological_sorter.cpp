@@ -30,9 +30,12 @@ namespace fg
     for (const auto& parentVResId: nodeParents)
     {
       const VirtualResource& vrs = m_Fg.getVirtualResource(parentVResId);
-      const size_t parentId = (size_t)vrs.producer->getId();
-      if (m_Visited[parentId] == 0)
-        dfs(parentId);
+      if (vrs.producer)
+      {
+        const size_t parentId = (size_t)vrs.producer->getId();
+        if (m_Visited[parentId] == 0)
+          dfs(parentId);
+      }
     }
     m_Order.emplace_back(i);
   }
