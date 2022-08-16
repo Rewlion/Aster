@@ -12,4 +12,9 @@ namespace Engine::Render::blackboard
     fg::VirtualResourceHandle metalRoughness;
     fg::VirtualResourceHandle worldPos;
   };
+
+  struct Frame
+  {
+    fg::VirtualResourceHandle backbuffer;
+  };
 }

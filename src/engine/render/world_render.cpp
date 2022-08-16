@@ -45,6 +45,9 @@ namespace Engine::Render
     m_FrameData.camera = camera;
     m_FrameData.cmdEncoder->insertSemaphore(gapi::ackquire_backbuffer());
 
+    blackboard::Frame& fdata = m_FrameData.blackboard.add<blackboard::Frame>();
+    fdata.backbuffer = m_FrameData.fg->importTexture("backbuffer", gapi::get_backbuffer(), gapi::TextureState::Present);
+
     tfx::set_extern("view_proj", m_FrameData.camera.viewProj);
     tfx::set_extern("camera_pos", m_FrameData.camera.pos);
     tfx::set_extern("sec_since_start", Time::get_sec_since_start());
@@ -90,6 +93,7 @@ namespace Engine::Render
 
     struct None {};
     blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
+    blackboard::Frame& fdata = m_FrameData.blackboard.get<blackboard::Frame>();
     m_FrameData.fg->addCallbackPass<None>(
       "gbuffer_resolve",
       [&](fg::RenderPassBuilder& builder, None& data){
@@ -97,15 +101,19 @@ namespace Engine::Render
         builder.read(gbuffer.normal,  gapi::TextureState::ShaderRead);
         builder.read(gbuffer.metalRoughness, gapi::TextureState::ShaderRead);
         builder.read(gbuffer.worldPos, gapi::TextureState::ShaderRead);
+        builder.read(fdata.backbuffer, gapi::TextureState::RenderTarget);
       },
       [this](const None& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
         blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
-        resolveGbuffer(gbuffer, resources);
+        blackboard::Frame& fdata = m_FrameData.blackboard.get<blackboard::Frame>();
+        resolveGbuffer(gbuffer, fdata, resources);
       }
     );
 
     m_FrameData.fg->compile();
     m_FrameData.fg->execute(*m_FrameData.cmdEncoder);
+
+    m_FrameData.cmdEncoder->transitTextureState(gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::Present);
     m_FrameData.cmdEncoder->flush();
     gapi::present_backbuffer();
   }
@@ -171,17 +179,17 @@ namespace Engine::Render
     }
   }
 
-  void WorldRender::resolveGbuffer(const blackboard::Gbuffer& gbuffer, const fg::RenderPassResources& resources)
+  void WorldRender::resolveGbuffer(const blackboard::Gbuffer& gbuffer, const blackboard::Frame& fdata, const fg::RenderPassResources& resources)
   {
     const gapi::TextureHandler albedo = resources.getTexture(gbuffer.albedo);
     const gapi::TextureHandler normal = resources.getTexture(gbuffer.normal);
     const gapi::TextureHandler worldPos = resources.getTexture(gbuffer.worldPos);
     const gapi::TextureHandler metalRoughness = resources.getTexture(gbuffer.metalRoughness);
+    const gapi::TextureHandler backbuffer = resources.getTexture(fdata.backbuffer);
 
-    m_FrameData.cmdEncoder->transitTextureState(gapi::get_backbuffer(), gapi::TextureState::Present, gapi::TextureState::RenderTarget);
     m_FrameData.cmdEncoder->beginRenderpass(
       {
-        gapi::RenderPassAttachment{gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::Present, gapi::LoadOp::Load, gapi::StoreOp::Store},
+        gapi::RenderPassAttachment{backbuffer, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget, gapi::LoadOp::Load, gapi::StoreOp::Store},
       },
       {}
     );
