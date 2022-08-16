@@ -20,15 +20,61 @@ namespace fg
     RenderPassResources rpResources(*this);
     for (const size_t id: m_Order)
     {
-      for (const auto& vResHandle: m_RenderPassPins[id].creates)
+      RenderPassPins& pins = m_RenderPassPins[id];
+      for (const auto& vResHandle: pins.creates)
         createResource(vResHandle);
 
-      for (const auto& [vResHandle, beginState]: m_RenderPassPins[id].beginTextureStates)
+      for (const auto& [vResHandle, beginState]: pins.beginTextureStates)
         transitTextureState(vResHandle, beginState, encoder);
+
+      const bool hasRp = !pins.renderTargets.empty();
+      if (hasRp)
+        beginRenderPass(pins.renderTargets, pins.depthStencil, encoder);
 
       Node& rp = *m_RenderPasses[id];
       rp.exec(rpResources, encoder);
+
+      if (hasRp)
+        encoder.endRenderpass();
     }
+  }
+
+  void FrameGraph::beginRenderPass(const eastl::vector<RenderTarget>& targets, const DepthStencil& depth_stencil, gapi::CmdEncoder& encoder)
+  {
+    gapi::RenderTargets mrts;
+    for (const auto& rt: targets)
+    {
+      const VirtualResource& vr = m_VirtualResources[(size_t)rt.vResId];
+      const TextureResource& tex = std::get<TextureResource>(m_Resources[(size_t)vr.resourceId]);
+      ASSERT_FMT(tex.currentState == gapi::TextureState::RenderTarget,
+        "texture `{}` has state {} but should in RenderTarget", tex.name, tex.currentState);
+
+      mrts.push(gapi::RenderPassAttachment{
+        .texture = tex.handle,
+        .initialState = gapi::TextureState::RenderTarget,
+        .finalState = gapi::TextureState::RenderTarget,
+        .loadOp = rt.loadOp,
+        .storeOp = rt.storeOp
+      });
+    }
+
+    gapi::RenderPassDepthStencilAttachment depthStencil;
+    if (depth_stencil.vResId != VirtualResourceHandle::Invalid)
+    {
+      const VirtualResource& vr = m_VirtualResources[(size_t)depth_stencil.vResId];
+      const TextureResource& tex = std::get<TextureResource>(m_Resources[(size_t)vr.resourceId]);
+      depthStencil = {
+        .texture = tex.handle,
+        .initialState = tex.currentState,
+        .finalState = tex.currentState,
+        .depthLoadOp = depth_stencil.depthLoadOp,
+        .depthStoreOp = depth_stencil.depthStoreOp,
+        .stencilLoadOp = depth_stencil.stencilLoadOp,
+        .stencilStoreOp = depth_stencil.stencilStoreOp
+      };
+    }
+
+    encoder.beginRenderpass(mrts, depthStencil);
   }
 
   void FrameGraph::createResource(const VirtualResourceHandle h)

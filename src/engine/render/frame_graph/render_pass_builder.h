@@ -26,6 +26,10 @@ namespace fg
       VirtualResourceHandle read(const VirtualResourceHandle resource, const gapi::TextureState begin_state);
       VirtualResourceHandle write(const VirtualResourceHandle resource,  const gapi::TextureState begin_state);
 
+      void addRenderTarget(const VirtualResourceHandle resource, const gapi::LoadOp load, const gapi::StoreOp store);
+      void setDepthStencil(const VirtualResourceHandle resource, const gapi::LoadOp depth_load, const gapi::StoreOp depth_store,
+                                                                 const gapi::LoadOp stencil_load, const gapi::StoreOp stencil_store);
+
       [[nodiscard]] VirtualResourceHandle createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc);
       [[nodiscard]] VirtualResourceHandle createBuffer(const std::string_view name, const gapi::BufferAllocationDescription& desc);
 

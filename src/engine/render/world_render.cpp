@@ -85,6 +85,13 @@ namespace Engine::Render
         allocDesc.format = gapi::TextureFormat::R32G32B32A32_S;
         data.worldPos = builder.createTexture("gbuffer_world_pos", allocDesc);
         data.worldPos = builder.write(data.worldPos, gapi::TextureState::RenderTarget);
+
+        builder.addRenderTarget(data.albedo, gapi::LoadOp::Clear, gapi::StoreOp::Store);
+        builder.addRenderTarget(data.normal, gapi::LoadOp::Clear, gapi::StoreOp::Store);
+        builder.addRenderTarget(data.worldPos, gapi::LoadOp::Clear, gapi::StoreOp::Store);
+        builder.addRenderTarget(data.metalRoughness, gapi::LoadOp::Clear, gapi::StoreOp::Store);
+        builder.setDepthStencil(data.depth, gapi::LoadOp::Clear, gapi::StoreOp::Store,
+          gapi::LoadOp::DontCare, gapi::StoreOp::DontCare);
       },
       [this](const blackboard::Gbuffer& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
         renderOpaque(data, resources);
@@ -102,6 +109,8 @@ namespace Engine::Render
         builder.read(gbuffer.metalRoughness, gapi::TextureState::ShaderRead);
         builder.read(gbuffer.worldPos, gapi::TextureState::ShaderRead);
         builder.read(fdata.backbuffer, gapi::TextureState::RenderTarget);
+
+        builder.addRenderTarget(fdata.backbuffer, gapi::LoadOp::Load, gapi::StoreOp::Store);
       },
       [this](const None& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
         blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
@@ -120,24 +129,7 @@ namespace Engine::Render
 
   void WorldRender::renderOpaque(const blackboard::Gbuffer& gbuffer, const fg::RenderPassResources& resources)
   {
-    const gapi::TextureHandler depth = resources.getTexture(gbuffer.depth);
-    const gapi::TextureHandler albedo = resources.getTexture(gbuffer.albedo);
-    const gapi::TextureHandler normal = resources.getTexture(gbuffer.normal);
-    const gapi::TextureHandler worldPos = resources.getTexture(gbuffer.worldPos);
-    const gapi::TextureHandler metalRoughness = resources.getTexture(gbuffer.metalRoughness);
-
-    m_FrameData.cmdEncoder->beginRenderpass(
-      {
-        gapi::RenderPassAttachment{albedo, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget, gapi::LoadOp::Clear, gapi::StoreOp::Store},
-        gapi::RenderPassAttachment{normal, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget, gapi::LoadOp::Clear, gapi::StoreOp::Store},
-        gapi::RenderPassAttachment{worldPos, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget, gapi::LoadOp::Clear, gapi::StoreOp::Store},
-        gapi::RenderPassAttachment{metalRoughness, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget, gapi::LoadOp::Clear, gapi::StoreOp::Store},
-      },
-      gapi::RenderPassDepthStencilAttachment{depth, gapi::TextureState::DepthWriteStencilRead, gapi::TextureState::DepthWriteStencilRead, gapi::LoadOp::Clear, gapi::StoreOp::Store}
-    );
-
     renderScene();
-    m_FrameData.cmdEncoder->endRenderpass();
   }
 
   void WorldRender::renderScene()
@@ -187,13 +179,6 @@ namespace Engine::Render
     const gapi::TextureHandler metalRoughness = resources.getTexture(gbuffer.metalRoughness);
     const gapi::TextureHandler backbuffer = resources.getTexture(fdata.backbuffer);
 
-    m_FrameData.cmdEncoder->beginRenderpass(
-      {
-        gapi::RenderPassAttachment{backbuffer, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget, gapi::LoadOp::Load, gapi::StoreOp::Store},
-      },
-      {}
-    );
-
     tfx::set_extern("gbuffer_albedo", albedo);
     tfx::set_extern("gbuffer_normal", normal);
     tfx::set_extern("gbuffer_world_pos", worldPos);
@@ -203,8 +188,6 @@ namespace Engine::Render
     tfx::activate_technique("ProcessGbuffer", m_FrameData.cmdEncoder.get());
     m_FrameData.cmdEncoder->updateResources();
     m_FrameData.cmdEncoder->draw(4, 1, 0, 0);
-
-    m_FrameData.cmdEncoder->endRenderpass();
   }
 
 }

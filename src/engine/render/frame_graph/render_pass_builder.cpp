@@ -31,6 +31,16 @@ namespace fg
     return m_Pins.write(m_FrameGraph.cloneResource(resource, &m_Node));
   }
 
+  void RenderPassBuilder::addRenderTarget(const VirtualResourceHandle resource, const gapi::LoadOp load, const gapi::StoreOp store)
+  {
+    m_Pins.addRenderTarget(resource, load, store);
+  }
+  void RenderPassBuilder::setDepthStencil(const VirtualResourceHandle resource, const gapi::LoadOp depth_load, const gapi::StoreOp depth_store,
+                                                                                const gapi::LoadOp stencil_load, const gapi::StoreOp stencil_store)
+  {
+    m_Pins.setDepthStencil(resource, depth_load, depth_store, stencil_load, stencil_store);
+  }
+
   VirtualResourceHandle RenderPassBuilder::createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc)
   {
     const VirtualResourceHandle h = m_FrameGraph.createTexture(name, desc, &m_Node);

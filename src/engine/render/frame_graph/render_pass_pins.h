@@ -14,6 +14,22 @@ namespace fg
     gapi::TextureState beginState;
   };
 
+  struct RenderTarget
+  {
+    VirtualResourceHandle vResId;
+    gapi::LoadOp  loadOp = gapi::LoadOp::DontCare;
+    gapi::StoreOp storeOp = gapi::StoreOp::DontCare;;
+  };
+
+  struct DepthStencil
+  {
+    VirtualResourceHandle vResId = VirtualResourceHandle::Invalid;
+    gapi::LoadOp  depthLoadOp = gapi::LoadOp::DontCare;
+    gapi::StoreOp depthStoreOp = gapi::StoreOp::DontCare;
+    gapi::LoadOp  stencilLoadOp = gapi::LoadOp::DontCare;
+    gapi::StoreOp stencilStoreOp = gapi::StoreOp::DontCare;;
+  };
+
   struct RenderPassPins
   {
     inline VirtualResourceHandle write(const VirtualResourceHandle h)
@@ -54,6 +70,27 @@ namespace fg
       });
     }
 
+    inline void addRenderTarget(const VirtualResourceHandle resource, const gapi::LoadOp load, const gapi::StoreOp store)
+    {
+      renderTargets.push_back(RenderTarget{
+        .vResId = resource,
+        .loadOp = load,
+        .storeOp = store
+      });
+    }
+
+    inline void setDepthStencil(const VirtualResourceHandle resource, const gapi::LoadOp depth_load, const gapi::StoreOp depth_store,
+                                                                      const gapi::LoadOp stencil_load, const gapi::StoreOp stencil_store)
+    {
+      depthStencil = DepthStencil{
+        .vResId = resource,
+        .depthLoadOp = depth_load,
+        .depthStoreOp = depth_store,
+        .stencilLoadOp = stencil_load,
+        .stencilStoreOp = stencil_store
+      };
+    }
+
     inline void setSideEffect()
     {
       sideEffect = true;
@@ -70,5 +107,7 @@ namespace fg
     eastl::vector<VirtualResourceHandle> creates;
 
     eastl::vector<TextureState> beginTextureStates;
+    eastl::vector<RenderTarget> renderTargets;
+    DepthStencil depthStencil;
   };
 }

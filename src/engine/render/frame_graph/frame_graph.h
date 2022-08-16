@@ -34,6 +34,7 @@ namespace fg
       VirtualResourceHandle importTexture(const std::string_view name, gapi::TextureHandler h, const gapi::TextureState current_state);
 
     private:
+      void beginRenderPass(const eastl::vector<RenderTarget>& targets, const DepthStencil& depth_stencil, gapi::CmdEncoder& encoder);
       void createResource(const VirtualResourceHandle h);
       void transitTextureState(const VirtualResourceHandle h, const gapi::TextureState begin_state, gapi::CmdEncoder& encoder);
       VirtualResource& getVirtualResource(const VirtualResourceHandle h);
