@@ -26,7 +26,7 @@ namespace gapi::vulkan
     m_FrameGc.addCmdPool(std::move(m_CmdPool));
   }
 
-  void CmdEncoder::beginRenderpass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clear)
+  void CmdEncoder::beginRenderpass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil)
   {
     const vk::Extent2D min = getMinRenderSize(renderTargets, depthStencil);
     const vk::Rect2D renderArea = vk::Rect2D{{0,0}, min};
@@ -34,7 +34,7 @@ namespace gapi::vulkan
     m_RenderPassState.renderTargets = renderTargets;
     m_RenderPassState.depthStencil = depthStencil;
 
-    m_RenderPassState.rp = m_RenderPassStorage.getRenderPass(renderTargets, depthStencil, clear);
+    m_RenderPassState.rp = m_RenderPassStorage.getRenderPass(renderTargets, depthStencil);
     m_RenderPassState.fb = getFramebuffer(renderArea.extent, renderTargets, depthStencil);
 
     std::array<uint32_t,4> clearColor{0,0,0,0};
@@ -61,7 +61,7 @@ namespace gapi::vulkan
       m_GraphicsPipelineState.description.blendState.attachments.push( {} );
   }
 
-  vk::Extent2D CmdEncoder::getMinRenderSize(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil) const
+  vk::Extent2D CmdEncoder::getMinRenderSize(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) const
   {
     vk::Extent2D min = {(uint32_t)~(0), (uint32_t)~(0)};
     for(const auto& rt: renderTargets)
@@ -84,12 +84,12 @@ namespace gapi::vulkan
     return min;
   }
 
-  vk::RenderPass CmdEncoder::getRenderPass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing)
+  vk::RenderPass CmdEncoder::getRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil)
   {
-    return m_RenderPassStorage.getRenderPass(renderTargets, depthStencil, clearing);
+    return m_RenderPassStorage.getRenderPass(renderTargets, depthStencil);
   }
 
-  vk::Framebuffer CmdEncoder::getFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil)
+  vk::Framebuffer CmdEncoder::getFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil)
   {
     vk::UniqueFramebuffer fb = createFramebuffer(renderArea, renderTargets, depthStencil);
     const auto framebuffer = fb.get();
@@ -98,7 +98,7 @@ namespace gapi::vulkan
     return framebuffer;
   }
 
-  vk::UniqueFramebuffer CmdEncoder::createFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil)
+  vk::UniqueFramebuffer CmdEncoder::createFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil)
   {
     Utils::FixedStack<vk::ImageView, MAX_RENDER_TARGETS + 1> attachments;
     size_t attachmentsCount = 0;

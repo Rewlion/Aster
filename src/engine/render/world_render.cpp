@@ -99,8 +99,8 @@ namespace Engine::Render
         builder.read(gbuffer.worldPos, gapi::TextureState::ShaderRead);
       },
       [this](const None& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
-        blackboard::Gbuffer& gbuffer2 = m_FrameData.blackboard.get<blackboard::Gbuffer>();
-        resolveGbuffer(gbuffer2, resources);
+        blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
+        resolveGbuffer(gbuffer, resources);
       }
     );
 
@@ -120,13 +120,12 @@ namespace Engine::Render
 
     m_FrameData.cmdEncoder->beginRenderpass(
       {
-        gapi::RenderPassAttachment{albedo, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget},
-        gapi::RenderPassAttachment{normal, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget},
-        gapi::RenderPassAttachment{worldPos, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget},
-        gapi::RenderPassAttachment{metalRoughness, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget},
+        gapi::RenderPassAttachment{albedo, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget, gapi::LoadOp::Clear, gapi::StoreOp::Store},
+        gapi::RenderPassAttachment{normal, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget, gapi::LoadOp::Clear, gapi::StoreOp::Store},
+        gapi::RenderPassAttachment{worldPos, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget, gapi::LoadOp::Clear, gapi::StoreOp::Store},
+        gapi::RenderPassAttachment{metalRoughness, gapi::TextureState::RenderTarget, gapi::TextureState::RenderTarget, gapi::LoadOp::Clear, gapi::StoreOp::Store},
       },
-      gapi::RenderPassAttachment{depth, gapi::TextureState::DepthWriteStencilRead, gapi::TextureState::DepthWriteStencilRead},
-      (gapi::ClearState)(gapi::CLEAR_RT | gapi::CLEAR_DEPTH)
+      gapi::RenderPassDepthStencilAttachment{depth, gapi::TextureState::DepthWriteStencilRead, gapi::TextureState::DepthWriteStencilRead, gapi::LoadOp::Clear, gapi::StoreOp::Store}
     );
 
     renderScene();
@@ -182,10 +181,9 @@ namespace Engine::Render
     m_FrameData.cmdEncoder->transitTextureState(gapi::get_backbuffer(), gapi::TextureState::Present, gapi::TextureState::RenderTarget);
     m_FrameData.cmdEncoder->beginRenderpass(
       {
-        gapi::RenderPassAttachment{gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::Present},
+        gapi::RenderPassAttachment{gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::Present, gapi::LoadOp::Load, gapi::StoreOp::Store},
       },
-      {},
-      gapi::ClearState::CLEAR_NONE
+      {}
     );
 
     tfx::set_extern("gbuffer_albedo", albedo);

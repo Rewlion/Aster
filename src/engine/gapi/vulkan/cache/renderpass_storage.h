@@ -17,10 +17,10 @@ namespace gapi::vulkan
         m_Device = device;
       }
 
-      vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing);
+      vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil);
 
     private:
-      vk::UniqueRenderPass createRenderPass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing);
+      vk::UniqueRenderPass createRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil);
 
       struct CreateInfo
       {
@@ -29,8 +29,7 @@ namespace gapi::vulkan
         vk::SubpassDescription subpassDesc;
         vk::RenderPassCreateInfo rpCi;
       };
-      CreateInfo getCreateInfo(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing) const;
-      size_t hashRenderPass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing) const;
+      size_t hashRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) const;
 
     private:
       Device* m_Device = nullptr;

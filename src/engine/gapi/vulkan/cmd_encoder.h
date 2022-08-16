@@ -15,7 +15,7 @@ namespace gapi::vulkan
   struct RenderPassState
   {
     RenderTargets renderTargets;
-    RenderPassAttachment depthStencil;
+    RenderPassDepthStencilAttachment depthStencil;
 
     vk::RenderPass rp;
     vk::Framebuffer fb;
@@ -34,7 +34,7 @@ namespace gapi::vulkan
                  RenderPassStorage& rpStorage, PipelinesStorage& psStorage,
                  vk::UniqueCommandPool&& cmdPool);
       virtual ~CmdEncoder();
-      virtual void beginRenderpass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clear) override;
+      virtual void beginRenderpass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) override;
       virtual void endRenderpass() override;
       virtual void draw(const uint32_t vertexCount, const uint32_t instanceCount,
                         const uint32_t firstVertex, const uint32_t firstInstance) override;
@@ -56,10 +56,10 @@ namespace gapi::vulkan
                                        const uint32_t firstArraySlice, const uint32_t arraySliceCount) override;
       virtual void updateResources() override;
     private:
-      vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil) const;
-      vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clearing);
-      vk::Framebuffer getFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil);
-      vk::UniqueFramebuffer createFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil);
+      vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) const;
+      vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil);
+      vk::Framebuffer getFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil);
+      vk::UniqueFramebuffer createFramebuffer(const vk::Extent2D& renderArea, const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil);
 
       void insureActiveCmd();
       vk::CommandBuffer allocateCmdBuffer();

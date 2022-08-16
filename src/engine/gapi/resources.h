@@ -68,12 +68,17 @@ namespace gapi
     DontCare = 1
   };
 
-  enum ClearState
+  enum class LoadOp
   {
-    CLEAR_NONE    = 0,
-    CLEAR_RT      = 1,
-    CLEAR_DEPTH   = 1 << 2,
-    CLEAR_STENCIL = 1 << 3
+    Load     = 0,
+    Clear    = 1,
+    DontCare = 2
+  };
+
+  enum class StoreOp
+  {
+    Store    = 0,
+    DontCare = 1
   };
 
   struct ColorAttachment
@@ -386,15 +391,46 @@ namespace gapi
     TextureHandler texture    = TextureHandler::Invalid;
     TextureState initialState = TextureState::Undefined;
     TextureState finalState   = TextureState::Undefined;
+    LoadOp loadOp             = LoadOp::DontCare;
+    StoreOp storeOp           = StoreOp::DontCare;
 
     bool operator==(const RenderPassAttachment& rvl) const
     {
       return texture      == rvl.texture &&
              initialState == rvl.initialState &&
-             finalState   == rvl.finalState;
+             finalState   == rvl.finalState &&
+             loadOp       == rvl.loadOp &&
+             storeOp      == rvl.storeOp;
     }
 
     bool operator!=(const RenderPassAttachment& rvl) const
+    {
+      return !(*this == rvl);
+    }
+  };
+
+  struct RenderPassDepthStencilAttachment
+  {
+    TextureHandler texture    = TextureHandler::Invalid;
+    TextureState initialState = TextureState::Undefined;
+    TextureState finalState   = TextureState::Undefined;
+    LoadOp depthLoadOp        = LoadOp::DontCare;
+    StoreOp depthStoreOp      = StoreOp::DontCare;
+    LoadOp stencilLoadOp      = LoadOp::DontCare;
+    StoreOp stencilStoreOp    = StoreOp::DontCare;
+
+    bool operator==(const RenderPassDepthStencilAttachment& rvl) const
+    {
+      return texture         == rvl.texture &&
+             initialState    == rvl.initialState &&
+             finalState      == rvl.finalState &&
+             depthLoadOp     == rvl.depthLoadOp &&
+             depthStoreOp    == rvl.depthStoreOp &&
+             stencilLoadOp   == rvl.stencilLoadOp &&
+             stencilStoreOp  == rvl.stencilStoreOp;
+    }
+
+    bool operator!=(const RenderPassDepthStencilAttachment& rvl) const
     {
       return !(*this == rvl);
     }

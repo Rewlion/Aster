@@ -366,7 +366,7 @@ namespace gapi::vulkan
     }
   }
 
-  static vk::Format get_attribute_format(const gapi::AttributeType type)
+  inline vk::Format get_attribute_format(const gapi::AttributeType type)
   {
     switch (type)
     {
@@ -384,5 +384,15 @@ namespace gapi::vulkan
         return {};
        }
     }
+  }
+
+  inline vk::AttachmentLoadOp get_load_op(const gapi::LoadOp op)
+  {
+    return static_cast<vk::AttachmentLoadOp>(op);
+  }
+
+  inline vk::AttachmentStoreOp get_store_op(const gapi::StoreOp op)
+  {
+    return static_cast<vk::AttachmentStoreOp>(op);
   }
 }

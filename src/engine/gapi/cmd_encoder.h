@@ -9,7 +9,7 @@ namespace gapi
 
       virtual ~CmdEncoder(){}
 
-      virtual void beginRenderpass(const RenderTargets& renderTargets, const RenderPassAttachment& depthStencil, const ClearState clear) = 0;
+      virtual void beginRenderpass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) = 0;
 
       virtual void endRenderpass() = 0;
 
