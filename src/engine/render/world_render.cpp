@@ -94,16 +94,17 @@ namespace Engine::Render
           gapi::LoadOp::DontCare, gapi::StoreOp::DontCare);
       },
       [this](const blackboard::Gbuffer& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
-        renderOpaque(data, resources);
+        renderOpaque();
       }
     );
 
     struct None {};
-    blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
-    blackboard::Frame& fdata = m_FrameData.blackboard.get<blackboard::Frame>();
     m_FrameData.fg->addCallbackPass<None>(
       "gbuffer_resolve",
       [&](fg::RenderPassBuilder& builder, None& data){
+        blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
+        blackboard::Frame& fdata = m_FrameData.blackboard.get<blackboard::Frame>();
+
         builder.read(gbuffer.albedo, gapi::TextureState::ShaderRead);
         builder.read(gbuffer.normal,  gapi::TextureState::ShaderRead);
         builder.read(gbuffer.metalRoughness, gapi::TextureState::ShaderRead);
@@ -115,7 +116,13 @@ namespace Engine::Render
       [this](const None& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
         blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
         blackboard::Frame& fdata = m_FrameData.blackboard.get<blackboard::Frame>();
-        resolveGbuffer(gbuffer, fdata, resources);
+
+        const gapi::TextureHandler albedo = resources.getTexture(gbuffer.albedo);
+        const gapi::TextureHandler normal = resources.getTexture(gbuffer.normal);
+        const gapi::TextureHandler worldPos = resources.getTexture(gbuffer.worldPos);
+        const gapi::TextureHandler metalRoughness = resources.getTexture(gbuffer.metalRoughness);
+
+        resolveGbuffer(albedo, normal, worldPos, metalRoughness);
       }
     );
 
@@ -127,7 +134,7 @@ namespace Engine::Render
     gapi::present_backbuffer();
   }
 
-  void WorldRender::renderOpaque(const blackboard::Gbuffer& gbuffer, const fg::RenderPassResources& resources)
+  void WorldRender::renderOpaque()
   {
     renderScene();
   }
@@ -171,14 +178,9 @@ namespace Engine::Render
     }
   }
 
-  void WorldRender::resolveGbuffer(const blackboard::Gbuffer& gbuffer, const blackboard::Frame& fdata, const fg::RenderPassResources& resources)
+  void WorldRender::resolveGbuffer(const gapi::TextureHandler albedo, const gapi::TextureHandler normal,
+                                   const gapi::TextureHandler worldPos, const gapi::TextureHandler metalRoughness)
   {
-    const gapi::TextureHandler albedo = resources.getTexture(gbuffer.albedo);
-    const gapi::TextureHandler normal = resources.getTexture(gbuffer.normal);
-    const gapi::TextureHandler worldPos = resources.getTexture(gbuffer.worldPos);
-    const gapi::TextureHandler metalRoughness = resources.getTexture(gbuffer.metalRoughness);
-    const gapi::TextureHandler backbuffer = resources.getTexture(fdata.backbuffer);
-
     tfx::set_extern("gbuffer_albedo", albedo);
     tfx::set_extern("gbuffer_normal", normal);
     tfx::set_extern("gbuffer_world_pos", worldPos);

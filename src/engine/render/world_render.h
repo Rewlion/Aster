@@ -48,9 +48,10 @@ namespace Engine::Render
 
       void beforeRender(const CameraData& camera);
       void renderWorld();
-      void renderOpaque(const blackboard::Gbuffer&, const fg::RenderPassResources&);
+      void renderOpaque();
       void renderScene();
-      void resolveGbuffer(const blackboard::Gbuffer&, const blackboard::Frame& fdata, const fg::RenderPassResources&);
+      void resolveGbuffer(const gapi::TextureHandler albedo, const gapi::TextureHandler normal,
+                          const gapi::TextureHandler worldPos, const gapi::TextureHandler metalRoughness);
     private:
       size_t m_FrameId = 0;
       fg::FrameGraph m_FrameGraphs[FRAMES_COUNT];
