@@ -1,7 +1,7 @@
 #include "gbuffer.inc.tfx"
 #include "frame.inc.tfx"
 
-scope ProcessGbufferScope {
+scope ResolveGbufferScope {
   reserve:
     descriptor_set(3);
     register(texture, 0-3);
@@ -12,8 +12,8 @@ scope ProcessGbufferScope {
   Texture2D gbufferMetalRoughness = extern(gbuffer_metal_roughness);
 };
 
-technique ProcessGbuffer {
-  support scope ProcessGbufferScope;
+technique ResolveGbuffer {
+  support scope ResolveGbufferScope;
   support scope FrameScope;
 
   render_state:
