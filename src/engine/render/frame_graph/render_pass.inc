@@ -12,4 +12,17 @@ namespace fg
   {
     m_ExecCallback(m_Data, resources, encoder);
   }
+
+  template<class ExecCallback>
+  RenderPass<NoDataTag, ExecCallback>::RenderPass(const NodeHandle id, ExecCallback&& cb)
+        : Node(id)
+        , m_ExecCallback(cb)
+  {
+  }
+
+  template<class ExecCallback>
+  void RenderPass<NoDataTag, ExecCallback>::exec(const RenderPassResources& resources, gapi::CmdEncoder& encoder)
+  {
+    m_ExecCallback(resources, encoder);
+  }
 }

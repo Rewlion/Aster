@@ -98,10 +98,9 @@ namespace Engine::Render
       }
     );
 
-    struct None {};
-    m_FrameData.fg->addCallbackPass<None>(
+    m_FrameData.fg->addCallbackPass(
       "gbuffer_resolve",
-      [&](fg::RenderPassBuilder& builder, None& data){
+      [&](fg::RenderPassBuilder& builder){
         blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
         blackboard::Frame& fdata = m_FrameData.blackboard.get<blackboard::Frame>();
 
@@ -113,7 +112,7 @@ namespace Engine::Render
 
         builder.addRenderTarget(fdata.backbuffer, gapi::LoadOp::Load, gapi::StoreOp::Store);
       },
-      [this](const None& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
+      [this](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
         blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
         blackboard::Frame& fdata = m_FrameData.blackboard.get<blackboard::Frame>();
 

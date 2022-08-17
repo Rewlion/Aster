@@ -11,6 +11,8 @@ namespace fg
 {
   class RenderPassResources;
 
+  struct NoDataTag {};
+
   class Node
   {
     public:
@@ -37,6 +39,20 @@ namespace fg
     private:
       ExecCallback m_ExecCallback;
       Data m_Data;
+  };
+
+  template<class ExecCallback>
+  class RenderPass<NoDataTag, ExecCallback>: public Node
+  {
+    friend class RenderPassBuilder;
+    friend class FrameGraph;
+    public:
+      RenderPass(const NodeHandle id, ExecCallback&& cb);
+
+      virtual void exec(const RenderPassResources& resources, gapi::CmdEncoder& encoder) override;
+
+    private:
+      ExecCallback m_ExecCallback;
   };
 }
 
