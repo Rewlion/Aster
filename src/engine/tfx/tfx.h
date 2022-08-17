@@ -49,7 +49,7 @@ namespace tfx
 
   void set_channel(const string& name, const Param& p);
 
-  void activate_scope(const string& name, gapi::CmdEncoder* cmd_encoder);
+  void activate_scope(const string& name, gapi::CmdEncoder& cmd_encoder);
 
-  void activate_technique(const string& name, gapi::CmdEncoder* cmd_encoder);
+  void activate_technique(const string& name, gapi::CmdEncoder& cmd_encoder);
 }

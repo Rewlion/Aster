@@ -313,7 +313,7 @@ namespace tfx
     set_param(channels_storage, name, p);
   }
 
-  void activate_scope(const string& name, gapi::CmdEncoder* cmd_encoder)
+  void activate_scope(const string& name, gapi::CmdEncoder& cmd_encoder)
   {
     const string_hash h = str_hash(name.c_str());
     const auto it = scopes_storage.find(h);
@@ -321,10 +321,10 @@ namespace tfx
     ASSERT_FMT(it != scopes_storage.end(), "Missing scope: `{}`:{}\n{}", name,h, dump_storage_table(scopes_storage, "scopes_storage"));
 
     Processor pr;
-    pr.activateScope(it->second, cmd_encoder);
+    pr.activateScope(it->second, &cmd_encoder);
   }
 
-  void activate_technique(const string& name, gapi::CmdEncoder* cmd_encoder)
+  void activate_technique(const string& name, gapi::CmdEncoder& cmd_encoder)
   {
     const string_hash h = str_hash(name.c_str());
     const auto it = techniques_storage.find(h);
@@ -332,6 +332,6 @@ namespace tfx
     ASSERT_FMT(it != techniques_storage.end(), "Missing material `{}`", name);
 
     Processor pr;
-    pr.activateTechnique(it->second, cmd_encoder);
+    pr.activateTechnique(it->second, &cmd_encoder);
   }
 }

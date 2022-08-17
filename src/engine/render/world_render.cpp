@@ -53,7 +53,7 @@ namespace Engine::Render
     tfx::set_extern("sec_since_start", Time::get_sec_since_start());
     tfx::set_extern("model_sampler", m_ModelSampler);
     tfx::set_extern("viewport_size", float2(m_WindowSize.x, m_WindowSize.y));
-    tfx::activate_scope("FrameScope", m_FrameData.cmdEncoder.get());
+    tfx::activate_scope("FrameScope", *m_FrameData.cmdEncoder);
   }
 
   void WorldRender::renderWorld()
@@ -146,7 +146,7 @@ namespace Engine::Render
     tfx::set_extern("gbuffer_world_pos", worldPos);
     tfx::set_extern("gbuffer_metal_roughness", metalRoughness);
 
-    tfx::activate_technique("ResolveGbuffer", &encoder);
+    tfx::activate_technique("ResolveGbuffer", encoder);
     encoder.updateResources();
     encoder.draw(4, 1, 0, 0);
   }
@@ -174,12 +174,12 @@ namespace Engine::Render
         const Submesh& submesh = asset->mesh->submeshes.get(i);
         const tfx::Material& material = asset->materials[i];
 
-        tfx::activate_technique(material.technique, &encoder);
+        tfx::activate_technique(material.technique, encoder);
 
         for (const auto& m: material.params)
           tfx::set_channel(m.name, m.value);
 
-        tfx::activate_scope("StaticModelScope", &encoder);
+        tfx::activate_scope("StaticModelScope", encoder);
         encoder.updateResources();
 
         encoder.bindVertexBuffer(submesh.vertexBuffer);
