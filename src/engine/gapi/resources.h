@@ -285,12 +285,12 @@ namespace gapi
     s64 = 64
   };
 
-  enum class TextureUsage: uint32_t
+  enum TextureUsage
   {
-    None         = 0,
-    Uniform      = 1,
-    DepthStencil = 1 << 2,
-    RenderTarget = 1 << 3
+    TEX_USAGE_NONE          = 0,
+    TEX_USAGE_UNIFORM       = 1,
+    TEX_USAGE_DEPTH_STENCIL = 1 << 2,
+    TEX_USAGE_RT            = 1 << 3
   };
 
   enum class TextureFormat: uint32_t
@@ -364,7 +364,7 @@ namespace gapi
     uint32_t       mipLevels = 0;
     uint32_t       arrayLayers = 0;
     TextureSamples samplesPerPixel = TextureSamples::s1;
-    TextureUsage   usage = TextureUsage::None;
+    int            usage = TEX_USAGE_NONE;
   };
 
   enum class TextureState: uint32_t

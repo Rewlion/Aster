@@ -66,13 +66,13 @@ namespace Engine::Render
         allocDesc.extent = int3{m_WindowSize.x, m_WindowSize.y, 1};
         allocDesc.mipLevels = 1;
         allocDesc.arrayLayers = 1;
-        allocDesc.usage = gapi::TextureUsage::DepthStencil;
+        allocDesc.usage = gapi::TEX_USAGE_DEPTH_STENCIL;
 
         data.depth = builder.createTexture("gbuffer_depth", allocDesc);
         data.depth = builder.write(data.depth, gapi::TextureState::DepthWriteStencilRead);
 
         allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
-        allocDesc.usage = (gapi::TextureUsage)((uint32_t)gapi::TextureUsage::RenderTarget | (uint32_t)gapi::TextureUsage::Uniform);
+        allocDesc.usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_UNIFORM;
         data.albedo = builder.createTexture("gbuffer_albedo", allocDesc);
         data.albedo = builder.write(data.albedo, gapi::TextureState::RenderTarget);
 

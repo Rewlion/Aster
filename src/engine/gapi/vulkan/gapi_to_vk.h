@@ -187,7 +187,7 @@ namespace gapi::vulkan
     }
   }
 
-  inline vk::ImageUsageFlags get_texture_usage(const TextureUsage usage)
+  inline vk::ImageUsageFlags get_texture_usage(const int usage)
   {
     vk::ImageUsageFlags bits;
 
@@ -195,13 +195,13 @@ namespace gapi::vulkan
 
     uint32_t usg = (uint32_t)(usage);
 
-    if (usg & (uint32_t)TextureUsage::DepthStencil)
+    if (usg & TEX_USAGE_DEPTH_STENCIL)
       bits |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
 
-    if (usg & (uint32_t)TextureUsage::RenderTarget)
+    if (usg & TEX_USAGE_RT)
       bits |= vk::ImageUsageFlagBits::eColorAttachment;
 
-    if (usg & (uint32_t)TextureUsage::Uniform)
+    if (usg & TEX_USAGE_UNIFORM)
     {
       bits |= vk::ImageUsageFlagBits::eStorage;
       bits |= vk::ImageUsageFlagBits::eSampled;

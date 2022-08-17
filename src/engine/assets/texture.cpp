@@ -32,7 +32,7 @@ namespace Engine
         .mipLevels = 1,
         .arrayLayers = 1,
         .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage = gapi::TextureUsage::Uniform
+        .usage = gapi::TextureUsage::TEX_USAGE_UNIFORM
       }
     );
 
