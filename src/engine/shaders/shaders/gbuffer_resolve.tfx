@@ -13,7 +13,7 @@ scope ResolveGbufferScope {
 };
 
 technique ResolveGbuffer {
-  support scope ResolveGbufferScope;
+  activate scope ResolveGbufferScope;
   support scope FrameScope;
 
   render_state:

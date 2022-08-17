@@ -146,8 +146,7 @@ namespace Engine::Render
     tfx::set_extern("gbuffer_world_pos", worldPos);
     tfx::set_extern("gbuffer_metal_roughness", metalRoughness);
 
-    tfx::activate_scope("ProcessGbufferScope", &encoder);
-    tfx::activate_technique("ProcessGbuffer", &encoder);
+    tfx::activate_technique("ResolveGbuffer", &encoder);
     encoder.updateResources();
     encoder.draw(4, 1, 0, 0);
   }
