@@ -91,10 +91,10 @@ namespace Engine::Render
         builder.addRenderTarget(data.worldPos, gapi::LoadOp::Clear, gapi::StoreOp::Store);
         builder.addRenderTarget(data.metalRoughness, gapi::LoadOp::Clear, gapi::StoreOp::Store);
         builder.setDepthStencil(data.depth, gapi::LoadOp::Clear, gapi::StoreOp::Store,
-          gapi::LoadOp::DontCare, gapi::StoreOp::DontCare);
+                                            gapi::LoadOp::DontCare, gapi::StoreOp::DontCare);
       },
       [this](const blackboard::Gbuffer& data, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
-        renderOpaque();
+        renderOpaque(encoder);
       }
     );
 
@@ -114,14 +114,13 @@ namespace Engine::Render
       },
       [this](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
         blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
-        blackboard::Frame& fdata = m_FrameData.blackboard.get<blackboard::Frame>();
 
         const gapi::TextureHandler albedo = resources.getTexture(gbuffer.albedo);
         const gapi::TextureHandler normal = resources.getTexture(gbuffer.normal);
         const gapi::TextureHandler worldPos = resources.getTexture(gbuffer.worldPos);
         const gapi::TextureHandler metalRoughness = resources.getTexture(gbuffer.metalRoughness);
 
-        resolveGbuffer(albedo, normal, worldPos, metalRoughness);
+        resolveGbuffer(encoder, albedo, normal, worldPos, metalRoughness);
       }
     );
 
@@ -133,12 +132,27 @@ namespace Engine::Render
     gapi::present_backbuffer();
   }
 
-  void WorldRender::renderOpaque()
+  void WorldRender::renderOpaque(gapi::CmdEncoder& encoder)
   {
-    renderScene();
+    renderScene(encoder);
   }
 
-  void WorldRender::renderScene()
+  void WorldRender::resolveGbuffer(gapi::CmdEncoder& encoder,
+                                   const gapi::TextureHandler albedo, const gapi::TextureHandler normal,
+                                   const gapi::TextureHandler worldPos, const gapi::TextureHandler metalRoughness)
+  {
+    tfx::set_extern("gbuffer_albedo", albedo);
+    tfx::set_extern("gbuffer_normal", normal);
+    tfx::set_extern("gbuffer_world_pos", worldPos);
+    tfx::set_extern("gbuffer_metal_roughness", metalRoughness);
+
+    tfx::activate_scope("ProcessGbufferScope", &encoder);
+    tfx::activate_technique("ProcessGbuffer", &encoder);
+    encoder.updateResources();
+    encoder.draw(4, 1, 0, 0);
+  }
+
+  void WorldRender::renderScene(gapi::CmdEncoder& encoder)
   {
     const auto objects = scene.queueObjects();
     for (const auto& obj: objects)
@@ -161,34 +175,20 @@ namespace Engine::Render
         const Submesh& submesh = asset->mesh->submeshes.get(i);
         const tfx::Material& material = asset->materials[i];
 
-        tfx::activate_technique(material.technique, m_FrameData.cmdEncoder.get());
+        tfx::activate_technique(material.technique, &encoder);
 
         for (const auto& m: material.params)
           tfx::set_channel(m.name, m.value);
 
-        tfx::activate_scope("StaticModelScope", m_FrameData.cmdEncoder.get());
-        m_FrameData.cmdEncoder->updateResources();
+        tfx::activate_scope("StaticModelScope", &encoder);
+        encoder.updateResources();
 
-        m_FrameData.cmdEncoder->bindVertexBuffer(submesh.vertexBuffer);
-        m_FrameData.cmdEncoder->bindIndexBuffer(submesh.indexBuffer);
+        encoder.bindVertexBuffer(submesh.vertexBuffer);
+        encoder.bindIndexBuffer(submesh.indexBuffer);
 
-        m_FrameData.cmdEncoder->drawIndexed(submesh.indexCount, 1, 0, 0, 0);
+        encoder.drawIndexed(submesh.indexCount, 1, 0, 0, 0);
       }
     }
-  }
-
-  void WorldRender::resolveGbuffer(const gapi::TextureHandler albedo, const gapi::TextureHandler normal,
-                                   const gapi::TextureHandler worldPos, const gapi::TextureHandler metalRoughness)
-  {
-    tfx::set_extern("gbuffer_albedo", albedo);
-    tfx::set_extern("gbuffer_normal", normal);
-    tfx::set_extern("gbuffer_world_pos", worldPos);
-    tfx::set_extern("gbuffer_metal_roughness", metalRoughness);
-
-    tfx::activate_scope("ProcessGbufferScope", m_FrameData.cmdEncoder.get());
-    tfx::activate_technique("ProcessGbuffer", m_FrameData.cmdEncoder.get());
-    m_FrameData.cmdEncoder->updateResources();
-    m_FrameData.cmdEncoder->draw(4, 1, 0, 0);
   }
 
 }

@@ -48,9 +48,10 @@ namespace Engine::Render
 
       void beforeRender(const CameraData& camera);
       void renderWorld();
-      void renderOpaque();
-      void renderScene();
-      void resolveGbuffer(const gapi::TextureHandler albedo, const gapi::TextureHandler normal,
+      void renderOpaque(gapi::CmdEncoder& encoder);
+      void renderScene(gapi::CmdEncoder& encoder);
+      void resolveGbuffer(gapi::CmdEncoder& encoder,
+                          const gapi::TextureHandler albedo, const gapi::TextureHandler normal,
                           const gapi::TextureHandler worldPos, const gapi::TextureHandler metalRoughness);
     private:
       size_t m_FrameId = 0;
