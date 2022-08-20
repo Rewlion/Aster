@@ -18,7 +18,7 @@ include_directories(
   "${CMAKE_SOURCE_DIR}/deps/eastl-3.17.06/include"
   "${CMAKE_SOURCE_DIR}/deps/spdlog-1.9.2/include"
   "${CMAKE_SOURCE_DIR}/deps/boost-1.77/include"
-  "${CMAKE_SOURCE_DIR}/deps/vulkan-1.2.198.1/include"
+  "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/include"
   "${CMAKE_SOURCE_DIR}/deps/SPIRV-Cross-moltenvk_1.1.5/include"
   "${CMAKE_SOURCE_DIR}/deps/tinygltf-2.5.0/include"
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/include"
@@ -35,7 +35,7 @@ endif ()
 link_directories(
   "${CMAKE_SOURCE_DIR}/deps/boost-1.77/win64"
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/win64"
-  "${CMAKE_SOURCE_DIR}/deps/vulkan-1.2.198.1/win64/"
+  "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/win64/"
   "${CMAKE_SOURCE_DIR}/deps/dxc-1.7.0/win64"
 )
 

@@ -3,6 +3,7 @@
   #include <engine/window.h>
 #endif
 #include <engine/gapi/vulkan/vulkan.h>
+#include <engine/gapi/vulkan/result.h>
 
 #include <Windows.h>
 
@@ -20,7 +21,9 @@ namespace gapi::vulkan
         .setHwnd(*hwnd)
         .setHinstance(hInstance);
 
-      surface = instance.createWin32SurfaceKHRUnique(surfaceCreateInfo);
+      auto res = instance.createWin32SurfaceKHRUnique(surfaceCreateInfo);
+      VK_CHECK_RES(res);
+      surface = std::move(res.value);
     }
   #else
     static_assert(!"unsupported platform for vulkan api");
