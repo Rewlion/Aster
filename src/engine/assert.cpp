@@ -2,6 +2,7 @@
 
 #include <engine/log.h>
 
+#define BOOST_STACKTRACE_USE_WINDBG 1
 #include <boost/stacktrace.hpp>
 #include <winuser.h>
 

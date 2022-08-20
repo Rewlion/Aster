@@ -16,6 +16,7 @@ target_link_libraries(engine
   engine_tfx
   engine_utils
   engine_work_cycle
+  "dbgeng"
   "vulkan-1"
   "EASTL"
   "ktx"
