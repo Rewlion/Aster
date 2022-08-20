@@ -260,6 +260,14 @@ namespace gapi::vulkan
     m_CmdBuf = vk::CommandBuffer{};
   }
 
+  void CmdEncoder::present(Semaphore* wait_semaphore)
+  {
+    VulkanSemaphore* s = reinterpret_cast<VulkanSemaphore*>(wait_semaphore);
+    vk::Semaphore h = s->semaphore.get();
+    m_FrameGc.addSemaphores(std::move(s->semaphore));
+    m_Device.presentSurfaceImage(h);
+  }
+
   Semaphore* CmdEncoder::signalSemaphore()
   {
     VulkanSemaphore* s = new VulkanSemaphore();

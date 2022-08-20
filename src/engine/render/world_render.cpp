@@ -128,8 +128,10 @@ namespace Engine::Render
     m_FrameData.fg->execute(*m_FrameData.cmdEncoder);
 
     m_FrameData.cmdEncoder->transitTextureState(gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::Present);
+    gapi::Semaphore* sem = m_FrameData.cmdEncoder->signalSemaphore();
     m_FrameData.cmdEncoder->flush();
-    gapi::present_backbuffer();
+    m_FrameData.cmdEncoder->present(sem);
+    gapi::next_frame();
   }
 
   void WorldRender::renderOpaque(gapi::CmdEncoder& encoder)

@@ -73,7 +73,7 @@ namespace gapi::vulkan
                               const vk::Semaphore* signalSemaphores, const size_t signalSemaphoresCount,
                               const vk::Fence signalFence);
 
-      void presentSurfaceImage();
+      void presentSurfaceImage(vk::Semaphore wait_semaphore);
 
       BufferHandler allocateBuffer(const size_t size, const int usage);
       void freeBuffer(const BufferHandler buffer);

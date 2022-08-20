@@ -45,6 +45,7 @@ namespace gapi::vulkan
       virtual void bindIndexBuffer(const BufferHandler buffer) override;
       virtual void bindGraphicsPipeline(const GraphicsPipelineDescription& desc) override;
       virtual void flush(Fence* signalFence = nullptr) override;
+      virtual void present(Semaphore* wait_semaphore) override;
       virtual Semaphore* signalSemaphore() override;
       virtual void insertSemaphore(Semaphore* s) override;
       virtual void bindConstBuffer(const BufferHandler buffer, const size_t set, const size_t binding) override;

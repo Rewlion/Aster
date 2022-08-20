@@ -24,12 +24,12 @@ namespace gapi
   extern TextureHandler        (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
   extern void                  (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
   extern SamplerHandler        (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
-  extern void                  (*gapi_present_backbuffer)();
   extern Semaphore*            (*gapi_ackquire_backbuffer)();
   extern ShaderModuleHandler   (*gapi_add_module)(void* blob);
   extern PipelineLayoutHandler (*gapi_add_pipeline_layout)(void* dsets);
   extern gapi::CmdEncoder*     (*gapi_allocate_cmd_encoder)();
   extern Fence*                (*gapi_allocate_fence)();
+  extern void                  (*gapi_next_frame)();
 }
 
 namespace gapi::vulkan
@@ -100,12 +100,6 @@ namespace gapi::vulkan
     return device->allocateSampler(allocDesc);
   }
 
-  void present_backbuffer()
-  {
-    device->presentSurfaceImage();
-    frameGc.nextFrame();
-  }
-
   Semaphore* ackquire_backbuffer()
   {
     VulkanSemaphore* s = new VulkanSemaphore();
@@ -144,6 +138,11 @@ namespace gapi::vulkan
     return f;
   }
 
+  void next_frame()
+  {
+    frameGc.nextFrame();
+  }
+
   void init()
   {
     gapi_get_backbuffer = get_backbuffer;
@@ -157,12 +156,12 @@ namespace gapi::vulkan
     gapi_unmap_buffer = unmap_buffer;
     gapi_copy_buffers_sync = copy_buffers_sync;
     gapi_write_buffer = write_buffer;
-    gapi_present_backbuffer = present_backbuffer;
     gapi_ackquire_backbuffer = ackquire_backbuffer;
     gapi_add_module = add_module;
     gapi_add_pipeline_layout = add_pipeline_layout;
     gapi_allocate_cmd_encoder = allocate_cmd_encoder;
     gapi_allocate_fence = allocate_fence;
+    gapi_next_frame = next_frame;
 
     backend.init();
     device.reset(backend.createDevice(&frameGc));

@@ -171,9 +171,9 @@ namespace gapi::vulkan
     VK_CHECK(m_GraphicsQueue.submit(submit, signalFence));
   }
 
-  void Device::presentSurfaceImage()
+  void Device::presentSurfaceImage(vk::Semaphore wait_semaphore)
   {
-    m_Swapchain.present();
+    m_Swapchain.present(wait_semaphore);
   }
 
   BufferHandler Device::allocateBuffer(const size_t size, const int usage)

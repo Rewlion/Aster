@@ -38,6 +38,8 @@ namespace gapi
 
       virtual void flush(Fence* signalFence = nullptr) = 0;
 
+      virtual void present(Semaphore* wait_semaphore) = 0;
+
       virtual Semaphore* signalSemaphore() = 0;
 
       virtual void insertSemaphore(Semaphore* s) = 0;

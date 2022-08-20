@@ -146,7 +146,7 @@ namespace gapi::vulkan
     frameId = m_Device.acquireNextImageKHR(*m_Swapchain, -1, waitSemaphore, {}).value;
   }
 
-  void Swapchain::present()
+  void Swapchain::present(vk::Semaphore wait_semaphore)
   {
     vk::SwapchainKHR swapchains[] {m_Swapchain.get()};
     const auto presentInfo = vk::PresentInfoKHR()
@@ -154,8 +154,8 @@ namespace gapi::vulkan
       .setPSwapchains(swapchains)
       .setPImageIndices(&frameId)
       .setPResults(nullptr)
-      .setWaitSemaphoreCount(0)
-      .setPWaitSemaphores(nullptr);
+      .setWaitSemaphoreCount(1)
+      .setPWaitSemaphores(&wait_semaphore);
 
     VK_CHECK(m_PresentQueue.presentKHR(presentInfo));
   }
