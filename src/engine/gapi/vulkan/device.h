@@ -104,14 +104,18 @@ namespace gapi::vulkan
 
       vk::UniqueSemaphore createSemaphore();
 
-      inline void acquireBackbuffer(const vk::Semaphore waitSemaphore)
+      inline VulkanFence* acquireBackbuffer()
       {
-        m_Swapchain.acquireSurfaceImage(waitSemaphore);
+        VulkanFence* fence = allocateFence();
+        m_Swapchain.acquireSurfaceImage(fence->fence.get());
+        return fence;
       }
 
       Texture& getAllocatedTexture(const TextureHandler texture);
 
       vk::UniqueCommandPool allocateCmdPool();
+
+      VulkanFence* allocateFence();
 
     private:
       void discardBuffer(Buffer& buffer);

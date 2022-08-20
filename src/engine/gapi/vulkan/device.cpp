@@ -593,4 +593,15 @@ namespace gapi::vulkan
 
     return std::move(pool.value);
   }
+
+  VulkanFence* Device::allocateFence()
+  {
+    VulkanFence* f = new VulkanFence{};
+    auto fence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
+    VK_CHECK_RES(fence);
+
+    f->fence = std::move(fence.value);
+    VK_CHECK(m_Device->resetFences(1, &f->fence.get()));
+    return f;
+  }
 }

@@ -19,12 +19,13 @@ namespace gapi
   void                     (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
   void                     (*gapi_bind_texture)(const TextureHandler texture, const size_t set, const size_t binding);
   SamplerHandler           (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
-  Semaphore*               (*gapi_ackquire_backbuffer)();
+  Fence*                   (*gapi_ackquire_backbuffer)();
   ShaderModuleHandler      (*gapi_add_module)(void* blob);
   PipelineLayoutHandler    (*gapi_add_pipeline_layout)(void* dsets);
   CmdEncoder*              (*gapi_allocate_cmd_encoder)();
   Fence*                   (*gapi_allocate_fence)();
   void                     (*gapi_next_frame)();
+  void                     (*gapi_wait_fence)(Fence* fence);
 
   void init()
   {
@@ -100,7 +101,7 @@ namespace gapi
     gapi_free_texture(texture);
   }
 
-  Semaphore* ackquire_backbuffer()
+  Fence* ackquire_backbuffer()
   {
     return gapi_ackquire_backbuffer();
   }
@@ -128,5 +129,10 @@ namespace gapi
   void next_frame()
   {
     gapi_next_frame();
+  }
+
+  void wait_fence(Fence* fence)
+  {
+    gapi_wait_fence(fence);
   }
 }

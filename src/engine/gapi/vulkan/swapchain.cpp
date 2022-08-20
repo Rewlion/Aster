@@ -141,9 +141,9 @@ namespace gapi::vulkan
     }
   }
 
-  void Swapchain::acquireSurfaceImage(const vk::Semaphore waitSemaphore)
+  void Swapchain::acquireSurfaceImage(const vk::Fence fence_to_signal)
   {
-    frameId = m_Device.acquireNextImageKHR(*m_Swapchain, -1, waitSemaphore, {}).value;
+    frameId = m_Device.acquireNextImageKHR(*m_Swapchain, -1, {}, fence_to_signal).value;
   }
 
   void Swapchain::present(vk::Semaphore wait_semaphore)
