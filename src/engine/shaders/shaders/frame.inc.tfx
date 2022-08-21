@@ -16,7 +16,7 @@ technique_macro USE_FRAME_HELPERS {
   #hlsl
     float2 get_screen_space_coords(float2 viewport_coords)
     {
-      return viewport_coords / FrameScope.viewPortSize;
+      return (viewport_coords + float2(0.5f, 0.5f)) / FrameScope.viewPortSize;
     }
   #end
 };

@@ -195,7 +195,7 @@ namespace gapi::vulkan
     m_AllocatedBuffers.remove(id);
   }
 
-  void* Device::mapBuffer(const BufferHandler buffer, const size_t offset, const size_t size)
+  void* Device::mapBuffer(const BufferHandler buffer, const size_t offset, const size_t size, const int flags)
   {
     Buffer* b = getAllocatedBuffer(buffer);
     if (!(b->usage & BF_CpuVisible))
@@ -203,6 +203,9 @@ namespace gapi::vulkan
       ASSERT(!"can't map not cpu visible buffer");
       return nullptr;
     }
+
+    if (flags & WR_DISCARD)
+      discardBuffer(*b);
 
     return mapBuffer(*b, offset, size);
   }
@@ -351,28 +354,6 @@ namespace gapi::vulkan
     unmapBuffer(buffer);
   }
 
-  void Device::writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags)
-  {
-    Buffer* b = getAllocatedBuffer(buffer);
-
-    if ( !(b->usage & BF_CpuVisible | b->usage & BF_GpuVisible) )
-      ASSERT(!"writeBuffer dst buffer don't have memory set");
-
-    if (flags & WR_DISCARD)
-      discardBuffer(*b);
-
-    if (b->usage & BF_CpuVisible)
-    {
-      writeToStagingBuffer(*b, src, offset, size);
-    }
-    else if (b->usage & BF_GpuVisible)
-    {
-      Buffer staging = allocateBufferInternal(size, BF_CpuVisible);
-      writeToStagingBuffer(staging, src, 0, size);
-      copyBuffersSync(staging.buffer.get(), 0, b->buffer.get(), offset, size);
-    }
-  }
-
   Buffer& Device::getBuffer(const BufferHandler buffer)
   {
     const size_t id = (size_t)buffer;
@@ -466,50 +447,6 @@ namespace gapi::vulkan
     ASSERT(m_AllocatedTextures.contains(textureId));
 
     m_AllocatedTextures.remove(textureId);
-  }
-
-
-  void Device::copyToTextureSync(const void* src, const size_t size, const TextureHandler texture)
-  {
-    TextureHandlerInternal handler;
-    handler.as.handler = uint64_t(texture);
-    uint32_t textureId = handler.as.typed.id;
-
-    if (!m_AllocatedTextures.contains(textureId))
-    {
-      logerror("vulkan: copy_to_texture_sync: texture({}) not allocated", textureId);
-      return;
-    }
-
-    Buffer stagingBuf = allocateStagingBuffer(src, size);
-    const Texture& toTexture = m_AllocatedTextures.get(textureId);
-
-    const auto cmdBuf = allocateTransferCmdBuffer();
-
-    vk::BufferImageCopy copyDesc;
-    copyDesc.bufferOffset = 0;
-    copyDesc.bufferRowLength = 0;
-    copyDesc.bufferImageHeight = 0;
-    copyDesc.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
-    copyDesc.imageSubresource.mipLevel = 0;
-    copyDesc.imageSubresource.baseArrayLayer = 0;
-    copyDesc.imageSubresource.layerCount = 1;
-    copyDesc.imageOffset = vk::Offset3D{0,0,0};
-    copyDesc.imageExtent = vk::Extent3D{(uint32_t)toTexture.size.x, (uint32_t)toTexture.size.y, 1};
-
-    cmdBuf.copyBufferToImage(stagingBuf.buffer.get(), toTexture.img.get(), vk::ImageLayout::eTransferDstOptimal, 1, &copyDesc);
-
-    VK_CHECK(cmdBuf.end());
-
-    vk::SubmitInfo submitInfo;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &cmdBuf;
-
-    auto fence = m_Device->createFenceUnique(vk::FenceCreateInfo{});
-    VK_CHECK_RES(fence);
-    ASSERT(vk::Result::eSuccess == m_Device->resetFences(1, &fence.value.get()));
-    ASSERT(vk::Result::eSuccess == m_TransferQueue.submit(1, &submitInfo, fence.value.get()));
-    ASSERT(vk::Result::eSuccess == m_Device->waitForFences(1, &fence.value.get(), true, ~0));
   }
 
   SamplerHandler Device::allocateSampler(const SamplerAllocationDescription& allocDesc)

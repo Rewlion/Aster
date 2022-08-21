@@ -1,15 +1,14 @@
 #include "assets_manager.h"
 
 #include <engine/assert.h>
-#include <engine/log.h>
-#include <engine/gapi/gapi.h>
 #include <engine/gapi/cmd_encoder.h>
+#include <engine/log.h>
 
 #include <ktx/ktx.h>
 
 namespace Engine
 {
-  TextureAsset AssetsManager::loadTexture(const string& file)
+  TextureAsset AssetsManager::loadTexture(const string& file, gapi::CmdEncoder& encoder)
   {
     ktxTexture* texture;
 
@@ -36,19 +35,9 @@ namespace Engine
       }
     );
 
-    std::unique_ptr<gapi::CmdEncoder> encoder(gapi::allocate_cmd_encoder());
-
-    gapi::Fence* fence = gapi::allocate_fence();
-    encoder->transitTextureState(asset.texture, gapi::TextureState::Undefined, gapi::TextureState::TransferDst);
-    encoder->flush(fence);
-    fence->wait();
-    fence->reset();
-
-    copy_to_texture_sync(texture->pData, texture->dataSize, asset.texture);
-
-    encoder->transitTextureState(asset.texture, gapi::TextureState::TransferDst, gapi::TextureState::ShaderRead);
-    encoder->flush(fence);
-    fence->wait();
+    encoder.transitTextureState(asset.texture, gapi::TextureState::Undefined, gapi::TextureState::TransferDst);
+    encoder.copyBufferToTexture(asset.texture, texture->pData, texture->dataSize);
+    encoder.transitTextureState(asset.texture, gapi::TextureState::TransferDst, gapi::TextureState::ShaderRead);
 
     ktxTexture_Destroy(texture);
 

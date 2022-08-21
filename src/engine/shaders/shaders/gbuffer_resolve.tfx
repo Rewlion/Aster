@@ -54,7 +54,7 @@ technique ResolveGbuffer {
 
       Gbuffer g = (Gbuffer)0;
       init_albedo(g, albedo);
-      init_metal(g, metalRoughness.r);
+      init_metal(g, 1);//metalRoughness.r);
       init_roughness(g, metalRoughness.g);
       init_normal(g, normal);
       init_worldPos(g, worldPos);

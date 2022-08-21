@@ -78,20 +78,16 @@ namespace gapi::vulkan
       BufferHandler allocateBuffer(const size_t size, const int usage);
       void freeBuffer(const BufferHandler buffer);
 
-      void* mapBuffer(const BufferHandler buffer, const size_t offset, const size_t size);
+      void* mapBuffer(const BufferHandler buffer, const size_t offset, const size_t size, const int flags = 0);
       void unmapBuffer(const BufferHandler buffer);
 
       void copyBuffersSync(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size);
-
-      void writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags);
 
       Buffer& getBuffer(const BufferHandler buffer);
       const Buffer& getBuffer(const BufferHandler buffer) const;
 
       TextureHandler allocateTexture(const TextureAllocationDescription& allocDesc);
       void freeTexture(const TextureHandler texture);
-
-      void copyToTextureSync(const void* src, const size_t size, const TextureHandler texture);
 
       SamplerHandler allocateSampler(const SamplerAllocationDescription& allocDesc);
 
@@ -111,22 +107,22 @@ namespace gapi::vulkan
         return fence;
       }
 
+      void discardBuffer(Buffer& buffer);
+      Buffer* getAllocatedBuffer(const BufferHandler handler);
       Texture& getAllocatedTexture(const TextureHandler texture);
+
+      Buffer allocateBufferInternal(const size_t size, const int usage);
+      Buffer allocateStagingBuffer(const void* src, const size_t size);
 
       vk::UniqueCommandPool allocateCmdPool();
 
       VulkanFence* allocateFence();
-
     private:
-      void discardBuffer(Buffer& buffer);
       void copyBuffersSync(const vk::Buffer src, const size_t srcOffset, const vk::Buffer dst, const size_t dstOffset, const size_t size);
       void writeToStagingBuffer(const Buffer& buffer, const void* src, const size_t offset, const size_t size);
-      Buffer* getAllocatedBuffer(const BufferHandler handler);
       void* mapBuffer(const Buffer& buffer, const size_t offset, const size_t size);
       void unmapBuffer(const Buffer& buffer);
 
-      Buffer allocateBufferInternal(const size_t size, const int usage);
-      Buffer allocateStagingBuffer(const void* src, const size_t size);
 
       vk::CommandBuffer allocateCmdBuffer(vk::CommandPool pool);
       vk::CommandBuffer allocateTransferCmdBuffer();

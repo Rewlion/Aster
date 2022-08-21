@@ -17,6 +17,12 @@ namespace gapi::vulkan
       }
 
 
+      inline void addBuffer(Buffer&& b)
+      {
+        addBuffer(std::move(b.buffer));
+        addMemory(std::move(b.memory));
+      }
+
       inline void addBuffer(vk::UniqueBuffer&& buffer)
       {
         frameResources[frameId].buffers.push_back(std::move(buffer));

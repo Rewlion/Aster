@@ -9,6 +9,11 @@
 
 class DataBlock;
 
+namespace gapi
+{
+  class CmdEncoder;
+}
+
 namespace Engine
 {
   struct Submesh
@@ -49,10 +54,10 @@ namespace Engine
 
     private:
       void loadAssetsFromFs();
-      StaticMesh loadGltf(const string& file);
-      TextureAsset loadTexture(const string& file);
-      void loadTextureAsset(const DataBlock& asset);
-      void loadStaticMesh(const DataBlock& asset);
+      StaticMesh loadGltf(const string& file, gapi::CmdEncoder& encoder);
+      TextureAsset loadTexture(const string& file, gapi::CmdEncoder& encoder);
+      void loadTextureAsset(const DataBlock& asset, gapi::CmdEncoder& encoder);
+      void loadStaticMesh(const DataBlock& asset, gapi::CmdEncoder& encoder);
       void loadModelAsset(const DataBlock& asset);
       tfx::Material createMaterial(const DataBlock& matBlk);
     private:

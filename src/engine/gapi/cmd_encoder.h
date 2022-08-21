@@ -50,5 +50,8 @@ namespace gapi
                                        const uint32_t firstArraySlice = 0, const uint32_t arraySliceCount = ~(0)) = 0;
 
       virtual void updateResources() = 0;
+
+      virtual void writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags = 0) = 0;
+      virtual void copyBufferToTexture(const TextureHandler texture, const void* src, const size_t size) = 0;
   };
 }

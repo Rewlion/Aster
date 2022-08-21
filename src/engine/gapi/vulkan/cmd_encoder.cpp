@@ -350,4 +350,48 @@ namespace gapi::vulkan
     insureActiveCmd();
     m_DsetManager.updateDescriptorSets(m_CmdBuf);
   }
+
+  void CmdEncoder::writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags)
+  {
+    insureActiveCmd();
+    Buffer* b = m_Device.getAllocatedBuffer(buffer);
+
+    if ( !(b->usage & BF_CpuVisible | b->usage & BF_GpuVisible) )
+      ASSERT(!"writeBuffer dst buffer don't have memory set");
+
+    if (flags & WR_DISCARD)
+      m_Device.discardBuffer(*b);
+
+    Buffer staging = m_Device.allocateStagingBuffer(src, size);
+
+    vk::BufferCopy region;
+    region.size = size;
+    region.srcOffset = 0;
+    region.dstOffset = offset;
+
+    m_CmdBuf.copyBuffer(staging.buffer.get(), b->buffer.get(), 1, &region);
+    m_FrameGc.addBuffer(std::move(staging));
+  }
+
+  void CmdEncoder::copyBufferToTexture(const TextureHandler texture, const void* src, const size_t size)
+  {
+    insureActiveCmd();
+    Texture& t = m_Device.getAllocatedTexture(texture);
+    Buffer staging = m_Device.allocateStagingBuffer(src, size);
+
+    vk::BufferImageCopy copyDesc;
+    copyDesc.bufferOffset = 0;
+    copyDesc.bufferRowLength = 0;
+    copyDesc.bufferImageHeight = 0;
+    copyDesc.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+    copyDesc.imageSubresource.mipLevel = 0;
+    copyDesc.imageSubresource.baseArrayLayer = 0;
+    copyDesc.imageSubresource.layerCount = 1;
+    copyDesc.imageOffset = vk::Offset3D{0,0,0};
+    copyDesc.imageExtent = vk::Extent3D{(uint32_t)t.size.x, (uint32_t)t.size.y, 1};
+
+    m_CmdBuf.copyBufferToImage(staging.buffer.get(), t.img.get(),
+                               vk::ImageLayout::eTransferDstOptimal, 1, &copyDesc);
+    m_FrameGc.addBuffer(std::move(staging));
+  }
 }

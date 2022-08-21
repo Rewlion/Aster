@@ -1,6 +1,7 @@
 #include "assets_manager.h"
 
 #include <engine/assert.h>
+#include <engine/gapi/cmd_encoder.h>
 #include <engine/log.h>
 
 #define TINYGLTF_IMPLEMENTATION
@@ -238,7 +239,7 @@ namespace Engine
     }
   }
 
-  static StaticMesh process_model(const tinygltf::Model& model)
+  static StaticMesh process_model(const tinygltf::Model& model, gapi::CmdEncoder& encoder)
   {
     StaticMesh asset;
 
@@ -255,8 +256,8 @@ namespace Engine
       submesh.vertexBuffer = gapi::allocate_buffer(verticesSize, gapi::BF_GpuVisible | gapi::BF_BindVertex);
       submesh.indexBuffer  = gapi::allocate_buffer(indicesSize,  gapi::BF_GpuVisible | gapi::BF_BindIndex);
 
-      write_buffer(submesh.vertexBuffer, vertices.data(), 0, verticesSize);
-      write_buffer(submesh.indexBuffer, indices.data(), 0, indicesSize);
+      encoder.writeBuffer(submesh.vertexBuffer, vertices.data(), 0, verticesSize);
+      encoder.writeBuffer(submesh.indexBuffer, indices.data(), 0, indicesSize);
       submesh.indexCount = indices.size();
 
       asset.submeshes.push(std::move(submesh));
@@ -265,7 +266,7 @@ namespace Engine
     return asset;
   }
 
-  StaticMesh AssetsManager::loadGltf(const string& file)
+  StaticMesh AssetsManager::loadGltf(const string& file, gapi::CmdEncoder& encoder)
   {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -283,7 +284,7 @@ namespace Engine
     if (!ret)
       ASSERT(!"asset manager: failed to load asset");
 
-    StaticMesh asset = process_model(model);
+    StaticMesh asset = process_model(model, encoder);
     return asset;
   }
 }

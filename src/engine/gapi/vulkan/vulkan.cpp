@@ -17,12 +17,9 @@ namespace gapi
   extern BufferHandler         (*gapi_allocate_buffer)(const size_t size, const int usage);
   extern void                  (*gapi_free_buffer)(const BufferHandler buffer);
   extern void                  (*gapi_free_texture)(const TextureHandler texture);
-  extern void*                 (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size);
+  extern void*                 (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size, const int flags);
   extern void                  (*gapi_unmap_buffer)(const BufferHandler buffer);
-  extern void                  (*gapi_copy_buffers_sync)(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size);
-  extern void                  (*gapi_write_buffer)(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags);
   extern TextureHandler        (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
-  extern void                  (*gapi_copy_to_texture_sync)(const void* src, const size_t size, const TextureHandler texture);
   extern SamplerHandler        (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
   extern Fence*                (*gapi_ackquire_backbuffer)();
   extern ShaderModuleHandler   (*gapi_add_module)(void* blob);
@@ -66,9 +63,9 @@ namespace gapi::vulkan
     device->freeTexture(texture);
   }
 
-  void* map_buffer(const BufferHandler buffer, const size_t offset, const size_t size)
+  void* map_buffer(const BufferHandler buffer, const size_t offset, const size_t size, const int flags)
   {
-    return device->mapBuffer(buffer, offset, size);
+    return device->mapBuffer(buffer, offset, size, flags);
   }
 
   void unmap_buffer(const BufferHandler buffer)
@@ -76,24 +73,9 @@ namespace gapi::vulkan
     device->unmapBuffer(buffer);
   }
 
-  void copy_buffers_sync(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size)
-  {
-    device->copyBuffersSync(src, srcOffset, dst, dstOffset, size);
-  }
-
-  void write_buffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags)
-  {
-    device->writeBuffer(buffer, src, offset, size, flags);
-  }
-
   TextureHandler allocate_texture(const TextureAllocationDescription& allocDesc)
   {
     return device->allocateTexture(allocDesc);
-  }
-
-  void copy_to_texture_sync(const void* src, const size_t size, const TextureHandler texture)
-  {
-    device->copyToTextureSync(src, size, texture);
   }
 
   SamplerHandler allocate_sampler(const SamplerAllocationDescription& allocDesc)
@@ -149,12 +131,9 @@ namespace gapi::vulkan
     gapi_free_buffer = free_buffer;
     gapi_free_texture = free_texture;
     gapi_allocate_texture = allocate_texture;
-    gapi_copy_to_texture_sync = copy_to_texture_sync;
     gapi_allocate_sampler = allocate_sampler;
     gapi_map_buffer = map_buffer;
     gapi_unmap_buffer = unmap_buffer;
-    gapi_copy_buffers_sync = copy_buffers_sync;
-    gapi_write_buffer = write_buffer;
     gapi_ackquire_backbuffer = ackquire_backbuffer;
     gapi_add_module = add_module;
     gapi_add_pipeline_layout = add_pipeline_layout;

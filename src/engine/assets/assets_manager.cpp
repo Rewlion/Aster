@@ -2,12 +2,14 @@
 
 #include <engine/algorithm/hash.h>
 #include <engine/assert.h>
+#include <engine/gapi/cmd_encoder.h>
 #include <engine/log.h>
 #include <engine/settings.h>
 #include <engine/utils/fs.h>
 
 #include <algorithm>
 #include <filesystem>
+#include <memory>
 
 namespace Engine
 {
@@ -20,18 +22,24 @@ namespace Engine
 
   void AssetsManager::loadAssetsFromFs()
   {
+    std::unique_ptr<gapi::CmdEncoder> encoder{gapi::allocate_cmd_encoder()};
+
     DataBlock* assets = get_app_settings()->getChildBlock("assets");
     for (const DataBlock& asset: assets->getChildBlocks())
     {
       const string assetType = asset.getName();
 
       if (assetType == "texture")
-        loadTextureAsset(asset);
+        loadTextureAsset(asset, *encoder);
       else if (assetType == "static_mesh")
-        loadStaticMesh(asset);
+        loadStaticMesh(asset, *encoder);
       else if (assetType == "model_asset")
         loadModelAsset(asset);
     }
+
+    std::unique_ptr<gapi::Fence> fence{gapi::allocate_fence()};
+    encoder->flush(fence.get());
+    fence->wait();
   }
 
   ModelAsset* AssetsManager::getModel(const string& assetName)
@@ -61,7 +69,7 @@ namespace Engine
     return false;
   }
 
-  void AssetsManager::loadTextureAsset(const DataBlock& asset)
+  void AssetsManager::loadTextureAsset(const DataBlock& asset, gapi::CmdEncoder& encoder)
   {
     const string file = asset.getText("bin");
     const string name = asset.getText("name");
@@ -69,14 +77,14 @@ namespace Engine
     loginfo("asset manager: loading texture: {} as {}", file, name);
     const string_hash nameHash = str_hash(name.c_str());
 
-    TextureAsset textureAsset = loadTexture(file);
+    TextureAsset textureAsset = loadTexture(file, encoder);
       m_Textures.insert({
         nameHash,
         textureAsset
       });
   }
 
-  void AssetsManager::loadStaticMesh(const DataBlock& asset)
+  void AssetsManager::loadStaticMesh(const DataBlock& asset, gapi::CmdEncoder& encoder)
   {
     const string file = asset.getText("bin");
     const string name = asset.getText("name");
@@ -84,7 +92,7 @@ namespace Engine
     loginfo("asset manager: loading static_mesh: {} as {}", file, name);
     const string_hash nameHash = str_hash(name.c_str());
 
-    StaticMesh staticMeshAsset = loadGltf(file);
+    StaticMesh staticMeshAsset = loadGltf(file, encoder);
     m_StaticMeshes.insert({
       nameHash,
       std::move(staticMeshAsset)
