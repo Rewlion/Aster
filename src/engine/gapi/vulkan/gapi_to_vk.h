@@ -329,7 +329,7 @@ namespace gapi::vulkan
       case TextureState::StencilWrite:           return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
       case TextureState::DepthRead:              return vk::AccessFlagBits::eDepthStencilAttachmentRead;
       case TextureState::DepthWrite:             return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
-      case TextureState::RenderTarget:           return vk::AccessFlagBits::eColorAttachmentWrite;
+      case TextureState::RenderTarget:           return vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead;
       case TextureState::ShaderRead:             return vk::AccessFlagBits::eShaderRead;
       case TextureState::Present:                return {};
       case TextureState::TransferDst:            return vk::AccessFlagBits::eTransferWrite;
