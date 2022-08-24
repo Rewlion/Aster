@@ -234,6 +234,7 @@ namespace gapi::vulkan
 
   void CmdEncoder::flush(Fence* signalFence)
   {
+    insureActiveCmd();
     ASSERT(m_RenderPassState.rp == vk::RenderPass{});
     ASSERT(m_CmdBuf != vk::CommandBuffer{});
     VK_CHECK(m_CmdBuf.end());
@@ -243,6 +244,7 @@ namespace gapi::vulkan
     {
       auto f = m_Device.getDevice().createFenceUnique(vk::FenceCreateInfo{});
       VK_CHECK_RES(f);
+      VK_CHECK(m_Device.getDevice().resetFences(1, &f.value.get()));
 
       fence = f.value.get();
       m_FrameGc.addWaitFence(std::move(f.value));
@@ -266,6 +268,7 @@ namespace gapi::vulkan
     vk::Semaphore h = s->semaphore.get();
     m_FrameGc.addSemaphores(std::move(s->semaphore));
     m_Device.presentSurfaceImage(h);
+    delete s;
   }
 
   Semaphore* CmdEncoder::signalSemaphore()
@@ -281,6 +284,7 @@ namespace gapi::vulkan
     VulkanSemaphore* sem = reinterpret_cast<VulkanSemaphore*>(s);
     m_QueuedWaitSemaphores.push_back(sem->semaphore.get());
     m_FrameGc.addSemaphores(std::move(sem->semaphore));
+    delete (s);
   }
 
   void CmdEncoder::bindConstBuffer(const BufferHandler h, const size_t set, const size_t binding)

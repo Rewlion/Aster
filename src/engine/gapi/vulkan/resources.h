@@ -58,8 +58,8 @@ namespace gapi::vulkan
 
   struct Buffer
   {
-    vk::UniqueBuffer buffer;
     vk::UniqueDeviceMemory memory;
+    vk::UniqueBuffer buffer;
     int usage = 0;
 
     size_t blockSize = 0;
@@ -81,9 +81,9 @@ namespace gapi::vulkan
 
   struct Texture
   {
-    vk::UniqueImage img;
-    vk::UniqueDeviceMemory memory;
     vk::UniqueImageView view;
+    vk::UniqueDeviceMemory memory;
+    vk::UniqueImage img;
     vk::Format format;
 
     int3 size = {0,0,0};

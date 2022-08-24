@@ -6,8 +6,12 @@
 
 #include <EASTL/vector.h>
 
+#include <engine/log.h>
+
 namespace gapi::vulkan
 {
+  constexpr size_t GC_FRAMES = SWAPCHAIN_IMAGES_COUNT+1;
+
   class FrameGarbageCollector
   {
     public:
@@ -71,7 +75,7 @@ namespace gapi::vulkan
 
       inline void nextFrame()
       {
-        frameId = (frameId + 1) % SWAPCHAIN_IMAGES_COUNT;
+        frameId = (frameId + 1) % GC_FRAMES;
         {
           auto& waitFences = frameResources[frameId].waitFences;
           if (waitFences.size() > 0)
@@ -107,6 +111,6 @@ namespace gapi::vulkan
 
       Device* device = nullptr;
       size_t frameId = 0;
-      Resources frameResources[SWAPCHAIN_IMAGES_COUNT];
+      Resources frameResources[GC_FRAMES];
   };
 }

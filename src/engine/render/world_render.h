@@ -17,7 +17,7 @@ namespace fg
 
 namespace Engine::Render
 {
-  constexpr size_t FRAMES_COUNT = 2;
+  constexpr size_t FRAMES_COUNT = 3;
 
   namespace blackboard
   {

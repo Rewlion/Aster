@@ -44,8 +44,8 @@ namespace Engine::Render
     m_FrameData.cmdEncoder.reset(gapi::allocate_cmd_encoder());
     m_FrameData.camera = camera;
 
-    gapi::Fence* fence = gapi::ackquire_backbuffer();
-    gapi::wait_fence(fence);
+    gapi::Semaphore* sem = gapi::ackquire_backbuffer();
+    m_FrameData.cmdEncoder->insertSemaphore(sem);
 
     blackboard::Frame& fdata = m_FrameData.blackboard.add<blackboard::Frame>();
     fdata.backbuffer = m_FrameData.fg->importTexture("backbuffer", gapi::get_backbuffer(), gapi::TextureState::Present);

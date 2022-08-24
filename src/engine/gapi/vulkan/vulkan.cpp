@@ -21,7 +21,7 @@ namespace gapi
   extern void                  (*gapi_unmap_buffer)(const BufferHandler buffer);
   extern TextureHandler        (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
   extern SamplerHandler        (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
-  extern Fence*                (*gapi_ackquire_backbuffer)();
+  extern Semaphore*            (*gapi_ackquire_backbuffer)();
   extern ShaderModuleHandler   (*gapi_add_module)(void* blob);
   extern PipelineLayoutHandler (*gapi_add_pipeline_layout)(void* dsets);
   extern gapi::CmdEncoder*     (*gapi_allocate_cmd_encoder)();
@@ -83,9 +83,14 @@ namespace gapi::vulkan
     return device->allocateSampler(allocDesc);
   }
 
-  Fence* ackquire_backbuffer()
+  Semaphore* ackquire_backbuffer()
   {
-    return device->acquireBackbuffer();
+    auto res = device->getDevice().createFenceUnique({});
+    VK_CHECK_RES(res);
+    VK_CHECK(device->getDevice().resetFences(1, &res.value.get()));
+    vk::Fence f = res.value.get();
+    frameGc.addWaitFence(std::move(res.value));
+    return device->acquireBackbuffer(f);
   }
 
   ShaderModuleHandler add_module(void* blob)

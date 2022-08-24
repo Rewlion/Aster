@@ -100,11 +100,12 @@ namespace gapi::vulkan
 
       vk::UniqueSemaphore createSemaphore();
 
-      inline VulkanFence* acquireBackbuffer()
+      inline VulkanSemaphore* acquireBackbuffer(vk::Fence signal_fence)
       {
-        VulkanFence* fence = allocateFence();
-        m_Swapchain.acquireSurfaceImage(fence->fence.get());
-        return fence;
+        VulkanSemaphore* s = new VulkanSemaphore();
+        s->semaphore = createSemaphore();
+        m_Swapchain.acquireSurfaceImage(s->semaphore.get(), signal_fence);
+        return s;
       }
 
       void discardBuffer(Buffer& buffer);

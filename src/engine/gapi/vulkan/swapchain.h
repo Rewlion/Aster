@@ -61,7 +61,7 @@ namespace gapi::vulkan
         return m_SurfaceExtent;
       }
 
-      void acquireSurfaceImage(const vk::Fence fence_to_signal);
+      void acquireSurfaceImage(const vk::Semaphore semaphore_to_signal, const vk::Fence fence_to_signal);
 
     private:
 
