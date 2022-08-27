@@ -78,6 +78,7 @@ namespace Engine::Render
         data.albedo = builder.createTexture("gbuffer_albedo", allocDesc);
         data.albedo = builder.write(data.albedo, gapi::TextureState::RenderTarget);
 
+        allocDesc.format = gapi::TextureFormat::R16G16B16A16_UNORM;
         data.normal = builder.createTexture("gbuffer_normal", allocDesc);
         data.normal = builder.write(data.normal,  gapi::TextureState::RenderTarget);
 
