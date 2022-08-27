@@ -107,6 +107,8 @@ namespace ShadersSystem
       args.push_back(target_profile_to_wtext(target));
       args.push_back(L"-I");
       args.push_back(dir.c_str());
+      args.push_back(L"-Zi");
+      args.push_back(L"-O3");
 
       DxcBuffer dxcSrc;
       dxcSrc.Ptr = pSource->GetBufferPointer();
