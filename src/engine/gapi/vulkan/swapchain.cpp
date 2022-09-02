@@ -56,7 +56,7 @@ namespace gapi::vulkan
 
   vk::SurfaceFormatKHR Swapchain::getSuitableSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) const
   {
-    return { vk::Format::eB8G8R8A8Srgb, vk::ColorSpaceKHR::eSrgbNonlinear };
+    return { vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear };
   }
 
   vk::PresentModeKHR Swapchain::getSwapchainPresentMode(
