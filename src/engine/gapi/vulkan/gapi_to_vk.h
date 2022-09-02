@@ -205,6 +205,9 @@ namespace gapi::vulkan
 
     uint32_t usg = (uint32_t)(usage);
 
+    if (usg & TEX_USAGE_TRANSFER_SRC)
+      bits |= vk::ImageUsageFlagBits::eTransferSrc;
+
     if (usg & TEX_USAGE_DEPTH_STENCIL)
       bits |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
 
@@ -300,6 +303,7 @@ namespace gapi::vulkan
       case TextureState::RenderTarget:       return vk::PipelineStageFlagBits::eColorAttachmentOutput;
       case TextureState::ShaderRead:         return vk::PipelineStageFlagBits::eAllGraphics;
       case TextureState::Present:            return vk::PipelineStageFlagBits::eColorAttachmentOutput;
+      case TextureState::TransferSrc:        return vk::PipelineStageFlagBits::eTransfer;
       case TextureState::TransferDst:        return vk::PipelineStageFlagBits::eTransfer;
       default: ASSERT(!"unsupported stage"); return {};
     }
@@ -321,6 +325,7 @@ namespace gapi::vulkan
       case TextureState::RenderTarget:           return vk::ImageLayout::eColorAttachmentOptimal;
       case TextureState::ShaderRead:             return vk::ImageLayout::eShaderReadOnlyOptimal;
       case TextureState::Present:                return vk::ImageLayout::ePresentSrcKHR;
+      case TextureState::TransferSrc:            return vk::ImageLayout::eTransferSrcOptimal;
       case TextureState::TransferDst:            return vk::ImageLayout::eTransferDstOptimal;
       default: ASSERT(!"unsupported stage");     return {};
     }
@@ -342,6 +347,7 @@ namespace gapi::vulkan
       case TextureState::RenderTarget:           return vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead;
       case TextureState::ShaderRead:             return vk::AccessFlagBits::eShaderRead;
       case TextureState::Present:                return {};
+      case TextureState::TransferSrc:            return vk::AccessFlagBits::eTransferRead;
       case TextureState::TransferDst:            return vk::AccessFlagBits::eTransferWrite;
       default: ASSERT(!"unsupported stage");     return {};
     }
@@ -404,5 +410,27 @@ namespace gapi::vulkan
   inline vk::AttachmentStoreOp get_store_op(const gapi::StoreOp op)
   {
     return static_cast<vk::AttachmentStoreOp>(op);
+  }
+
+  inline vk::ImageSubresourceLayers get_image_subresource_layers(const TextureSubresourceLayers& l)
+  {
+    return vk::ImageSubresourceLayers(vk::ImageAspectFlags(l.aspects), l.mipLevel, l.baseArrayLayer, l.layerCount);
+  }
+
+  inline vk::Offset3D get_offset3d(const int3 offset)
+  {
+    return vk::Offset3D(offset.x, offset.y, offset.z);
+  }
+
+  inline vk::ImageBlit get_image_blit(const TextureBlit& region)
+  {
+    vk::ImageBlit blit;
+    blit.srcSubresource = get_image_subresource_layers(region.srcSubresource);
+    blit.srcOffsets[0] = get_offset3d(region.srcOffsets[0]);
+    blit.srcOffsets[1] = get_offset3d(region.srcOffsets[1]);
+    blit.dstSubresource = get_image_subresource_layers(region.dstSubresource);
+    blit.dstOffsets[0] = get_offset3d(region.dstOffsets[0]);
+    blit.dstOffsets[1] = get_offset3d(region.dstOffsets[1]);
+    return blit;
   }
 }

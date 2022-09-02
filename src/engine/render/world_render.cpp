@@ -101,21 +101,27 @@ namespace Engine::Render
       }
     );
 
-    m_FrameData.fg->addCallbackPass(
+    m_FrameData.blackboard.add<blackboard::FinalFrame>() = m_FrameData.fg->addCallbackPass<blackboard::FinalFrame>(
       "gbuffer_resolve",
-      [&](fg::RenderPassBuilder& builder){
-        blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
-        blackboard::Frame& fdata = m_FrameData.blackboard.get<blackboard::Frame>();
+      [&](fg::RenderPassBuilder& builder, blackboard::FinalFrame& final_frame){
+        gapi::TextureAllocationDescription allocDesc;
+        allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
+        allocDesc.extent = int3{m_WindowSize.x, m_WindowSize.y, 1};
+        allocDesc.mipLevels = 1;
+        allocDesc.arrayLayers = 1;
+        allocDesc.usage = gapi::TEX_USAGE_RT|gapi::TEX_USAGE_TRANSFER_SRC;
+        final_frame.finalRt = builder.createTexture("final_frame", allocDesc);
+        final_frame.finalRt = builder.write(final_frame.finalRt, gapi::TextureState::RenderTarget);
 
+        blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
         builder.read(gbuffer.albedo, gapi::TextureState::ShaderRead);
         builder.read(gbuffer.normal,  gapi::TextureState::ShaderRead);
         builder.read(gbuffer.metalRoughness, gapi::TextureState::ShaderRead);
         builder.read(gbuffer.worldPos, gapi::TextureState::ShaderRead);
-        builder.read(fdata.backbuffer, gapi::TextureState::RenderTarget);
 
-        builder.addRenderTarget(fdata.backbuffer, gapi::LoadOp::Load, gapi::StoreOp::Store);
+        builder.addRenderTarget(final_frame.finalRt, gapi::LoadOp::Load, gapi::StoreOp::Store);
       },
-      [this](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
+      [this](const blackboard::FinalFrame& final_frame, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
         blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
 
         const gapi::TextureHandler albedo = resources.getTexture(gbuffer.albedo);
@@ -127,10 +133,42 @@ namespace Engine::Render
       }
     );
 
+    m_FrameData.fg->addCallbackPass(
+      "present",
+      [&](fg::RenderPassBuilder& builder) {
+        auto& finalFrame = m_FrameData.blackboard.get<blackboard::FinalFrame>();
+        auto& frame = m_FrameData.blackboard.get<blackboard::Frame>();
+        builder.read(finalFrame.finalRt, gapi::TextureState::TransferSrc);
+        frame.backbuffer = builder.write(frame.backbuffer, gapi::TextureState::TransferDst);
+      },
+      [&](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
+        const auto& finalFrame = m_FrameData.blackboard.get<blackboard::FinalFrame>();
+        const auto& frame = m_FrameData.blackboard.get<blackboard::Frame>();
+        gapi::TextureHandler rt = resources.getTexture(finalFrame.finalRt);
+        gapi::TextureHandler bb = resources.getTexture(frame.backbuffer);
+
+        const auto region = gapi::TextureSubresourceLayers{
+          .aspects = gapi::ASPECT_COLOR,
+          .mipLevel = 0,
+          .baseArrayLayer = 0,
+          .layerCount = 1
+        };
+
+        const auto blit = gapi::TextureBlit{
+          .srcSubresource = region,
+          .srcOffsets = {int3{0,0,0}, int3{m_WindowSize.x, m_WindowSize.y ,1}},
+          .dstSubresource = region,
+          .dstOffsets = {int3{0,0,0}, int3{m_WindowSize.x, m_WindowSize.y ,1}},
+        };
+
+        encoder.blitTexture(rt, bb, 1, &blit, gapi::ImageFilter::Nearest);
+        encoder.transitTextureState(bb, gapi::TextureState::TransferDst, gapi::TextureState::Present);
+      }
+    );
+
     m_FrameData.fg->compile();
     m_FrameData.fg->execute(*m_FrameData.cmdEncoder);
 
-    m_FrameData.cmdEncoder->transitTextureState(gapi::get_backbuffer(), gapi::TextureState::RenderTarget, gapi::TextureState::Present);
     gapi::Semaphore* sem = m_FrameData.cmdEncoder->signalSemaphore();
     m_FrameData.cmdEncoder->flush();
     m_FrameData.cmdEncoder->present(sem);

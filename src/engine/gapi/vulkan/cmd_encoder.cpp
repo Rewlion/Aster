@@ -398,4 +398,24 @@ namespace gapi::vulkan
                                vk::ImageLayout::eTransferDstOptimal, 1, &copyDesc);
     m_FrameGc.addBuffer(std::move(staging));
   }
+
+  void CmdEncoder::blitTexture(const TextureHandler src, const TextureHandler dst, const uint32_t regions_count, const TextureBlit* regions, const ImageFilter filter)
+  {
+    ASSERT(regions_count > 0);
+    insureActiveCmd();
+
+    const vk::Image srcImg = m_Device.getImage(src);
+    const vk::Image dstImg = m_Device.getImage(dst);
+
+    eastl::vector<vk::ImageBlit> blits;
+    blits.reserve(regions_count);
+
+    for (size_t i = 0; i < regions_count; ++i)
+    {
+      const TextureBlit& r = regions[i];
+      blits.push_back(get_image_blit(r));
+    }
+
+    m_CmdBuf.blitImage(srcImg, vk::ImageLayout::eTransferSrcOptimal, dstImg, vk::ImageLayout::eTransferDstOptimal, regions_count, blits.data(), get_filter(filter));
+  }
 }

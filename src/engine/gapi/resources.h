@@ -290,7 +290,8 @@ namespace gapi
     TEX_USAGE_NONE          = 0,
     TEX_USAGE_UNIFORM       = 1,
     TEX_USAGE_DEPTH_STENCIL = 1 << 2,
-    TEX_USAGE_RT            = 1 << 3
+    TEX_USAGE_RT            = 1 << 3,
+    TEX_USAGE_TRANSFER_SRC  = 1 << 4
   };
 
   enum class TextureFormat: uint32_t
@@ -388,6 +389,7 @@ namespace gapi
     ShaderRead,
     RenderTarget,
     Present,
+    TransferSrc,
     TransferDst
   };
 
@@ -439,6 +441,32 @@ namespace gapi
     {
       return !(*this == rvl);
     }
+  };
+
+  enum AspectColor
+  {
+    ASPECT_COLOR = 1,
+    ASPECT_DEPTH = 2,
+    ASPECT_STENCIL = 4,
+
+    ASPECT_DEPTH_STENCIL = ASPECT_DEPTH | ASPECT_STENCIL,
+    ASPECT_ALL = ASPECT_COLOR | ASPECT_DEPTH | ASPECT_STENCIL
+  };
+
+  struct TextureSubresourceLayers
+  {
+    uint32_t aspects;
+    uint32_t mipLevel;
+    uint32_t baseArrayLayer;
+    uint32_t layerCount;
+  };
+
+  struct TextureBlit
+  {
+    TextureSubresourceLayers srcSubresource;
+    int3                     srcOffsets[2];
+    TextureSubresourceLayers dstSubresource;
+    int3                     dstOffsets[2];
   };
 
   using RenderTargets = Utils::FixedStack<RenderPassAttachment, MAX_RENDER_TARGETS>;

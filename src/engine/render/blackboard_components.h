@@ -13,6 +13,11 @@ namespace Engine::Render::blackboard
     fg::VirtualResourceHandle worldPos;
   };
 
+  struct FinalFrame
+  {
+    fg::VirtualResourceHandle finalRt;
+  };
+
   struct Frame
   {
     fg::VirtualResourceHandle backbuffer;

@@ -41,7 +41,7 @@ namespace gapi::vulkan
           .setImageColorSpace(surfaceFormat.colorSpace)
           .setImageExtent(surfaceExtent)
           .setImageArrayLayers(1)
-          .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
+          .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst)
           .setPreTransform(ci.surfaceCapabilities.currentTransform)
           .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
           .setPresentMode(swapchainPresentMode)
