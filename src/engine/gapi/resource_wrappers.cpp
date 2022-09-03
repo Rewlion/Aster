@@ -2,7 +2,7 @@
 
 namespace gapi
 {
-  TextureWrapper::TextureWrapper(const TextureHandler h)
+  TextureWrapper::TextureWrapper(const TextureHandle h)
     : m_Handle(h)
   {
   }
@@ -11,15 +11,15 @@ namespace gapi
     : m_Handle(rvl.m_Handle)
   {
     this->~TextureWrapper();
-    rvl.m_Handle = TextureHandler::Invalid;
+    rvl.m_Handle = TextureHandle::Invalid;
   }
 
   TextureWrapper::~TextureWrapper()
   {
-    if (m_Handle != TextureHandler::Invalid)
+    if (m_Handle != TextureHandle::Invalid)
     {
       free_resource(m_Handle);
-      m_Handle = TextureHandler::Invalid;
+      m_Handle = TextureHandle::Invalid;
     }
   }
 

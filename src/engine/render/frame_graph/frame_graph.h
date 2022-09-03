@@ -36,7 +36,7 @@ namespace fg
       void compile();
       void execute(gapi::CmdEncoder& encoder);
 
-      VirtualResourceHandle importTexture(const std::string_view name, gapi::TextureHandler h, const gapi::TextureState current_state);
+      VirtualResourceHandle importTexture(const std::string_view name, gapi::TextureHandle h, const gapi::TextureState current_state);
 
     private:
       template<class Data, class SetupCallback, class ExecCallback>

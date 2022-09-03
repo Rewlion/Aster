@@ -38,7 +38,7 @@ namespace Engine
 
   struct TextureAsset
   {
-    gapi::TextureHandler texture;
+    gapi::TextureHandle texture;
   };
 
   enum class AssetHandler: uint64_t { Invalid = uint64_t(~0) };

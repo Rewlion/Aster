@@ -67,7 +67,7 @@ namespace gapi::vulkan
       hash_combine(hash, rtHash);
     }
 
-    if (depthStencil.texture !=  TextureHandler::Invalid)
+    if (depthStencil.texture !=  TextureHandle::Invalid)
     {
       size_t rtHash = hashDepthStencilAttachment(depthStencil);
       hash_combine(hash, rtHash);
@@ -105,7 +105,7 @@ namespace gapi::vulkan
       logerror("BeginRenderPassCmd: render targets count: 0");
 
     size_t depthStencilId = -1;
-    if (depthStencil.texture !=  TextureHandler::Invalid)
+    if (depthStencil.texture !=  TextureHandle::Invalid)
     {
       depthStencilId = attachmentsCount++;
 
@@ -130,7 +130,7 @@ namespace gapi::vulkan
     subpassDesc.colorAttachmentCount = rtCount;
     subpassDesc.pColorAttachments = attachmentsRef.getData();
 
-    if (depthStencil.texture !=  TextureHandler::Invalid)
+    if (depthStencil.texture !=  TextureHandle::Invalid)
       subpassDesc.pDepthStencilAttachment = &attachmentsRef.getLast();
 
     auto rpCi = vk::RenderPassCreateInfo{};

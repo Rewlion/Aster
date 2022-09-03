@@ -15,7 +15,7 @@ namespace Engine::Render
     public:
       using Resource = std::variant<
         gapi::BufferHandler,
-        gapi::TextureHandler>;
+        gapi::TextureHandle>;
 
     public:
       template<class T>

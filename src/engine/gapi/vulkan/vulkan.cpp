@@ -13,13 +13,13 @@
 
 namespace gapi
 {
-  extern TextureHandler        (*gapi_get_backbuffer)();
+  extern TextureHandle        (*gapi_get_backbuffer)();
   extern BufferHandler         (*gapi_allocate_buffer)(const size_t size, const int usage);
   extern void                  (*gapi_free_buffer)(const BufferHandler buffer);
-  extern void                  (*gapi_free_texture)(const TextureHandler texture);
+  extern void                  (*gapi_free_texture)(const TextureHandle texture);
   extern void*                 (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size, const int flags);
   extern void                  (*gapi_unmap_buffer)(const BufferHandler buffer);
-  extern TextureHandler        (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
+  extern TextureHandle        (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
   extern SamplerHandler        (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
   extern Semaphore*            (*gapi_ackquire_backbuffer)();
   extern ShaderModuleHandler   (*gapi_add_module)(void* blob);
@@ -43,7 +43,7 @@ namespace gapi::vulkan
     return device->getDevice();
   }
 
-  TextureHandler get_backbuffer()
+  TextureHandle get_backbuffer()
   {
     return device->getBackbuffer();
   }
@@ -58,7 +58,7 @@ namespace gapi::vulkan
     device->freeBuffer(buffer);
   }
 
-  void free_texture(const TextureHandler texture)
+  void free_texture(const TextureHandle texture)
   {
     device->freeTexture(texture);
   }
@@ -73,7 +73,7 @@ namespace gapi::vulkan
     device->unmapBuffer(buffer);
   }
 
-  TextureHandler allocate_texture(const TextureAllocationDescription& allocDesc)
+  TextureHandle allocate_texture(const TextureAllocationDescription& allocDesc)
   {
     return device->allocateTexture(allocDesc);
   }

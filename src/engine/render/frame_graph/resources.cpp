@@ -6,7 +6,7 @@ namespace fg
 {
   TextureResource::TextureResource(const std::string_view name,
                     const gapi::TextureAllocationDescription& alloc_desc,
-                    const gapi::TextureHandler h,
+                    const gapi::TextureHandle h,
                     const gapi::TextureState current_state,
                     const bool is_imported)
     : name(name)
@@ -25,7 +25,7 @@ namespace fg
     , isImported(rvl.isImported)
   {
     this->~TextureResource();
-    rvl.handle = gapi::TextureHandler::Invalid;
+    rvl.handle = gapi::TextureHandle::Invalid;
   }
 
   TextureResource& TextureResource::operator=(TextureResource&& rvl)
@@ -38,7 +38,7 @@ namespace fg
     currentState = rvl.currentState;
     isImported = rvl.isImported;
 
-    rvl.handle = gapi::TextureHandler::Invalid;
+    rvl.handle = gapi::TextureHandle::Invalid;
     return *this;
   }
 
@@ -49,10 +49,10 @@ namespace fg
 
   TextureResource::~TextureResource()
   {
-    if (!isImported && handle != gapi::TextureHandler::Invalid)
+    if (!isImported && handle != gapi::TextureHandle::Invalid)
     {
       gapi::free_resource(handle);
-      handle = gapi::TextureHandler::Invalid;
+      handle = gapi::TextureHandle::Invalid;
     }
   }
 

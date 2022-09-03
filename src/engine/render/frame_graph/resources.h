@@ -20,10 +20,10 @@ namespace fg
   struct TextureResourceView
   {
     const std::string_view& name;
-    const gapi::TextureHandler& handle;
+    const gapi::TextureHandle& handle;
     const gapi::TextureAllocationDescription& desc;
 
-    inline operator gapi::TextureHandler() const
+    inline operator gapi::TextureHandle() const
     {
       return handle;
     }
@@ -33,7 +33,7 @@ namespace fg
   {
     TextureResource(const std::string_view name,
                     const gapi::TextureAllocationDescription& alloc_desc,
-                    const gapi::TextureHandler h,
+                    const gapi::TextureHandle h,
                     const gapi::TextureState current_state,
                     const bool is_imported);
     TextureResource(TextureResource&& rvl);
@@ -46,7 +46,7 @@ namespace fg
 
     std::string_view name;
     gapi::TextureAllocationDescription allocDesc;
-    gapi::TextureHandler handle;
+    gapi::TextureHandle handle;
     gapi::TextureState currentState;
     bool isImported;
   };

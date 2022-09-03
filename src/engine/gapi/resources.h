@@ -12,7 +12,7 @@ namespace gapi
 
   using ResourceHandler = uint64_t;
   constexpr ResourceHandler INVALID_RESOURCE_HANDLER = -1;
-  enum class TextureHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
+  enum class TextureHandle: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
   enum class SamplerHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
   enum class BufferHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
   enum class DepthStencilStateHandler: ResourceHandler { Invalid = INVALID_RESOURCE_HANDLER };
@@ -83,14 +83,14 @@ namespace gapi
 
   struct ColorAttachment
   {
-    TextureHandler texture = TextureHandler::Invalid;
+    TextureHandle texture = TextureHandle::Invalid;
     TextureLoadOp  loadOp  = TextureLoadOp::DontCare;
     TextureStoreOp storeOp = TextureStoreOp::DontCare;
   };
 
   struct DepthStencilAttachment
   {
-    TextureHandler texture        = TextureHandler::Invalid;
+    TextureHandle texture        = TextureHandle::Invalid;
     TextureLoadOp  depthLoadOp    = TextureLoadOp::DontCare;
     TextureStoreOp depthStoreOp   = TextureStoreOp::DontCare;
     TextureLoadOp  stencilLoadOp  = TextureLoadOp::DontCare;
@@ -396,7 +396,7 @@ namespace gapi
 
   struct RenderPassAttachment
   {
-    TextureHandler texture    = TextureHandler::Invalid;
+    TextureHandle texture    = TextureHandle::Invalid;
     TextureState initialState = TextureState::Undefined;
     TextureState finalState   = TextureState::Undefined;
     LoadOp loadOp             = LoadOp::DontCare;
@@ -419,7 +419,7 @@ namespace gapi
 
   struct RenderPassDepthStencilAttachment
   {
-    TextureHandler texture    = TextureHandler::Invalid;
+    TextureHandle texture    = TextureHandle::Invalid;
     TextureState initialState = TextureState::Undefined;
     TextureState finalState   = TextureState::Undefined;
     LoadOp depthLoadOp        = LoadOp::DontCare;

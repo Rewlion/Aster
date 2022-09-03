@@ -93,7 +93,7 @@ namespace tfx
         gapi::ResourceHandler getResource(const ShadersSystem::ShBindResource& bc)
         {
           const auto isValidType = [](const auto& res, const ShadersSystem::ResourceType type) {
-            return std::holds_alternative<gapi::TextureHandler>(res) && (type == ShadersSystem::ResourceType::Texture2D) ||
+            return std::holds_alternative<gapi::TextureHandle>(res) && (type == ShadersSystem::ResourceType::Texture2D) ||
                    std::holds_alternative<gapi::SamplerHandler>(res) && (type == ShadersSystem::ResourceType::Sampler);
           };
 
@@ -109,7 +109,7 @@ namespace tfx
               }
               case ShadersSystem::ResourceType::Texture2D:
               {
-                const auto h = std::get<gapi::TextureHandler>(resource);
+                const auto h = std::get<gapi::TextureHandle>(resource);
                 return (gapi::ResourceHandler)h;
               }
               default:
@@ -135,7 +135,7 @@ namespace tfx
             }
             case ShadersSystem::ResourceType::Texture2D:
             {
-              m_CmdEncoder->bindTexture((gapi::TextureHandler)h, bc.dset, bc.binding);
+              m_CmdEncoder->bindTexture((gapi::TextureHandle)h, bc.dset, bc.binding);
               break;
             }
             default:

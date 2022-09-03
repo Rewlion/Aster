@@ -51,8 +51,8 @@ namespace Engine::Render
       void renderOpaque(gapi::CmdEncoder& encoder);
       void renderScene(gapi::CmdEncoder& encoder);
       void resolveGbuffer(gapi::CmdEncoder& encoder,
-                          const gapi::TextureHandler albedo, const gapi::TextureHandler normal,
-                          const gapi::TextureHandler worldPos, const gapi::TextureHandler metalRoughness);
+                          const gapi::TextureHandle albedo, const gapi::TextureHandle normal,
+                          const gapi::TextureHandle worldPos, const gapi::TextureHandle metalRoughness);
     private:
       size_t m_FrameId = 0;
       fg::FrameGraph m_FrameGraphs[FRAMES_COUNT];
@@ -62,7 +62,7 @@ namespace Engine::Render
       int2 m_WindowSize;
       float m_Aspect;
 
-      gapi::TextureHandler m_RtDepth;
+      gapi::TextureHandle m_RtDepth;
   };
 
   extern WorldRender world_render;

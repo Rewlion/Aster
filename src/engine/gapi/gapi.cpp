@@ -6,15 +6,15 @@
 
 namespace gapi
 {
-  TextureHandler           (*gapi_get_backbuffer)();
+  TextureHandle           (*gapi_get_backbuffer)();
   DepthStencilStateHandler (*gapi_create_depth_stencil_state)(const DepthStencilStateDescription& desc);
   BufferHandler            (*gapi_allocate_buffer)(const size_t size, const int usage);
   void                     (*gapi_free_buffer)(const BufferHandler buffer);
-  void                     (*gapi_free_texture)(const TextureHandler texture);
+  void                     (*gapi_free_texture)(const TextureHandle texture);
   void*                    (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size, const int flags);
   void                     (*gapi_unmap_buffer)(const BufferHandler buffer);
-  TextureHandler           (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
-  void                     (*gapi_bind_texture)(const TextureHandler texture, const size_t set, const size_t binding);
+  TextureHandle           (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
+  void                     (*gapi_bind_texture)(const TextureHandle texture, const size_t set, const size_t binding);
   SamplerHandler           (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
   Semaphore*               (*gapi_ackquire_backbuffer)();
   ShaderModuleHandler      (*gapi_add_module)(void* blob);
@@ -33,7 +33,7 @@ namespace gapi
       ASSERT(!"unknown graphics api");
   }
 
-  TextureHandler get_backbuffer()
+  TextureHandle get_backbuffer()
   {
     return gapi_get_backbuffer();
   }
@@ -58,7 +58,7 @@ namespace gapi
     return gapi_unmap_buffer(buffer);
   }
 
-  TextureHandler allocate_texture(const TextureAllocationDescription& allocDesc)
+  TextureHandle allocate_texture(const TextureAllocationDescription& allocDesc)
   {
     return gapi_allocate_texture(allocDesc);
   }
@@ -73,12 +73,12 @@ namespace gapi
     gapi_free_buffer(buffer);
   }
 
-  void free_texture(const TextureHandler texture)
+  void free_texture(const TextureHandle texture)
   {
     gapi_free_texture(texture);
   }
 
-  void free_resource(const TextureHandler texture)
+  void free_resource(const TextureHandle texture)
   {
     gapi_free_texture(texture);
   }

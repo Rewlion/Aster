@@ -32,7 +32,7 @@ namespace gapi
 
       virtual void bindConstBuffer(const BufferHandler buffer, const size_t set, const size_t binding) = 0;
 
-      virtual void bindTexture(const TextureHandler texture, const size_t set, const size_t binding) = 0;
+      virtual void bindTexture(const TextureHandle texture, const size_t set, const size_t binding) = 0;
 
       virtual void bindSampler(const SamplerHandler sampler, const size_t set, const size_t binding) = 0;
 
@@ -44,7 +44,7 @@ namespace gapi
 
       virtual void insertSemaphore(Semaphore* s) = 0;
 
-      virtual void transitTextureState(const TextureHandler texture,
+      virtual void transitTextureState(const TextureHandle texture,
                                        const TextureState oldState, const TextureState newState,
                                        const uint32_t firstMipLevel = 0, const uint32_t mipLevelsCount = ~(0),
                                        const uint32_t firstArraySlice = 0, const uint32_t arraySliceCount = ~(0)) = 0;
@@ -52,8 +52,8 @@ namespace gapi
       virtual void updateResources() = 0;
 
       virtual void writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags = 0) = 0;
-      virtual void copyBufferToTexture(const TextureHandler texture, const void* src, const size_t size) = 0;
+      virtual void copyBufferToTexture(const TextureHandle texture, const void* src, const size_t size) = 0;
 
-      virtual void blitTexture(const TextureHandler src, const TextureHandler dst, const uint32_t regions_count, const TextureBlit* regions, const ImageFilter filter) = 0;
+      virtual void blitTexture(const TextureHandle src, const TextureHandle dst, const uint32_t regions_count, const TextureBlit* regions, const ImageFilter filter) = 0;
   };
 }

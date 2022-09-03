@@ -49,16 +49,16 @@ namespace gapi::vulkan
       virtual Semaphore* signalSemaphore() override;
       virtual void insertSemaphore(Semaphore* s) override;
       virtual void bindConstBuffer(const BufferHandler buffer, const size_t set, const size_t binding) override;
-      virtual void bindTexture(const TextureHandler texture, const size_t set, const size_t binding) override;
+      virtual void bindTexture(const TextureHandle texture, const size_t set, const size_t binding) override;
       virtual void bindSampler(const SamplerHandler sampler, const size_t set, const size_t binding) override;
-      virtual void transitTextureState(const TextureHandler texture,
+      virtual void transitTextureState(const TextureHandle texture,
                                        const TextureState oldState, const TextureState newState,
                                        const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
                                        const uint32_t firstArraySlice, const uint32_t arraySliceCount) override;
       virtual void updateResources() override;
       virtual void writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags) override;
-      virtual void copyBufferToTexture(const TextureHandler texture, const void* src, const size_t size) override;
-      virtual void blitTexture(const TextureHandler src, const TextureHandler dst, const uint32_t regions_count, const TextureBlit* regions, const ImageFilter filter) override;
+      virtual void copyBufferToTexture(const TextureHandle texture, const void* src, const size_t size) override;
+      virtual void blitTexture(const TextureHandle src, const TextureHandle dst, const uint32_t regions_count, const TextureBlit* regions, const ImageFilter filter) override;
     private:
       vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) const;
       vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil);

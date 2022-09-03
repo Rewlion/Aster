@@ -91,7 +91,7 @@ namespace gapi::vulkan
     return allocateCmdBuffer(*m_TransferCmdPool);
   }
 
-  vk::Format Device::getTextureFormat(const TextureHandler handler)
+  vk::Format Device::getTextureFormat(const TextureHandle handler)
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
@@ -104,7 +104,7 @@ namespace gapi::vulkan
     return vk::Format::eUndefined;
   }
 
-  vk::ImageView Device::getImageView(const TextureHandler handler)
+  vk::ImageView Device::getImageView(const TextureHandle handler)
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
@@ -120,7 +120,7 @@ namespace gapi::vulkan
     return vk::ImageView{};
   }
 
-  vk::Image Device::getImage(const TextureHandler handler)
+  vk::Image Device::getImage(const TextureHandle handler)
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type == (uint64_t)TextureType::Allocated)
@@ -133,7 +133,7 @@ namespace gapi::vulkan
     return {};
   }
 
-  vk::Extent3D Device::getImageDim(const TextureHandler handler)
+  vk::Extent3D Device::getImageDim(const TextureHandle handler)
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
@@ -365,7 +365,7 @@ namespace gapi::vulkan
     return const_cast<Device*>(this)->getBuffer(buffer);
   }
 
-  TextureHandler Device::allocateTexture(const TextureAllocationDescription& allocDesc)
+  TextureHandle Device::allocateTexture(const TextureAllocationDescription& allocDesc)
   {
     Texture resource;
     resource.size = allocDesc.extent;
@@ -437,7 +437,7 @@ namespace gapi::vulkan
     return handler;
   }
 
-  void Device::freeTexture(const TextureHandler texture)
+  void Device::freeTexture(const TextureHandle texture)
   {
     TextureHandlerInternal handler;
     handler.as.handler = uint64_t(texture);
@@ -507,7 +507,7 @@ namespace gapi::vulkan
     return std::move(sem.value);
   }
 
-  Texture& Device::getAllocatedTexture(const TextureHandler texture)
+  Texture& Device::getAllocatedTexture(const TextureHandle texture)
   {
     TextureHandlerInternal handler;
     handler.as.handler = uint64_t(texture);

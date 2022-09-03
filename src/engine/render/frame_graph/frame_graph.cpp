@@ -155,7 +155,7 @@ namespace fg
     return nh;
   }
 
-  VirtualResourceHandle FrameGraph::importTexture(const std::string_view name, gapi::TextureHandler h, const gapi::TextureState current_state)
+  VirtualResourceHandle FrameGraph::importTexture(const std::string_view name, gapi::TextureHandle h, const gapi::TextureState current_state)
   {
     const ResourceHandle resId = (ResourceHandle)m_Resources.size();
     m_Resources.push_back(TextureResource{
@@ -183,7 +183,7 @@ namespace fg
     m_Resources.push_back(TextureResource{
       name,
       desc,
-      gapi::TextureHandler::Invalid,
+      gapi::TextureHandle::Invalid,
       gapi::TextureState::Undefined,
       false
     });

@@ -66,7 +66,7 @@ namespace gapi::vulkan
     vk::Extent2D min = {(uint32_t)~(0), (uint32_t)~(0)};
     for(const auto& rt: renderTargets)
     {
-      if (rt.texture != TextureHandler::Invalid)
+      if (rt.texture != TextureHandle::Invalid)
       {
         vk::Extent3D dim = m_Device.getImageDim(rt.texture);
         min.width  = dim.width  < min.width  ? dim.width  : min.width;
@@ -74,7 +74,7 @@ namespace gapi::vulkan
       }
     }
 
-    if ((min != vk::Extent2D{0,0}) && (depthStencil.texture != TextureHandler::Invalid))
+    if ((min != vk::Extent2D{0,0}) && (depthStencil.texture != TextureHandle::Invalid))
     {
       vk::Extent3D dim = m_Device.getImageDim(depthStencil.texture);
       min.width  = dim.width  < min.width  ? dim.width  : min.width;
@@ -106,7 +106,7 @@ namespace gapi::vulkan
     for(const auto& rt: renderTargets)
       attachments.push(m_Device.getImageView(rt.texture));
 
-    if (depthStencil.texture != TextureHandler::Invalid)
+    if (depthStencil.texture != TextureHandle::Invalid)
       attachments.push(m_Device.getImageView(depthStencil.texture));
 
     auto fbCi = vk::FramebufferCreateInfo();
@@ -296,9 +296,9 @@ namespace gapi::vulkan
     }
   }
 
-  void CmdEncoder::bindTexture(const TextureHandler texture, const size_t set, const size_t binding)
+  void CmdEncoder::bindTexture(const TextureHandle texture, const size_t set, const size_t binding)
   {
-    if (texture != TextureHandler::Invalid)
+    if (texture != TextureHandle::Invalid)
     {
       vk::ImageView imgView = m_Device.getImageView(texture);
       m_DsetManager.setImage(imgView, set, binding);
@@ -314,7 +314,7 @@ namespace gapi::vulkan
     }
   }
 
-  void CmdEncoder::transitTextureState(const TextureHandler texture,
+  void CmdEncoder::transitTextureState(const TextureHandle texture,
                                        const TextureState oldState, const TextureState newState,
                                        const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
                                        const uint32_t firstArraySlice, const uint32_t arraySliceCount)
@@ -377,7 +377,7 @@ namespace gapi::vulkan
     m_FrameGc.addBuffer(std::move(staging));
   }
 
-  void CmdEncoder::copyBufferToTexture(const TextureHandler texture, const void* src, const size_t size)
+  void CmdEncoder::copyBufferToTexture(const TextureHandle texture, const void* src, const size_t size)
   {
     insureActiveCmd();
     Texture& t = m_Device.getAllocatedTexture(texture);
@@ -399,7 +399,7 @@ namespace gapi::vulkan
     m_FrameGc.addBuffer(std::move(staging));
   }
 
-  void CmdEncoder::blitTexture(const TextureHandler src, const TextureHandler dst, const uint32_t regions_count, const TextureBlit* regions, const ImageFilter filter)
+  void CmdEncoder::blitTexture(const TextureHandle src, const TextureHandle dst, const uint32_t regions_count, const TextureBlit* regions, const ImageFilter filter)
   {
     ASSERT(regions_count > 0);
     insureActiveCmd();

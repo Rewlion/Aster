@@ -13,7 +13,7 @@ namespace tfx
       int,int2,int3,int4,
       float,float2,float3,float4,
       float4x4,
-      gapi::TextureHandler,
+      gapi::TextureHandle,
       gapi::BufferHandler,
       gapi::SamplerHandler> Param;
 

@@ -28,14 +28,14 @@ namespace gapi::vulkan
       as.handler = 0;
     }
 
-    TextureHandlerInternal(const TextureHandler handler)
+    TextureHandlerInternal(const TextureHandle handler)
     {
       as.handler = (uint64_t)handler;
     }
 
-    operator TextureHandler()
+    operator TextureHandle()
     {
-      return (TextureHandler)as.handler;
+      return (TextureHandle)as.handler;
     }
 
     union

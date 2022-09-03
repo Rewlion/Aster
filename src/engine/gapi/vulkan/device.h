@@ -47,7 +47,7 @@ namespace gapi::vulkan
       const Device& operator=(const Device& rvl) = delete;
 
       inline uint8_t getBackbufferId() const { return m_Swapchain.getBackbufferId(); }
-      inline TextureHandler getBackbuffer() const
+      inline TextureHandle getBackbuffer() const
       {
         TextureHandlerInternal h;
         h.as.typed.id = getBackbufferId();
@@ -60,13 +60,13 @@ namespace gapi::vulkan
 
       vk::CommandBuffer allocateGraphicsCmdBuffer();
 
-      vk::Format getTextureFormat(const TextureHandler handler);
+      vk::Format getTextureFormat(const TextureHandle handler);
 
-      vk::ImageView getImageView(const TextureHandler handler);
+      vk::ImageView getImageView(const TextureHandle handler);
 
-      vk::Image getImage(const TextureHandler handler);
+      vk::Image getImage(const TextureHandle handler);
 
-      vk::Extent3D getImageDim(const TextureHandler handler);
+      vk::Extent3D getImageDim(const TextureHandle handler);
 
       void submitGraphicsCmds(vk::CommandBuffer* cmdBuf, const size_t count,
                               const vk::Semaphore* waitSemaphores, const size_t waitSemaphoresCount,
@@ -86,8 +86,8 @@ namespace gapi::vulkan
       Buffer& getBuffer(const BufferHandler buffer);
       const Buffer& getBuffer(const BufferHandler buffer) const;
 
-      TextureHandler allocateTexture(const TextureAllocationDescription& allocDesc);
-      void freeTexture(const TextureHandler texture);
+      TextureHandle allocateTexture(const TextureAllocationDescription& allocDesc);
+      void freeTexture(const TextureHandle texture);
 
       SamplerHandler allocateSampler(const SamplerAllocationDescription& allocDesc);
 
@@ -110,7 +110,7 @@ namespace gapi::vulkan
 
       void discardBuffer(Buffer& buffer);
       Buffer* getAllocatedBuffer(const BufferHandler handler);
-      Texture& getAllocatedTexture(const TextureHandler texture);
+      Texture& getAllocatedTexture(const TextureHandle texture);
 
       Buffer allocateBufferInternal(const size_t size, const int usage);
       Buffer allocateStagingBuffer(const void* src, const size_t size);

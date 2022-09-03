@@ -7,16 +7,16 @@ namespace gapi
   class TextureWrapper
   {
     public:
-      TextureWrapper(const TextureHandler h);
+      TextureWrapper(const TextureHandle h);
       TextureWrapper(TextureWrapper&& rvl);
       ~TextureWrapper();
 
       const TextureWrapper& operator=(const TextureWrapper&) = delete;
       TextureWrapper& operator=(TextureWrapper&&);
-      inline operator TextureHandler() const { return m_Handle; }
+      inline operator TextureHandle() const { return m_Handle; }
 
     private:
-      gapi::TextureHandler m_Handle;
+      gapi::TextureHandle m_Handle;
   };
 
   class BufferWrapper

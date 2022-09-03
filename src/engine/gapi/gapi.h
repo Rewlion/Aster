@@ -7,15 +7,15 @@ namespace gapi
   class CmdEncoder;
 
   void                     init();
-  TextureHandler           get_backbuffer();
+  TextureHandle           get_backbuffer();
   DepthStencilStateHandler create_depth_stencil_state(const DepthStencilStateDescription& desc);
   BufferHandler            allocate_buffer(const size_t size, const int usage);
   void*                    map_buffer(const BufferHandler buffer, const size_t offset, const size_t size, const int flags);
   void                     unmap_buffer(const BufferHandler buffer);
-  TextureHandler           allocate_texture(const TextureAllocationDescription& allocDesc);
+  TextureHandle           allocate_texture(const TextureAllocationDescription& allocDesc);
   SamplerHandler           allocate_sampler(const SamplerAllocationDescription& allocDesc);
   void                     free_resource(const BufferHandler buffer);
-  void                     free_resource(const TextureHandler texture);
+  void                     free_resource(const TextureHandle texture);
   Semaphore*               ackquire_backbuffer();
   ShaderModuleHandler      add_module(void* blob);
   PipelineLayoutHandler    add_pipeline_layout(void* dsets);

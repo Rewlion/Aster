@@ -181,8 +181,8 @@ namespace Engine::Render
   }
 
   void WorldRender::resolveGbuffer(gapi::CmdEncoder& encoder,
-                                   const gapi::TextureHandler albedo, const gapi::TextureHandler normal,
-                                   const gapi::TextureHandler worldPos, const gapi::TextureHandler metalRoughness)
+                                   const gapi::TextureHandle albedo, const gapi::TextureHandle normal,
+                                   const gapi::TextureHandle worldPos, const gapi::TextureHandle metalRoughness)
   {
     tfx::set_extern("gbuffer_albedo", albedo);
     tfx::set_extern("gbuffer_normal", normal);
