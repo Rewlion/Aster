@@ -22,6 +22,11 @@ namespace fg
     const std::string_view& name;
     const gapi::TextureHandler& handle;
     const gapi::TextureAllocationDescription& desc;
+
+    inline operator gapi::TextureHandler() const
+    {
+      return handle;
+    }
   };
 
   struct TextureResource

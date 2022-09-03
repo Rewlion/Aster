@@ -129,7 +129,7 @@ namespace Engine::Render
         const auto worldPos = resources.getTexture(gbuffer.worldPos);
         const auto metalRoughness = resources.getTexture(gbuffer.metalRoughness);
 
-        resolveGbuffer(encoder, albedo.handle, normal.handle, worldPos.handle, metalRoughness.handle);
+        resolveGbuffer(encoder, albedo, normal, worldPos, metalRoughness);
       }
     );
 
@@ -161,8 +161,8 @@ namespace Engine::Render
           .dstOffsets = {int3{0,0,0}, int3{m_WindowSize.x, m_WindowSize.y ,1}},
         };
 
-        encoder.blitTexture(rt.handle, bb.handle, 1, &blit, gapi::ImageFilter::Nearest);
-        encoder.transitTextureState(bb.handle, gapi::TextureState::TransferDst, gapi::TextureState::Present);
+        encoder.blitTexture(rt, bb, 1, &blit, gapi::ImageFilter::Nearest);
+        encoder.transitTextureState(bb, gapi::TextureState::TransferDst, gapi::TextureState::Present);
       }
     );
 
