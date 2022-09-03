@@ -156,9 +156,9 @@ namespace Engine::Render
 
         const auto blit = gapi::TextureBlit{
           .srcSubresource = region,
-          .srcOffsets = {int3{0,0,0}, int3{m_WindowSize.x, m_WindowSize.y ,1}},
+          .srcOffsets = {int3{0,0,0}, rt.desc.extent},
           .dstSubresource = region,
-          .dstOffsets = {int3{0,0,0}, int3{m_WindowSize.x, m_WindowSize.y ,1}},
+          .dstOffsets = {int3{0,0,0}, rt.desc.extent},
         };
 
         encoder.blitTexture(rt, bb, 1, &blit, gapi::ImageFilter::Nearest);
