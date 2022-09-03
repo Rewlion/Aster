@@ -48,7 +48,7 @@ namespace fg
       VirtualResource& getVirtualResource(const VirtualResourceHandle h);
       const VirtualResource& getVirtualResource(const VirtualResourceHandle h) const;
       bool isImportedResource(const VirtualResourceHandle h) const;
-      gapi::TextureHandler getTexture(const VirtualResourceHandle h) const;
+      TextureResourceView getTexture(const VirtualResourceHandle h) const;
       gapi::BufferHandler getBuffer(const VirtualResourceHandle h) const;
 
       VirtualResourceHandle cloneResource(const VirtualResourceHandle h, Node* producer);

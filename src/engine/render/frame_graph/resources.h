@@ -17,6 +17,13 @@ namespace fg
     Node* lastAccessor;
   };
 
+  struct TextureResourceView
+  {
+    const std::string_view& name;
+    const gapi::TextureHandler& handle;
+    const gapi::TextureAllocationDescription& desc;
+  };
+
   struct TextureResource
   {
     TextureResource(const std::string_view name,
@@ -29,6 +36,8 @@ namespace fg
 
     const TextureResource& operator=(const TextureResource&) = delete;
     TextureResource& operator=(TextureResource&&);
+
+    TextureResourceView getView() const;
 
     std::string_view name;
     gapi::TextureAllocationDescription allocDesc;

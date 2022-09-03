@@ -9,7 +9,7 @@ namespace fg
   {
   }
 
-  gapi::TextureHandler RenderPassResources::getTexture(const VirtualResourceHandle h) const
+  TextureResourceView RenderPassResources::getTexture(const VirtualResourceHandle h) const
   {
     return m_Fg.getTexture(h);
   }

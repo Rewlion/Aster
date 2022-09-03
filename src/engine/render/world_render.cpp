@@ -124,12 +124,12 @@ namespace Engine::Render
       [this](const blackboard::FinalFrame& final_frame, const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
         blackboard::Gbuffer& gbuffer = m_FrameData.blackboard.get<blackboard::Gbuffer>();
 
-        const gapi::TextureHandler albedo = resources.getTexture(gbuffer.albedo);
-        const gapi::TextureHandler normal = resources.getTexture(gbuffer.normal);
-        const gapi::TextureHandler worldPos = resources.getTexture(gbuffer.worldPos);
-        const gapi::TextureHandler metalRoughness = resources.getTexture(gbuffer.metalRoughness);
+        const auto albedo = resources.getTexture(gbuffer.albedo);
+        const auto normal = resources.getTexture(gbuffer.normal);
+        const auto worldPos = resources.getTexture(gbuffer.worldPos);
+        const auto metalRoughness = resources.getTexture(gbuffer.metalRoughness);
 
-        resolveGbuffer(encoder, albedo, normal, worldPos, metalRoughness);
+        resolveGbuffer(encoder, albedo.handle, normal.handle, worldPos.handle, metalRoughness.handle);
       }
     );
 
@@ -144,8 +144,8 @@ namespace Engine::Render
       [&](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
         const auto& finalFrame = m_FrameData.blackboard.get<blackboard::FinalFrame>();
         const auto& frame = m_FrameData.blackboard.get<blackboard::Frame>();
-        gapi::TextureHandler rt = resources.getTexture(finalFrame.finalRt);
-        gapi::TextureHandler bb = resources.getTexture(frame.backbuffer);
+        const auto rt = resources.getTexture(finalFrame.finalRt);
+        const auto bb = resources.getTexture(frame.backbuffer);
 
         const auto region = gapi::TextureSubresourceLayers{
           .aspects = gapi::ASPECT_COLOR,
@@ -161,8 +161,8 @@ namespace Engine::Render
           .dstOffsets = {int3{0,0,0}, int3{m_WindowSize.x, m_WindowSize.y ,1}},
         };
 
-        encoder.blitTexture(rt, bb, 1, &blit, gapi::ImageFilter::Nearest);
-        encoder.transitTextureState(bb, gapi::TextureState::TransferDst, gapi::TextureState::Present);
+        encoder.blitTexture(rt.handle, bb.handle, 1, &blit, gapi::ImageFilter::Nearest);
+        encoder.transitTextureState(bb.handle, gapi::TextureState::TransferDst, gapi::TextureState::Present);
       }
     );
 

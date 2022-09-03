@@ -1,8 +1,7 @@
 #pragma once
 
 #include "handles.h"
-
-#include <engine/gapi/resources.h>
+#include "resources.h"
 
 namespace fg
 {
@@ -13,7 +12,7 @@ namespace fg
     public:
       RenderPassResources(FrameGraph& fg);
 
-      gapi::TextureHandler getTexture(const VirtualResourceHandle h) const;
+      TextureResourceView getTexture(const VirtualResourceHandle h) const;
       gapi::BufferHandler getBuffer(const VirtualResourceHandle h) const;
 
     private:

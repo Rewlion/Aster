@@ -42,6 +42,11 @@ namespace fg
     return *this;
   }
 
+  TextureResourceView TextureResource::getView() const
+  {
+    return TextureResourceView{.name = name, .handle = handle, .desc = allocDesc};
+  }
+
   TextureResource::~TextureResource()
   {
     if (!isImported && handle != gapi::TextureHandler::Invalid)

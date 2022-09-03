@@ -125,12 +125,12 @@ namespace fg
       return std::get<BufferResource>(r).isImported;
   }
 
-  gapi::TextureHandler FrameGraph::getTexture(const VirtualResourceHandle h) const
+  TextureResourceView FrameGraph::getTexture(const VirtualResourceHandle h) const
   {
     const VirtualResource& vr = m_VirtualResources[(size_t)h];
     const Resource& r = m_Resources[(size_t)vr.resourceId];
     ASSERT_FMT(std::holds_alternative<TextureResource>(r), "FG: failed to get texture {}: it's not a texture handle", (size_t)h);
-    return std::get<TextureResource>(r).handle;
+    return std::get<TextureResource>(r).getView();
   }
 
   gapi::BufferHandler FrameGraph::getBuffer(const VirtualResourceHandle h) const
