@@ -159,6 +159,37 @@ namespace gapi::vulkan
     return static_cast<vk::ShaderStageFlagBits>(stage);
   }
 
+  inline vk::ImageCreateFlags get_image_create_flags(const int usage)
+  {
+    if (usage & TEX_USAGE_CUBE_MAP)
+      return vk::ImageCreateFlagBits::eCubeCompatible;
+
+    return {};
+  }
+
+  inline vk::ImageType get_image_type(const int3 extent)
+  {
+    return extent.y <= 1 && extent.z <= 1 ?
+            vk::ImageType::e1D :
+            extent.z <= 1 ?
+              vk::ImageType::e2D :
+              vk::ImageType::e3D;
+  }
+
+  inline vk::ImageViewType get_image_view_type(const vk::ImageType type, const int usage)
+  {
+    if (usage & TEX_USAGE_CUBE_MAP)
+      return vk::ImageViewType::eCube;
+
+    switch (type)
+    {
+      case vk::ImageType::e1D: return vk::ImageViewType::e1D;
+      case vk::ImageType::e2D: return vk::ImageViewType::e2D;
+      case vk::ImageType::e3D: return vk::ImageViewType::e3D;
+      default: ASSERT(!"unsupported view type");
+    }
+  }
+
   inline vk::Format get_image_format(const TextureFormat format)
   {
     switch (format)

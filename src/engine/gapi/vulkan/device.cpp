@@ -372,12 +372,8 @@ namespace gapi::vulkan
 
     vk::ImageCreateInfo ci{};
 
-    ci.imageType = allocDesc.extent.y <= 1 && allocDesc.extent.z <= 1
-                  ? vk::ImageType::e1D
-                  : allocDesc.extent.z <= 1
-                    ? vk::ImageType::e2D
-                    : vk::ImageType::e3D;
-
+    ci.flags = get_image_create_flags(allocDesc.usage);
+    ci.imageType = get_image_type(allocDesc.extent);
     ci.format = get_image_format(allocDesc.format);
     ci.extent = vk::Extent3D{(uint32_t)allocDesc.extent.x, (uint32_t)allocDesc.extent.y, (uint32_t)allocDesc.extent.z};
     ci.mipLevels = allocDesc.mipLevels;
@@ -418,7 +414,7 @@ namespace gapi::vulkan
     subresRange.levelCount = VK_REMAINING_MIP_LEVELS;
     vk::ImageViewCreateInfo viewCi;
     viewCi.image = resource.img.get();
-    viewCi.viewType = vk::ImageViewType::e2D;
+    viewCi.viewType = get_image_view_type(ci.imageType, allocDesc.usage);
     viewCi.format = ci.format;
     viewCi.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA);
     viewCi.subresourceRange = subresRange;
