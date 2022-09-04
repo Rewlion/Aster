@@ -215,6 +215,7 @@
 %token TFX_TOKEN_INT3 "int3"
 %token TFX_TOKEN_INT4 "int4"
 %token TFX_TOKEN_TEXTURE2D "Texture2D"
+%token TFX_TOKEN_TEXTURE_CUBE "TextureCube"
 
 %type <techniqueExp>         TECHNIQUE_EXP
 %type <techniqueExp>         TECHNIQUE_EXP_LIST
@@ -777,6 +778,9 @@ ASSIGN_EXP
 RESOURCE_TYPE
   : TFX_TOKEN_TEXTURE2D {
     $$ = ResourceType::Texture2D;
+  }
+  | TFX_TOKEN_TEXTURE_CUBE {
+    $$ = ResourceType::TextureCube;
   }
   | TFX_TOKEN_SAMPLER {
     $$ = ResourceType::Sampler;

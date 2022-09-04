@@ -150,6 +150,7 @@ namespace ShadersSystem
         {
           case ResourceType::Sampler:
           case ResourceType::Texture2D:
+          case ResourceType::TextureCube:
           {
             m_Scope.declaredResources.insert({
               resNameHash,
@@ -228,14 +229,15 @@ namespace ShadersSystem
             }
 
             case ResourceType::Texture2D:
+            case ResourceType::TextureCube:
             {
               if (!hasTextures)
                  throw std::runtime_error(fmt::format(
-                  "failed to declare Texture2D {}: there is no texture declared in scope", resource.name));
+                  "failed to declare a texture {}: there is no texture declared in scope", resource.name));
 
               if (currentTexReg > texturesEnd)
                 throw std::runtime_error(fmt::format(
-                  "failed to declare Texture2D {}: all texture slots are already in use", resource.name));
+                  "failed to declare a texture {}: all texture slots are already in use", resource.name));
 
               resource.binding = currentTexReg++;
               break;
@@ -391,6 +393,13 @@ namespace ShadersSystem
               break;
             }
 
+            case ResourceType::TextureCube:
+            {
+              hlsl += fmt::format("TextureCube {}: register(t{}, space{});\n",
+                var.name, var.binding, var.dset);
+              break;
+            }
+
             default:
             {
               ASSERT(!"unuspported");
@@ -424,6 +433,7 @@ namespace ShadersSystem
             }
             case ResourceType::Sampler:
             case ResourceType::Texture2D:
+            case ResourceType::TextureCube:
             {
               const ByteCodes var = generateByteCodeForResourceDeclaration(res);
               byteCode.insert(byteCode.end(), var.begin(), var.end());

@@ -15,6 +15,7 @@ namespace ShadersSystem
     None,
     Cbuffer,
     Texture2D,
+    TextureCube,
     CbufferVar,
     Sampler
   };

@@ -3,8 +3,10 @@ scope FrameScope {
     descriptor_set(0);
     cbuffer(0);
     register(sampler, 1-2);
+    register(texture, 0-1);
 
   sampler modelSampler = extern(model_sampler);
+  TextureCube enviMap = extern(envi_map);
 
   float4x4 viewProj = extern(view_proj);
   float3 cameraPos = extern(camera_pos);
