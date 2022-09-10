@@ -399,6 +399,29 @@ namespace gapi::vulkan
     m_FrameGc.addBuffer(std::move(staging));
   }
 
+  void CmdEncoder::copyBufferToTexture(const void* buffer_src, const size_t buffer_size,
+                                       const TextureHandle texture,
+                                       const BufferTextureCopy* copy_descs, const size_t copy_count)
+  {
+    insureActiveCmd();
+    Texture& t = m_Device.getAllocatedTexture(texture);
+    Buffer staging = m_Device.allocateStagingBuffer(buffer_src, buffer_size);
+
+    eastl::vector<vk::BufferImageCopy> copies;
+    copies.reserve(copy_count);
+
+    for (size_t i = 0; i < copy_count; ++i)
+    {
+      vk::BufferImageCopy copyDesc = get_buffer_img_copy(copy_descs[copy_count]);
+      copies.push_back(copyDesc);
+    }
+
+    m_CmdBuf.copyBufferToImage(staging.buffer.get(), t.img.get(),
+      vk::ImageLayout::eTransferDstOptimal, copy_count, copies.data());
+
+    m_FrameGc.addBuffer(std::move(staging));
+  }
+
   void CmdEncoder::blitTexture(const TextureHandle src, const TextureHandle dst, const uint32_t regions_count, const TextureBlit* regions, const ImageFilter filter)
   {
     ASSERT(regions_count > 0);

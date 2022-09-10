@@ -58,6 +58,9 @@ namespace gapi::vulkan
       virtual void updateResources() override;
       virtual void writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags) override;
       virtual void copyBufferToTexture(const TextureHandle texture, const void* src, const size_t size) override;
+      virtual void copyBufferToTexture(const void* buffer_src, const size_t buffer_size,
+                                       const TextureHandle texture,
+                                       const BufferTextureCopy* copy_descs, const size_t copy_count) override;
       virtual void blitTexture(const TextureHandle src, const TextureHandle dst, const uint32_t regions_count, const TextureBlit* regions, const ImageFilter filter) override;
     private:
       vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) const;

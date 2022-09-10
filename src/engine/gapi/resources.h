@@ -457,10 +457,10 @@ namespace gapi
 
   struct TextureSubresourceLayers
   {
-    uint32_t aspects;
-    uint32_t mipLevel;
-    uint32_t baseArrayLayer;
-    uint32_t layerCount;
+    uint32_t aspects = 0;
+    uint32_t mipLevel = 0;
+    uint32_t baseArrayLayer = 0;
+    uint32_t layerCount = 0;
   };
 
   struct TextureBlit
@@ -469,6 +469,16 @@ namespace gapi
     int3                     srcOffsets[2];
     TextureSubresourceLayers dstSubresource;
     int3                     dstOffsets[2];
+  };
+
+  struct BufferTextureCopy
+  {
+    uint64_t bufferOffset = 0;
+    uint32_t bufferRowLength = 0;
+    uint32_t bufferTextureHeight = 0;
+    TextureSubresourceLayers textureSubresource;
+    uint3 textureOffset = uint3{0,0,0};
+    uint3 extent = uint3{0,0,0};
   };
 
   using RenderTargets = Utils::FixedStack<RenderPassAttachment, MAX_RENDER_TARGETS>;

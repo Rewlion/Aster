@@ -455,6 +455,16 @@ namespace gapi::vulkan
     return vk::Offset3D(offset.x, offset.y, offset.z);
   }
 
+  inline vk::Offset3D get_offset3d(const uint3 offset)
+  {
+    return vk::Offset3D(offset.x, offset.y, offset.z);
+  }
+
+  inline vk::Extent3D get_extent3d(const uint3 extent)
+  {
+    return vk::Extent3D(extent.x, extent.y, extent.z);
+  }
+
   inline vk::ImageBlit get_image_blit(const TextureBlit& region)
   {
     vk::ImageBlit blit;
@@ -465,5 +475,17 @@ namespace gapi::vulkan
     blit.dstOffsets[0] = get_offset3d(region.dstOffsets[0]);
     blit.dstOffsets[1] = get_offset3d(region.dstOffsets[1]);
     return blit;
+  }
+
+  inline vk::BufferImageCopy get_buffer_img_copy(const BufferTextureCopy& desc)
+  {
+    vk::BufferImageCopy r;
+    r.bufferOffset = desc.bufferOffset;
+    r.bufferRowLength = desc.bufferRowLength;
+    r.bufferImageHeight = desc.bufferTextureHeight;
+    r.imageSubresource = get_image_subresource_layers(desc.textureSubresource);
+    r.imageOffset = get_offset3d(desc.textureOffset);
+    r.imageExtent = get_extent3d(desc.extent);
+    return r;
   }
 }
