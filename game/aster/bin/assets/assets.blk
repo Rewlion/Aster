@@ -2,4 +2,5 @@ assets
 {
   #include "bin/assets/cube/asset.blk"
   #include "bin/assets/damaged_helmet/asset.blk"
+  #include "bin/assets/skybox/asset.blk"
 }

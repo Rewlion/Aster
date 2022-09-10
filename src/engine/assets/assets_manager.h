@@ -56,6 +56,7 @@ namespace Engine
       void loadAssetsFromFs();
       StaticMesh loadGltf(const string& file, gapi::CmdEncoder& encoder);
       TextureAsset loadTexture(const string& file, gapi::CmdEncoder& encoder);
+      TextureAsset loadCubeMapTexture(const string& file, gapi::CmdEncoder& encoder);
       void loadTextureAsset(const DataBlock& asset, gapi::CmdEncoder& encoder);
       void loadStaticMesh(const DataBlock& asset, gapi::CmdEncoder& encoder);
       void loadModelAsset(const DataBlock& asset);

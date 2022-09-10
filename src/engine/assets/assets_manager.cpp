@@ -71,13 +71,17 @@ namespace Engine
 
   void AssetsManager::loadTextureAsset(const DataBlock& asset, gapi::CmdEncoder& encoder)
   {
+    const bool isCubeMap = asset.getBool("cubemap", false);
     const string file = asset.getText("bin");
     const string name = asset.getText("name");
 
     loginfo("asset manager: loading texture: {} as {}", file, name);
     const string_hash nameHash = str_hash(name.c_str());
 
-    TextureAsset textureAsset = loadTexture(file, encoder);
+    TextureAsset textureAsset = isCubeMap ?
+                                  loadCubeMapTexture(file,encoder) :
+                                  loadTexture(file, encoder);
+
       m_Textures.insert({
         nameHash,
         textureAsset

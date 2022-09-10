@@ -412,7 +412,7 @@ namespace gapi::vulkan
 
     for (size_t i = 0; i < copy_count; ++i)
     {
-      vk::BufferImageCopy copyDesc = get_buffer_img_copy(copy_descs[copy_count]);
+      vk::BufferImageCopy copyDesc = get_buffer_img_copy(copy_descs[i]);
       copies.push_back(copyDesc);
     }
 
