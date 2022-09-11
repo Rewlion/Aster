@@ -1,0 +1,8 @@
+technique_macro USE_DEPTH_UTILS {
+  #hlsl
+    float linearize_z(const float depth, const float znear, const float zfar)
+    {
+      return zfar*znear / ( zfar - depth * (zfar - znear) );
+    }
+  #end
+}
