@@ -42,7 +42,7 @@ namespace gapi::vulkan
     clearValue.color = clearColor;
 
     vk::ClearValue clearValues[MAX_RENDER_TARGETS+1] {clearValue};
-    clearValues[renderTargets.getSize()] = vk::ClearDepthStencilValue(1.0, 0);
+    clearValues[renderTargets.getSize()] = vk::ClearDepthStencilValue(0.0, 0);
 
     auto rpBeginInfo = vk::RenderPassBeginInfo();
     rpBeginInfo.renderPass = m_RenderPassState.rp;

@@ -134,7 +134,7 @@ namespace gapi
   {
     bool      depthTestEnabled      = true;
     bool      depthWriteEnabled     = true;
-    CompareOp depthOp               = CompareOp::LessOrEqual;
+    CompareOp depthOp               = CompareOp::GreaterOrEqual;
     bool      stencilTestEnabled    = false;
     StencilOp stencilFailOp         = StencilOp::Keep;
     StencilOp stencilPassOp         = StencilOp::Keep;
