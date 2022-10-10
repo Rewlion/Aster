@@ -39,6 +39,9 @@ link_directories(
   "${CMAKE_SOURCE_DIR}/deps/dxc-1.7.0/win64"
 )
 
+#workaround for dxcompiler linkage
+configure_file("${CMAKE_SOURCE_DIR}/deps/dxc-1.7.0/win64/dxcompiler.lib" "${CMAKE_BINARY_DIR}/dxcompiler.lib" COPYONLY)
+
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/assets")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/datablock")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/ecs")
