@@ -1,3 +1,9 @@
+#add_ecs_library
+#it's basicly the same as add_library
+#but also it generates final ecs sources
+#usage:
+# add_ecs_library(name ECS <file1.ecs.cpp> <file2.ecs.cpp>)
+
 function(add_ecs_library name)
   set(options "__no_options")
   set(oneValueArgs "__no_one_val_args")
