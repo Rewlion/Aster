@@ -1,11 +1,15 @@
 cmake_minimum_required(VERSION 3.21)
 
-file(GLOB aster_src
-  "${CMAKE_SOURCE_DIR}/src/aster/*.cpp")
-  list(FILTER aster_src EXCLUDE REGEX ".*[.][e][c][s][.][c][p][p]")
+include("${CMAKE_SOURCE_DIR}/src/cmake/ecs.cmake")
 
-add_executable(aster ${aster_src})
-target_link_libraries(aster engine)
+add_ecs_library(
+  aster_ecs
+  ECS_FILES
+    "${CMAKE_SOURCE_DIR}/src/aster/camera.ecs.cpp"
+)
+
+add_executable(aster "${CMAKE_SOURCE_DIR}/src/aster/main.cpp")
+target_link_libraries(aster aster_ecs engine)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   SET(aster_output_name "aster-debug")
