@@ -10,37 +10,39 @@ using namespace Engine::ECS;
 
 static void camera_movement_internal(ComponentsAccessor& accessor)
 {
-    float3& pos = accessor.get<float3>(str_hash("pos")) ;
- const float2& camera_rotations = accessor.get<float2>(str_hash("camera_rotations")) ;
- const float3& forward = accessor.get<float3>(str_hash("forward")) ;
+  float3& pos = accessor.get<float3>(str_hash("pos"));
+  const float2& camera_rotations = accessor.get<float2>(str_hash("camera_rotations"));
+  const float3& forward = accessor.get<float3>(str_hash("forward"));
   camera_movement(pos,camera_rotations,forward);
 }
-  
+
 
 static const bool camera_movement_desc = Registry::registerCppQuery(
   QueryDescription{
     .cb = camera_movement_internal,
     .components = {
-       DESCRIBE_QUERY_COMPONENT("pos", float3), DESCRIBE_QUERY_COMPONENT("camera_rotations", float2), DESCRIBE_QUERY_COMPONENT("forward", float3)
+      DESCRIBE_QUERY_COMPONENT("pos", float3),
+      DESCRIBE_QUERY_COMPONENT("camera_rotations", float2),
+      DESCRIBE_QUERY_COMPONENT("forward", float3)
     }
   }
 );
-  
+
 
 static void camera_rotation_internal(ComponentsAccessor& accessor)
 {
-    float2& camera_rotations = accessor.get<float2>(str_hash("camera_rotations")) ;
-  float3& forward = accessor.get<float3>(str_hash("forward")) ;
+  float2& camera_rotations = accessor.get<float2>(str_hash("camera_rotations"));
+  float3& forward = accessor.get<float3>(str_hash("forward"));
   camera_rotation(camera_rotations,forward);
 }
-  
+
 
 static const bool camera_rotation_desc = Registry::registerCppQuery(
   QueryDescription{
     .cb = camera_rotation_internal,
     .components = {
-       DESCRIBE_QUERY_COMPONENT("camera_rotations", float2), DESCRIBE_QUERY_COMPONENT("forward", float3)
+      DESCRIBE_QUERY_COMPONENT("camera_rotations", float2),
+      DESCRIBE_QUERY_COMPONENT("forward", float3)
     }
   }
 );
-  
