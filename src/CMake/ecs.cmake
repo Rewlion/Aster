@@ -56,5 +56,5 @@ function(add_ecs_library name)
     )
   endforeach()
 
-  add_library(${name} ${ecs_gen_list})
+  add_library(${name} OBJECT ${ecs_gen_list})
 endfunction()

@@ -118,36 +118,44 @@ namespace Engine::ECS
 
   void Registry::registerCppQueries()
   {
-    const auto& cppQueries = getCppQueryDescriptions();
-    for(const QueryDescription& desc: cppQueries)
-      registerQuery(desc);
+    SystemRegistration::enumerate([this](const SystemRegistration& system_reg) {
+      registerSystem(system_reg.m_Cb, system_reg.m_Comps);
+    });
+
+    EventSystemRegistration::enumerate([this](const EventSystemRegistration& event_system_reg) {
+      registerEventSystem(event_system_reg.m_Cb, event_system_reg.m_Event, event_system_reg.m_Comps);
+    });
 
     for(DirectQuery& query: getDirectQueries())
       query.desiredArchetypes = findDesiredArchetypes(query.components);
   }
 
-  void Registry::registerQuery(const QueryDescription& queryDesc)
+  void Registry::registerSystem(const QueryCb& cb, const QueryComponents& components)
   {
-    DesiredArchetypes desiredArchetypes = findDesiredArchetypes(queryDesc.components);
-
-    if (queryDesc.event != INVALID_HASH)
+    const DesiredArchetypes desiredArchetypes = findDesiredArchetypes(components);
+    if (desiredArchetypes.size() > 0)
     {
-      auto it = m_EventHandleQueries.find(queryDesc.event);
+      m_RegisteredQueues.push_back(RegisteredQueryInfo{
+        .cb = std::move(cb),
+        .archetypes = std::move(desiredArchetypes)
+      });
+    }
+  }
+
+  void Registry::registerEventSystem(const EventQueryCb& cb, const event_hash_name event, const QueryComponents& components)
+  {
+    if (event != INVALID_HASH)
+    {
+      const DesiredArchetypes desiredArchetypes = findDesiredArchetypes(components);
+
+      auto it = m_EventHandleQueries.find(event);
       if (it != m_EventHandleQueries.end())
       {
         it->second.push_back(RegisteredEventQueryInfo{
-          .eventCb = queryDesc.eventCb,
+          .eventCb = cb,
           .archetypes = eastl::move(desiredArchetypes)
         });
       }
-    }
-    else
-    {
-      if (desiredArchetypes.size() > 0)
-        m_RegisteredQueues.push_back(RegisteredQueryInfo{
-          .cb = queryDesc.cb,
-          .archetypes = eastl::move(desiredArchetypes)
-        });
     }
   }
 

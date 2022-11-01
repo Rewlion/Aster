@@ -28,6 +28,55 @@ namespace Engine::ECS
     event_hash_name event = INVALID_HASH;
   };
 
+  class SystemRegistration
+  {
+    friend class Registry;
+    public:
+      SystemRegistration(QueryCb&& cb, QueryComponents&& comps);
+
+      template<class T>
+      static void enumerate(T cb)
+      {
+        const SystemRegistration* p = m_List;
+        while(p)
+        {
+          cb(*p);
+          p = p->m_Next;
+        }
+      }
+    private:
+      static SystemRegistration* m_List;
+      SystemRegistration* m_Next;
+
+      QueryCb m_Cb;
+      QueryComponents m_Comps;
+  };
+
+  class EventSystemRegistration
+  {
+    friend class Registry;
+    public:
+      EventSystemRegistration(EventQueryCb&& cb, event_hash_name event, QueryComponents&& components);
+
+      template<class T>
+      static void enumerate(T cb)
+      {
+        EventSystemRegistration* p = m_List;
+        while(p)
+        {
+          cb(*p);
+          p = p->m_Next;
+        }
+      }
+    private:
+      static EventSystemRegistration* m_List;
+      EventSystemRegistration* m_Next;
+
+      EventQueryCb m_Cb;
+      event_hash_name m_Event;
+      QueryComponents m_Comps;
+  };
+
   struct RegisteredQueryInfo
   {
     QueryCb cb;

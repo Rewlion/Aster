@@ -17,14 +17,12 @@ static void camera_movement_internal(ComponentsAccessor& accessor)
 }
 
 
-static const bool camera_movement_desc = Registry::registerCppQuery(
-  QueryDescription{
-    .cb = camera_movement_internal,
-    .components = {
-      DESCRIBE_QUERY_COMPONENT("pos", float3),
-      DESCRIBE_QUERY_COMPONENT("camera_rotations", float2),
-      DESCRIBE_QUERY_COMPONENT("forward", float3)
-    }
+static SystemRegistration camera_movement_registration(
+  camera_movement_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("pos", float3),
+    DESCRIBE_QUERY_COMPONENT("camera_rotations", float2),
+    DESCRIBE_QUERY_COMPONENT("forward", float3)
   }
 );
 
@@ -37,12 +35,10 @@ static void camera_rotation_internal(ComponentsAccessor& accessor)
 }
 
 
-static const bool camera_rotation_desc = Registry::registerCppQuery(
-  QueryDescription{
-    .cb = camera_rotation_internal,
-    .components = {
-      DESCRIBE_QUERY_COMPONENT("camera_rotations", float2),
-      DESCRIBE_QUERY_COMPONENT("forward", float3)
-    }
+static SystemRegistration camera_rotation_registration(
+  camera_rotation_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("camera_rotations", float2),
+    DESCRIBE_QUERY_COMPONENT("forward", float3)
   }
 );

@@ -101,18 +101,16 @@ static void {system_name}_internal(Event* event, ComponentsAccessor& accessor)
 
 def generate_event_system_registration(name, event_name, components):
   return """
-static const bool {system_name}_desc = Registry::registerCppQuery(
-  QueryDescription{{
-    .components = {{
+static EventSystemRegistration {system_name}_registration(
+  {system_name}_internal,
+  str_hash("{event_type}"),
+  {{
 {components_descriptions}
-    }},
-    .eventCb = {system_name}_internal,
-    .event = str_hash("{event_type}")
   }}
 );
 """.format(
   system_name = name,
-  components_descriptions = generate_query_components_description(components,3),
+  components_descriptions = generate_query_components_description(components,2),
   event_type = event_name
 )
 
@@ -131,15 +129,13 @@ static void {system_name}_internal(ComponentsAccessor& accessor)
 
 def generate_system_registration(name, components):
   return """
-static const bool {system_name}_desc = Registry::registerCppQuery(
-  QueryDescription{{
-    .cb = {system_name}_internal,
-    .components = {{
+static SystemRegistration {system_name}_registration(
+  {system_name}_internal,
+  {{
 {components_descriptions}
-    }}
   }}
 );
 """.format(
   system_name = name,
-  components_descriptions = generate_query_components_description(components,3)
+  components_descriptions = generate_query_components_description(components,2)
 )

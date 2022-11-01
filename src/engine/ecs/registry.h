@@ -29,7 +29,6 @@ namespace Engine::ECS
       bool destroyEntity(const EntityId eid);
 
       void registerCppQueries();
-      void registerQuery(const QueryDescription& queryDesc);
 
       template<class T>
       void broadcastEvent(T&& event)
@@ -48,12 +47,6 @@ namespace Engine::ECS
         });
       }
 
-      inline static bool registerCppQuery(QueryDescription&& desc)
-      {
-        getCppQueryDescriptions().emplace_back(std::move(desc));
-        return true;
-      }
-
       inline static query_id registerDirectQuery(const DirectQueryDescription& queryDesc)
       {
         DirectQuery query;
@@ -70,12 +63,6 @@ namespace Engine::ECS
         return m_DirectQueries;
       }
 
-      inline static eastl::vector<QueryDescription>& getCppQueryDescriptions()
-      {
-        static eastl::vector<QueryDescription> m_CppQueries;
-        return m_CppQueries;
-      }
-
       void query(const query_id queryId, DirectQueryCb cb);
 
       void tick();
@@ -90,6 +77,9 @@ namespace Engine::ECS
       };
 
     private:
+      void registerSystem(const QueryCb& cb, const QueryComponents& components);
+      void registerEventSystem(const EventQueryCb& cb, const event_hash_name event, const QueryComponents& components);
+
       void processEvents();
 
       DesiredArchetypes findDesiredArchetypes(const QueryComponents& queryComponents);
