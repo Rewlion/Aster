@@ -19,12 +19,6 @@ namespace Engine::Render
 {
   constexpr size_t FRAMES_COUNT = 3;
 
-  namespace blackboard
-  {
-    struct Gbuffer;
-    struct Frame;
-  }
-
   class WorldRender
   {
     public:
@@ -41,7 +35,6 @@ namespace Engine::Render
       {
         std::unique_ptr<gapi::CmdEncoder> cmdEncoder;
         CameraData camera;
-        fg::Blackboard blackboard;
         fg::FrameGraph* fg;
       };
       FrameData m_FrameData;

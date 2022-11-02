@@ -8,6 +8,8 @@ namespace fg
 {
   class Node;
 
+  typedef string_hash VirtualResourceNameHash;
+
   struct VirtualResource
   {
     ResourceHandle resourceId = ResourceHandle::Invalid;

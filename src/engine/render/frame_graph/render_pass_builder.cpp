@@ -11,45 +11,60 @@ namespace fg
   {
   }
 
-  VirtualResourceHandle RenderPassBuilder::read(const VirtualResourceHandle resource, const gapi::TextureState begin_state)
+  void RenderPassBuilder::read(const std::string_view name, const gapi::TextureState begin_state)
   {
+    const VirtualResourceHandle resource = m_FrameGraph.getVirtualResourceHandleFromName(name);
+    m_FrameGraph.insureVirtualResourceExistance(name, resource);
+
     m_Pins.demandTextureState(resource, begin_state);
-    return m_Pins.read(resource);
+    m_Pins.read(resource);
   }
 
-  VirtualResourceHandle RenderPassBuilder::write(const VirtualResourceHandle resource, const gapi::TextureState begin_state)
+  void RenderPassBuilder::write(const std::string_view name, const gapi::TextureState begin_state)
   {
+    const VirtualResourceNameHash nameHash = m_FrameGraph.getVirtualResourceNameHash(name);
+    const VirtualResourceHandle resource = m_FrameGraph.getVirtualResourceHandleFromNameHash(nameHash);
+    m_FrameGraph.insureVirtualResourceExistance(name, resource);
+
     if (m_FrameGraph.isImportedResource(resource))
       m_Pins.setSideEffect();
 
     m_Pins.demandTextureState(resource, begin_state);
 
-    if (m_Pins.hasCreate(resource))
-      return resource;
+    if (!m_Pins.hasCreate(resource))
+    {
+      m_Pins.read(resource);
 
-    m_Pins.read(resource);
-    return m_Pins.write(m_FrameGraph.cloneResource(resource, &m_Node));
+      const VirtualResourceHandle newHandle = m_FrameGraph.cloneResource(resource, &m_Node);
+      m_FrameGraph.m_ResourceNameToHandle[nameHash] = newHandle;
+
+      m_Pins.write(newHandle);
+    }
   }
 
-  void RenderPassBuilder::addRenderTarget(const VirtualResourceHandle resource, const gapi::LoadOp load, const gapi::StoreOp store)
+  void RenderPassBuilder::addRenderTarget(const std::string_view name, const gapi::LoadOp load, const gapi::StoreOp store)
   {
+    const VirtualResourceHandle resource = m_FrameGraph.getVirtualResourceHandleFromName(name);
+    m_FrameGraph.insureVirtualResourceExistance(name, resource);
     m_Pins.addRenderTarget(resource, load, store);
   }
-  void RenderPassBuilder::setDepthStencil(const VirtualResourceHandle resource, const gapi::LoadOp depth_load, const gapi::StoreOp depth_store,
-                                                                                const gapi::LoadOp stencil_load, const gapi::StoreOp stencil_store)
+  void RenderPassBuilder::setDepthStencil(const std::string_view name, const gapi::LoadOp depth_load, const gapi::StoreOp depth_store,
+                                          const gapi::LoadOp stencil_load, const gapi::StoreOp stencil_store)
   {
+    const VirtualResourceHandle resource = m_FrameGraph.getVirtualResourceHandleFromName(name);
+    m_FrameGraph.insureVirtualResourceExistance(name, resource);
     m_Pins.setDepthStencil(resource, depth_load, depth_store, stencil_load, stencil_store);
   }
 
-  VirtualResourceHandle RenderPassBuilder::createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc)
+  void RenderPassBuilder::createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc)
   {
     const VirtualResourceHandle h = m_FrameGraph.createTexture(name, desc, &m_Node);
-    return m_Pins.create(h);
+    m_Pins.create(h);
   }
 
-  VirtualResourceHandle RenderPassBuilder::createBuffer(const std::string_view name, const gapi::BufferAllocationDescription& desc)
+  void RenderPassBuilder::createBuffer(const std::string_view name, const gapi::BufferAllocationDescription& desc)
   {
     const VirtualResourceHandle h = m_FrameGraph.createBuffer(name, desc, &m_Node);
-    return m_Pins.create(h);
+    m_Pins.create(h);
   }
 }

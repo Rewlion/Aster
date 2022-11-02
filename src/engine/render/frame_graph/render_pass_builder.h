@@ -23,15 +23,15 @@ namespace fg
     public:
       RenderPassBuilder(FrameGraph& fg, RenderPassPins& pins, Node& node);
 
-      VirtualResourceHandle read(const VirtualResourceHandle resource, const gapi::TextureState begin_state);
-      VirtualResourceHandle write(const VirtualResourceHandle resource,  const gapi::TextureState begin_state);
+      void read(const std::string_view name, const gapi::TextureState begin_state);
+      void write(const std::string_view name, const gapi::TextureState begin_state);
 
-      void addRenderTarget(const VirtualResourceHandle resource, const gapi::LoadOp load, const gapi::StoreOp store);
-      void setDepthStencil(const VirtualResourceHandle resource, const gapi::LoadOp depth_load, const gapi::StoreOp depth_store,
-                                                                 const gapi::LoadOp stencil_load, const gapi::StoreOp stencil_store);
+      void addRenderTarget(const std::string_view name, const gapi::LoadOp load, const gapi::StoreOp store);
+      void setDepthStencil(const std::string_view name, const gapi::LoadOp depth_load, const gapi::StoreOp depth_store,
+                                                        const gapi::LoadOp stencil_load, const gapi::StoreOp stencil_store);
 
-      [[nodiscard]] VirtualResourceHandle createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc);
-      [[nodiscard]] VirtualResourceHandle createBuffer(const std::string_view name, const gapi::BufferAllocationDescription& desc);
+      void createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc);
+      void createBuffer(const std::string_view name, const gapi::BufferAllocationDescription& desc);
 
     private:
       FrameGraph& m_FrameGraph;

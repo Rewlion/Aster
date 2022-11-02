@@ -2,6 +2,7 @@
 #include "topological_sorter.h"
 #include "render_pass_resources.h"
 
+#include <engine/algorithm/hash.h>
 #include <engine/assert.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gapi/cmd_encoder.h>
@@ -125,16 +126,20 @@ namespace fg
       return std::get<BufferResource>(r).isImported;
   }
 
-  TextureResourceView FrameGraph::getTexture(const VirtualResourceHandle h) const
+  TextureResourceView FrameGraph::getTexture(const std::string_view name) const
   {
+    const VirtualResourceHandle h = getVirtualResourceHandleFromName(name);
+    insureVirtualResourceExistance(name, h);
     const VirtualResource& vr = m_VirtualResources[(size_t)h];
     const Resource& r = m_Resources[(size_t)vr.resourceId];
     ASSERT_FMT(std::holds_alternative<TextureResource>(r), "FG: failed to get texture {}: it's not a texture handle", (size_t)h);
     return std::get<TextureResource>(r).getView();
   }
 
-  gapi::BufferHandler FrameGraph::getBuffer(const VirtualResourceHandle h) const
+  gapi::BufferHandler FrameGraph::getBuffer(const std::string_view name) const
   {
+    const VirtualResourceHandle h = getVirtualResourceHandleFromName(name);
+    insureVirtualResourceExistance(name, h);
     const VirtualResource& vr = m_VirtualResources[(size_t)h];
     const Resource& r = m_Resources[(size_t)vr.resourceId];
     ASSERT_FMT(std::holds_alternative<BufferResource>(r), "FG: failed to get buffer {}: it's not a buffer handle", (size_t)h);
@@ -155,7 +160,7 @@ namespace fg
     return nh;
   }
 
-  VirtualResourceHandle FrameGraph::importTexture(const std::string_view name, gapi::TextureHandle h, const gapi::TextureState current_state)
+  void FrameGraph::importTexture(const std::string_view name, gapi::TextureHandle h, const gapi::TextureState current_state)
   {
     const ResourceHandle resId = (ResourceHandle)m_Resources.size();
     m_Resources.push_back(TextureResource{
@@ -174,7 +179,7 @@ namespace fg
       .lastAccessor = nullptr
     });
 
-    return vResId;
+    storeResourceNameToHandleMap(name, vResId);
   }
 
   VirtualResourceHandle FrameGraph::createTexture(const std::string_view name, const gapi::TextureAllocationDescription& desc, Node* producer)
@@ -196,6 +201,7 @@ namespace fg
       .lastAccessor = nullptr
     });
 
+    storeResourceNameToHandleMap(name, vResId);
     return vResId;
   }
 
@@ -218,5 +224,36 @@ namespace fg
     });
 
     return vResId;
+  }
+
+  VirtualResourceNameHash FrameGraph::getVirtualResourceNameHash(const std::string_view name) const
+  {
+    return str_hash(name.data());
+  }
+
+  void FrameGraph::storeResourceNameToHandleMap(const std::string_view name, const VirtualResourceHandle handle)
+  {
+    const VirtualResourceNameHash hash = getVirtualResourceNameHash(name);
+    ASSERT_FMT(m_ResourceNameToHandle.find(hash) == m_ResourceNameToHandle.end(),
+      "Can't create a resource with name {} it is already registered inside FG.", name);
+    m_ResourceNameToHandle.insert({hash, handle});
+  }
+
+  VirtualResourceHandle FrameGraph::getVirtualResourceHandleFromNameHash(const VirtualResourceNameHash hash) const
+  {
+    const auto it = m_ResourceNameToHandle.find(hash);
+    return it != m_ResourceNameToHandle.end() ? it->second : VirtualResourceHandle::Invalid;
+  }
+
+  VirtualResourceHandle FrameGraph::getVirtualResourceHandleFromName(const std::string_view name) const
+  {
+    const VirtualResourceNameHash hash = getVirtualResourceNameHash(name);
+    return getVirtualResourceHandleFromNameHash(hash);
+  }
+
+  void FrameGraph::insureVirtualResourceExistance(const std::string_view name, const VirtualResourceHandle handle) const
+  {
+    ASSERT_FMT(handle != VirtualResourceHandle::Invalid,
+      "Can't access a resource with name {} it is not registered inside FG.", name);
   }
 }

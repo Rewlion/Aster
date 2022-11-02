@@ -11,18 +11,6 @@ namespace fg
     return rp;
   }
 
-  template<class Data, class SetupCallback, class ExecCallback>
-  requires SetupCbConcept<SetupCallback, Data> &&
-           ExecCbConcept<ExecCallback, Data>
-  Data& FrameGraph::addCallbackPass(const std::string_view name, SetupCallback&& setup, ExecCallback&& exec)
-  {
-    RenderPass<Data, ExecCallback>* rp = addRenderPass<Data>(name, std::forward<SetupCallback>(setup), std::forward<ExecCallback>(exec));
-    RenderPassBuilder builder(*this, m_RenderPassPins.back(), *m_RenderPasses.back());
-    setup(builder, rp->m_Data);
-
-    return rp->m_Data;
-  }
-
   template<class SetupCallback, class ExecCallback>
   requires NoDataSetupCbConcept<SetupCallback> &&
            NoDataExecCbConcept<ExecCallback>

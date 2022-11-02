@@ -12,8 +12,8 @@ namespace fg
     public:
       RenderPassResources(FrameGraph& fg);
 
-      TextureResourceView getTexture(const VirtualResourceHandle h) const;
-      gapi::BufferHandler getBuffer(const VirtualResourceHandle h) const;
+      TextureResourceView getTexture(const std::string_view name) const;
+      gapi::BufferHandler getBuffer(const std::string_view name) const;
 
     private:
       FrameGraph& m_Fg;

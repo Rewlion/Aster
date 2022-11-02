@@ -14,13 +14,10 @@ constexpr size_t const_strlen(const char* str)
   return len;
 }
 
-constexpr uint64_t fnv1a(const char* str)
+constexpr uint64_t fnv1a(const char* str, size_t length)
 {
   const uint64_t prime = 1099511628211u;
   const uint64_t basis = 14695981039346656037u;
-
-
-  size_t length = const_strlen(str);
 
   uint64_t hash = basis;
   for (size_t i = 0; i < length; ++i)
@@ -33,5 +30,10 @@ constexpr uint64_t fnv1a(const char* str)
 
 constexpr string_hash str_hash(const char* str)
 {
-  return fnv1a(str);
+  return fnv1a(str, const_strlen(str));
+}
+
+constexpr string_hash str_hash(const std::string_view str)
+{
+  return fnv1a(str.data(), str.size());
 }

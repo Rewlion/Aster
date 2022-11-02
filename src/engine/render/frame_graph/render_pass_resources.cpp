@@ -9,13 +9,13 @@ namespace fg
   {
   }
 
-  TextureResourceView RenderPassResources::getTexture(const VirtualResourceHandle h) const
+  TextureResourceView RenderPassResources::getTexture(const std::string_view name) const
   {
-    return m_Fg.getTexture(h);
+    return m_Fg.getTexture(name);
   }
 
-  gapi::BufferHandler RenderPassResources::getBuffer(const VirtualResourceHandle h) const
+  gapi::BufferHandler RenderPassResources::getBuffer(const std::string_view name) const
   {
-    return m_Fg.getBuffer(h);
+    return m_Fg.getBuffer(name);
   }
 }
