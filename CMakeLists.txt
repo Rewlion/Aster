@@ -23,6 +23,7 @@ include_directories(
   "${CMAKE_SOURCE_DIR}/deps/tinygltf-2.5.0/include"
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/include"
   "${CMAKE_SOURCE_DIR}/deps/dxc-1.7.0/include"
+  "${CMAKE_SOURCE_DIR}/deps/freetype-2.12.1/include"
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -37,6 +38,7 @@ link_directories(
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/win64"
   "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/win64/"
   "${CMAKE_SOURCE_DIR}/deps/dxc-1.7.0/win64"
+  "${CMAKE_SOURCE_DIR}/deps/freetype-2.12.1/win64"
 )
 
 #workaround for dxcompiler linkage
