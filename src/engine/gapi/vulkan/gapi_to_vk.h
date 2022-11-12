@@ -194,6 +194,11 @@ namespace gapi::vulkan
   {
     switch (format)
     {
+      case TextureFormat::R8_SNORM:            return vk::Format::eR8Snorm;
+      case TextureFormat::R8_UNORM:            return vk::Format::eR8Unorm;
+      case TextureFormat::R8_UINT:             return vk::Format::eR8Uint;
+      case TextureFormat::R8_SINT:             return vk::Format::eR8Sint;
+      case TextureFormat::R8_SRGB:             return vk::Format::eR8Srgb;
       case TextureFormat::B8G8R8A8_UNORM:      return vk::Format::eB8G8R8A8Unorm;
       case TextureFormat::R8G8B8A8_SNORM:      return vk::Format::eR8G8B8A8Snorm;
       case TextureFormat::R8G8B8A8_UNORM:      return vk::Format::eR8G8B8A8Unorm;
@@ -212,6 +217,11 @@ namespace gapi::vulkan
   {
     switch (format)
     {
+      case vk::Format::eR8Snorm:
+      case vk::Format::eR8Unorm:
+      case vk::Format::eR8Uint:
+      case vk::Format::eR8Sint:
+      case vk::Format::eR8Srgb:
       case vk::Format::eB8G8R8A8Unorm:
       case vk::Format::eB8G8R8A8Srgb:
       case vk::Format::eR8G8B8A8Snorm:
