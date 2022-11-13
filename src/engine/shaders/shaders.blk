@@ -3,4 +3,5 @@ shaders_list
   "shaders/test.tfx" {}
   "shaders/scene_opaque.tfx" {}
   "shaders/gbuffer_resolve.tfx" {}
+  "shaders/font.tfx" {}
 }

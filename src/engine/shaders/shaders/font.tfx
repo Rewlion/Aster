@@ -1,0 +1,88 @@
+#include "frame.inc.tfx"
+
+scope FontTechniqueScope {
+  reserve:
+    descriptor_set(2);
+    cbuffer(0);
+    register(texture, 1-2);
+
+  float4 size_bearing = extern(glyphSize_glyphBearing);
+  float3 color = extern(glyphColor);
+  float3 advance_originPos = extern(glyphAdvance_glyphOriginPos);
+
+  Texture2D glyphTex = extern(glyphTex);
+};
+
+technique Font {
+  support scope FrameScope;
+  support scope FontTechniqueScope;
+
+  render_state:
+    primitive_topology = triangle_strip;
+    depth:
+      test = no;
+      write = no;
+    blending:
+      mrt(0):
+        has_blending = yes;
+        src_color_blend_factor = one;
+        dst_color_blend_factor = zero;
+        color_blend_op = add;
+        src_alpha_blend_factor = src_alpha;
+        dst_alpha_blend_factor = one_minus_src_alpha;
+        alpha_blend_op = add;
+
+  USE_FRAME_HELPERS();
+
+  #hlsl
+    struct VsOutput
+    {
+      float4 pos: SV_Position;
+      float2 uv: POSITION0;
+    };
+
+    VsOutput vs_main(uint id: SV_VertexID)
+    {
+      float2 size = FontTechniqueScope.size_bearing.xy;
+      float2 bearing = FontTechniqueScope.size_bearing.zw;
+      float advance = FontTechniqueScope.advance_originPos.x;
+      float2 origin = FontTechniqueScope.advance_originPos.yz;
+
+      float2 vertices[4] = {
+        float2(1.0f, 0.0f),
+        float2(0.0f, 0.0f),
+        float2(1.0f, 1.0f),
+        float2(0.0f, 1.0f)
+      };
+
+      float2 uv = vertices[id];
+      float2 pos = vertices[id];
+      pos *= size;
+
+      pos += origin;
+      pos.x += advance + bearing.x;
+      pos.y -= size.y;
+      pos.y += size.y - bearing.y;
+
+      pos = get_viewport_coords_from_window(pos);
+
+      VsOutput res;
+      res.pos = float4(pos, 0.0, 1.0);
+      res.uv = uv;
+
+      return res;
+    }
+
+    float4 ps_main(VsOutput input): SV_Target0
+    {
+      float a = glyphTex.Sample(modelSampler, input.uv).r;
+      float4 color = float4(
+        FontTechniqueScope.color, 1.0);
+
+      return color * a;
+    }
+  #end
+
+  compile(vs_6_1, vs_main);
+  compile(ps_6_1, ps_main);
+};

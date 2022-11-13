@@ -2,6 +2,11 @@
 
 namespace gapi
 {
+  TextureWrapper::TextureWrapper()
+    : m_Handle(TextureHandle::Invalid)
+  {
+  }
+
   TextureWrapper::TextureWrapper(const TextureHandle h)
     : m_Handle(h)
   {
@@ -28,6 +33,11 @@ namespace gapi
     this->~TextureWrapper();
     std::swap(m_Handle, rvl.m_Handle);
     return *this;
+  }
+
+  BufferWrapper::BufferWrapper()
+    : m_Handle(BufferHandler::Invalid)
+  {
   }
 
   BufferWrapper::BufferWrapper(const BufferHandler h)

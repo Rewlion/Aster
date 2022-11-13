@@ -20,5 +20,10 @@ technique_macro USE_FRAME_HELPERS {
     {
       return (viewport_coords + float2(0.5f, 0.5f)) / FrameScope.viewPortSize;
     }
+
+    float2 get_viewport_coords_from_window(float2 window_coords)
+    {
+      return (window_coords / FrameScope.viewPortSize) * 2.0 - 1.0;
+    }
   #end
 };

@@ -9,6 +9,7 @@ target_link_libraries(engine
   engine_assets
   engine_datablock
   engine_ecs
+  engine_font_render
   engine_framegraph
   engine_gapi
   engine_input
@@ -17,9 +18,10 @@ target_link_libraries(engine
   engine_utils
   engine_work_cycle
   engine_world_render
-  "dbgeng"
-  "vulkan-1"
   "EASTL"
+  "dbgeng"
+  "freetype"
   "ktx"
   "user32"
+  "vulkan-1"
   )

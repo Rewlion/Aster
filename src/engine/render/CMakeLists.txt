@@ -15,5 +15,9 @@ set(FRAMEGRAPH_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/resources.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/topological_sorter.cpp")
 
-add_library(engine_world_render ${WORLD_RENDER_SRC})
+set(FONT_SRC
+  "${CMAKE_SOURCE_DIR}/src/engine/render/font/font_render.cpp")
+
+add_library(engine_font_render ${FONT_SRC})
 add_library(engine_framegraph ${FRAMEGRAPH_SRC})
+add_library(engine_world_render ${WORLD_RENDER_SRC})

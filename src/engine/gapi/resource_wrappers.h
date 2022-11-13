@@ -7,6 +7,7 @@ namespace gapi
   class TextureWrapper
   {
     public:
+      TextureWrapper();
       TextureWrapper(const TextureHandle h);
       TextureWrapper(TextureWrapper&& rvl);
       ~TextureWrapper();
@@ -22,6 +23,7 @@ namespace gapi
   class BufferWrapper
   {
     public:
+      BufferWrapper();
       BufferWrapper(const BufferHandler h);
       BufferWrapper(BufferWrapper&& h);
       ~BufferWrapper();

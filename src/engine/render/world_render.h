@@ -19,6 +19,8 @@ namespace Engine::Render
 {
   constexpr size_t FRAMES_COUNT = 3;
 
+  class FontRender;
+
   class WorldRender
   {
     public:
@@ -56,6 +58,8 @@ namespace Engine::Render
       float m_Aspect;
 
       gapi::TextureHandle m_RtDepth;
+
+      std::unique_ptr<FontRender> m_FontRender;
   };
 
   extern WorldRender world_render;

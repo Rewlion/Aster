@@ -5,9 +5,11 @@
 #include <engine/gapi/gapi.h>
 #include <engine/log.h>
 #include <engine/math.h>
+#include <engine/render/font/font_render.h>
 #include <engine/render/frame_graph/blackboard.hpp>
 #include <engine/render/frame_graph/frame_graph.h>
 #include <engine/scene/scene.h>
+#include <engine/settings.h>
 #include <engine/time.h>
 #include <engine/window.h>
 
@@ -25,6 +27,20 @@ namespace Engine::Render
 
     gapi::SamplerAllocationDescription samplerAllocDesc;
     m_ModelSampler = allocate_sampler(samplerAllocDesc);
+
+    m_FontRender = std::make_unique<FontRender>();
+
+    const DataBlock* settings = Engine::get_app_settings();
+    const string fontFolder = settings->getText("fonts_folder");
+    if (fontFolder != "")
+    {
+      const string font = fontFolder + "/arial.ttf";
+      m_FontRender->init(font);
+    }
+    else
+      logerror("world_render: missing font folder inside settings");
+
+    
   }
 
   void WorldRender::render(const CameraData& cameraVP)
@@ -183,6 +199,8 @@ namespace Engine::Render
     tfx::activate_technique("ResolveGbuffer", encoder);
     encoder.updateResources();
     encoder.draw(4, 1, 0, 0);
+
+    m_FontRender->render("test_string", float2(200,50), 60.0, float3(1,1,1), encoder);
   }
 
   void WorldRender::renderScene(gapi::CmdEncoder& encoder)

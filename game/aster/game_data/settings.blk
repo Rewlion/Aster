@@ -2,6 +2,8 @@ text app_name ="aster"
 
 #include "bin/assets/assets.blk"
 
+text fonts_folder = "bin/fonts"
+
 entity_templates
 {
   text template = "game_data/templates/templates.blk"
