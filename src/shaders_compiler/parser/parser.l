@@ -1,6 +1,8 @@
 %{
     #define YY_DECL int shlex(ShadersSystem::Compiler& compiler)
 
+    #include "limits.h"
+
     #include <engine/log.h>
 
     #include <stdio.h>
@@ -689,8 +691,17 @@ ps_6_7 {
 }
 
 [a-zA-Z\_][0-9a-zA-Z\-_.]* {
-  shlval.sval = strdup(yytext);
-  return TFX_TOKEN_NAME_VAL;
+  const size_t len = strlen(yytext);
+  if (len >= RESOURCE_MAX_NAME_LEN)
+  {
+    const string error = fmt::format("lexical error: variable name `{}` exceeds max length. {} > {}`", yytext, len, RESOURCE_MAX_NAME_LEN-1);
+    sherror(compiler, error.c_str());
+  }
+  else
+  {
+    shlval.sval = strdup(yytext);
+    return TFX_TOKEN_NAME_VAL;
+  }
 }
 
 . { 

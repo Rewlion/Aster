@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast_types.h"
+#include "limits.h"
 
 #include <engine/gapi/resources.h>
 
@@ -18,7 +19,6 @@ namespace ShadersSystem
     ActivateScope,
   };
 
-  constexpr size_t RESOURCE_MAX_NAME_LEN = 24;
   struct ShOp
   {
     ShOpCode op;

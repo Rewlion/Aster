@@ -1234,6 +1234,8 @@ char *yytext;
 #line 2 "src/shaders_compiler/parser/parser.l"
     #define YY_DECL int shlex(ShadersSystem::Compiler& compiler)
 
+    #include "limits.h"
+
     #include <engine/log.h>
 
     #include <stdio.h>
@@ -1246,10 +1248,10 @@ char *yytext;
     string codeBuf;
 
     namespace fs = std::filesystem;
-#line 1249 "src/shaders_compiler/parser/lex.yy.cpp"
+#line 1251 "src/shaders_compiler/parser/lex.yy.cpp"
 #define YY_NO_UNISTD_H 1
 
-#line 1252 "src/shaders_compiler/parser/lex.yy.cpp"
+#line 1254 "src/shaders_compiler/parser/lex.yy.cpp"
 
 #define INITIAL 0
 #define hlsl 1
@@ -1468,10 +1470,10 @@ YY_DECL
 		}
 
 	{
-#line 27 "src/shaders_compiler/parser/parser.l"
+#line 29 "src/shaders_compiler/parser/parser.l"
 
 
-#line 1474 "src/shaders_compiler/parser/lex.yy.cpp"
+#line 1476 "src/shaders_compiler/parser/lex.yy.cpp"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1536,7 +1538,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 29 "src/shaders_compiler/parser/parser.l"
+#line 31 "src/shaders_compiler/parser/parser.l"
 {
   codeBuf = "";
   BEGIN(hlsl);
@@ -1544,7 +1546,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 34 "src/shaders_compiler/parser/parser.l"
+#line 36 "src/shaders_compiler/parser/parser.l"
 {
   codeBuf += *yytext;
 }
@@ -1552,14 +1554,14 @@ YY_RULE_SETUP
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 38 "src/shaders_compiler/parser/parser.l"
+#line 40 "src/shaders_compiler/parser/parser.l"
 {
   codeBuf += "\n";
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 42 "src/shaders_compiler/parser/parser.l"
+#line 44 "src/shaders_compiler/parser/parser.l"
 {
   BEGIN(INITIAL);
   shlval.sval = strdup(codeBuf.c_str());
@@ -1568,14 +1570,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 49 "src/shaders_compiler/parser/parser.l"
+#line 51 "src/shaders_compiler/parser/parser.l"
 {
 
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 53 "src/shaders_compiler/parser/parser.l"
+#line 55 "src/shaders_compiler/parser/parser.l"
 {
   char* fileName = yytext + 1;
   fileName[strlen(yytext) - 2] = '\0';
@@ -1597,7 +1599,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 72 "src/shaders_compiler/parser/parser.l"
+#line 74 "src/shaders_compiler/parser/parser.l"
 {
   const std::string error = fmt::format("unexpected string: {}", yytext);
   sherror(compiler, error.c_str());
@@ -1606,7 +1608,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 78 "src/shaders_compiler/parser/parser.l"
+#line 80 "src/shaders_compiler/parser/parser.l"
 {
   BEGIN(include);
 }
@@ -1614,7 +1616,7 @@ YY_RULE_SETUP
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(hlsl):
 case YY_STATE_EOF(include):
-#line 83 "src/shaders_compiler/parser/parser.l"
+#line 85 "src/shaders_compiler/parser/parser.l"
 {
   fclose(yyin);
   yypop_buffer_state();
@@ -1626,165 +1628,165 @@ case YY_STATE_EOF(include):
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 92 "src/shaders_compiler/parser/parser.l"
+#line 94 "src/shaders_compiler/parser/parser.l"
 ; // comment
 	YY_BREAK
 case 10:
 /* rule 10 can match eol */
 YY_RULE_SETUP
-#line 94 "src/shaders_compiler/parser/parser.l"
+#line 96 "src/shaders_compiler/parser/parser.l"
 ;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 96 "src/shaders_compiler/parser/parser.l"
+#line 98 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_AT;
 }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 100 "src/shaders_compiler/parser/parser.l"
+#line 102 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_COLON;
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 104 "src/shaders_compiler/parser/parser.l"
+#line 106 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SEMICOLON;
 }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 108 "src/shaders_compiler/parser/parser.l"
+#line 110 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_EQUAL_OP;
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 112 "src/shaders_compiler/parser/parser.l"
+#line 114 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_LEFT_PARENTHESIS;
 }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 116 "src/shaders_compiler/parser/parser.l"
+#line 118 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_RIGHT_PARENTHESIS;
 }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 120 "src/shaders_compiler/parser/parser.l"
+#line 122 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_LEFT_BRACKET;
 }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 124 "src/shaders_compiler/parser/parser.l"
+#line 126 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_RIGHT_BRACKET;
 }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 128 "src/shaders_compiler/parser/parser.l"
+#line 130 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_COMMA;
 }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 132 "src/shaders_compiler/parser/parser.l"
+#line 134 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_MINUS;
 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 136 "src/shaders_compiler/parser/parser.l"
+#line 138 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SCOPE;
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 140 "src/shaders_compiler/parser/parser.l"
+#line 142 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_RESERVE;
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 144 "src/shaders_compiler/parser/parser.l"
+#line 146 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_REGISTER;
 }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 148 "src/shaders_compiler/parser/parser.l"
+#line 150 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TEXTURE;
 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 152 "src/shaders_compiler/parser/parser.l"
+#line 154 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SAMPLER;
 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 156 "src/shaders_compiler/parser/parser.l"
+#line 158 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_INPUT;
 }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 160 "src/shaders_compiler/parser/parser.l"
+#line 162 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_BUFFER;
 }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 164 "src/shaders_compiler/parser/parser.l"
+#line 166 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_CBUFFER;
 }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 168 "src/shaders_compiler/parser/parser.l"
+#line 170 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_EXTERN;
 }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 172 "src/shaders_compiler/parser/parser.l"
+#line 174 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_CHANNEL;
 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 176 "src/shaders_compiler/parser/parser.l"
+#line 178 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_DESCRIPTOR_SET;
 }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 180 "src/shaders_compiler/parser/parser.l"
+#line 182 "src/shaders_compiler/parser/parser.l"
 {
   shlval.bval = false;
   return TFX_TOKEN_BOOL_VAL;
@@ -1792,7 +1794,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 185 "src/shaders_compiler/parser/parser.l"
+#line 187 "src/shaders_compiler/parser/parser.l"
 {
   shlval.bval = true;
   return TFX_TOKEN_BOOL_VAL;
@@ -1800,7 +1802,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 190 "src/shaders_compiler/parser/parser.l"
+#line 192 "src/shaders_compiler/parser/parser.l"
 {
   shlval.bval = false;
   return TFX_TOKEN_BOOL_VAL;
@@ -1808,7 +1810,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 195 "src/shaders_compiler/parser/parser.l"
+#line 197 "src/shaders_compiler/parser/parser.l"
 {
   shlval.bval = true;
   return TFX_TOKEN_BOOL_VAL;
@@ -1816,7 +1818,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 200 "src/shaders_compiler/parser/parser.l"
+#line 202 "src/shaders_compiler/parser/parser.l"
 {
   shlval.ival = atoi(yytext);
   return TFX_TOKEN_INT_VAL;
@@ -1824,7 +1826,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 205 "src/shaders_compiler/parser/parser.l"
+#line 207 "src/shaders_compiler/parser/parser.l"
 { 
   shlval.fval = atof(yytext);
   return TFX_TOKEN_FLOAT_VAL;
@@ -1832,865 +1834,874 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 210 "src/shaders_compiler/parser/parser.l"
+#line 212 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_FLOAT;
 }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 214 "src/shaders_compiler/parser/parser.l"
+#line 216 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_FLOAT2;
 }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 218 "src/shaders_compiler/parser/parser.l"
+#line 220 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_FLOAT3;
 }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 222 "src/shaders_compiler/parser/parser.l"
+#line 224 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_FLOAT4;
 }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 226 "src/shaders_compiler/parser/parser.l"
+#line 228 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_FLOAT4X4;
 }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 230 "src/shaders_compiler/parser/parser.l"
+#line 232 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_INT;
 }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 234 "src/shaders_compiler/parser/parser.l"
+#line 236 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_INT2;
 }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 238 "src/shaders_compiler/parser/parser.l"
+#line 240 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_INT3;
 }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 242 "src/shaders_compiler/parser/parser.l"
+#line 244 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_INT4;
 }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 246 "src/shaders_compiler/parser/parser.l"
+#line 248 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TEXTURE2D;
 }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 250 "src/shaders_compiler/parser/parser.l"
+#line 252 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TEXTURE_CUBE;
 }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 254 "src/shaders_compiler/parser/parser.l"
+#line 256 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TECHNIQUE;
 }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 258 "src/shaders_compiler/parser/parser.l"
+#line 260 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TECHNIQUE_MACRO;
 }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 262 "src/shaders_compiler/parser/parser.l"
+#line 264 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ACTIVATE;
 }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 266 "src/shaders_compiler/parser/parser.l"
+#line 268 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SUPPORT;
 }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 270 "src/shaders_compiler/parser/parser.l"
+#line 272 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_COMPILE;
 }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 274 "src/shaders_compiler/parser/parser.l"
+#line 276 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_RENDER_STATE;
 }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 278 "src/shaders_compiler/parser/parser.l"
+#line 280 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PRIMITIVE_TOPOLOGY;
 }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 282 "src/shaders_compiler/parser/parser.l"
+#line 284 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PT_POINT_LIST;
 }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 286 "src/shaders_compiler/parser/parser.l"
+#line 288 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PT_LINE_LIST;
 }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 290 "src/shaders_compiler/parser/parser.l"
+#line 292 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PT_LINE_STRIP;
 }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 294 "src/shaders_compiler/parser/parser.l"
+#line 296 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PT_TRIANGLE_LIST;
 }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 298 "src/shaders_compiler/parser/parser.l"
+#line 300 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PT_TRIANGLE_FAN;
 }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 302 "src/shaders_compiler/parser/parser.l"
+#line 304 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PT_TRIANGLE_STRIP;
 }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 306 "src/shaders_compiler/parser/parser.l"
+#line 308 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PT_LINE_LIST_WITH_ADJACENCY;
 }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 310 "src/shaders_compiler/parser/parser.l"
+#line 312 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PT_LINE_STRIP_WITH_ADJACENCY;
 }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 314 "src/shaders_compiler/parser/parser.l"
+#line 316 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PT_TRIANGLE_LIST_WITH_ADJACENCY;
 }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 318 "src/shaders_compiler/parser/parser.l"
+#line 320 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PT_TRIANGLE_STRIP_WITH_ADJACENCY;
 }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 322 "src/shaders_compiler/parser/parser.l"
+#line 324 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PT_PATCH_LIST;
 }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 326 "src/shaders_compiler/parser/parser.l"
+#line 328 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_DEPTH;
 }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 330 "src/shaders_compiler/parser/parser.l"
+#line 332 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_STENCIL;
 }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 334 "src/shaders_compiler/parser/parser.l"
+#line 336 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TEST;
 }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 338 "src/shaders_compiler/parser/parser.l"
+#line 340 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_WRITE;
 }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 342 "src/shaders_compiler/parser/parser.l"
+#line 344 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_FAIL_OP;
 }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 346 "src/shaders_compiler/parser/parser.l"
+#line 348 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_PASS_OP;
 }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 350 "src/shaders_compiler/parser/parser.l"
+#line 352 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_DEPTH_FAIL_OP;
 }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 354 "src/shaders_compiler/parser/parser.l"
+#line 356 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_COMPARE_OP;
 }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 358 "src/shaders_compiler/parser/parser.l"
+#line 360 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_REFERENCE_VALUE;
 }
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 362 "src/shaders_compiler/parser/parser.l"
+#line 364 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_NEVER;
 }
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 366 "src/shaders_compiler/parser/parser.l"
+#line 368 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_LESS;
 }
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 370 "src/shaders_compiler/parser/parser.l"
+#line 372 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_EQUAL;
 }
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 374 "src/shaders_compiler/parser/parser.l"
+#line 376 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_LESS_OR_EQUAL;
 }
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 378 "src/shaders_compiler/parser/parser.l"
+#line 380 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_GREATER;
 }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 382 "src/shaders_compiler/parser/parser.l"
+#line 384 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_NOT_EQUAL;
 }
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 386 "src/shaders_compiler/parser/parser.l"
+#line 388 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_GREATER_OR_EQUAL;
 }
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 390 "src/shaders_compiler/parser/parser.l"
+#line 392 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ALWAYS;
 }
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 394 "src/shaders_compiler/parser/parser.l"
+#line 396 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_KEEP;
 }
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 398 "src/shaders_compiler/parser/parser.l"
+#line 400 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ZERO;
 }
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 402 "src/shaders_compiler/parser/parser.l"
+#line 404 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_REPLACE;
 }
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 406 "src/shaders_compiler/parser/parser.l"
+#line 408 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_INCREMENT_AND_CLAMP;
 }
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 410 "src/shaders_compiler/parser/parser.l"
+#line 412 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_DECREMENT_AND_CLAMP;
 }
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 414 "src/shaders_compiler/parser/parser.l"
+#line 416 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_INVERT;
 }
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 418 "src/shaders_compiler/parser/parser.l"
+#line 420 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_INCREMENT_AND_WRAP;
 }
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 422 "src/shaders_compiler/parser/parser.l"
+#line 424 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_DECREMENT_AND_WRAP;
 }
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 426 "src/shaders_compiler/parser/parser.l"
+#line 428 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_BLENDING;
 }
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 430 "src/shaders_compiler/parser/parser.l"
+#line 432 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_HAS_BLANDING;
 }
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 434 "src/shaders_compiler/parser/parser.l"
+#line 436 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_LOGIC_OP_ENABLED;
 }
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 438 "src/shaders_compiler/parser/parser.l"
+#line 440 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_LOGIC_OP;
 }
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 442 "src/shaders_compiler/parser/parser.l"
+#line 444 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_BLEND_CONSTANTS;
 }
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 446 "src/shaders_compiler/parser/parser.l"
+#line 448 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_MRT;
 }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 450 "src/shaders_compiler/parser/parser.l"
+#line 452 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SRC_COLOR_BLEND_FACTOR;
 }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 454 "src/shaders_compiler/parser/parser.l"
+#line 456 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_DST_COLOR_BLEND_FACTOR;
 }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 458 "src/shaders_compiler/parser/parser.l"
+#line 460 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_COLOR_BLEND_OP;
 }
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
-#line 462 "src/shaders_compiler/parser/parser.l"
+#line 464 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SRC_ALPHA_BLEND_FACTOR;
 }
 	YY_BREAK
 case 102:
 YY_RULE_SETUP
-#line 466 "src/shaders_compiler/parser/parser.l"
+#line 468 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_DST_ALPHA_BLEND_FACTOR;
 }
 	YY_BREAK
 case 103:
 YY_RULE_SETUP
-#line 470 "src/shaders_compiler/parser/parser.l"
+#line 472 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ALPHA_BLEND_OP;
 }
 	YY_BREAK
 case 104:
 YY_RULE_SETUP
-#line 474 "src/shaders_compiler/parser/parser.l"
+#line 476 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ONE;
 }
 	YY_BREAK
 case 105:
 YY_RULE_SETUP
-#line 478 "src/shaders_compiler/parser/parser.l"
+#line 480 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SRC_COLOR;
 }
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
-#line 482 "src/shaders_compiler/parser/parser.l"
+#line 484 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ONE_MINUS_SRC_COLOR;
 }
 	YY_BREAK
 case 107:
 YY_RULE_SETUP
-#line 486 "src/shaders_compiler/parser/parser.l"
+#line 488 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_DST_COLOR;
 }
 	YY_BREAK
 case 108:
 YY_RULE_SETUP
-#line 490 "src/shaders_compiler/parser/parser.l"
+#line 492 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ONE_MINUS_DST_COLOR;
 }
 	YY_BREAK
 case 109:
 YY_RULE_SETUP
-#line 494 "src/shaders_compiler/parser/parser.l"
+#line 496 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SRC_ALPHA;
 }
 	YY_BREAK
 case 110:
 YY_RULE_SETUP
-#line 498 "src/shaders_compiler/parser/parser.l"
+#line 500 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ONE_MINUS_SRC_ALPHA;
 }
 	YY_BREAK
 case 111:
 YY_RULE_SETUP
-#line 502 "src/shaders_compiler/parser/parser.l"
+#line 504 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_DST_ALPHA;
 }
 	YY_BREAK
 case 112:
 YY_RULE_SETUP
-#line 506 "src/shaders_compiler/parser/parser.l"
+#line 508 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ONE_MINUS_DST_ALPHA;
 }
 	YY_BREAK
 case 113:
 YY_RULE_SETUP
-#line 510 "src/shaders_compiler/parser/parser.l"
+#line 512 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_CONSTANT_COLOR;
 }
 	YY_BREAK
 case 114:
 YY_RULE_SETUP
-#line 514 "src/shaders_compiler/parser/parser.l"
+#line 516 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ONE_MINUS_CONSTANT_COLOR;
 }
 	YY_BREAK
 case 115:
 YY_RULE_SETUP
-#line 518 "src/shaders_compiler/parser/parser.l"
+#line 520 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_CONSTANT_ALPHA;
 }
 	YY_BREAK
 case 116:
 YY_RULE_SETUP
-#line 522 "src/shaders_compiler/parser/parser.l"
+#line 524 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ONE_MINUS_CONSTANT_ALPHA;
 }
 	YY_BREAK
 case 117:
 YY_RULE_SETUP
-#line 526 "src/shaders_compiler/parser/parser.l"
+#line 528 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SRC_ALPHA_SATURATE;
 }
 	YY_BREAK
 case 118:
 YY_RULE_SETUP
-#line 530 "src/shaders_compiler/parser/parser.l"
+#line 532 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SRC_ONE_COLOR;
 }
 	YY_BREAK
 case 119:
 YY_RULE_SETUP
-#line 534 "src/shaders_compiler/parser/parser.l"
+#line 536 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ONE_MINUS_SRC_ONE_COLOR;
 }
 	YY_BREAK
 case 120:
 YY_RULE_SETUP
-#line 538 "src/shaders_compiler/parser/parser.l"
+#line 540 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SRC_ONE_ALPHA;
 }
 	YY_BREAK
 case 121:
 YY_RULE_SETUP
-#line 542 "src/shaders_compiler/parser/parser.l"
+#line 544 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ONE_MINUS_SRC_ONE_ALPHA;
 }
 	YY_BREAK
 case 122:
 YY_RULE_SETUP
-#line 546 "src/shaders_compiler/parser/parser.l"
+#line 548 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_ADD;
 }
 	YY_BREAK
 case 123:
 YY_RULE_SETUP
-#line 550 "src/shaders_compiler/parser/parser.l"
+#line 552 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SUBTRACT;
 }
 	YY_BREAK
 case 124:
 YY_RULE_SETUP
-#line 554 "src/shaders_compiler/parser/parser.l"
+#line 556 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_REVERSE_SUBTRACT;
 }
 	YY_BREAK
 case 125:
 YY_RULE_SETUP
-#line 558 "src/shaders_compiler/parser/parser.l"
+#line 560 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_MIN;
 }
 	YY_BREAK
 case 126:
 YY_RULE_SETUP
-#line 562 "src/shaders_compiler/parser/parser.l"
+#line 564 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_MAX;
 }
 	YY_BREAK
 case 127:
 YY_RULE_SETUP
-#line 566 "src/shaders_compiler/parser/parser.l"
+#line 568 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_CLEAR;
 }
 	YY_BREAK
 case 128:
 YY_RULE_SETUP
-#line 570 "src/shaders_compiler/parser/parser.l"
+#line 572 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_AND;
 }
 	YY_BREAK
 case 129:
 YY_RULE_SETUP
-#line 574 "src/shaders_compiler/parser/parser.l"
+#line 576 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_AND_REVERSE;
 }
 	YY_BREAK
 case 130:
 YY_RULE_SETUP
-#line 578 "src/shaders_compiler/parser/parser.l"
+#line 580 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_COPY;
 }
 	YY_BREAK
 case 131:
 YY_RULE_SETUP
-#line 582 "src/shaders_compiler/parser/parser.l"
+#line 584 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_AND_INVERTED;
 }
 	YY_BREAK
 case 132:
 YY_RULE_SETUP
-#line 586 "src/shaders_compiler/parser/parser.l"
+#line 588 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_NO_OP;
 }
 	YY_BREAK
 case 133:
 YY_RULE_SETUP
-#line 590 "src/shaders_compiler/parser/parser.l"
+#line 592 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_XOR;
 }
 	YY_BREAK
 case 134:
 YY_RULE_SETUP
-#line 594 "src/shaders_compiler/parser/parser.l"
+#line 596 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_OR;
 }
 	YY_BREAK
 case 135:
 YY_RULE_SETUP
-#line 598 "src/shaders_compiler/parser/parser.l"
+#line 600 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_NOR;
 }
 	YY_BREAK
 case 136:
 YY_RULE_SETUP
-#line 602 "src/shaders_compiler/parser/parser.l"
+#line 604 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_EQUIVALENT;
 }
 	YY_BREAK
 case 137:
 YY_RULE_SETUP
-#line 606 "src/shaders_compiler/parser/parser.l"
+#line 608 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_OR_REVERSE;
 }
 	YY_BREAK
 case 138:
 YY_RULE_SETUP
-#line 610 "src/shaders_compiler/parser/parser.l"
+#line 612 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_COPY_INVERTED;
 }
 	YY_BREAK
 case 139:
 YY_RULE_SETUP
-#line 614 "src/shaders_compiler/parser/parser.l"
+#line 616 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_OR_INVERTED;
 }
 	YY_BREAK
 case 140:
 YY_RULE_SETUP
-#line 618 "src/shaders_compiler/parser/parser.l"
+#line 620 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_NAND;
 }
 	YY_BREAK
 case 141:
 YY_RULE_SETUP
-#line 622 "src/shaders_compiler/parser/parser.l"
+#line 624 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_SET;
 }
 	YY_BREAK
 case 142:
 YY_RULE_SETUP
-#line 627 "src/shaders_compiler/parser/parser.l"
+#line 629 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_VS_6_0;
 }
 	YY_BREAK
 case 143:
 YY_RULE_SETUP
-#line 631 "src/shaders_compiler/parser/parser.l"
+#line 633 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_VS_6_1;
 }
 	YY_BREAK
 case 144:
 YY_RULE_SETUP
-#line 635 "src/shaders_compiler/parser/parser.l"
+#line 637 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_VS_6_2;
 }
 	YY_BREAK
 case 145:
 YY_RULE_SETUP
-#line 639 "src/shaders_compiler/parser/parser.l"
+#line 641 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_VS_6_3;
 }
 	YY_BREAK
 case 146:
 YY_RULE_SETUP
-#line 643 "src/shaders_compiler/parser/parser.l"
+#line 645 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_VS_6_4;
 }
 	YY_BREAK
 case 147:
 YY_RULE_SETUP
-#line 647 "src/shaders_compiler/parser/parser.l"
+#line 649 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_VS_6_5;
 }
 	YY_BREAK
 case 148:
 YY_RULE_SETUP
-#line 651 "src/shaders_compiler/parser/parser.l"
+#line 653 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_VS_6_6;
 }
 	YY_BREAK
 case 149:
 YY_RULE_SETUP
-#line 655 "src/shaders_compiler/parser/parser.l"
+#line 657 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_VS_6_7;
 }
 	YY_BREAK
 case 150:
 YY_RULE_SETUP
-#line 659 "src/shaders_compiler/parser/parser.l"
+#line 661 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_PS_6_0;
 }
 	YY_BREAK
 case 151:
 YY_RULE_SETUP
-#line 663 "src/shaders_compiler/parser/parser.l"
+#line 665 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_PS_6_1;
 }
 	YY_BREAK
 case 152:
 YY_RULE_SETUP
-#line 667 "src/shaders_compiler/parser/parser.l"
+#line 669 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_PS_6_2;
 }
 	YY_BREAK
 case 153:
 YY_RULE_SETUP
-#line 671 "src/shaders_compiler/parser/parser.l"
+#line 673 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_PS_6_3;
 }
 	YY_BREAK
 case 154:
 YY_RULE_SETUP
-#line 675 "src/shaders_compiler/parser/parser.l"
+#line 677 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_PS_6_4;
 }
 	YY_BREAK
 case 155:
 YY_RULE_SETUP
-#line 679 "src/shaders_compiler/parser/parser.l"
+#line 681 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_PS_6_5;
 }
 	YY_BREAK
 case 156:
 YY_RULE_SETUP
-#line 683 "src/shaders_compiler/parser/parser.l"
+#line 685 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_PS_6_6;
 }
 	YY_BREAK
 case 157:
 YY_RULE_SETUP
-#line 687 "src/shaders_compiler/parser/parser.l"
+#line 689 "src/shaders_compiler/parser/parser.l"
 {
   return TFX_TOKEN_TARGET_PS_6_7;
 }
 	YY_BREAK
 case 158:
 YY_RULE_SETUP
-#line 691 "src/shaders_compiler/parser/parser.l"
+#line 693 "src/shaders_compiler/parser/parser.l"
 {
-  shlval.sval = strdup(yytext);
-  return TFX_TOKEN_NAME_VAL;
+  const size_t len = strlen(yytext);
+  if (len >= RESOURCE_MAX_NAME_LEN)
+  {
+    const string error = fmt::format("lexical error: variable name `{}` exceeds max length. {} > {}`", yytext, len, RESOURCE_MAX_NAME_LEN-1);
+    sherror(compiler, error.c_str());
+  }
+  else
+  {
+    shlval.sval = strdup(yytext);
+    return TFX_TOKEN_NAME_VAL;
+  }
 }
 	YY_BREAK
 case 159:
 YY_RULE_SETUP
-#line 696 "src/shaders_compiler/parser/parser.l"
+#line 707 "src/shaders_compiler/parser/parser.l"
 { 
   const string error =  fmt::format("lexical error in `{}`", yytext);
   sherror(compiler, error.c_str());}
 	YY_BREAK
 case 160:
 YY_RULE_SETUP
-#line 700 "src/shaders_compiler/parser/parser.l"
+#line 711 "src/shaders_compiler/parser/parser.l"
 ECHO;
 	YY_BREAK
-#line 2693 "src/shaders_compiler/parser/lex.yy.cpp"
+#line 2704 "src/shaders_compiler/parser/lex.yy.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -3706,6 +3717,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 700 "src/shaders_compiler/parser/parser.l"
+#line 711 "src/shaders_compiler/parser/parser.l"
 
 
