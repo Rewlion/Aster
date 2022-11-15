@@ -355,7 +355,7 @@ namespace ShadersSystem
           if (mrtCount >= gapi::MAX_RENDER_TARGETS)
             throw std::runtime_error(fmt::format("invalid mrt({}),  max number: {}", mrtCount-1, gapi::MAX_RENDER_TARGETS-1));
 
-          for (size_t i = mrtCount; i < mrtCount; ++i)
+          for (size_t i = 0; i < mrtCount; ++i)
             m_RenderState.blending.attachments.push({});
 
           for (const MrtBlendingExp* mrt: m_MrtBlendingStates)
