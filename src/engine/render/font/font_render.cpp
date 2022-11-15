@@ -96,7 +96,7 @@ namespace Engine::Render
   }
 
   void FontRender::render(std::string_view text, const float2& pos, 
-    const float& size, const float3& color, gapi::CmdEncoder& encoder)
+    const float& size, const float4& color, gapi::CmdEncoder& encoder)
   {
     if (m_Lib == nullptr || text == "")
       return;

@@ -7,7 +7,7 @@ scope FontTechniqueScope {
     register(texture, 1-2);
 
   float4 size_bearing = extern(glyphSize_glyphBearing);
-  float3 color = extern(glyphColor);
+  float4 color = extern(glyphColor);
   float3 advance_originPos = extern(glyphAdvance_glyphOriginPos);
 
   Texture2D glyphTex = extern(glyphTex);
@@ -76,10 +76,8 @@ technique Font {
     float4 ps_main(VsOutput input): SV_Target0
     {
       float a = glyphTex.Sample(modelSampler, input.uv).r;
-      float4 color = float4(
-        FontTechniqueScope.color, 1.0);
-
-      return color * a;
+      float4 color = FontTechniqueScope.color * a;
+      return color;
     }
   #end
 

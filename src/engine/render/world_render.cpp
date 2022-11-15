@@ -200,7 +200,7 @@ namespace Engine::Render
     encoder.updateResources();
     encoder.draw(4, 1, 0, 0);
 
-    m_FontRender->render("test_string", float2(200,50), 60.0, float3(1,1,1), encoder);
+    m_FontRender->render("test_string", float2(200,50), 60.0, float4(1,1,1, 0.4f), encoder);
   }
 
   void WorldRender::renderScene(gapi::CmdEncoder& encoder)

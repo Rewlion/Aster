@@ -24,7 +24,7 @@ namespace Engine::Render
       ~FontRender();
       void init(std::string_view font_file);
       void render(std::string_view text, const float2& pos, 
-        const float& size, const float3& color, gapi::CmdEncoder& encoder);
+        const float& size, const float4& color, gapi::CmdEncoder& encoder);
 
     private:
       void destroy();
