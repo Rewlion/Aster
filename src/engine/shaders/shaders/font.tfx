@@ -25,11 +25,11 @@ technique Font {
     blending:
       mrt(0):
         has_blending = yes;
-        src_color_blend_factor = one;
-        dst_color_blend_factor = zero;
+        src_color_blend_factor = src_alpha;
+        dst_color_blend_factor = one_minus_src_alpha;
         color_blend_op = add;
-        src_alpha_blend_factor = src_alpha;
-        dst_alpha_blend_factor = one_minus_src_alpha;
+        src_alpha_blend_factor = one;
+        dst_alpha_blend_factor = zero;
         alpha_blend_op = add;
 
   USE_FRAME_HELPERS();
