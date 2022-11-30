@@ -67,4 +67,9 @@ namespace Engine::Time
   {
     return (float)rawTime / (float)perf_counter_frequency;
   }
+
+  uint64_t convert_sec_to_clocks(uint64_t sec)
+  {
+    return sec * perf_counter_frequency;
+  }
 }

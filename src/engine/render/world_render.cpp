@@ -51,6 +51,8 @@ namespace Engine::Render
 
   void WorldRender::beforeRender(const CameraData& camera)
   {
+    m_DbgTextQueue.tick();
+
     m_FrameId = (m_FrameId+1) % FRAMES_COUNT;
     m_FrameGraphs[m_FrameId] = fg::FrameGraph{};
     m_FrameData.fg = &m_FrameGraphs[m_FrameId];
@@ -141,6 +143,17 @@ namespace Engine::Render
         const auto metalRoughness = resources.getTexture("gbuffer_metal_roughness");
 
         resolveGbuffer(encoder, albedo, normal, worldPos, metalRoughness);
+      }
+    );
+
+    m_FrameData.fg->addCallbackPass(
+      "dbg_text",
+      [&](fg::RenderPassBuilder& builder) {
+        builder.write("final_frame", gapi::TextureState::RenderTarget);
+        builder.addRenderTarget("final_frame", gapi::LoadOp::Load, gapi::StoreOp::Store);
+      },
+      [&](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
+        renderDbgText(encoder);
       }
     );
 
@@ -242,4 +255,15 @@ namespace Engine::Render
     }
   }
 
+  void WorldRender::renderDbgText(gapi::CmdEncoder& encoder)
+  {
+    const float textSize = m_WindowSize.y * 0.03;
+    float i = 0;
+    for (const auto& e: m_DbgTextQueue)
+    {
+      const float2 pos = {5.0f, textSize * i};
+      m_FontRender->render(e.text, pos, textSize, e.color, encoder);
+      ++i;
+    }
+  }
 }

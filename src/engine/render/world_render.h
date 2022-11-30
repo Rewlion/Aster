@@ -4,9 +4,11 @@
 
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/gapi/resources.h>
+#include <engine/render/debug_text_queue.hpp>
 #include <engine/render/frame_graph/blackboard.hpp>
 #include <engine/render/frame_graph/frame_graph.h>
 #include <engine/work_cycle/camera.h>
+
 
 #include <memory>
 
@@ -32,6 +34,11 @@ namespace Engine::Render
         return m_Aspect;
       }
 
+      inline void pushDbgText(string&& text, const float4 color)
+      {
+        m_DbgTextQueue.push(std::move(text), color);
+      }
+
     private:
       struct FrameData
       {
@@ -48,6 +55,7 @@ namespace Engine::Render
       void resolveGbuffer(gapi::CmdEncoder& encoder,
                           const gapi::TextureHandle albedo, const gapi::TextureHandle normal,
                           const gapi::TextureHandle worldPos, const gapi::TextureHandle metalRoughness);
+      void renderDbgText(gapi::CmdEncoder& encoder);
     private:
       size_t m_FrameId = 0;
       fg::FrameGraph m_FrameGraphs[FRAMES_COUNT];
@@ -60,6 +68,7 @@ namespace Engine::Render
       gapi::TextureHandle m_RtDepth;
 
       std::unique_ptr<FontRender> m_FontRender;
+      dbg::TextDbgQueue<10, 128> m_DbgTextQueue;
   };
 
   extern WorldRender world_render;

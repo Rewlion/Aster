@@ -12,6 +12,10 @@ add_definitions(-Wno-defaulted-function-deleted
 -Wno-deprecated-volatile
 -Wno-deprecated-declarations)
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  add_definitions(-DDEBUG)
+endif()
+
 include_directories(
 	"${CMAKE_SOURCE_DIR}/src"
   "${CMAKE_SOURCE_DIR}/deps/glm-0.9.9.8/include"

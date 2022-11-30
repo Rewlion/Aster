@@ -123,7 +123,7 @@ namespace Engine::Input
       m_ActiveSet = actionSet;
     }
     else
-      logerror("failed to set ActionSet `{}`: unknwon action set");
+      logerror("failed to set ActionSet `{}`: unknown action set", actionSet);
   }
 
   ButtonStatus InputHandler::getButtonStatus(const string_hash action) const

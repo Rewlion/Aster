@@ -36,7 +36,7 @@ namespace Engine::ECS
         if (m_EventHandleQueries.find(event.eventNameHash) != m_EventHandleQueries.end())
           m_EventsQueue.pushEvent(eastl::forward<T>(event));
         else
-          logerror("can't broadcast event `{}`, it is not registered.");
+          logerror("can't broadcast event `{}`, it is not registered.", event.eventNameHash);
       }
 
       inline void registerEvent(const event_hash_name event)
