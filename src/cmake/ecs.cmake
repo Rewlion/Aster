@@ -40,6 +40,11 @@ function(add_ecs_library name)
     list(APPEND includes_arg "-I" ${inc})
   endforeach()
 
+  set(defines_arg)
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    list(APPEND defines_arg "-DDEBUG")
+  endif()
+
   set(ecs_gen_list)
   foreach(ecs_file IN LISTS ARG_ECS_FILES)
     #save generated file name for further target
@@ -50,7 +55,7 @@ function(add_ecs_library name)
     add_custom_command(
       OUTPUT ${gen_file}
       DEPENDS ${ecs_file}
-      COMMAND python ${generator_path} ${includes_arg} ${src_arg}
+      COMMAND python ${generator_path} ${defines_arg} ${includes_arg} ${src_arg}
       COMMENT "[ECS] generate ${ecs_file}"
       WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/"
     )
