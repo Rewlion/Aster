@@ -76,7 +76,7 @@ namespace Engine::Render::dbg
   {
     public:
       using ThisType = TextDbgQueue<N, MAX_TEXT_LEN>;
-      using Container = eastl::fixed_ring_buffer<QueuedText, N>;
+      using Container = eastl::ring_buffer<QueuedText, N>;
 
     public:
       void tick()
