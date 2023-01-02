@@ -14,6 +14,7 @@ target_link_libraries(engine
   engine_gapi
   engine_input
   engine_scene
+  engine_scheme
   engine_tfx
   engine_utils
   engine_work_cycle
