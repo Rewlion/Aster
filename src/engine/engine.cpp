@@ -6,6 +6,7 @@
 #include <engine/ecs/components_accessor.h>
 #include <engine/ecs/registry.h>
 #include <engine/gapi/gapi.h>
+#include <engine/gui/gui.h>
 #include <engine/input/input.h>
 #include <engine/level.h>
 #include <engine/render/world_render.h>
@@ -37,6 +38,7 @@ namespace Engine
     load_level(settings->getText("init_level") );
 
     Render::world_render.init();
+    gui::manager.init();
   }
 
   void start_tick()

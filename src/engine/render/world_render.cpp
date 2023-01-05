@@ -1,4 +1,5 @@
 #include "world_render.h"
+#include "gui_render.h"
 
 #include <engine/algorithm/hash.h>
 #include <engine/assets/assets_manager.h>
@@ -29,6 +30,7 @@ namespace Engine::Render
     m_ModelSampler = allocate_sampler(samplerAllocDesc);
 
     m_FontRender = std::make_unique<FontRender>();
+    m_GuiRender = std::make_unique<GuiRender>();
 
     const DataBlock* settings = Engine::get_app_settings();
     const string fontFolder = settings->getText("fonts_folder");
@@ -143,6 +145,17 @@ namespace Engine::Render
         const auto metalRoughness = resources.getTexture("gbuffer_metal_roughness");
 
         resolveGbuffer(encoder, albedo, normal, worldPos, metalRoughness);
+      }
+    );
+
+    m_FrameData.fg->addCallbackPass(
+      "ui",
+      [&](fg::RenderPassBuilder& builder) {
+        builder.write("final_frame", gapi::TextureState::RenderTarget);
+        builder.addRenderTarget("final_frame", gapi::LoadOp::Load, gapi::StoreOp::Store);
+      },
+      [&](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
+        m_GuiRender->render(encoder);
       }
     );
 

@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "outDir": "../../../../../build/js/stubs",
+    "declaration": true,
+    "composite": true
+  },
+  "files": [
+    "ui.ts",
+    "log.ts"
+  ]  
+}

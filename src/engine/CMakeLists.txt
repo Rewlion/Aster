@@ -12,9 +12,10 @@ target_link_libraries(engine
   engine_font_render
   engine_framegraph
   engine_gapi
+  engine_gui
   engine_input
+  engine_qjs
   engine_scene
-  engine_scheme
   engine_tfx
   engine_utils
   engine_work_cycle
@@ -26,3 +27,8 @@ target_link_libraries(engine
   "user32"
   "vulkan-1"
   )
+
+SET(ENGINE_SELF_REG_LIB
+  engine_gui_modules
+  PARENT_SCOPE)
+

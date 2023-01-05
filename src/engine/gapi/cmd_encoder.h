@@ -1,5 +1,7 @@
 #pragma once
 
+#include "resources.h"
+
 namespace gapi
 {
   class CmdEncoder

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "outDir": "../../../../game/aster/scripts/ui",
+    "paths": {
+      "@ui": ["../../../engine/gui/scripts/stubs/ui.ts"],
+      "@log": ["../../../engine/gui/scripts/stubs/log.ts"],
+    }
+  },
+  "files": [
+    "main.ts"
+  ],
+  "references": [
+    { "path": "../../../engine/gui/scripts/stubs" }
+  ],
+}

@@ -20,12 +20,12 @@ include_directories(
 	"${CMAKE_SOURCE_DIR}/src"
   "${CMAKE_SOURCE_DIR}/deps/SPIRV-Cross-moltenvk_1.1.5/include"
   "${CMAKE_SOURCE_DIR}/deps/boost-1.77/include"
-  "${CMAKE_SOURCE_DIR}/deps/chibi-scheme/include"
   "${CMAKE_SOURCE_DIR}/deps/dxc-1.7.0/include"
   "${CMAKE_SOURCE_DIR}/deps/eastl-3.17.06/include"
   "${CMAKE_SOURCE_DIR}/deps/freetype-2.12.1/include"
   "${CMAKE_SOURCE_DIR}/deps/glm-0.9.9.8/include"
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/include"
+  "${CMAKE_SOURCE_DIR}/deps/quickjs/include"
   "${CMAKE_SOURCE_DIR}/deps/spdlog-1.9.2/include"
   "${CMAKE_SOURCE_DIR}/deps/tinygltf-2.5.0/include"
   "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/include"
@@ -40,11 +40,11 @@ endif ()
 
 link_directories(
   "${CMAKE_SOURCE_DIR}/deps/boost-1.77/win64"
-  "${CMAKE_SOURCE_DIR}/deps/chibi-scheme/win64"
   "${CMAKE_SOURCE_DIR}/deps/dxc-1.7.0/win64"
   "${CMAKE_SOURCE_DIR}/deps/freetype-2.12.1/win64"
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/win64"
   "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/win64/"
+  "${CMAKE_SOURCE_DIR}/deps/quickjs/win64"
 )
 
 #workaround for dxcompiler linkage
@@ -55,12 +55,13 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/assets")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/datablock")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/ecs")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/gapi")
+add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/gui")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/input")
+add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/qjs")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/render")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/scene")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/tfx")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/utils")
-add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/utils/scripts/scheme")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/work_cycle")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/deps/SPIRV-Cross-moltenvk_1.1.5/src")

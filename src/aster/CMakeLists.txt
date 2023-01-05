@@ -9,7 +9,7 @@ add_ecs_library(
 )
 
 add_executable(aster "${CMAKE_SOURCE_DIR}/src/aster/main.cpp")
-target_link_libraries(aster aster_ecs engine)
+target_link_libraries(aster aster_ecs engine ${ENGINE_SELF_REG_LIB})
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   SET(aster_output_name "aster-debug")

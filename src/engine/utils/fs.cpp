@@ -2,8 +2,9 @@
 
 #include <engine/log.h>
 
-#include <fstream>
 #include <filesystem>
+#include <fstream>
+#include <sstream>
 
 namespace Utils
 {
@@ -11,25 +12,45 @@ namespace Utils
   {
     std::error_code ec;
     const auto fileSize = std::filesystem::file_size(file, ec);
-    if (!ec)
+    
+    if (ec)
     {
-      std::ifstream f;
-      f.open(file, std::ios::binary);
-      if (f.is_open())
-      {
-        eastl::vector<char> readenFile;
-        readenFile.resize(fileSize);
-
-        f.read(readenFile.data(), fileSize);
-        return readenFile;
-      }
-      else
-        logerror("failed to read the file {}", file);
+      logerror("failed to open the file {}: {}", file, ec.message());
+      return {};
     }
-    else
-      logerror("failed to read the file {}: {}", file, ec.message());
 
-    return {};
+    std::ifstream f;
+
+    f.open(file, std::ios::binary);
+    if (!f.is_open())
+    {
+      logerror("failed to open the file {}", file);
+      return {};
+    }
+
+    eastl::vector<char> readenFile;
+    readenFile.resize(fileSize);
+    f.read(readenFile.data(), fileSize);
+    
+    return readenFile;
+  }
+
+  string read_file_as_string(const string_view& file)
+  {
+    std::ifstream f;
+
+    f.open(file);
+    if (!f.is_open())
+    {
+      logerror("failed to open the file {}", file);
+      return {};
+    }
+
+    std::stringstream ss;
+    ss << f.rdbuf();
+    string str = std::move(ss).str();
+    
+    return str;
   }
 
   string get_file_name(const string& filePath)

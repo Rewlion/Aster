@@ -9,7 +9,6 @@
 #include <engine/render/frame_graph/frame_graph.h>
 #include <engine/work_cycle/camera.h>
 
-
 #include <memory>
 
 namespace fg
@@ -22,6 +21,7 @@ namespace Engine::Render
   constexpr size_t FRAMES_COUNT = 3;
 
   class FontRender;
+  class GuiRender;
 
   class WorldRender
   {
@@ -68,6 +68,7 @@ namespace Engine::Render
       gapi::TextureHandle m_RtDepth;
 
       std::unique_ptr<FontRender> m_FontRender;
+      std::unique_ptr<GuiRender> m_GuiRender;
       dbg::TextDbgQueue<10, 128> m_DbgTextQueue;
   };
 

@@ -5,7 +5,9 @@ file(GLOB_RECURSE render_src
 
 set(WORLD_RENDER_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/debug_text.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/world_render.cpp")
+  "${CMAKE_SOURCE_DIR}/src/engine/render/world_render.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/gui_render.cpp"
+)
 
 set(FRAMEGRAPH_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/blackboard.cpp"
