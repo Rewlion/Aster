@@ -17,6 +17,7 @@ namespace qjs
       void pushCurrentFileName(std::string_view name);
       void popCurrentFileName();
       Value eval(std::string_view code);
+      Value getGlobal();
       Value getGlobalObjectProperty(std::string_view name);
 
     private:

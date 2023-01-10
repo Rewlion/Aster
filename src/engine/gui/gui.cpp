@@ -41,7 +41,7 @@ namespace Engine::gui
     }
 
     ElementTreeBuilder jsParser;
-    m_SceneRoot = jsParser.buildFromRootUi(rootUI);
+    m_SceneRoot = jsParser.buildFromRootUi(rootUI, m_Vm.getGlobal());
 
     if (m_SceneRoot.has_value())
     {

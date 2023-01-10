@@ -167,6 +167,12 @@ namespace qjs
     return ArrayView{*this};
   }
 
+  FunctionView Value::asFunctionView() const
+  {
+    ASSERT_FMT(isFunction(), "JSValue isn't function.");
+    return FunctionView{*this};
+  }
+
   bool Value::asBool() const
   {
     ASSERT_FMT(isBool(), "JSValue isn't bool");

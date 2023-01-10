@@ -1,26 +1,37 @@
 #include "element_tree_builder.h"
-#include "engine/gui/constants.h"
+#include "constants.h"
 
-#include <engine/qjs/value.hpp>
-#include <engine/qjs/object.h>
-#include <engine/qjs/array.h>
 #include <engine/log.h>
+#include <engine/qjs/array.h>
+#include <engine/qjs/exception.h>
+#include <engine/qjs/function.h>
+#include <engine/qjs/object.h>
+#include <engine/qjs/value.hpp>
+
 #include <optional>
 
 namespace Engine::gui
 {
-  std::optional<Element> ElementTreeBuilder::buildFromRootUi(const qjs::Value& root_ui) const
+  std::optional<Element> ElementTreeBuilder::buildFromRootUi(const qjs::Value& root_ui, const qjs::Value& global)
   {
+    if (!global.isObject())
+    {
+      logerror("ui: global is not type of object.");
+      return std::nullopt;
+    }
+
     if (!root_ui.isObject())
     {
       logerror("ui: rootUI is not type of object.");
       return std::nullopt;
     }
 
+    m_Global = &global;
+
     return buildElem(root_ui);
   }
 
-  std::optional<Element> ElementTreeBuilder::buildElem(const qjs::Value& v) const
+  std::optional<Element> ElementTreeBuilder::buildStaticElem(const qjs::Value& v) const
   {
     auto params = buildParams(v);
     if (!params.has_value())
@@ -31,6 +42,37 @@ namespace Engine::gui
       .params = std::move(params.value()),
       .childs = std::move(childs)
     };
+  }
+
+  std::optional<Element> ElementTreeBuilder::buildDynamicElem(const qjs::Value& v) const
+  {
+    const auto buildElem = v.as<qjs::FunctionView>();
+    if (buildElem.getArgsCount() == 0)
+    {
+      qjs::Value r = buildElem(*m_Global, 0, nullptr);
+      if (r.isException())
+        qjs::logerror_exception(std::move(r));
+      else if (!r.isPlainObject())
+        logerror("ui: invalid element: function has to return an object");
+      else
+        return buildStaticElem(r);
+    }
+    else
+      logerror("ui: invalid element: function shouldn't have any arguments");
+
+    return std::nullopt;
+  }
+
+  std::optional<Element> ElementTreeBuilder::buildElem(const qjs::Value& v) const
+  {
+    if (v.isPlainObject())
+      return buildStaticElem(v);
+
+    if (v.isFunction())
+      return buildDynamicElem(v);
+    
+    logerror("ui: invalid element description: it's not static(Object) nor dynamic(Function)");
+    return std::nullopt;
   }
 
   std::optional<Element::Params> ElementTreeBuilder::buildParams(const qjs::Value& v) const
@@ -130,7 +172,7 @@ namespace Engine::gui
 
   ColorParam ElementTreeBuilder::getColor(qjs::ObjectView& obj) const
   {
-    ColorParam color;
+    ColorParam color{255,255,255,255};
 
     const qjs::Value v = obj.getProperty("color");
     if (v.isUndefined())

@@ -12,5 +12,6 @@ namespace qjs
   class VM;
   class Value;
   class ArrayView;
+  class FunctionView;
   class ObjectView;
 }

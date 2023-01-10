@@ -2,6 +2,7 @@
 
 #include "forward_decl.h"
 #include "array.h"
+#include "function.h"
 #include "object.h"
 
 namespace qjs
@@ -33,8 +34,9 @@ namespace qjs
   {
     friend VM;
     friend class ModuleLoader;
-    friend ObjectView;
     friend ArrayView;
+    friend FunctionView;
+    friend ObjectView;
 
     public:
       Value();
@@ -127,6 +129,18 @@ namespace qjs
         return asDouble();
       }
 
+      template<>
+      FunctionView as()
+      {
+        return asFunctionView();
+      }
+
+      template<>
+      FunctionView as() const
+      {
+        return asFunctionView();
+      }
+
       ValueDump dump();
 
     private:
@@ -135,6 +149,7 @@ namespace qjs
       inline bool isValid() const { return (m_JsValue != 0) && (m_Ctx != nullptr); }
       ObjectView asObjectView() const;
       ArrayView asArrayView() const;
+      FunctionView asFunctionView() const;
       bool asBool() const;
       int asInt() const;
       float asFloat() const;

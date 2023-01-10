@@ -78,11 +78,17 @@ namespace qjs
     return val;
   }
 
+  Value VM::getGlobal()
+  {
+    return Value{JS_GetGlobalObject(m_Ctx), m_Ctx};
+  }
+
   Value VM::getGlobalObjectProperty(std::string_view name)
   {
-    Value global{JS_GetGlobalObject(m_Ctx), m_Ctx};
+    Value global = getGlobal();
     return global.as<ObjectView>().getProperty(name);
   }
+
 
   void VM::addPrecreatedModules()
   {
