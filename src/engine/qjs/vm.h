@@ -1,6 +1,7 @@
 #pragma once
 
 #include "forward_decl.h"
+#include "runtime_state.h"
 
 #include <EASTL/stack.h>
 
@@ -32,6 +33,7 @@ namespace qjs
 
     private:
       eastl::stack<std::string_view> m_FileNamesStack;
+      RuntimeState m_RtState;
       JSRuntime* m_Rt;
       JSContext* m_Ctx;
   };

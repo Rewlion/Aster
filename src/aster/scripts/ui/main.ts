@@ -3,11 +3,13 @@ import {logerror} from "@log"
 
 let i = 0
 ui.addTimer("test_timer", 0.3, () => {
-  logerror(`timer ${i}`)
+  //logerror(`timer ${i}`)
   if (i == 10)
     ui.removeTimer("test_timer")
   i++
 })
+
+let testState = new ui.State
 
 globalThis.rootUI = {
   size: [500, 500],

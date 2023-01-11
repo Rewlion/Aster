@@ -48,6 +48,8 @@ namespace qjs
 
     js_std_add_helpers(m_Ctx, 0, NULL);
     JS_SetModuleLoaderFunc(m_Rt, NULL, js_module_loader, NULL);
+
+    JS_SetRuntimeOpaque(m_Rt, &m_RtState);
   }
 
   void VM::destroy()

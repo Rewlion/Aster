@@ -67,6 +67,37 @@ namespace Engine::gui
     return JS_UNDEFINED;
   }
 
+  class StateClass
+  {
+    public:
+      static constexpr const char* name = "State";
+
+      static void onDestroy(JSRuntime* rt, JSValue v)
+      {
+      }
+
+      static JSValue constructor(JSContext *ctx, JSValueConst this_val,
+                                 int argc, JSValueConst *argv)
+      {
+        JSRuntime* rt = JS_GetRuntime(ctx);
+        const auto* rtState = reinterpret_cast<qjs::RuntimeState*>(JS_GetRuntimeOpaque(rt));
+
+        JSClassID classId = rtState->classNameToIdsMap.find(name)->second;
+        JSValue prototype = JS_GetClassProto(ctx, classId);
+        JSValue obj = JS_NewObjectProtoClass(ctx, prototype, classId);
+        JS_FreeValue(ctx, prototype);
+
+        return obj;
+      }
+
+      static qjs::ExportClass describe()
+      {
+        return qjs::ExportClass{name}
+          .setConstructor(0, StateClass::constructor)
+          .setDestroyCb(StateClass::onDestroy);
+      }
+  };
+
   class UiModule: public qjs::ModuleDescription
   {
     public:
@@ -89,6 +120,8 @@ namespace Engine::gui
 
         addFunc(ui_add_timer, "addTimer", 3);
         addFunc(ui_remove_timer, "removeTimer", 1);
+
+        addClass(StateClass::describe());
       }
 
       virtual const char* getName() const override

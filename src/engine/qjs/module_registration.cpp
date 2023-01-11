@@ -1,5 +1,6 @@
 #include "module_registration.h"
 #include "inc.h"
+#include "vm.h"
 
 #include <engine/assert.h>
 #include <engine/log.h>
@@ -33,7 +34,7 @@ namespace qjs
     return fnEntries;
   }
 
-  static int module_init_func(JSContext *ctx, JSModuleDef *m)
+  int ModuleDescription::moduleInitFunc(JSContext *ctx, JSModuleDef *m)
   {
     const auto it = module_def_to_description.find(m);
     ASSERT(it != module_def_to_description.end());
@@ -46,7 +47,7 @@ namespace qjs
 
   void ModuleDescription::addExports(JSContext* ctx)
   {
-    m_Module = JS_NewCModule(ctx, getName(), module_init_func);
+    m_Module = JS_NewCModule(ctx, getName(), ModuleDescription::moduleInitFunc);
 
     if (!m_Module)
     {
@@ -58,6 +59,9 @@ namespace qjs
 
     for (const auto& p: m_Params)
       JS_AddModuleExport(ctx, m_Module, p.name);
+
+    for (const auto& c: m_Classes)
+      JS_AddModuleExport(ctx, m_Module, c.name);
     
     eastl::vector<JSCFunctionListEntry> fnEntries = get_fn_entries(m_Funcs);
     if (!fnEntries.empty())
@@ -86,6 +90,41 @@ namespace qjs
     eastl::vector<JSCFunctionListEntry> fnEntries = get_fn_entries(m_Funcs);
     if (!fnEntries.empty())
       JS_SetModuleExportList(ctx, m_Module, fnEntries.data(), fnEntries.size());
+
+    for (const auto& c: m_Classes)
+      setClassExport(ctx, c);
+  }
+
+  void ModuleDescription::setClassExport(JSContext* ctx, const ExportClass& c)
+  {
+    if (c.constructor.fn == nullptr)
+    {
+      logerror("ui: can't export class {} it has no constructor", c.name);
+      return;
+    }
+
+    JSClassID classId;
+    JS_NewClassID(&classId);
+
+    JSRuntime* rt = JS_GetRuntime(ctx);
+    RuntimeState* rtState = reinterpret_cast<RuntimeState*>(JS_GetRuntimeOpaque(rt));
+    rtState->classNameToIdsMap.emplace(eastl::make_pair(c.name, classId));
+
+    JSClassDef def;
+    std::memset(&def, 0, sizeof(def));
+
+    def.class_name = c.name;
+    if (c.onDestroy) def.finalizer = c.onDestroy;
+
+    JS_NewClass(JS_GetRuntime(ctx), classId, &def);
+    const JSValue prototype = JS_NewObject(ctx);
+    JS_SetClassProto(ctx, classId, prototype);
+
+    const JSValue constructor = JS_NewCFunction2(ctx, c.constructor.fn, c.name,
+      c.constructor.length, JS_CFUNC_constructor, 0);
+    JS_SetConstructor(ctx, constructor, prototype);
+    
+    JS_SetModuleExport(ctx, m_Module, c.name, constructor);
   }
 }
  
