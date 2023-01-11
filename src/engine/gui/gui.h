@@ -1,6 +1,7 @@
 #pragma once
 
 #include "element.h"
+#include "react_states_storage.h"
 #include "timer.h"
 
 #include <engine/qjs/qjs.h>
@@ -9,6 +10,8 @@
 
 namespace Engine::gui
 {
+  class ReactStateClass;
+
   class Gui
   {
     public:
@@ -25,6 +28,16 @@ namespace Engine::gui
 
       void tick();
 
+      inline void addReactState(ReactStateClass* state)
+      {
+        m_ReactStorage.add(state);
+      }
+
+      inline void removeReactState(ReactStateClass* state)
+      {
+        m_ReactStorage.remove(state);
+      }
+
     private:
       void loadRootUiScript();
 
@@ -32,6 +45,7 @@ namespace Engine::gui
       qjs::VM m_Vm;
       TimersPool m_Timers;
       std::optional<Element> m_SceneRoot;
+      ReactStatesStorage m_ReactStorage;
   };
 
   extern Gui manager;
