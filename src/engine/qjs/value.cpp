@@ -55,11 +55,7 @@ namespace qjs
 
   Value::Value(Value&& rvl)
   {
-    this->~Value();
-    m_JsValue = rvl.m_JsValue;
-    m_Ctx = rvl.m_Ctx;
-    rvl.m_JsValue = 0;
-    rvl.m_Ctx = nullptr;
+    *this = std::move(rvl);
   }
 
   Value::~Value()
@@ -70,6 +66,17 @@ namespace qjs
       m_JsValue = 0;
       m_Ctx = nullptr;
     }
+  }
+
+  Value& Value::operator=(Value&& rvl)
+  {
+    this->~Value();
+    m_JsValue = rvl.m_JsValue;
+    m_Ctx = rvl.m_Ctx;
+    rvl.m_JsValue = 0;
+    rvl.m_Ctx = nullptr;
+
+    return *this;
   }
 
   bool Value::isBool() const

@@ -1,4 +1,13 @@
 import * as ui from "@ui"
+import {logerror} from "@log"
+
+let i = 0
+ui.addTimer("test_timer", 0.3, () => {
+  logerror(`timer ${i}`)
+  if (i == 10)
+    ui.removeTimer("test_timer")
+  i++
+})
 
 globalThis.rootUI = {
   size: [500, 500],

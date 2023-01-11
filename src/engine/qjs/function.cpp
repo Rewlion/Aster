@@ -23,8 +23,12 @@ namespace qjs
     for (uint i = 0; i < argc; ++i)
       jsArgv[i] = argv[i].m_JsValue;
 
+    JSValue jsThis = this_obj.isValid() ?
+      this_obj.m_JsValue :
+      JS_UNDEFINED;
+
     return Value{
-      JS_Call(m_Value.m_Ctx, m_Value.m_JsValue, this_obj.m_JsValue, argc, jsArgv.get()),
+      JS_Call(m_Value.m_Ctx, m_Value.m_JsValue, jsThis, argc, jsArgv.get()),
       m_Value.m_Ctx
     };
   }

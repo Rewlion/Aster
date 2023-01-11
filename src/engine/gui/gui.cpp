@@ -49,4 +49,9 @@ namespace Engine::gui
       scenePlacer.build(m_SceneRoot.value());
     }
   }
+
+  void Gui::tick()
+  {
+    m_Timers.tick();
+  }
 }

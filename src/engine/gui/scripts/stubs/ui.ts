@@ -12,3 +12,6 @@ export const FLOW_ROW = 0
 export const FLOW_COLUMN = 0
 export const FLOW_FLEX_ROW = 0
 export const FLOW_FLEX_COLUMN = 0
+
+export function addTimer(name: string, sec:number, cb: Function) {}
+export function removeTimer(name: string) {}

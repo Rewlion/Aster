@@ -51,6 +51,7 @@ namespace Engine
       Input::manager.processInput();
 
       ECS::manager.tick();
+      gui::manager.tick();
 
       const CameraData camera = get_camera();
       Render::world_render.render(camera);

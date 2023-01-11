@@ -40,9 +40,13 @@ namespace qjs
 
     public:
       Value();
+      Value(const JSValue, JSContext*);
       Value(const Value&) = delete;
       Value(Value&&);
       ~Value();
+      Value& operator=(Value&&);
+
+      inline bool isValid() const { return (m_JsValue != 0) && (m_Ctx != nullptr); }
 
       bool isBool() const;
       bool isNumber() const;
@@ -144,9 +148,6 @@ namespace qjs
       ValueDump dump();
 
     private:
-      Value(const JSValue, JSContext*);
-      
-      inline bool isValid() const { return (m_JsValue != 0) && (m_Ctx != nullptr); }
       ObjectView asObjectView() const;
       ArrayView asArrayView() const;
       FunctionView asFunctionView() const;

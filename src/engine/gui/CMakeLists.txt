@@ -4,6 +4,7 @@ SET(GUI_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/gui/element_tree_builder.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/gui.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/scene_tree_builder.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/gui/timer.cpp"
 )
 
 SET(GUI_MODULES_SRC
