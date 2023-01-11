@@ -162,6 +162,19 @@ namespace qjs
     return Value{JS_GetException(m_Ctx), m_Ctx};
   }
 
+  int64_t Value::getLength() const
+  {
+    int64_t len = 0;
+    JS_GetPropertyLength(m_Ctx, &len, m_JsValue);
+    return len;
+  }
+
+  Value Value::duplicate() const
+  {
+    JS_DupValue(m_Ctx, m_JsValue);
+    return Value{m_JsValue, m_Ctx};
+  }
+
   ObjectView Value::asObjectView() const
   {
     ASSERT_FMT(isObject(), "JSValue isn't object");
@@ -178,6 +191,15 @@ namespace qjs
   {
     ASSERT_FMT(isFunction(), "JSValue isn't function.");
     return FunctionView{*this};
+  }
+
+  string Value::asString() const
+  {
+    ASSERT_FMT(isString(), "JSValue isn't string");
+    const char* str = JS_ToCString(m_Ctx, m_JsValue);
+    string r{str};
+    JS_FreeCString(m_Ctx, str);
+    return r;
   }
 
   bool Value::asBool() const
@@ -213,6 +235,42 @@ namespace qjs
   ValueDump Value::dump()
   {
     return ValueDump{m_JsValue, *m_Ctx};
+  }
+
+  ValueView::ValueView()
+    : Value()
+  {
+  }
+
+  ValueView::ValueView(const JSValue v, JSContext* ctx)
+    : Value(v, ctx)
+  {
+  }
+
+  ValueView::ValueView(const ValueView& rvl)
+  {
+    m_JsValue = rvl.m_JsValue;
+    m_Ctx = rvl.m_Ctx;
+  }
+
+  ValueView::ValueView(ValueView&& rvl)
+  {
+    this->~ValueView();
+    std::swap(m_JsValue, rvl.m_JsValue);
+    std::swap(m_Ctx, rvl.m_Ctx);
+  }
+
+  ValueView::~ValueView()
+  {
+    m_JsValue = 0;
+    m_Ctx = nullptr;
+  }
+
+  ValueView& ValueView::operator=(ValueView&& rvl)
+  {
+    this->~ValueView();
+    *this = std::move(rvl);
+    return *this;
   }
 
 }

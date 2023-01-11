@@ -65,17 +65,12 @@ namespace qjs
       bool isNull() const;
 
       Value produceException();
+      int64_t getLength() const;
+      Value duplicate() const;
 
       inline operator bool() const
       {
         return !(isException() || isUndefined() || isUninitialized() || isNull());
-      }
-
-      template<class T>
-      T as()
-      {
-        static_assert(!"unsupported type for conversion");
-        return T{};
       }
 
       template<class T>
@@ -85,79 +80,39 @@ namespace qjs
         return T{};
       }
 
-      template<>
-      ObjectView as()
-      {
-        return asObjectView();
-      }
-
-      template<>
-      ObjectView as() const
-      {
-        return asObjectView();
-      }
-
-      template<>
-      ArrayView as()
-      {
-        return asArrayView();
-      }
-
-      template<>
-      ArrayView as() const
-      {
-        return asArrayView();
-      }
-
-      template<>
-      int as()
-      {
-        return asInt();
-      }
-
-      template<>
-      int as() const
-      {
-        return asInt();
-      }
-
-      template<>
-      float as()
-      {
-        return asFloat();
-      }
-
-      template<>
-      double as()
-      {
-        return asDouble();
-      }
-
-      template<>
-      FunctionView as()
-      {
-        return asFunctionView();
-      }
-
-      template<>
-      FunctionView as() const
-      {
-        return asFunctionView();
-      }
+      template<> ObjectView as() const { return asObjectView(); }
+      template<> ArrayView as() const { return asArrayView(); }
+      template<> int as() const { return asInt(); }
+      template<> float as() const { return asFloat(); }
+      template<> double as() const { return asDouble(); }
+      template<> FunctionView as() const { return asFunctionView(); }
+      template<> string as() const { return asString(); }
 
       ValueDump dump();
 
-    private:
+    protected:
       ObjectView asObjectView() const;
       ArrayView asArrayView() const;
       FunctionView asFunctionView() const;
+      string asString() const;
       bool asBool() const;
       int asInt() const;
       float asFloat() const;
       double asDouble() const;
 
-    private:
+    protected:
       JSValue m_JsValue;
       JSContext* m_Ctx;
+  };
+
+  class ValueView: public Value
+  {
+    public:
+      ValueView();
+      ValueView(const JSValue, JSContext*);
+      ValueView(const ValueView&);
+      ValueView(ValueView&&);
+      ~ValueView();
+      ValueView& operator=(ValueView&&);
   };
 }

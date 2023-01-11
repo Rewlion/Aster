@@ -12,47 +12,43 @@ namespace Engine::gui
   {
     if (argc != 3)
     {
-      JS_ThrowReferenceError(ctx, "ui: addTimer: argc != 3 (name, cb, sec)");
+      JS_ThrowReferenceError(ctx, "ui: addTimer: argc != 3 (name, sec, cb)");
       return JS_EXCEPTION;
     }
 
-    if (!JS_IsString(argv[0]))
+    const qjs::ValueView name{argv[0], ctx};
+    const qjs::ValueView sec{argv[1], ctx};
+    const qjs::ValueView cb{argv[2], ctx};
+
+    if (!name.isString())
     {
       JS_ThrowReferenceError(ctx,"ui: addTimer #1 argument(name) is not string");
       return JS_EXCEPTION;
     }
 
-    if (!JS_IsNumber(argv[1]))
+    if (!sec.isNumber())
     {
       JS_ThrowReferenceError(ctx,"ui: addTimer: #2 argument(sec) is not a number");
       return JS_EXCEPTION;
     }
 
-    if (!JS_IsFunction(ctx, argv[2]))
+    if (!cb.isFunction())
     {
       JS_ThrowReferenceError(ctx, "ui: addTimer: #3 argument(cb) is not a function");
       return JS_EXCEPTION;
     }
 
-    int64_t argcCount = 0;
-    JS_GetPropertyLength(ctx, &argcCount, argv[2]);
-    if (argcCount != 0)
+    if (cb.getLength() != 0)
     {
       JS_ThrowReferenceError(ctx, "ui: addTimer: cb shouldn't have any arguments");
       return JS_EXCEPTION;
     }
 
-    const char* nameJs = JS_ToCString(ctx, argv[0]);
-    string name{nameJs};
-    JS_FreeCString(ctx, nameJs);
-
-    JS_DupValue(ctx, argv[2]);
-    qjs::Value cb{argv[2], ctx};
-
-    double sec = 0.0;
-    JS_ToFloat64(ctx, &sec, argv[1]);
-
-    gui::manager.getTimersPool().addTimer(name, std::move(cb), sec);
+    gui::manager.getTimersPool().addTimer(
+      name.as<string>(),
+      cb.duplicate(),
+      sec.as<float>()
+    );
 
     return JS_UNDEFINED;
   }
@@ -66,11 +62,8 @@ namespace Engine::gui
       return JS_EXCEPTION;
     }
 
-    const char* nameJs = JS_ToCString(ctx, argv[0]);
-    string name{nameJs};
-    JS_FreeCString(ctx, nameJs);
-
-    gui::manager.getTimersPool().removeTimer(name);
+    const qjs::ValueView name{argv[0], ctx};
+    gui::manager.getTimersPool().removeTimer(name.as<string>());
     return JS_UNDEFINED;
   }
 

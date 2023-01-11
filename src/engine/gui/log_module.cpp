@@ -1,6 +1,7 @@
-#include <engine/qjs/module_registration.h>
-#include <engine/qjs/inc.h>
 #include <engine/log.h>
+#include <engine/qjs/inc.h>
+#include <engine/qjs/module_registration.h>
+#include <engine/qjs/value.hpp>
 
 namespace Engine::gui
 { 
@@ -12,17 +13,16 @@ namespace Engine::gui
       JS_ThrowReferenceError(ctx, "logerror function accepts only 1 arg (string), provided: %d", argc);
       return JS_EXCEPTION;
     }
+    qjs::ValueView text{argv[0], ctx};
 
-    if (!JS_IsString(argv[0]))
+    if (!text.isString())
     {
       JS_ThrowReferenceError(ctx, "logerror expects string as argument");
       return JS_EXCEPTION;
     }
 
-    const char* str = JS_ToCString(ctx, argv[0]);
-    logerror("ui: {}", str);
+    logerror("ui: {}", text.as<string>());
 
-    JS_FreeCString(ctx, str);
     return JS_UNDEFINED;
   }
 
