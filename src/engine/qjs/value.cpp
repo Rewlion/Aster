@@ -156,6 +156,41 @@ namespace qjs
     return JS_IsNull(m_JsValue);
   }
 
+  Value::Type Value::getType() const
+  {
+    if (isBool())
+      return Type::Bool;
+    if (isInt())
+      return Type::Int;
+    if (isFloat())
+      return Type::Float;
+    if (isArray())
+      return Type::Array;
+    if (isFunction())
+      return Type::Function;
+    if (isPlainObject())
+      return Type::PlainObject;
+    if (isObject())
+      return Type::Object;
+    if (isException())
+      return Type::Exception;
+    if (isError())
+      return Type::Error;
+    if (isUndefined())
+      return Type::Undefined;
+    if (isUninitialized())
+      return Type::Uninitialized;
+    if (isString())
+      return Type::String;
+    if (isSymbol())
+      return Type::Symbol;
+    if (isNull())
+      return Type::Null;
+
+    ASSERT(!"unsupported");
+    return {};
+  }
+
   Value Value::produceException()
   {
     ASSERT_FMT(isException(), "can't produce exception: JSValue isn't exception");

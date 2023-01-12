@@ -1,7 +1,9 @@
 #pragma once
 
 #include "constants.h"
+#include "react_state_registration.h"
 
+#include <engine/qjs/value.hpp>
 #include <engine/types.h>
 
 #include <EASTL/vector.h>
@@ -76,9 +78,18 @@ namespace Engine::gui
       float2 size = {0, 0};
     };
 
+    size_t id = 0;
+
     Params params;
     SceneParams sceneParams;
 
+    qjs::Value constructor;
+    eastl::vector<ReactStateRegistration> observes;
     eastl::vector<Element> childs;
+
+    bool isDynamic() const
+    {
+      return constructor.isValid();
+    }
   };
 }

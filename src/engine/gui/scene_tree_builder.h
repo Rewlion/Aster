@@ -13,9 +13,9 @@ namespace Engine::gui
       }
 
       void build(Element& tree);
+      void placeChilds(Element& parent) const;
 
     private:
-      void placeChilds(Element& parent) const;
       void placeChildsInRow(Element& parent) const;
       void placeChildsInFlexRow(Element& parent) const;
       void placeChildsInColumn(Element& parent) const;

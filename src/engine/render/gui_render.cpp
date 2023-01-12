@@ -28,7 +28,7 @@ namespace Engine::Render
 
   void GuiRender::render(gapi::CmdEncoder& encoder) const
   {
-    const std::optional<gui::Element> rootUI = gui::manager.getRootUI();
+    const std::optional<gui::Element>& rootUI = gui::manager.getRootUI();
     if (!rootUI.has_value())
       return;
 

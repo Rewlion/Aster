@@ -1,5 +1,6 @@
 #include "element_tree_builder.h"
 #include "constants.h"
+#include "react_state.h"
 
 #include <engine/log.h>
 #include <engine/qjs/array.h>
@@ -31,20 +32,23 @@ namespace Engine::gui
     return buildElem(root_ui);
   }
 
-  std::optional<Element> ElementTreeBuilder::buildStaticElem(const qjs::Value& v) const
+  std::optional<Element> ElementTreeBuilder::buildStaticElem(const qjs::Value& v)
   {
+    static size_t id = 0;
+
     auto params = buildParams(v);
     if (!params.has_value())
       return std::nullopt;
 
     eastl::vector<Element> childs = buildChilds(v);
     return Element{
+      .id = id++,
       .params = std::move(params.value()),
       .childs = std::move(childs)
     };
   }
 
-  std::optional<Element> ElementTreeBuilder::buildDynamicElem(const qjs::Value& v) const
+  std::optional<Element> ElementTreeBuilder::buildDynamicElem(const qjs::Value& v)
   {
     const auto buildElem = v.as<qjs::FunctionView>();
     if (buildElem.getArgsCount() == 0)
@@ -55,7 +59,15 @@ namespace Engine::gui
       else if (!r.isPlainObject())
         logerror("ui: invalid element: function has to return an object");
       else
-        return buildStaticElem(r);
+      {
+        std::optional<Element> elem = buildStaticElem(r);
+        if (elem.has_value())
+        {
+          elem.value().constructor = v.duplicate();
+          elem->observes = getObservedReactStates(r);
+        }
+        return elem;
+      }
     }
     else
       logerror("ui: invalid element: function shouldn't have any arguments");
@@ -63,7 +75,7 @@ namespace Engine::gui
     return std::nullopt;
   }
 
-  std::optional<Element> ElementTreeBuilder::buildElem(const qjs::Value& v) const
+  std::optional<Element> ElementTreeBuilder::buildElem(const qjs::Value& v)
   {
     if (v.isPlainObject())
       return buildStaticElem(v);
@@ -91,6 +103,32 @@ namespace Engine::gui
     params.valign = obj.getIntEnumOr("valign", VerAlignType::None);
 
     return params;
+  }
+
+  eastl::vector<ReactStateRegistration> ElementTreeBuilder::getObservedReactStates(const qjs::Value& v) const
+  {
+    eastl::vector<ReactStateRegistration> states;
+    auto obj = v.as<qjs::ObjectView>();
+
+    const qjs::Value observes = obj.getProperty("observe");
+    if (observes.isUndefined())
+    {
+    }
+    if (observes.isArray())
+    {
+      const auto array = observes.as<qjs::ArrayView>();
+      const size_t len = array.length();
+      for (size_t i = 0; i < len; ++i)
+      {
+        const qjs::Value val = array[i];
+        if (val.isObject())
+          states.emplace_back(val);
+        else
+          logerror("ui: invalid observed state: not an object");
+      }
+    }
+    
+    return states;
   }
 
   SizeParam ElementTreeBuilder::getSize(qjs::ObjectView& obj) const
@@ -214,7 +252,7 @@ namespace Engine::gui
     return color;
   }
 
-  eastl::vector<Element> ElementTreeBuilder::buildChilds(const qjs::Value& v) const
+  eastl::vector<Element> ElementTreeBuilder::buildChilds(const qjs::Value& v)
   {
     eastl::vector<Element> childsElems;
     const qjs::Value childs = v.as<qjs::ObjectView>().getProperty("childs");
@@ -234,7 +272,7 @@ namespace Engine::gui
         const qjs::Value child = array[i];
         if (!child.isUndefined())
         {
-          const auto optElem = buildElem(child);
+          auto optElem = buildElem(child);
           if (optElem.has_value())
             childsElems.push_back(std::move(optElem.value()));
         }

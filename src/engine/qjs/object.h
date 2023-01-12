@@ -10,6 +10,7 @@ namespace qjs
   {
     public:
       ObjectView(const Value&);
+      JSValue getJsProperty(const std::string_view);
       Value getProperty(const std::string_view);
       float getFloatOr(const std::string_view, const float);
       int getIntOr(const std::string_view, const int);

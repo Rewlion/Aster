@@ -32,6 +32,24 @@ namespace qjs
 
   class Value
   {
+    enum class Type
+    {
+      Bool,
+      Int,
+      Float,
+      Array,
+      Function,
+      Object,
+      PlainObject,
+      Exception,
+      Error,
+      Undefined,
+      Uninitialized,
+      String,
+      Symbol,
+      Null
+    };
+
     friend VM;
     friend class ModuleLoader;
     friend ArrayView;
@@ -63,6 +81,7 @@ namespace qjs
       bool isString() const;
       bool isSymbol() const;
       bool isNull() const;
+      Type getType() const;
 
       Value produceException();
       int64_t getLength() const;
@@ -90,6 +109,8 @@ namespace qjs
 
       ValueDump dump();
 
+      inline JSValue getJsValue() const { return m_JsValue; }
+      inline JSContext* getContext() const { return m_Ctx; }
     protected:
       ObjectView asObjectView() const;
       ArrayView asArrayView() const;

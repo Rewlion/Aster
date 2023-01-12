@@ -17,4 +17,18 @@ extern "C" {
       }\
      }\
     }
+
+  #define JS_CPP_GETSET_DEF(_name, fgetter, fsetter)\
+  {\
+    .name = _name,\
+    .prop_flags = JS_PROP_CONFIGURABLE,\
+    .def_type = JS_DEF_CGETSET,\
+    .magic = 0,\
+    .u = {\
+      .getset = {\
+        .get = { .getter = fgetter },\
+        .set = { .setter = fsetter }\
+      }\
+    }\
+  }
 }

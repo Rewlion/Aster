@@ -4,6 +4,7 @@ SET(GUI_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/gui/element_tree_builder.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/gui.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/react_state.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/gui/react_state_registration.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/react_states_storage.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/scene_tree_builder.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/timer.cpp"

@@ -27,6 +27,8 @@ namespace Engine::gui
       }
 
       void tick();
+      void rebuildDirtyElems();
+      bool rebuildElem(Element& parent, Element& child, const eastl::vector_set<const ReactStateClass*>& dirty_states);
 
       inline void addReactState(ReactStateClass* state)
       {
@@ -36,6 +38,21 @@ namespace Engine::gui
       inline void removeReactState(ReactStateClass* state)
       {
         m_ReactStorage.remove(state);
+      }
+
+      inline void useReactStateInUi(const ReactStateClass* state)
+      {
+        m_ReactStorage.useUiState(state);
+      }
+
+      inline void removeReactStateFromUi(const ReactStateClass* state)
+      {
+        m_ReactStorage.removeUiState(state);
+      }
+
+      inline void markDirtyState(const ReactStateClass* state)
+      {
+        m_ReactStorage.markDirtyState(state);
       }
 
     private:

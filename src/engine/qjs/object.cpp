@@ -11,11 +11,14 @@ namespace qjs
   {
   }
 
+  JSValue ObjectView::getJsProperty(const std::string_view name)
+  {
+    return JS_GetPropertyStr(m_Value.m_Ctx, m_Value.m_JsValue, name.data());
+  }
+
   Value ObjectView::getProperty(const std::string_view name)
   {
-    return Value(
-      JS_GetPropertyStr(m_Value.m_Ctx, m_Value.m_JsValue, name.data()),
-      m_Value.m_Ctx);
+    return Value(getJsProperty(name), m_Value.m_Ctx);
   }
 
   float ObjectView::getFloatOr(const std::string_view name, const float def)

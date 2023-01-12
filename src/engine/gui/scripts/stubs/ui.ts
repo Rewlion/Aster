@@ -17,6 +17,8 @@ export function addTimer(name: string, sec:number, cb: Function) {}
 export function removeTimer(name: string) {}
 
 export class State {
+  value = undefined
   constructor() {
   }
+
 }
