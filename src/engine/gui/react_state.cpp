@@ -28,11 +28,21 @@ namespace Engine::gui
   JSValue ReactStateClass::constructor(JSContext* ctx, JSValueConst this_val,
                              int argc, JSValueConst* argv)
   {
+    if (argc > 2)
+    {
+      JS_ThrowReferenceError(ctx, "ui: invalid argc number for ReactState. expected: <= 2, provided:{}", argc+1);
+      return JS_EXCEPTION;
+    }
+
+    JSValue initValue = JS_UNDEFINED;
+    if (argc == 1)
+      initValue = JS_DupValue(ctx, argv[0]);
+    
     JSValue obj = constructFromPrototype(ctx);
     ReactStateClass* wrapper = new ReactStateClass(obj, ctx);
     JS_SetOpaque(obj, wrapper);
 
-    JS_DefinePropertyValueStr(ctx, obj, "__value", JS_UNDEFINED, JS_PROP_WRITABLE);
+    JS_DefinePropertyValueStr(ctx, obj, "__value", initValue, JS_PROP_WRITABLE);
 
     const auto getter = 
     [](JSContext* ctx, JSValueConst this_obj) {

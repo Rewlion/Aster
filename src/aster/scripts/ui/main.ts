@@ -1,10 +1,10 @@
 import * as ui from "@ui"
 import {logerror} from "@log"
 
-let testState = new ui.ReactState
+let testState = new ui.ReactState(0)
 let i = 0
 ui.addTimer("test_timer", 1, () => {
-  logerror(`timer ${i}`)
+  logerror(`testState.value ${testState.value}`)
   if (i == 10)
   {
     //ui.removeTimer("test_timer")

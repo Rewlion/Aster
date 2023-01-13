@@ -18,7 +18,8 @@ export function removeTimer(name: string) {}
 
 export class ReactState {
   value = undefined
-  constructor() {
+  constructor(v:any = undefined) {
+    this.value = v
   }
 
 }
