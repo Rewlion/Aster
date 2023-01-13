@@ -22,8 +22,8 @@ namespace qjs
   Value ArrayView::operator[](const uint32_t i) const
   {
     return Value{
-      JS_GetPropertyUint32(m_Value.m_Ctx, m_Value.m_JsValue, i),
-      m_Value.m_Ctx
+      m_Value.m_Ctx,
+      JS_GetPropertyUint32(m_Value.m_Ctx, m_Value.m_JsValue, i)
     };
   }
 }

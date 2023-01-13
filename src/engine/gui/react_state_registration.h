@@ -1,9 +1,6 @@
 #pragma once
 
-namespace qjs
-{
-  class Value;
-}
+#include <engine/qjs/forward_decl.h>
 
 namespace Engine::gui
 {
@@ -24,5 +21,6 @@ namespace Engine::gui
 
     private:
       ReactStateClass* m_State = nullptr;
+      JSContext* m_Ctx = nullptr;
   };
 }

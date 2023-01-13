@@ -7,21 +7,24 @@ namespace Engine::gui
 {
   class ReactStateClass;
 
+  using DirtyStates = eastl::vector_set<const ReactStateClass*>;
+
   class ReactStatesStorage
   {
     public:
       void add(ReactStateClass*);
       void remove(ReactStateClass*);
 
-      void useUiState(const ReactStateClass*);
-      void removeUiState(const ReactStateClass*);
+      void incUiStateRC(const ReactStateClass*);
+      void decUiStateRC(const ReactStateClass*);
 
       void markDirtyState(const ReactStateClass*);
-      const eastl::vector_set<const ReactStateClass*>& getDirtyStates() const;
+      const DirtyStates& getDirtyStates() const;
+      inline bool hasDirtyStates() const { return !m_DirtyStates.empty(); }
 
     private:
       eastl::vector_map<uint64_t, ReactStateClass*> m_RegisteredStates;
       eastl::vector_map<const ReactStateClass*, size_t> m_UiStatesRC;
-      eastl::vector_set<const ReactStateClass*> m_DirtyStates;
+      DirtyStates m_DirtyStates;
   };
 }

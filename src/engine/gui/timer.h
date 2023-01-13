@@ -27,8 +27,8 @@ namespace Engine::gui
   class TimersPool
   {
     public:
-      void addTimer(const string& name, qjs::Value&& cb, uint64_t secBeforeCall);
-      void removeTimer(const string& name);
+      void add(const string& name, qjs::Value&& cb, uint64_t secBeforeCall);
+      void remove(const string& name);
       void tick();
 
     private:

@@ -54,7 +54,7 @@ namespace Engine::gui
     return *this;
   }
 
-  void TimersPool::addTimer(const string& name, qjs::Value&& cb, uint64_t clocksBeforeCall)
+  void TimersPool::add(const string& name, qjs::Value&& cb, uint64_t clocksBeforeCall)
   {
     const auto it = m_Timers.find(name);
     if (it != m_Timers.end())
@@ -72,7 +72,7 @@ namespace Engine::gui
     m_Timers.emplace(eastl::make_pair(name, Timer{std::move(cb), clocksBeforeCall} ));
   }
 
-  void TimersPool::removeTimer(const string& name)
+  void TimersPool::remove(const string& name)
   {
     m_TimersToRemove.insert(name);
   }

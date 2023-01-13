@@ -18,7 +18,7 @@ namespace qjs
 
   Value ObjectView::getProperty(const std::string_view name)
   {
-    return Value(getJsProperty(name), m_Value.m_Ctx);
+    return Value(m_Value.m_Ctx, getJsProperty(name));
   }
 
   float ObjectView::getFloatOr(const std::string_view name, const float def)

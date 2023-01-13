@@ -16,7 +16,7 @@ namespace qjs
     std::swap(m_Managed, rvl.m_Managed);
   }
 
-  ValueDump::ValueDump(const JSValue js_val, JSContext& ctx)
+  ValueDump::ValueDump(JSContext& ctx, const JSValue js_val)
     : m_Ctx(ctx)
   {
     m_Dump = JS_ToCString(&m_Ctx, js_val);
@@ -42,14 +42,14 @@ namespace qjs
   }
 
   Value::Value()
-    : m_JsValue(0)
-    , m_Ctx(nullptr)
+    : m_Ctx(nullptr)
+    , m_JsValue(0)
   {
   }
 
-  Value::Value(JSValue v, JSContext* ctx)
-    : m_JsValue(v)
-    , m_Ctx(ctx)
+  Value::Value(JSContext* ctx, JSValue v)
+    : m_Ctx(ctx)
+    , m_JsValue(v)
   {
   }
 
@@ -63,18 +63,18 @@ namespace qjs
     if (isValid())
     {
       JS_FreeValue(m_Ctx, m_JsValue);
-      m_JsValue = 0;
       m_Ctx = nullptr;
+      m_JsValue = 0;
     }
   }
 
   Value& Value::operator=(Value&& rvl)
   {
     this->~Value();
-    m_JsValue = rvl.m_JsValue;
     m_Ctx = rvl.m_Ctx;
-    rvl.m_JsValue = 0;
+    m_JsValue = rvl.m_JsValue;
     rvl.m_Ctx = nullptr;
+    rvl.m_JsValue = 0;
 
     return *this;
   }
@@ -194,7 +194,7 @@ namespace qjs
   Value Value::produceException()
   {
     ASSERT_FMT(isException(), "can't produce exception: JSValue isn't exception");
-    return Value{JS_GetException(m_Ctx), m_Ctx};
+    return Value{m_Ctx, JS_GetException(m_Ctx)};
   }
 
   int64_t Value::getLength() const
@@ -207,7 +207,7 @@ namespace qjs
   Value Value::duplicate() const
   {
     JS_DupValue(m_Ctx, m_JsValue);
-    return Value{m_JsValue, m_Ctx};
+    return Value{m_Ctx, m_JsValue};
   }
 
   ObjectView Value::asObjectView() const
@@ -269,7 +269,7 @@ namespace qjs
 
   ValueDump Value::dump()
   {
-    return ValueDump{m_JsValue, *m_Ctx};
+    return ValueDump{*m_Ctx, m_JsValue};
   }
 
   ValueView::ValueView()
@@ -277,15 +277,15 @@ namespace qjs
   {
   }
 
-  ValueView::ValueView(const JSValue v, JSContext* ctx)
-    : Value(v, ctx)
+  ValueView::ValueView(JSContext* ctx, const JSValue v)
+    : Value(ctx, v)
   {
   }
 
   ValueView::ValueView(const ValueView& rvl)
   {
-    m_JsValue = rvl.m_JsValue;
     m_Ctx = rvl.m_Ctx;
+    m_JsValue = rvl.m_JsValue;
   }
 
   ValueView::ValueView(ValueView&& rvl)

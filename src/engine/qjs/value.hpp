@@ -22,7 +22,7 @@ namespace qjs
     }
 
     private:
-      ValueDump(const JSValue, JSContext& ctx);
+      ValueDump(JSContext&, const JSValue);
 
     private:
       JSContext& m_Ctx;
@@ -58,7 +58,7 @@ namespace qjs
 
     public:
       Value();
-      Value(const JSValue, JSContext*);
+      Value(JSContext*, const JSValue);
       Value(const Value&) = delete;
       Value(Value&&);
       ~Value();
@@ -122,15 +122,15 @@ namespace qjs
       double asDouble() const;
 
     protected:
-      JSValue m_JsValue;
       JSContext* m_Ctx;
+      JSValue m_JsValue;
   };
 
   class ValueView: public Value
   {
     public:
       ValueView();
-      ValueView(const JSValue, JSContext*);
+      ValueView(JSContext*, const JSValue);
       ValueView(const ValueView&);
       ValueView(ValueView&&);
       ~ValueView();

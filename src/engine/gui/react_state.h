@@ -10,7 +10,7 @@ namespace Engine::gui
   class ReactStateClass
   {
     public:
-      static constexpr const char* name = "State";
+      static constexpr const char* name = "ReactState";
 
       static JSClassID        getClassID(JSRuntime* rt);
       static JSValue          constructFromPrototype(JSContext* ctx);

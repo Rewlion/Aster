@@ -1,16 +1,16 @@
-#include "scene_tree_builder.h"
+#include "scene_placer.h"
 
 #include <engine/assert.h>
 #include <engine/gui/constants.h>
 
 namespace Engine::gui
 {
-  void SceneTreeBuilder::build(Element& tree)
+  void ScenePlacer::placeRoot(Element& tree, const float2 render_size)
   {
-    absPlaceChild({0,0}, m_RenderSize, tree);
+    absPlaceChild({0,0}, render_size, tree);
   }
 
-  void SceneTreeBuilder::placeChilds(Element& parent) const
+  void ScenePlacer::placeChilds(Element& parent) const
   {
     switch (parent.params.flow)
     {
@@ -44,7 +44,7 @@ namespace Engine::gui
     }
   }
 
-  void SceneTreeBuilder::placeChildsInRow(Element& parent) const
+  void ScenePlacer::placeChildsInRow(Element& parent) const
   {
     float xOffset = 0.0f;
     for (auto& child: parent.childs)
@@ -65,7 +65,7 @@ namespace Engine::gui
     }
   }
 
-   void SceneTreeBuilder::placeChildsInFlexRow(Element& parent) const
+   void ScenePlacer::placeChildsInFlexRow(Element& parent) const
   {
     if (parent.childs.empty())
       return;
@@ -98,7 +98,7 @@ namespace Engine::gui
     }
   }
 
-  void SceneTreeBuilder::placeChildsInColumn(Element& parent) const
+  void ScenePlacer::placeChildsInColumn(Element& parent) const
   {
     float yOffset = 0.0f;
     for (auto& child: parent.childs)
@@ -119,7 +119,7 @@ namespace Engine::gui
     }
   }
 
-  void SceneTreeBuilder::placeChildsInFlexColumn(Element& parent) const
+  void ScenePlacer::placeChildsInFlexColumn(Element& parent) const
   {
     if (parent.childs.empty())
       return;
@@ -152,7 +152,7 @@ namespace Engine::gui
     }
   }
 
-  void SceneTreeBuilder::absPlaceChild(const float2 parent_pos, const float2 parent_size, Element& child) const
+  void ScenePlacer::absPlaceChild(const float2 parent_pos, const float2 parent_size, Element& child) const
   {
     child.sceneParams.size = float2(child.params.size[0], child.params.size[1]);
 
@@ -163,7 +163,7 @@ namespace Engine::gui
     placeChilds(child);
   }
 
-  float2 SceneTreeBuilder::getAnchorPos(const float2 parent_pos, const float2 parent_size, const Element& child) const
+  float2 ScenePlacer::getAnchorPos(const float2 parent_pos, const float2 parent_size, const Element& child) const
   {
     const float2 relPos {
       getRelativeHalignPos(parent_size.x, child),
@@ -173,7 +173,7 @@ namespace Engine::gui
     return parent_pos + relPos;
   }
 
-  float SceneTreeBuilder::getRelativeHalignPos(const float parent_width, const Element& child) const
+  float ScenePlacer::getRelativeHalignPos(const float parent_width, const Element& child) const
   {
     switch (child.params.halign)
     {
@@ -184,7 +184,7 @@ namespace Engine::gui
     }
   }
 
-  float SceneTreeBuilder::getRelativeValignPos(const float parent_height, const Element& child) const
+  float ScenePlacer::getRelativeValignPos(const float parent_height, const Element& child) const
   {
     switch (child.params.valign)
     {
@@ -195,7 +195,7 @@ namespace Engine::gui
     }
   }
 
-  float2 SceneTreeBuilder::getRelativePos(const Element& child) const
+  float2 ScenePlacer::getRelativePos(const Element& child) const
   {
     float2 pos{child.params.pos};
     

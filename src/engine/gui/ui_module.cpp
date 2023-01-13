@@ -1,6 +1,6 @@
 #include "constants.h"
-#include "gui.h"
 #include "react_state.h"
+#include "runtime_state.h"
 
 #include <engine/qjs/module_registration.h>
 #include <engine/qjs/inc.h>
@@ -17,9 +17,9 @@ namespace Engine::gui
       return JS_EXCEPTION;
     }
 
-    const qjs::ValueView name{argv[0], ctx};
-    const qjs::ValueView sec{argv[1], ctx};
-    const qjs::ValueView cb{argv[2], ctx};
+    const qjs::ValueView name{ctx, argv[0]};
+    const qjs::ValueView sec{ctx, argv[1]};
+    const qjs::ValueView cb{ctx, argv[2]};
 
     if (!name.isString())
     {
@@ -45,11 +45,12 @@ namespace Engine::gui
       return JS_EXCEPTION;
     }
 
-    gui::manager.getTimersPool().addTimer(
-      name.as<string>(),
-      cb.duplicate(),
-      sec.as<float>()
-    );
+    qjs::get_user_state<RuntimeState>(ctx)
+      ->timers.add(
+        name.as<string>(),
+        cb.duplicate(),
+        sec.as<float>()
+      );
 
     return JS_UNDEFINED;
   }
@@ -63,8 +64,10 @@ namespace Engine::gui
       return JS_EXCEPTION;
     }
 
-    const qjs::ValueView name{argv[0], ctx};
-    gui::manager.getTimersPool().removeTimer(name.as<string>());
+    const qjs::ValueView name{ctx, argv[0]};
+    qjs::get_user_state<RuntimeState>(ctx)
+      ->timers.remove(name.as<string>());
+
     return JS_UNDEFINED;
   }
 

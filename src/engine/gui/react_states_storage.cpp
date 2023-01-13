@@ -17,7 +17,7 @@ namespace Engine::gui
     m_RegisteredStates.erase(it);
   }
 
-  void ReactStatesStorage::useUiState(const ReactStateClass* state)
+  void ReactStatesStorage::incUiStateRC(const ReactStateClass* state)
   {
     const auto it = m_UiStatesRC.find(state);
     if (it != m_UiStatesRC.end())
@@ -26,7 +26,7 @@ namespace Engine::gui
       m_UiStatesRC.emplace(eastl::make_pair(state, 1));
   }
 
-  void ReactStatesStorage::removeUiState(const ReactStateClass* state)
+  void ReactStatesStorage::decUiStateRC(const ReactStateClass* state)
   {
     const auto it = m_UiStatesRC.find(state);
     ASSERT(it != m_UiStatesRC.end());

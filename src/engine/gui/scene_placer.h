@@ -4,15 +4,10 @@
 
 namespace Engine::gui
 {
-  class SceneTreeBuilder
+  class ScenePlacer
   {
     public:
-      SceneTreeBuilder(const float2 render_size)
-        : m_RenderSize(render_size)
-      {
-      }
-
-      void build(Element& tree);
+      void placeRoot(Element& tree, const float2 render_size);
       void placeChilds(Element& parent) const;
 
     private:
@@ -25,8 +20,5 @@ namespace Engine::gui
       float getRelativeHalignPos(const float parent_width, const Element& child) const;
       float getRelativeValignPos(const float parent_height, const Element& child) const;
       float2 getRelativePos(const Element& child) const;
-
-    private:
-      float2 m_RenderSize;
   }; 
 }

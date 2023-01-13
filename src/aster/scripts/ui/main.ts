@@ -1,7 +1,7 @@
 import * as ui from "@ui"
 import {logerror} from "@log"
 
-let testState = new ui.State
+let testState = new ui.ReactState
 let i = 0
 ui.addTimer("test_timer", 1, () => {
   logerror(`timer ${i}`)

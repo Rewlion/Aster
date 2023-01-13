@@ -28,8 +28,8 @@ namespace qjs
       JS_UNDEFINED;
 
     return Value{
-      JS_Call(m_Value.m_Ctx, m_Value.m_JsValue, jsThis, argc, jsArgv.get()),
-      m_Value.m_Ctx
+      m_Value.m_Ctx,
+      JS_Call(m_Value.m_Ctx, m_Value.m_JsValue, jsThis, argc, jsArgv.get())
     };
   }
 }

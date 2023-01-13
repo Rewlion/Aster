@@ -6,6 +6,7 @@ set (QJS_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/qjs/function.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/qjs/module_registration.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/qjs/object.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/qjs/user_state.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/qjs/value.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/qjs/vm.cpp"
 )

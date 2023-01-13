@@ -15,6 +15,7 @@ namespace qjs
       void init();
       void destroy();
       
+      void setUserState(void*);
       void pushCurrentFileName(std::string_view name);
       void popCurrentFileName();
       Value eval(std::string_view code);

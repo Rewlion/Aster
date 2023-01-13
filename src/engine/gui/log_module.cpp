@@ -13,7 +13,7 @@ namespace Engine::gui
       JS_ThrowReferenceError(ctx, "logerror function accepts only 1 arg (string), provided: %d", argc);
       return JS_EXCEPTION;
     }
-    qjs::ValueView text{argv[0], ctx};
+    qjs::ValueView text{ctx, argv[0]};
 
     if (!text.isString())
     {

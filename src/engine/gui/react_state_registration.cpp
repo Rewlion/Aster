@@ -1,6 +1,7 @@
 #include "react_state_registration.h"
-#include "react_state.h"
 #include "gui.h"
+#include "react_state.h"
+#include "runtime_state.h"
 
 #include <engine/qjs/value.hpp>
 
@@ -9,7 +10,10 @@ namespace Engine::gui
   ReactStateRegistration::ReactStateRegistration(const qjs::Value& v)
   {
     m_State = ReactStateClass::unpack(v);
-    gui::manager.useReactStateInUi(m_State);
+    m_Ctx = v.getContext();
+
+    qjs::get_user_state<RuntimeState>(v.getContext())
+      ->reactStorage.incUiStateRC(m_State);
   }
 
   ReactStateRegistration::ReactStateRegistration(ReactStateRegistration&& rvl)
@@ -22,8 +26,11 @@ namespace Engine::gui
   {
     if (m_State)
     {
-      gui::manager.removeReactStateFromUi(m_State);
+      qjs::get_user_state<RuntimeState>(m_Ctx)
+        ->reactStorage.decUiStateRC(m_State);
+
       m_State = nullptr;
+      m_Ctx = nullptr;
     }
   }
 }

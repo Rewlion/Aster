@@ -16,7 +16,7 @@ export const FLOW_FLEX_COLUMN = 0
 export function addTimer(name: string, sec:number, cb: Function) {}
 export function removeTimer(name: string) {}
 
-export class State {
+export class ReactState {
   value = undefined
   constructor() {
   }

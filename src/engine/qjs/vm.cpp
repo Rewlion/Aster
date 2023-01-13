@@ -58,6 +58,12 @@ namespace qjs
     JS_FreeRuntime(m_Rt); 
   }
 
+  void VM::setUserState(void* state)
+  {
+    RuntimeState* rtState = reinterpret_cast<RuntimeState*>(JS_GetRuntimeOpaque(m_Rt));
+    rtState->userState = state;
+  }
+
   void VM::pushCurrentFileName(std::string_view name)
   {
     m_FileNamesStack.push(name);
@@ -72,7 +78,7 @@ namespace qjs
   {
     const std::string_view file = getCurrentFileName();
     JSValue jsVal = JS_Eval(m_Ctx, code.data(), code.size(), file.data(), JS_EVAL_TYPE_MODULE);
-    Value val{jsVal, m_Ctx};
+    Value val{m_Ctx, jsVal};
 
     if (val.isException())
       logerror_exception(val.produceException());
@@ -82,7 +88,7 @@ namespace qjs
 
   Value VM::getGlobal()
   {
-    return Value{JS_GetGlobalObject(m_Ctx), m_Ctx};
+    return Value{m_Ctx, JS_GetGlobalObject(m_Ctx)};
   }
 
   Value VM::getGlobalObjectProperty(std::string_view name)

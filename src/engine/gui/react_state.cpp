@@ -1,6 +1,6 @@
 #include "react_state.h"
 
-#include "gui.h"
+#include "runtime_state.h"
 
 namespace Engine::gui
 {
@@ -36,14 +36,16 @@ namespace Engine::gui
 
     const auto getter = 
     [](JSContext* ctx, JSValueConst this_obj) {
-      return qjs::ValueView{this_obj, ctx}
+      return qjs::ValueView{ctx, this_obj}
               .as<qjs::ObjectView>()
               .getJsProperty("__value");
     };
     const auto setter = 
     [](JSContext* ctx, JSValueConst this_obj, JSValue obj) {
       JS_SetPropertyStr(ctx, this_obj, "__value", obj);
-      gui::manager.markDirtyState(ReactStateClass::unpack(ctx, this_obj));
+      qjs::get_user_state<RuntimeState>(ctx)
+      ->reactStorage.markDirtyState(
+        ReactStateClass::unpack(ctx, this_obj));
       return JS_UNDEFINED;
     };
 
@@ -65,14 +67,16 @@ namespace Engine::gui
 
   ReactStateClass::ReactStateClass(const JSValue obj, JSContext* ctx)
     : m_Id(last_registered_state_id++)
-    , m_Obj(obj, ctx)
+    , m_Obj(ctx, obj)
   {
-    gui::manager.addReactState(this);
+    qjs::get_user_state<RuntimeState>(ctx)
+      ->reactStorage.add(this);
   }
 
   ReactStateClass::~ReactStateClass()
   {
-    gui::manager.removeReactState(this);
+    qjs::get_user_state<RuntimeState>(m_Obj.getContext())
+      ->reactStorage.remove(this);
   }
 
   qjs::ExportClass ReactStateClass::describe()
