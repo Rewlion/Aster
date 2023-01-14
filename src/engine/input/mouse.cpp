@@ -35,7 +35,6 @@ namespace Engine::Input
 
     static bool isFirstInit = true;
     const int2 wndSize = Window::get_window_size();
-    point.y = wndSize.y - point.y;
 
     if (isFirstInit)
     {
