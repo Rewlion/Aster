@@ -31,4 +31,15 @@ Actions
       }
     }
   }
+
+  Gui
+  {
+    Button {}
+    Analog
+    {
+      MouseMove
+      {
+      }
+    }
+  }
 }

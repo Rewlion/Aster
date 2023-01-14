@@ -16,6 +16,9 @@ ControllerMappings
           int MoveDown = 67
         }
       }
+
+      Gui{
+      }
     }
   }
 
@@ -28,6 +31,17 @@ ControllerMappings
         Analog
         {
           CameraRotation
+          {
+            int device = 0
+          }
+        }
+      }
+
+      Gui
+      {
+        Analog
+        {
+          MouseMove
           {
             int device = 0
           }
