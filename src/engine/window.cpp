@@ -119,4 +119,9 @@ namespace Engine::Window
   {
     return GetForegroundWindow() == CURRENT_WINDOW_HANDLER;
   }
+
+  void show_cursor(const bool v)
+  {
+    ShowCursor(v);
+  }
 }

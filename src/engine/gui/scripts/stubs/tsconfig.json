@@ -6,7 +6,8 @@
     "composite": true
   },
   "files": [
+    "input.ts",
+    "log.ts",
     "ui.ts",
-    "log.ts"
   ]  
 }

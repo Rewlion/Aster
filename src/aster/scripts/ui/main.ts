@@ -1,5 +1,8 @@
 import * as ui from "@ui"
 import {logerror} from "@log"
+import {showMouseCursor} from "@input"
+
+showMouseCursor(true)
 
 let testState = new ui.ReactState(0)
 let i = 0

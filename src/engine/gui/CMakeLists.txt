@@ -12,8 +12,10 @@ SET(GUI_SRC
 )
 
 SET(GUI_MODULES_SRC
+  "${CMAKE_SOURCE_DIR}/src/engine/gui/input_module.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/gui/log_module.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/ui_module.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/gui/log_module.cpp")
+)
 
 add_library(engine_gui ${GUI_SRC})
 add_library(engine_gui_modules OBJECT ${GUI_MODULES_SRC})

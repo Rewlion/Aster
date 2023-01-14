@@ -3,8 +3,9 @@
     "target": "ES6",
     "outDir": "../../../../game/aster/scripts/ui",
     "paths": {
-      "@ui": ["../../../engine/gui/scripts/stubs/ui.ts"],
+      "@input": ["../../../engine/gui/scripts/stubs/input.ts"],
       "@log": ["../../../engine/gui/scripts/stubs/log.ts"],
+      "@ui": ["../../../engine/gui/scripts/stubs/ui.ts"],
     }
   },
   "files": [
