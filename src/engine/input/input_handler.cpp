@@ -45,11 +45,13 @@ namespace Engine::Input
         const string& name = action.getName();
         const string_hash actionHash = str_hash(name.c_str());
         const int deviceId = action.getInt("device");
+        const bool isAbsoluteMouse = action.getBool("absoluteMouse");
 
         mappings.analogs.push_back(AnalogMapping{
           .action = actionHash,
           .actionName = name,
-          .device = (char)deviceId
+          .device = (char)deviceId,
+          .absoluteMouse = isAbsoluteMouse
         });
       }
 

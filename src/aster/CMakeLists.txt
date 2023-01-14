@@ -6,6 +6,7 @@ add_ecs_library(
   aster_ecs
   ECS_FILES
     "${CMAKE_SOURCE_DIR}/src/aster/camera.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/aster/ecs/gui.ecs.cpp"
 )
 
 add_executable(aster "${CMAKE_SOURCE_DIR}/src/aster/main.cpp")

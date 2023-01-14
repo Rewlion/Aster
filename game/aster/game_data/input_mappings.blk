@@ -43,6 +43,7 @@ ControllerMappings
         {
           MouseMove
           {
+            bool absoluteMouse = yes
             int device = 0
           }
         }

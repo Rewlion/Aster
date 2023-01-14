@@ -39,6 +39,8 @@ namespace Engine::Input
     string_hash action = 0;
     string actionName;
     char device = 0;
+
+    uint8_t absoluteMouse : 1 = 0;
   };
 
   struct ActionSetMappings

@@ -17,7 +17,7 @@ namespace Engine::Input
         for (const auto& am: it->second.analogs)
           if (am.action == action && am.device == 0)
           {
-            delta = m_Delta;
+            delta = am.absoluteMouse ? m_CurrentPosition : m_Delta;
             return true;
           }
     }
