@@ -74,6 +74,7 @@ namespace Engine::gui
       VerAlignType       valign;
       qjs::Value         observeBtnState;
       BehaviorsArray     behaviors;
+      qjs::Value         onClick;
     };
 
     struct SceneParams

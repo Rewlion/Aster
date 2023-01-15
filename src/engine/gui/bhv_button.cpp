@@ -39,6 +39,8 @@ namespace Engine::gui
           case BhvStateChange::OnMouseClickBegin:
           {
             Utils::set_bit(state, BTN_ST_CLICKED);
+            if (elem.params.onClick.isValid())
+              elem.params.onClick.as<qjs::FunctionView>()({}, 0, nullptr);
             break;
           }
           case BhvStateChange::OnMouseClickEnd:

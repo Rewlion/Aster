@@ -1,7 +1,6 @@
 #include "value.hpp"
 #include "engine/qjs/forward_decl.h"
 #include "inc.h"
-#include "quickjs/quickjs.h"
 
 #include <engine/assert.h>
 #include <engine/log.h>

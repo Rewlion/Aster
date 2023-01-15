@@ -17,7 +17,8 @@ globalThis.rootUI = {
       color: btnState.value & ui.BUTTON_HOVERED ? [255, 255, 255] : [0, 255, 255],
       behaviors: [ui.BEHAVIOR_BUTTON],
       observe: [btnState],
-      observeBtnState: btnState
+      observeBtnState: btnState,
+      onClick: () => logerror("clicked")
     })
   ]
 }

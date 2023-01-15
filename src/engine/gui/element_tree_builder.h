@@ -20,7 +20,7 @@ namespace Engine::gui
     private:
       std::optional<Element> buildStaticElem(const qjs::Value&);
       std::optional<Element> buildElem(const qjs::Value&);
-      std::optional<Element::Params> buildParams(const qjs::Value&) const;
+      Element::Params buildParams(const qjs::Value&) const;
       eastl::vector<Element> buildChilds(const qjs::Value&);
       
       eastl::vector<ReactStateRegistration> getObservedReactStates(const qjs::Value&) const;
@@ -28,6 +28,7 @@ namespace Engine::gui
       int2 getPos(qjs::ObjectView&) const;
       ColorParam getColor(qjs::ObjectView&) const;
       BehaviorsArray getBehaviors(qjs::ObjectView&) const;
+      qjs::Value getOnClick(qjs::ObjectView&) const;
     private:
       BehaviorsStorage& m_Behaviors;
   };

@@ -35,13 +35,11 @@ namespace Engine::gui
     static size_t id = 0;
 
     auto params = buildParams(v);
-    if (!params.has_value())
-      return std::nullopt;
 
     eastl::vector<Element> childs = buildChilds(v);
     return Element{
       .id = id++,
-      .params = std::move(params.value()),
+      .params = std::move(params),
       .childs = std::move(childs)
     };
   }
@@ -85,7 +83,7 @@ namespace Engine::gui
     return std::nullopt;
   }
 
-  std::optional<Element::Params> ElementTreeBuilder::buildParams(const qjs::Value& v) const
+  Element::Params ElementTreeBuilder::buildParams(const qjs::Value& v) const
   {
     auto obj = v.as<qjs::ObjectView>();
     Element::Params params;
@@ -101,6 +99,7 @@ namespace Engine::gui
     params.valign = obj.getIntEnumOr("valign", VerAlignType::None);
     params.observeBtnState = obj.getProperty("observeBtnState");
     params.behaviors = getBehaviors(obj);
+    params.onClick = getOnClick(obj);
 
     return params;
   }
@@ -293,6 +292,21 @@ namespace Engine::gui
     }
 
     return result;
+  }
+
+  qjs::Value ElementTreeBuilder::getOnClick(qjs::ObjectView& obj) const
+  {
+    qjs::Value onClick = obj.getProperty("onClick");
+    if (onClick.isUndefined())
+    {}
+    else if (!onClick.isFunction())
+      logerror("ui: onClick is not a function");
+    else if (onClick.getLength() != 0)
+      logerror("ui: onClick should not accept any arg");
+    else
+      return std::move(onClick);
+
+    return {onClick.getContext(), JS_UNDEFINED};
   }
 
   eastl::vector<Element> ElementTreeBuilder::buildChilds(const qjs::Value& v)
