@@ -10,11 +10,11 @@ globalThis.rootUI = {
   size: [500, 500],
   childs: [
     () => ({
-      size: [100, 50],
+      size: btnState.value & ui.BUTTON_CLICKED ? [130, 70] : [100, 50],
       halign: ui.HALIGN_CENTER,
       valign: ui.VALIGN_CENTER,
       render: ui.RENDER_BOX,
-      color: btnState.value == ui.BUTTON_HOVERED ? [255, 255, 255] : [0, 255, 255],
+      color: btnState.value & ui.BUTTON_HOVERED ? [255, 255, 255] : [0, 255, 255],
       behaviors: [ui.BEHAVIOR_BUTTON],
       observe: [btnState],
       observeBtnState: btnState

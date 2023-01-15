@@ -94,6 +94,15 @@ namespace Engine::gui
     }
   }
 
+  static IBehavior* get_button_bhv(Element* elem)
+  {
+    for (const auto& bhv: elem->params.behaviors)
+      if (bhv->getType() == BehaviorType::Button)
+        return bhv;
+      
+      return (IBehavior*)nullptr;
+  }
+
   bool Scene::setHoveredElem(Element* parent, const float2 pos)
   {
     const auto getBtnBhv = [](Element* elem) {
@@ -116,6 +125,7 @@ namespace Engine::gui
         }
         parentBtn->onStateChange(*parent, BhvStateChange::OnMouseHoverBegin);
         m_HoveredElem = parent;
+        m_MousePos = pos;
         return true;
       }
       else
@@ -127,5 +137,45 @@ namespace Engine::gui
     }
 
     return false;
+  }
+
+  void Scene::setMouseClickState(const bool clicked)
+  {
+    if (!m_HoveredElem)
+      return;
+
+    Element* elem = m_HoveredElem;
+    IBehavior* btn = get_button_bhv(m_HoveredElem);
+
+    const auto state = clicked ?
+      BhvStateChange::OnMouseClickBegin :
+      BhvStateChange::OnMouseClickEnd;
+
+    const auto findNextChildToProcess = [this](Element*& elem, IBehavior*& btn)
+    {
+      for (auto& child: elem->childs)
+      {
+        if (child.isInside(m_MousePos))
+        {
+          if (IBehavior* childBtn = get_button_bhv(&child))
+          {
+            elem = &child;
+            btn = childBtn;
+          }
+        }
+      }
+
+      elem = nullptr;
+      btn = nullptr;
+    };
+
+    while (elem)
+    {
+      const BhvResult res = btn->onStateChange(*elem, state);
+      if (res != BhvResult::ProcessFurther)
+        break;
+
+      findNextChildToProcess(elem, btn);
+    }
   }
 }

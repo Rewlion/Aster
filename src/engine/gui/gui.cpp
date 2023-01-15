@@ -58,4 +58,9 @@ namespace Engine::gui
   {
     m_Scene.setMouseCursorPos(pos);
   }
+
+  void Gui::setMouseClickState(const bool clicked)
+  {
+    m_Scene.setMouseClickState(clicked);
+  }
 }

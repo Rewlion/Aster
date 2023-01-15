@@ -14,6 +14,7 @@ export const FLOW_FLEX_ROW = 0
 export const FLOW_FLEX_COLUMN = 0
 
 export const BUTTON_HOVERED = 0
+export const BUTTON_CLICKED = 0
 export const BEHAVIOR_BUTTON = 0
 
 export function addTimer(name: string, sec:number, cb: Function) {}

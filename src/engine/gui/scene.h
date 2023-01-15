@@ -22,6 +22,7 @@ namespace Engine::gui
       inline const std::optional<Element>& getRoot() const { return m_Root; }
 
       void setMouseCursorPos(const float2 pos);
+      void setMouseClickState(const bool clicked);
 
     private:
       bool setHoveredElem(Element* parent, const float2 pos);
@@ -30,6 +31,8 @@ namespace Engine::gui
       RuntimeState& m_RtState;
       BehaviorsStorage& m_Behaviors;
       std::optional<Element> m_Root;
+
       Element* m_HoveredElem;
+      float2 m_MousePos;
   };
 }

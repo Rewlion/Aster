@@ -41,7 +41,8 @@ namespace Engine::gui
   {
     BTN_ST_NONE      = 0,
     BTN_ST_HOVERED   = 1,
-    LAST             = BTN_ST_HOVERED+1
+    BTN_ST_CLICKED   = 1 << 2,
+    LAST             = BTN_ST_CLICKED+1
   };
   
   enum class BehaviorType: int

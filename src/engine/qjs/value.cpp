@@ -313,5 +313,4 @@ namespace qjs
     *this = std::move(rvl);
     return *this;
   }
-
 }

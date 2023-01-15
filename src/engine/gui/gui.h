@@ -22,6 +22,7 @@ namespace Engine::gui
       inline const std::optional<Element>& getRootUI() const { return m_Scene.getRoot(); }
 
       void setMouseCursorPos(const int2 pos);
+      void setMouseClickState(const bool clicked);
     private:
       void loadRootUiScript();
 

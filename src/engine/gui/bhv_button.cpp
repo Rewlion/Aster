@@ -12,10 +12,10 @@ namespace Engine::gui
   {
     public:
       virtual BehaviorType getType() const override { return BehaviorType::Button; }
-      virtual void onStateChange(Element& elem, const BhvStateChange stateChange) override
+      virtual BhvResult onStateChange(Element& elem, const BhvStateChange stateChange) override
       {
         if (elem.params.observeBtnState.isUndefined())
-          return;
+          return BhvResult::Processed;
         
         qjs::ObjectView btnState = elem.params.observeBtnState.as<qjs::ObjectView>();
         qjs::Value v = btnState.getProperty("value");
@@ -36,11 +36,23 @@ namespace Engine::gui
             Utils::clear_bit(state, BTN_ST_HOVERED);
             break;
           }
+          case BhvStateChange::OnMouseClickBegin:
+          {
+            Utils::set_bit(state, BTN_ST_CLICKED);
+            break;
+          }
+          case BhvStateChange::OnMouseClickEnd:
+          {
+            Utils::clear_bit(state, BTN_ST_CLICKED);
+            break;
+          }
           default: ASSERT(!"unsupported");
         }
 
         JSContext* ctx = elem.params.observeBtnState.getContext();
         JS_SetPropertyStr(ctx, elem.params.observeBtnState.getJsValue(), "value",  JS_NewInt32(ctx, state));
+
+        return BhvResult::Processed;
       }
   };
 

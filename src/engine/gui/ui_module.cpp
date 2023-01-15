@@ -92,6 +92,7 @@ namespace Engine::gui
         addParam("FLOW_FLEX_COLUMN", (int)Flow::FlexColumn);
 
         addParam("BUTTON_HOVERED", (int)BTN_ST_HOVERED);
+        addParam("BUTTON_CLICKED", (int)BTN_ST_CLICKED);
         addParam("BEHAVIOR_BUTTON", (int)BehaviorType::Button);
 
         addFunc(ui_add_timer, "addTimer", 3);

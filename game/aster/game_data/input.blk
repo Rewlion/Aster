@@ -34,7 +34,12 @@ Actions
 
   Gui
   {
-    Button {}
+    Button
+    {
+      MouseClick
+      {
+      }
+    }
     Analog
     {
       MouseMove

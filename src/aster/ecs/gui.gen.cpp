@@ -21,3 +21,20 @@ static SystemRegistration camera_rotation_registration(
     DESCRIBE_QUERY_COMPONENT("camera_rotations", float2)
   }
 );
+
+
+static void input_handler_internal(Event* event, ComponentsAccessor& accessor)
+{
+  ButtonActionInputEvent* casted_event = reinterpret_cast<ButtonActionInputEvent*>(event);
+
+  input_handler(*casted_event);
+}
+
+
+static EventSystemRegistration input_handler_registration(
+  input_handler_internal,
+  str_hash("ButtonActionInputEvent"),
+  {
+
+  }
+);
