@@ -1,5 +1,6 @@
 #pragma once
 
+#include <engine/log.h>
 #include <engine/types.h>
 
 #define ASSERT_COMMON(cond, msg, isIgnorable)\

@@ -57,6 +57,8 @@ namespace Engine::gui
     }
   };
 
+  class IBehavior;
+  using BehaviorsArray = eastl::vector<IBehavior*>;
   struct Element
   {
     struct Params
@@ -70,6 +72,8 @@ namespace Engine::gui
       RenderType         render;
       HorAlignType       halign;
       VerAlignType       valign;
+      qjs::Value         observeBtnState;
+      BehaviorsArray     behaviors;
     };
 
     struct SceneParams
@@ -87,9 +91,19 @@ namespace Engine::gui
     eastl::vector<ReactStateRegistration> observes;
     eastl::vector<Element> childs;
 
-    bool isDynamic() const
+    inline bool isDynamic() const
     {
       return constructor.isValid();
+    }
+
+    inline bool isInside(float2 pos)
+    {
+      const float x0 = sceneParams.pos.x;
+      const float y0 = sceneParams.pos.y;
+      const float w = sceneParams.size.x + x0;
+      const float h = sceneParams.size.y + y0;
+
+      return (pos.x >= x0 && pos.x < w) && (pos.y >= y0 && pos.y < h);
     }
   };
 }

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 SET(GUI_SRC
+  "${CMAKE_SOURCE_DIR}/src/engine/gui/behavior.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/element_tree_builder.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/gui.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/react_state.cpp"
@@ -15,6 +16,7 @@ SET(GUI_MODULES_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/gui/input_module.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/log_module.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/ui_module.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/gui/bhv_button.cpp"
 )
 
 add_library(engine_gui ${GUI_SRC})

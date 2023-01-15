@@ -8,7 +8,7 @@ namespace qjs
   {
     public:
       FunctionView(const Value& v);
-      Value operator()(const Value& this_obj, const uint argc, const Value* argv) const;
+      Value operator()(ValueView this_obj, const uint argc, const Value* argv) const;
 
       inline int64_t getArgsCount() const
       {

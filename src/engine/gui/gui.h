@@ -1,5 +1,6 @@
 #pragma once
 
+#include "behavior.h"
 #include "scene.h"
 
 #include <engine/qjs/qjs.h>
@@ -19,12 +20,15 @@ namespace Engine::gui
       void tick();
 
       inline const std::optional<Element>& getRootUI() const { return m_Scene.getRoot(); }
+
+      void setMouseCursorPos(const int2 pos);
     private:
       void loadRootUiScript();
 
     private:
       qjs::VM m_Vm;
       RuntimeState m_RtState;
+      BehaviorsStorage m_Behaviors;
       Scene m_Scene;
   };
 

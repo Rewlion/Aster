@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "behavior.h"
 #include "element_tree_builder.h"
 #include "scene_placer.h"
 
@@ -6,15 +7,17 @@
 
 namespace Engine::gui
 {
-  Scene::Scene(RuntimeState& state)
+  Scene::Scene(RuntimeState& state, BehaviorsStorage& behaviors)
     : m_RtState(state)
+    , m_Behaviors(behaviors)
+    , m_HoveredElem(nullptr)
   {
   }
 
-  void Scene::initFromJS(const qjs::Value& root_ui, const qjs::Value& global)
+  void Scene::initFromJS(const qjs::Value& root_ui)
   {
-    ElementTreeBuilder jsParser;
-    m_Root = jsParser.buildFromRootUi(root_ui, global);
+    ElementTreeBuilder jsParser{m_Behaviors};
+    m_Root = jsParser.buildFromRootUi(root_ui);
 
     if (m_Root.has_value())
       ScenePlacer{}.placeRoot(m_Root.value(), Window::get_window_size());
@@ -50,7 +53,7 @@ namespace Engine::gui
   
     if (isDirty(child))
     {
-      ElementTreeBuilder rebuilder;
+      ElementTreeBuilder rebuilder{m_Behaviors};
       std::optional<Element> newElem = rebuilder.buildDynamicElem(child.constructor);
       if (newElem.has_value())
       {
@@ -79,4 +82,50 @@ namespace Engine::gui
     return true;
   }
 
+  void Scene::setMouseCursorPos(const float2 pos)
+  {
+    if (m_Root.has_value())
+    {
+      if (!setHoveredElem(&m_Root.value(), pos) && m_HoveredElem)
+      {
+        m_Behaviors.getBehavior(BehaviorType::Button)
+          ->onStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd);
+      }
+    }
+  }
+
+  bool Scene::setHoveredElem(Element* parent, const float2 pos)
+  {
+    const auto getBtnBhv = [](Element* elem) {
+      for (const auto& bhv: elem->params.behaviors)
+        if (bhv->getType() == BehaviorType::Button)
+          return bhv;
+      
+      return (IBehavior*)nullptr;
+    };
+
+    if (parent->isInside(pos))
+    {
+      if (IBehavior* parentBtn = getBtnBhv(parent))
+      {
+        bool isSame = m_HoveredElem == parent;
+        if (!isSame && m_HoveredElem)
+        {
+          IBehavior* prevBtn = getBtnBhv(m_HoveredElem);
+          prevBtn->onStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd);
+        }
+        parentBtn->onStateChange(*parent, BhvStateChange::OnMouseHoverBegin);
+        m_HoveredElem = parent;
+        return true;
+      }
+      else
+      {
+        for (auto& child: parent->childs)
+          if (setHoveredElem(&child, pos))
+            return true;
+      }
+    }
+
+    return false;
+  }
 }

@@ -13,7 +13,7 @@ namespace qjs
     JS_GetPropertyLength(m_Value.m_Ctx, &m_ArgsCount, v.m_JsValue);
   }
 
-  Value FunctionView::operator()(const Value& this_obj, const uint argc, const Value* argv) const
+  Value FunctionView::operator()(ValueView this_obj, const uint argc, const Value* argv) const
   {
     std::unique_ptr<JSValueConst[]> jsArgv;
     

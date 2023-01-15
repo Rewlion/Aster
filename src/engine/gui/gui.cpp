@@ -9,7 +9,7 @@ namespace Engine::gui
   Gui manager;
 
   Gui::Gui()
-    : m_Scene(m_RtState)
+    : m_Scene(m_RtState, m_Behaviors)
   {
   }
 
@@ -42,7 +42,8 @@ namespace Engine::gui
       return;
     }
 
-    m_Scene.initFromJS(rootUI, m_Vm.getGlobal());
+    m_Behaviors.init();
+    m_Scene.initFromJS(rootUI);
   }
 
   void Gui::tick()
@@ -51,5 +52,10 @@ namespace Engine::gui
       m_Scene.rebuildDirtyElems(m_RtState.reactStorage.getDirtyStates());
 
     m_RtState.timers.tick();
+  }
+
+  void Gui::setMouseCursorPos(const int2 pos)
+  {
+    m_Scene.setMouseCursorPos(pos);
   }
 }

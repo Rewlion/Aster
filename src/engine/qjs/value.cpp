@@ -251,6 +251,12 @@ namespace qjs
     return v;
   }
 
+  int Value::asIntRanged(const int def, const int max) const
+  {
+    const int v = asInt();
+    return v < max ? v : def;
+  }
+
   float Value::asFloat() const
   {
     ASSERT_FMT(isNumber(), "JSValue isn't float");

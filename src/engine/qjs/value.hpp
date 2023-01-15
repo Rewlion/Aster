@@ -32,24 +32,6 @@ namespace qjs
 
   class Value
   {
-    enum class Type
-    {
-      Bool,
-      Int,
-      Float,
-      Array,
-      Function,
-      Object,
-      PlainObject,
-      Exception,
-      Error,
-      Undefined,
-      Uninitialized,
-      String,
-      Symbol,
-      Null
-    };
-
     friend VM;
     friend class ModuleLoader;
     friend ArrayView;
@@ -57,6 +39,24 @@ namespace qjs
     friend ObjectView;
 
     public:
+      enum class Type
+      {
+        Bool,
+        Int,
+        Float,
+        Array,
+        Function,
+        Object,
+        PlainObject,
+        Exception,
+        Error,
+        Undefined,
+        Uninitialized,
+        String,
+        Symbol,
+        Null
+      };
+
       Value();
       Value(JSContext*, const JSValue);
       Value(const Value&) = delete;
@@ -99,9 +99,17 @@ namespace qjs
         return T{};
       }
 
+      template<class T>
+      T asRanged(const T def, const T max) const
+      {
+        static_assert(!"unsupported type for conversion");
+        return T{};
+      }
+
       template<> ObjectView as() const { return asObjectView(); }
       template<> ArrayView as() const { return asArrayView(); }
       template<> int as() const { return asInt(); }
+      template<> int asRanged(const int def, const int max) const { return asIntRanged(def, max); }
       template<> float as() const { return asFloat(); }
       template<> double as() const { return asDouble(); }
       template<> FunctionView as() const { return asFunctionView(); }
@@ -118,6 +126,7 @@ namespace qjs
       string asString() const;
       bool asBool() const;
       int asInt() const;
+      int asIntRanged(const int def, const int max) const;
       float asFloat() const;
       double asDouble() const;
 

@@ -1,4 +1,5 @@
 #include "element_tree_builder.h"
+#include "behavior.h"
 #include "constants.h"
 #include "react_state.h"
 
@@ -13,21 +14,18 @@
 
 namespace Engine::gui
 {
-  std::optional<Element> ElementTreeBuilder::buildFromRootUi(const qjs::Value& root_ui, const qjs::Value& global)
+  ElementTreeBuilder::ElementTreeBuilder(BehaviorsStorage& behaviors)
+    : m_Behaviors(behaviors)
   {
-    if (!global.isObject())
-    {
-      logerror("ui: global is not type of object.");
-      return std::nullopt;
-    }
+  }
 
+  std::optional<Element> ElementTreeBuilder::buildFromRootUi(const qjs::Value& root_ui)
+  {
     if (!root_ui.isObject())
     {
       logerror("ui: rootUI is not type of object.");
       return std::nullopt;
     }
-
-    m_Global = &global;
 
     return buildElem(root_ui);
   }
@@ -53,7 +51,7 @@ namespace Engine::gui
     const auto buildElem = v.as<qjs::FunctionView>();
     if (buildElem.getArgsCount() == 0)
     {
-      qjs::Value r = buildElem(*m_Global, 0, nullptr);
+      qjs::Value r = buildElem({}, 0, nullptr);
       if (r.isException())
         qjs::logerror_exception(std::move(r));
       else if (!r.isPlainObject())
@@ -101,6 +99,8 @@ namespace Engine::gui
     params.render = obj.getIntEnumOr("render", RenderType::None);
     params.halign = obj.getIntEnumOr("halign", HorAlignType::None);
     params.valign = obj.getIntEnumOr("valign", VerAlignType::None);
+    params.observeBtnState = obj.getProperty("observeBtnState");
+    params.behaviors = getBehaviors(obj);
 
     return params;
   }
@@ -250,6 +250,49 @@ namespace Engine::gui
     }
 
     return color;
+  }
+
+  BehaviorsArray ElementTreeBuilder::getBehaviors(qjs::ObjectView& v) const
+  {
+    BehaviorsArray result;
+    qjs::Value behaviors = v.getProperty("behaviors");
+
+    const auto addBehavior = [&result, this](const BehaviorType type){
+      if (type != BehaviorType::None)
+      {
+        IBehavior* bhv = m_Behaviors.getBehavior(type);
+        result.emplace_back(bhv);
+      }
+      else
+        logerror("ui: invalid behavior");
+    };
+
+    if (behaviors.isUndefined())
+    {
+    }
+    else if (behaviors.isInt())
+    {
+      const auto type = v.getIntEnumOr("behaviors", BehaviorType::None);
+      addBehavior(type);
+    }
+    else if (behaviors.isArray())
+    {
+      qjs::ArrayView array = behaviors.as<qjs::ArrayView>();
+      const size_t length = array.length();
+      for (size_t i = 0; i < length; ++i)
+      {
+        qjs::Value v = array[i];
+        if (v.isInt())
+        {
+          const auto type = (BehaviorType) v.asRanged<int>((int)BehaviorType::None, (int)BehaviorType::LAST);
+          addBehavior(type);
+        }
+        else
+          logerror("ui: invalid behavior [{}]", i);
+      }
+    }
+
+    return result;
   }
 
   eastl::vector<Element> ElementTreeBuilder::buildChilds(const qjs::Value& v)

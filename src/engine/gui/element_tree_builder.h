@@ -9,10 +9,13 @@
 
 namespace Engine::gui
 {
+  class BehaviorsStorage;
+
   class ElementTreeBuilder
   {
     public:
-      std::optional<Element> buildFromRootUi(const qjs::Value& root_ui, const qjs::Value& global);
+      ElementTreeBuilder(BehaviorsStorage&);
+      std::optional<Element> buildFromRootUi(const qjs::Value& root_ui);
       std::optional<Element> buildDynamicElem(const qjs::Value&);
     private:
       std::optional<Element> buildStaticElem(const qjs::Value&);
@@ -24,7 +27,8 @@ namespace Engine::gui
       SizeParam getSize(qjs::ObjectView&) const;
       int2 getPos(qjs::ObjectView&) const;
       ColorParam getColor(qjs::ObjectView&) const;
+      BehaviorsArray getBehaviors(qjs::ObjectView&) const;
     private:
-      const qjs::Value* m_Global;
+      BehaviorsStorage& m_Behaviors;
   };
 }

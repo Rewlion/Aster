@@ -36,4 +36,18 @@ namespace Engine::gui
     FlexColumn,
     LAST
   };
+
+  enum ButtonState
+  {
+    BTN_ST_NONE      = 0,
+    BTN_ST_HOVERED   = 1,
+    LAST             = BTN_ST_HOVERED+1
+  };
+  
+  enum class BehaviorType: int
+  {
+    None,
+    Button,
+    LAST
+  };
 }
