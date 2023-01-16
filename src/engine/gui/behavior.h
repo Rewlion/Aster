@@ -18,10 +18,10 @@ namespace Engine::gui
     OnMouseClickEnd
   };
 
-  enum class BhvResult
+  enum BhvResult: int
   {
-    Processed,
-    ProcessFurther
+    BHV_RES_NONE = 0,
+    BHV_RES_PROCESSED = 1
   };
 
   class Element;
@@ -31,7 +31,7 @@ namespace Engine::gui
     public:
       virtual ~IBehavior(){};
       virtual BehaviorType getType() const = 0;
-      virtual BhvResult onStateChange(Element&, const BhvStateChange) = 0;
+      virtual BhvResult onStateChange(Element&, const BhvStateChange, const BhvResult) = 0;
   };
 
   class BehaviorsStorage

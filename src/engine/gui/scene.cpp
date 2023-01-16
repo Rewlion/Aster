@@ -89,7 +89,7 @@ namespace Engine::gui
       if (!setHoveredElem(&m_Root.value(), pos) && m_HoveredElem)
       {
         m_Behaviors.getBehavior(BehaviorType::Button)
-          ->onStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd);
+          ->onStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd, BHV_RES_NONE);
       }
     }
   }
@@ -121,9 +121,9 @@ namespace Engine::gui
         if (!isSame && m_HoveredElem)
         {
           IBehavior* prevBtn = getBtnBhv(m_HoveredElem);
-          prevBtn->onStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd);
+          prevBtn->onStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd, BHV_RES_NONE);
         }
-        parentBtn->onStateChange(*parent, BhvStateChange::OnMouseHoverBegin);
+        parentBtn->onStateChange(*parent, BhvStateChange::OnMouseHoverBegin, BHV_RES_NONE);
         m_HoveredElem = parent;
         m_MousePos = pos;
         return true;
@@ -145,37 +145,32 @@ namespace Engine::gui
       return;
 
     Element* elem = m_HoveredElem;
-    IBehavior* btn = get_button_bhv(m_HoveredElem);
 
     const auto state = clicked ?
       BhvStateChange::OnMouseClickBegin :
       BhvStateChange::OnMouseClickEnd;
 
-    const auto findNextChildToProcess = [this](Element*& elem, IBehavior*& btn)
+    const auto findNextChildToProcess = [](Element* elem, float2 pos)
     {
       for (auto& child: elem->childs)
       {
-        if (child.isInside(m_MousePos))
-        {
-          if (IBehavior* childBtn = get_button_bhv(&child))
-          {
-            elem = &child;
-            btn = childBtn;
-          }
-        }
+        if (child.isInside(pos))
+          return &child;
       }
 
-      elem = nullptr;
-      btn = nullptr;
+      return (Element*)nullptr;
     };
 
     while (elem)
     {
-      const BhvResult res = btn->onStateChange(*elem, state);
-      if (res != BhvResult::ProcessFurther)
+      BhvResult res = BHV_RES_NONE;
+      for (IBehavior* bhv: elem->params.behaviors)
+        res = (BhvResult) (res | bhv->onStateChange(*elem, state, res));
+
+      if (res & BHV_RES_PROCESSED)
         break;
 
-      findNextChildToProcess(elem, btn);
+      elem = findNextChildToProcess(elem, m_MousePos);
     }
   }
 }

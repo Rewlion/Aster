@@ -12,10 +12,10 @@ namespace Engine::gui
   {
     public:
       virtual BehaviorType getType() const override { return BehaviorType::Button; }
-      virtual BhvResult onStateChange(Element& elem, const BhvStateChange stateChange) override
+      virtual BhvResult onStateChange(Element& elem, const BhvStateChange stateChange, const BhvResult previous_results) override
       {
-        if (elem.params.observeBtnState.isUndefined())
-          return BhvResult::Processed;
+        if (elem.params.observeBtnState.isUndefined() || (previous_results & BHV_RES_PROCESSED))
+          return BHV_RES_PROCESSED;
         
         qjs::ObjectView btnState = elem.params.observeBtnState.as<qjs::ObjectView>();
         qjs::Value v = btnState.getProperty("value");
@@ -54,7 +54,7 @@ namespace Engine::gui
         JSContext* ctx = elem.params.observeBtnState.getContext();
         JS_SetPropertyStr(ctx, elem.params.observeBtnState.getJsValue(), "value",  JS_NewInt32(ctx, state));
 
-        return BhvResult::Processed;
+        return BHV_RES_PROCESSED;
       }
   };
 
