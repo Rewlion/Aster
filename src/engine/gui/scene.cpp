@@ -90,17 +90,9 @@ namespace Engine::gui
       {
         m_Behaviors.getBehavior(BehaviorType::Button)
           ->onStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd, BHV_RES_NONE);
+        m_HoveredElem = nullptr;
       }
     }
-  }
-
-  static IBehavior* get_button_bhv(Element* elem)
-  {
-    for (const auto& bhv: elem->params.behaviors)
-      if (bhv->getType() == BehaviorType::Button)
-        return bhv;
-      
-      return (IBehavior*)nullptr;
   }
 
   bool Scene::setHoveredElem(Element* parent, const float2 pos)
