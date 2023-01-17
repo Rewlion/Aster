@@ -33,7 +33,7 @@ namespace Engine::gui
           }
           case BhvStateChange::OnMouseHoverEnd:
           {
-            Utils::clear_bit(state, BTN_ST_HOVERED);
+            Utils::clear_bit(state, BTN_ST_HOVERED | BTN_ST_CLICKED);
             break;
           }
           case BhvStateChange::OnMouseClickBegin:
