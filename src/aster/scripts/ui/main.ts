@@ -12,13 +12,7 @@ globalThis.rootUI = {
   color: [255,255,255,50],
   childs: [
     {
-      size: [
-        {
-          value: 50,
-          type: ui.POINT_SCREEN_WIDTH
-        },
-        50
-      ],
+      size: [ui.pw(50), ui.ph(50)],
       render: ui.RENDER_BOX,
       color: [50,100,0,255]
     },

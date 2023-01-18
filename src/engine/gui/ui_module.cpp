@@ -72,6 +72,58 @@ namespace Engine::gui
     return JS_UNDEFINED;
   }
 
+  static JSValue ui_point_value_base(JSContext *ctx, JSValueConst this_val,
+                                     int argc, JSValueConst *argv,
+                                     const char* func_name, const PointValue::Type type)
+  {
+    if (argc != 1)
+    {
+      JS_ThrowReferenceError(ctx, "ui: %s: argc != 1 (value)", func_name);
+      return JS_EXCEPTION;
+    }
+
+    if (!JS_IsNumber(argv[0]))
+    {
+      JS_ThrowReferenceError(ctx, "ui: %s argv[0] != number", func_name);
+      return JS_EXCEPTION;
+    }
+
+    double val = 0.0f;
+    JS_ToFloat64(ctx, &val, argv[0]);
+
+    JSValue ret = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, ret, "value", argv[0]);
+    JSValue typeJs = JS_NewInt32(ctx, (int32_t)type);
+    JS_SetPropertyStr(ctx, ret, "type", typeJs);
+    JS_FreeValue(ctx, typeJs);
+
+    return ret;
+  }
+
+  static JSValue ui_sw(JSContext *ctx, JSValueConst this_val,
+                       int argc, JSValueConst *argv)
+  {
+    return ui_point_value_base(ctx, this_val, argc, argv, "sw", PointValue::Type::ScreenWidth);
+  }
+
+  static JSValue ui_sh(JSContext *ctx, JSValueConst this_val,
+                       int argc, JSValueConst *argv)
+  {
+    return ui_point_value_base(ctx, this_val, argc, argv, "sh", PointValue::Type::ScreenHeight);
+  }
+
+  static JSValue ui_pw(JSContext *ctx, JSValueConst this_val,
+                       int argc, JSValueConst *argv)
+  {
+    return ui_point_value_base(ctx, this_val, argc, argv, "pw", PointValue::Type::ParentWidth);
+  }
+
+  static JSValue ui_ph(JSContext *ctx, JSValueConst this_val,
+                       int argc, JSValueConst *argv)
+  {
+    return ui_point_value_base(ctx, this_val, argc, argv, "ph", PointValue::Type::ParentHeight);
+  }
+
   class UiModule: public qjs::ModuleDescription
   {
     public:
@@ -101,6 +153,11 @@ namespace Engine::gui
         addParam("POINT_SCREEN_HEIGHT", (int)PointValue::Type::ScreenHeight);
         addParam("POINT_PARENT_WIDTH", (int)PointValue::Type::ParentWidth);
         addParam("POINT_PARENT_HEIGHT", (int)PointValue::Type::ParentHeight);
+
+        addFunc(ui_sw, "sw", 1);
+        addFunc(ui_sh, "sh", 1);
+        addFunc(ui_pw, "pw", 1);
+        addFunc(ui_ph, "ph", 1);
 
         addFunc(ui_add_timer, "addTimer", 3);
         addFunc(ui_remove_timer, "removeTimer", 1);

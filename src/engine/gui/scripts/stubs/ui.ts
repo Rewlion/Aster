@@ -23,6 +23,11 @@ export const POINT_SCREEN_HEIGHT = 0
 export const POINT_PARENT_WIDTH = 0
 export const POINT_PARENT_HEIGHT = 0
 
+export function sw(value: number) { return { value: value, type: POINT_SCREEN_WIDTH } }
+export function sh(value: number) { return { value: value, type: POINT_SCREEN_HEIGHT } }
+export function pw(value: number) { return { value: value, type: POINT_PARENT_WIDTH } }
+export function ph(value: number) { return { value: value, type: POINT_PARENT_HEIGHT } }
+
 export function addTimer(name: string, sec:number, cb: Function) {}
 export function removeTimer(name: string) {}
 
