@@ -7,8 +7,21 @@ showMouseCursor(true)
 let btnState = new ui.ReactState(0)
 
 globalThis.rootUI = {
-  size: [500, 500],
+  size: [500, 300],
+  render: ui.RENDER_BOX,
+  color: [255,255,255,50],
   childs: [
+    {
+      size: [
+        {
+          value: 50,
+          type: ui.POINT_SCREEN_WIDTH
+        },
+        50
+      ],
+      render: ui.RENDER_BOX,
+      color: [50,100,0,255]
+    },
     () => ({
       size: btnState.value & ui.BUTTON_CLICKED ? [130, 70] : [100, 50],
       halign: ui.HALIGN_CENTER,

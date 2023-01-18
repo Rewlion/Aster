@@ -3,6 +3,7 @@
 #include <engine/log.h>
 #include <engine/qjs/value.hpp>
 #include <engine/utils/fs.h>
+#include <engine/window.h>
 
 namespace Engine::gui
 {
@@ -43,6 +44,7 @@ namespace Engine::gui
     }
 
     m_Behaviors.init();
+    m_Scene.setScreenSize(Engine::Window::get_window_size());
     m_Scene.initFromJS(rootUI);
   }
 

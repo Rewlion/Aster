@@ -130,21 +130,28 @@ namespace Engine::gui
     return states;
   }
 
+  PointValue get_point_value(const qjs::Value& v)
+  {
+    if (v.isNumber())
+    {
+      return PointValue{ v.as<float>(), PointValue::Type::General };
+    }
+    else if (v.isPlainObject())
+    {
+      auto obj = v.as<qjs::ObjectView>();
+      const float value = obj.getFloatOr("value", 0.0f);
+      PointValue::Type type = obj.getIntEnumOr("type", PointValue::Type::General);
+
+      return PointValue{ value, type };
+    }
+
+    logerror("ui: invalid size valie");
+    return PointValue{ 0.0f, PointValue::Type::General };
+  }
+
   SizeParam ElementTreeBuilder::getSize(qjs::ObjectView& obj) const
   {
     SizeParam size;
-    size[0] = 0;
-    size[1] = 0;
-
-    const auto getIntValue = [](const qjs::Value& val) {
-      if (!val.isInt())
-      {
-        logerror("ui: invalid size: pixel value isn't INT");
-        return 0;
-      }
-
-      return val.as<int>();
-    };
 
     const qjs::Value v = obj.getProperty("size");
     if (v.isUndefined())
@@ -158,7 +165,7 @@ namespace Engine::gui
         for (size_t i = 0; i < 2; ++i)
         {
           const qjs::Value sizeVal = array[i];
-          size[i] = getIntValue(sizeVal);
+          size[i] = get_point_value(sizeVal);
         }
       }
       else

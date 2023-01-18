@@ -17,6 +17,12 @@ export const BUTTON_HOVERED = 0
 export const BUTTON_CLICKED = 0
 export const BEHAVIOR_BUTTON = 0
 
+export const POINT_GENERAL = 0
+export const POINT_SCREEN_WIDTH = 0
+export const POINT_SCREEN_HEIGHT = 0
+export const POINT_PARENT_WIDTH = 0
+export const POINT_PARENT_HEIGHT = 0
+
 export function addTimer(name: string, sec:number, cb: Function) {}
 export function removeTimer(name: string) {}
 

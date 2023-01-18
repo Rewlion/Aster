@@ -5,9 +5,14 @@
 
 namespace Engine::gui
 {
-  void ScenePlacer::placeRoot(Element& tree, const float2 render_size)
+  ScenePlacer::ScenePlacer(const float2 screen_size)
+    : m_ScreenSize(screen_size)
   {
-    absPlaceChild({0,0}, render_size, tree);
+  }
+
+  void ScenePlacer::placeRoot(Element& tree)
+  {
+    absPlaceChild({0,0}, m_ScreenSize, tree);
   }
 
   void ScenePlacer::placeChilds(Element& parent) const
@@ -49,7 +54,10 @@ namespace Engine::gui
     float xOffset = 0.0f;
     for (auto& child: parent.childs)
     {
-      child.sceneParams.size = float2{child.params.size[0], child.params.size[1]};
+      child.sceneParams.size = float2{
+        child.params.size[0].convert(parent.sceneParams.size, m_ScreenSize),
+        child.params.size[1].convert(parent.sceneParams.size, m_ScreenSize)
+      };
 
       const float2 parentPos{
         parent.sceneParams.pos.x + xOffset,
@@ -103,7 +111,10 @@ namespace Engine::gui
     float yOffset = 0.0f;
     for (auto& child: parent.childs)
     {
-      child.sceneParams.size = float2{child.params.size[0], child.params.size[1]};
+      child.sceneParams.size = float2{
+        child.params.size[0].convert(parent.sceneParams.size, m_ScreenSize),
+        child.params.size[1].convert(parent.sceneParams.size, m_ScreenSize)
+      };
 
       const float2 parentPos{
         parent.sceneParams.pos.x,
@@ -154,7 +165,10 @@ namespace Engine::gui
 
   void ScenePlacer::absPlaceChild(const float2 parent_pos, const float2 parent_size, Element& child) const
   {
-    child.sceneParams.size = float2(child.params.size[0], child.params.size[1]);
+    child.sceneParams.size = float2{
+      child.params.size[0].convert(parent_size, m_ScreenSize),
+      child.params.size[1].convert(parent_size, m_ScreenSize)
+    };
 
     const float2 relAnchor = getAnchorPos(parent_pos,  parent_size, child);
     const float2 relPos = getRelativePos(child);

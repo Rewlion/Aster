@@ -20,7 +20,7 @@ namespace Engine::gui
     m_Root = jsParser.buildFromRootUi(root_ui);
 
     if (m_Root.has_value())
-      ScenePlacer{}.placeRoot(m_Root.value(), Window::get_window_size());
+      ScenePlacer{Window::get_window_size()}.placeRoot(m_Root.value());
   }
 
   void Scene::rebuildDirtyElems(const DirtyStates& dirty_states)
@@ -58,7 +58,7 @@ namespace Engine::gui
       if (newElem.has_value())
       {
         child = std::move(newElem.value());
-        ScenePlacer{}.placeChilds(parent);
+        ScenePlacer{m_ScreenSize}.placeChilds(parent);
         return true;
       }
       else
@@ -164,5 +164,10 @@ namespace Engine::gui
 
       elem = findNextChildToProcess(elem, m_MousePos);
     }
+  }
+
+  void Scene::setScreenSize(const float2 size)
+  {
+    m_ScreenSize = size;
   }
 }

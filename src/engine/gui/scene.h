@@ -24,6 +24,8 @@ namespace Engine::gui
       void setMouseCursorPos(const float2 pos);
       void setMouseClickState(const bool clicked);
 
+      void setScreenSize(const float2);
+
     private:
       bool setHoveredElem(Element* parent, const float2 pos);
 
@@ -31,6 +33,7 @@ namespace Engine::gui
       RuntimeState& m_RtState;
       BehaviorsStorage& m_Behaviors;
       std::optional<Element> m_Root;
+      float2 m_ScreenSize;
 
       Element* m_HoveredElem;
       float2 m_MousePos;

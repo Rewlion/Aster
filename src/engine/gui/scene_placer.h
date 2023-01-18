@@ -7,7 +7,9 @@ namespace Engine::gui
   class ScenePlacer
   {
     public:
-      void placeRoot(Element& tree, const float2 render_size);
+      ScenePlacer(const float2 screen_size);
+
+      void placeRoot(Element& tree);
       void placeChilds(Element& parent) const;
 
     private:
@@ -20,5 +22,8 @@ namespace Engine::gui
       float getRelativeHalignPos(const float parent_width, const Element& child) const;
       float getRelativeValignPos(const float parent_height, const Element& child) const;
       float2 getRelativePos(const Element& child) const;
+
+    private:
+      float2 m_ScreenSize;
   }; 
 }

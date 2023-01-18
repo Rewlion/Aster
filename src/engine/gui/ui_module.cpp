@@ -1,4 +1,5 @@
 #include "constants.h"
+#include "point.h"
 #include "react_state.h"
 #include "runtime_state.h"
 
@@ -94,6 +95,12 @@ namespace Engine::gui
         addParam("BUTTON_HOVERED", (int)BTN_ST_HOVERED);
         addParam("BUTTON_CLICKED", (int)BTN_ST_CLICKED);
         addParam("BEHAVIOR_BUTTON", (int)BehaviorType::Button);
+
+        addParam("POINT_GENERAL", (int)PointValue::Type::General);
+        addParam("POINT_SCREEN_WIDTH", (int)PointValue::Type::ScreenWidth);
+        addParam("POINT_SCREEN_HEIGHT", (int)PointValue::Type::ScreenHeight);
+        addParam("POINT_PARENT_WIDTH", (int)PointValue::Type::ParentWidth);
+        addParam("POINT_PARENT_HEIGHT", (int)PointValue::Type::ParentHeight);
 
         addFunc(ui_add_timer, "addTimer", 3);
         addFunc(ui_remove_timer, "removeTimer", 1);

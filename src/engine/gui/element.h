@@ -1,6 +1,7 @@
 #pragma once
 
 #include "constants.h"
+#include "point.h"
 #include "react_state_registration.h"
 
 #include <engine/qjs/value.hpp>
@@ -13,7 +14,7 @@
 
 namespace Engine::gui
 {
-  using SizeParam = std::array<int, 2>;
+  using SizeParam = std::array<PointValue, 2>;
 
   union ColorParam
   {
