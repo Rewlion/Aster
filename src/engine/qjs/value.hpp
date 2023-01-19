@@ -114,6 +114,7 @@ namespace qjs
       template<> double as() const { return asDouble(); }
       template<> FunctionView as() const { return asFunctionView(); }
       template<> string as() const { return asString(); }
+      template<> bool as() const { return asBool(); }
 
       ValueDump dump();
 

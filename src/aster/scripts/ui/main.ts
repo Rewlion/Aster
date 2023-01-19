@@ -10,9 +10,10 @@ globalThis.rootUI = {
   size: [500, 300],
   render: ui.RENDER_BOX,
   color: [255,255,255,50],
+  clipChilds: true,
   childs: [
     {
-      size: [ui.pw(50), ui.ph(50)],
+      size: [ui.sw(50), ui.ph(50)],
       render: ui.RENDER_BOX,
       color: [50,100,0,255]
     },

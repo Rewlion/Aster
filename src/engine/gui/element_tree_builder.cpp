@@ -100,6 +100,7 @@ namespace Engine::gui
     params.observeBtnState = obj.getProperty("observeBtnState");
     params.behaviors = getBehaviors(obj);
     params.onClick = getOnClick(obj);
+    params.clipChilds = obj.getBoolOr("clipChilds", false);
 
     return params;
   }

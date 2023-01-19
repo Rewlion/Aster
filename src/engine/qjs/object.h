@@ -14,6 +14,7 @@ namespace qjs
       Value getProperty(const std::string_view);
       float getFloatOr(const std::string_view, const float);
       int getIntOr(const std::string_view, const int);
+      bool getBoolOr(const std::string_view, const bool);
 
       template<class T>
       T getIntEnumOr(const std::string_view name, const T def)

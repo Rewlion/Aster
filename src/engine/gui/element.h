@@ -76,6 +76,7 @@ namespace Engine::gui
       qjs::Value         observeBtnState;
       BehaviorsArray     behaviors;
       qjs::Value         onClick;
+      bool               clipChilds;
     };
 
     struct SceneParams
