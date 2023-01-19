@@ -15,6 +15,10 @@ namespace gapi
 
       virtual void endRenderpass() = 0;
 
+      virtual void setScissor(const Scissor) = 0;
+
+      virtual Scissor getScissor() = 0;
+
       virtual void draw(const uint32_t vertexCount, const uint32_t instanceCount,
                         const uint32_t firstVertex, const uint32_t firstInstance) = 0;
 

@@ -25,6 +25,7 @@ namespace gapi::vulkan
   {
     GraphicsPipelineDescription description;
     vk::Extent2D viewport;
+    vk::Rect2D scissor;
   };
 
   class CmdEncoder: public gapi::CmdEncoder
@@ -36,6 +37,8 @@ namespace gapi::vulkan
       virtual ~CmdEncoder();
       virtual void beginRenderpass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) override;
       virtual void endRenderpass() override;
+      virtual void setScissor(const Scissor) override;
+      virtual Scissor getScissor() override;
       virtual void draw(const uint32_t vertexCount, const uint32_t instanceCount,
                         const uint32_t firstVertex, const uint32_t firstInstance) override;
       virtual void drawIndexed(const uint32_t indexCount, uint32_t instanceCount,

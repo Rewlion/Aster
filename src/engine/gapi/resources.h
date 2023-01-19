@@ -539,6 +539,12 @@ namespace gapi
     size_t hash() const;
   };
 
+  struct Scissor
+  {
+    int2 offset;
+    uint2 size;
+  };
+
   struct Semaphore
   {
     virtual ~Semaphore(){}

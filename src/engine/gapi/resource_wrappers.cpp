@@ -1,5 +1,7 @@
 #include "resource_wrappers.h"
 
+#include "cmd_encoder.h"
+
 namespace gapi
 {
   TextureWrapper::TextureWrapper()
@@ -67,5 +69,17 @@ namespace gapi
     this->~BufferWrapper();
     std::swap(m_Handle, rvl.m_Handle);
     return *this;
+  }
+
+  ScopedScissor::ScopedScissor(const Scissor sc, CmdEncoder& encoder)
+    : m_Encoder(encoder)
+  {
+    m_Scissor = encoder.getScissor();
+    encoder.setScissor(sc);
+  }
+
+  ScopedScissor::~ScopedScissor()
+  {
+    m_Encoder.setScissor(m_Scissor);
   }
 }

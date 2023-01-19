@@ -55,6 +55,7 @@ namespace gapi::vulkan
     m_CmdBuf.beginRenderPass(rpBeginInfo, vk::SubpassContents::eInline);
 
     m_GraphicsPipelineState.viewport = renderArea.extent;
+    m_GraphicsPipelineState.scissor = {{0,0}, m_GraphicsPipelineState.viewport};
 
     m_GraphicsPipelineState.description.blendState.attachments.clear();
     for (const auto& rt: renderTargets)
@@ -162,6 +163,21 @@ namespace gapi::vulkan
     }
   }
 
+  void CmdEncoder::setScissor(const Scissor sc)
+  {
+    m_GraphicsPipelineState.scissor = vk::Rect2D{ {sc.offset.x, sc.offset.y}, {sc.size.x, sc.size.y} };
+    if (m_RenderPassState.rp != vk::RenderPass{})
+      m_CmdBuf.setScissor(0, 1, &m_GraphicsPipelineState.scissor);
+  }
+
+  Scissor CmdEncoder::getScissor()
+  {
+    return Scissor{
+      .offset = {m_GraphicsPipelineState.scissor.offset.x, m_GraphicsPipelineState.scissor.offset.y},
+      .size = {m_GraphicsPipelineState.scissor.extent.width, m_GraphicsPipelineState.scissor.extent.height}
+    };
+  }
+
   void CmdEncoder::draw(const uint32_t vertexCount, const uint32_t instanceCount,
                         const uint32_t firstVertex, const uint32_t firstInstance)
   {
@@ -226,10 +242,9 @@ namespace gapi::vulkan
     vp.height = (float)m_GraphicsPipelineState.viewport.height;
     vp.minDepth = 0;
     vp.maxDepth = 1;
-    m_CmdBuf.setViewport(0, 1, &vp);
 
-    vk::Rect2D sc {{0,0}, m_GraphicsPipelineState.viewport};
-    m_CmdBuf.setScissor(0, 1, &sc);
+    m_CmdBuf.setViewport(0, 1, &vp);
+    m_CmdBuf.setScissor(0, 1, &m_GraphicsPipelineState.scissor);
   }
 
   void CmdEncoder::flush(Fence* signalFence)

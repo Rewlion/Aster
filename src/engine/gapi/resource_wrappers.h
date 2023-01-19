@@ -35,4 +35,14 @@ namespace gapi
     private:
       gapi::BufferHandler m_Handle;
   };
+
+  class ScopedScissor
+  {
+    public:
+      ScopedScissor(const Scissor, CmdEncoder&);
+      ~ScopedScissor();
+    private:
+      Scissor m_Scissor;
+      CmdEncoder& m_Encoder;
+  };
 }
