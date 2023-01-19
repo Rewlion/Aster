@@ -59,6 +59,8 @@ namespace Engine::gui
         child.params.size[1].convert(parent.sceneParams.size, m_ScreenSize)
       };
 
+      child.sceneParams.fontSize = child.params.fontSize.convert(parent.sceneParams.size, m_ScreenSize);
+
       const float2 parentPos{
         parent.sceneParams.pos.x + xOffset,
         parent.sceneParams.pos.y};
@@ -94,6 +96,8 @@ namespace Engine::gui
       const float childWidth = flexSize * child.params.flex;
       child.sceneParams.size = float2{childWidth, parent.sceneParams.size.y};
 
+      child.sceneParams.fontSize = child.params.fontSize.convert(parent.sceneParams.size, m_ScreenSize);
+
       const float2 parentPos{
         parent.sceneParams.pos.x + xOffset,
         parent.sceneParams.pos.y};
@@ -115,6 +119,8 @@ namespace Engine::gui
         child.params.size[0].convert(parent.sceneParams.size, m_ScreenSize),
         child.params.size[1].convert(parent.sceneParams.size, m_ScreenSize)
       };
+
+      child.sceneParams.fontSize = child.params.fontSize.convert(parent.sceneParams.size, m_ScreenSize);
 
       const float2 parentPos{
         parent.sceneParams.pos.x,
@@ -151,6 +157,8 @@ namespace Engine::gui
       const float childHeight = flexSize * child.params.flex;
       child.sceneParams.size = float2{parent.sceneParams.size.x, childHeight};
 
+      child.sceneParams.fontSize = child.params.fontSize.convert(parent.sceneParams.size, m_ScreenSize);
+
       const float2 parentPos{
         parent.sceneParams.pos.x,
         parent.sceneParams.pos.y + yOffset};
@@ -169,6 +177,8 @@ namespace Engine::gui
       child.params.size[0].convert(parent_size, m_ScreenSize),
       child.params.size[1].convert(parent_size, m_ScreenSize)
     };
+
+    child.sceneParams.fontSize = child.params.fontSize.convert(parent_size, m_ScreenSize);
 
     const float2 relAnchor = getAnchorPos(parent_pos,  parent_size, child);
     const float2 relPos = getRelativePos(child);

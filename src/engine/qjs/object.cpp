@@ -71,9 +71,24 @@ namespace qjs
 
     if (!v.isBool())
     {
-      logerror("ui: {} is not int", name);
+      logerror("ui: {} is not bool", name);
       return def;
     }
     return v.as<bool>();
+  }
+
+  string ObjectView::getTextOr(const std::string_view name, string&& def)
+  {
+    Value v = getProperty(name);
+
+    if (v.isUndefined())
+      return def;
+
+    if (!v.isString())
+    {
+      logerror("ui: {} is not string", name);
+      return def;
+    }
+    return v.as<string>();
   }
 }

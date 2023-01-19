@@ -1,4 +1,5 @@
 export const RENDER_BOX = 0
+export const RENDER_TEXT = 0
 
 export const HALIGN_CENTER = 0
 export const HALIGN_LEFT = 0

@@ -24,11 +24,13 @@ namespace Engine::gui
       eastl::vector<Element> buildChilds(const qjs::Value&);
       
       eastl::vector<ReactStateRegistration> getObservedReactStates(const qjs::Value&) const;
+      PointValue getPointValue(const qjs::Value& v) const;
       SizeParam getSize(qjs::ObjectView&) const;
       int2 getPos(qjs::ObjectView&) const;
       ColorParam getColor(qjs::ObjectView&) const;
       BehaviorsArray getBehaviors(qjs::ObjectView&) const;
       qjs::Value getOnClick(qjs::ObjectView&) const;
+      PointValue getFontSize(qjs::ObjectView&) const;
     private:
       BehaviorsStorage& m_Behaviors;
   };

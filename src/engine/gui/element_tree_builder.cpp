@@ -37,11 +37,14 @@ namespace Engine::gui
     auto params = buildParams(v);
 
     eastl::vector<Element> childs = buildChilds(v);
-    return Element{
+    std::optional<Element> elem{std::in_place};
+    elem = Element{
       .id = id++,
       .params = std::move(params),
       .childs = std::move(childs)
     };
+
+    return elem;
   }
 
   std::optional<Element> ElementTreeBuilder::buildDynamicElem(const qjs::Value& v)
@@ -101,6 +104,8 @@ namespace Engine::gui
     params.behaviors = getBehaviors(obj);
     params.onClick = getOnClick(obj);
     params.clipChilds = obj.getBoolOr("clipChilds", false);
+    params.text = obj.getTextOr("text", "");
+    params.fontSize = getFontSize(obj);
 
     return params;
   }
@@ -131,7 +136,7 @@ namespace Engine::gui
     return states;
   }
 
-  PointValue get_point_value(const qjs::Value& v)
+  PointValue ElementTreeBuilder::getPointValue(const qjs::Value& v) const
   {
     if (v.isNumber())
     {
@@ -166,7 +171,7 @@ namespace Engine::gui
         for (size_t i = 0; i < 2; ++i)
         {
           const qjs::Value sizeVal = array[i];
-          size[i] = get_point_value(sizeVal);
+          size[i] = getPointValue(sizeVal);
         }
       }
       else
@@ -315,6 +320,15 @@ namespace Engine::gui
       return std::move(onClick);
 
     return {onClick.getContext(), JS_UNDEFINED};
+  }
+
+  PointValue ElementTreeBuilder::getFontSize(qjs::ObjectView& obj) const
+  {
+    qjs::Value fontSize = obj.getProperty("fontSize");
+    if (!fontSize.isUndefined())
+      return getPointValue(fontSize);
+    
+    return PointValue{1.0, PointValue::Type::General};
   }
 
   eastl::vector<Element> ElementTreeBuilder::buildChilds(const qjs::Value& v)

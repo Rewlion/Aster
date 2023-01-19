@@ -10,12 +10,19 @@ globalThis.rootUI = {
   size: [500, 300],
   render: ui.RENDER_BOX,
   color: [255,255,255,50],
-  clipChilds: true,
+  //clipChilds: true,
   childs: [
     {
-      size: [ui.sw(50), ui.ph(50)],
+      size: [ui.pw(50), ui.ph(50)],
       render: ui.RENDER_BOX,
-      color: [50,100,0,255]
+      color: [50,100,0,255],
+      childs: {
+        size: [ui.pw(100), ui.ph(100)],
+        render:ui.RENDER_TEXT,
+        text: "LOOONG TEEEEXT",
+        fontSize: ui.ph(80),
+        color: [255,0,0],
+      }
     },
     () => ({
       size: btnState.value & ui.BUTTON_CLICKED ? [130, 70] : [100, 50],

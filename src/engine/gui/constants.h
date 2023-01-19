@@ -6,6 +6,7 @@ namespace Engine::gui
   {
     None,
     Box,
+    Text,
     LAST
   };
 

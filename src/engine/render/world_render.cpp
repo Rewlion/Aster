@@ -30,7 +30,7 @@ namespace Engine::Render
     m_ModelSampler = allocate_sampler(samplerAllocDesc);
 
     m_FontRender = std::make_unique<FontRender>();
-    m_GuiRender = std::make_unique<GuiRender>();
+    m_GuiRender = std::make_unique<GuiRender>(*m_FontRender.get());
 
     const DataBlock* settings = Engine::get_app_settings();
     const string fontFolder = settings->getText("fonts_folder");

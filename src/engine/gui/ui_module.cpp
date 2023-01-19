@@ -130,6 +130,7 @@ namespace Engine::gui
       UiModule()
       {
         addParam("RENDER_BOX", (int)RenderType::Box);
+        addParam("RENDER_TEXT", (int)RenderType::Text);
 
         addParam("HALIGN_CENTER", (int)HorAlignType::Center);
         addParam("HALIGN_LEFT", (int)HorAlignType::Left);

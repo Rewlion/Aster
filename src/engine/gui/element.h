@@ -77,12 +77,15 @@ namespace Engine::gui
       BehaviorsArray     behaviors;
       qjs::Value         onClick;
       bool               clipChilds;
+      string             text;
+      PointValue         fontSize;
     };
 
     struct SceneParams
     {
       float2 pos = {0, 0};
       float2 size = {0, 0};
+      float fontSize = 1.0;
     };
 
     size_t id = 0;
