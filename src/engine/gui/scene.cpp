@@ -111,6 +111,9 @@ namespace Engine::gui
       if (IBehavior* parentBtn = getBtnBhv(parent))
       {
         bool isSame = m_HoveredElem == parent;
+        if (isSame)
+          return true;
+
         if (!isSame && m_HoveredElem)
         {
           IBehavior* prevBtn = getBtnBhv(m_HoveredElem);
