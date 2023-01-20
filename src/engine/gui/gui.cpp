@@ -51,7 +51,10 @@ namespace Engine::gui
   void Gui::tick()
   {
     if (m_RtState.reactStorage.hasDirtyStates())
+    {
       m_Scene.rebuildDirtyElems(m_RtState.reactStorage.getDirtyStates());
+      m_RtState.reactStorage.clearDirtyStates();
+    }
 
     m_RtState.timers.tick();
   }

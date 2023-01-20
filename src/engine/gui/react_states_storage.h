@@ -21,6 +21,7 @@ namespace Engine::gui
       void markDirtyState(const ReactStateClass*);
       const DirtyStates& getDirtyStates() const;
       inline bool hasDirtyStates() const { return !m_DirtyStates.empty(); }
+      inline void clearDirtyStates() { m_DirtyStates.clear(); }
 
     private:
       eastl::vector_map<uint64_t, ReactStateClass*> m_RegisteredStates;
