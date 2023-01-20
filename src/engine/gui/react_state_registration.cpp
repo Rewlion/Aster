@@ -20,6 +20,7 @@ namespace Engine::gui
   {
     this->~ReactStateRegistration();
     std::swap(m_State, rvl.m_State);
+    std::swap(m_Ctx, rvl.m_Ctx);
   }
 
   ReactStateRegistration::~ReactStateRegistration()

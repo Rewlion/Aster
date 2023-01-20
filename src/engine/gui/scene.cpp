@@ -54,7 +54,8 @@ namespace Engine::gui
     if (isDirty(child))
     {
       ElementTreeBuilder rebuilder{m_Behaviors};
-      std::optional<Element> newElem = rebuilder.buildDynamicElem(child.constructor);
+      std::optional<Element> newElem{std::in_place};
+      newElem = rebuilder.buildDynamicElem(child.constructor);
       if (newElem.has_value())
       {
         child = std::move(newElem.value());
