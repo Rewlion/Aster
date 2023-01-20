@@ -36,5 +36,6 @@ namespace Engine::gui
     private:
       uint64_t m_Id;
       qjs::ValueView m_Obj;
+      string m_Name;
   };
 }

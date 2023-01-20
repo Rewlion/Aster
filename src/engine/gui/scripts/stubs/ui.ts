@@ -34,8 +34,9 @@ export function removeTimer(name: string) {}
 
 export class ReactState {
   value = undefined
-  constructor(v:any = undefined) {
-    this.value = v
+  constructor(...v:any) {
+    if (arguments.length >= 1)
+      this.value = v[0]
   }
 
 }

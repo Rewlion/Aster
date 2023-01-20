@@ -92,10 +92,8 @@ namespace Engine::gui
     JS_ToFloat64(ctx, &val, argv[0]);
 
     JSValue ret = JS_NewObject(ctx);
-    JS_SetPropertyStr(ctx, ret, "value", argv[0]);
-    JSValue typeJs = JS_NewInt32(ctx, (int32_t)type);
-    JS_SetPropertyStr(ctx, ret, "type", typeJs);
-    JS_FreeValue(ctx, typeJs);
+    JS_SetPropertyStr(ctx, ret, "value", JS_DupValue(ctx, argv[0]));
+    JS_SetPropertyStr(ctx, ret, "type", JS_NewInt32(ctx, (int32_t)type));
 
     return ret;
   }

@@ -34,12 +34,23 @@ namespace Engine::gui
       return JS_EXCEPTION;
     }
 
+    if (argc == 2 && !JS_IsString(argv[1]))
+    {
+      JS_ThrowReferenceError(ctx, "ui: invalid ReactState argc, #2 params has to be string (name)");
+      return JS_EXCEPTION;
+    }
+
     JSValue initValue = JS_UNDEFINED;
     if (argc == 1)
       initValue = JS_DupValue(ctx, argv[0]);
     
     JSValue obj = constructFromPrototype(ctx);
     ReactStateClass* wrapper = new ReactStateClass(obj, ctx);
+    if (argc == 2)
+    {
+      qjs::ValueView name{ctx, argv[1]};
+      wrapper->m_Name = name.as<string>();
+    }
     JS_SetOpaque(obj, wrapper);
 
     JS_DefinePropertyValueStr(ctx, obj, "__value", initValue, JS_PROP_WRITABLE);
@@ -52,10 +63,10 @@ namespace Engine::gui
     };
     const auto setter = 
     [](JSContext* ctx, JSValueConst this_obj, JSValue obj) {
-      JS_SetPropertyStr(ctx, this_obj, "__value", obj);
+      JS_SetPropertyStr(ctx, this_obj, "__value", JS_DupValue(ctx, obj));
+      ReactStateClass* thisState = ReactStateClass::unpack(ctx, this_obj);
       qjs::get_user_state<RuntimeState>(ctx)
-      ->reactStorage.markDirtyState(
-        ReactStateClass::unpack(ctx, this_obj));
+      ->reactStorage.markDirtyState(thisState);
       return JS_UNDEFINED;
     };
 

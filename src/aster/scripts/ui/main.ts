@@ -4,7 +4,9 @@ import {showMouseCursor} from "@input"
 
 showMouseCursor(true)
 
-let btnState = new ui.ReactState(0)
+let btnState = new ui.ReactState(0, "btnState")
+let i = 0
+let btnHoveredColor = new ui.ReactState([255,255,255], "hoveredColor")
 
 globalThis.rootUI = {
   size: [500, 300],
@@ -22,11 +24,14 @@ globalThis.rootUI = {
       halign: ui.HALIGN_CENTER,
       valign: ui.VALIGN_CENTER,
       render: ui.RENDER_BOX,
-      color: btnState.value & ui.BUTTON_HOVERED ? [255, 255, 255] : [0, 255, 255],
+      color: btnState.value & ui.BUTTON_HOVERED ? btnHoveredColor.value : [0, 255, 255],
       behaviors: [ui.BEHAVIOR_BUTTON],
-      observe: [btnState],
+      observe: [btnState, btnHoveredColor],
       observeBtnState: btnState,
-      onClick: () => logerror("<%_%>"),
+      onClick: () => {
+        btnHoveredColor.value = i % 2 ? [255,255,255] : [255,0,255]
+        i++
+      },
       childs: {
         size: [ui.pw(100), ui.ph(100)],
         render:ui.RENDER_TEXT,
