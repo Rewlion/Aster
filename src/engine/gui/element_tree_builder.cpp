@@ -105,6 +105,8 @@ namespace Engine::gui
     params.onClick = getOnClick(obj);
     params.clipChilds = obj.getBoolOr("clipChilds", false);
     params.text = obj.getTextOr("text", "");
+    params.textHalign = obj.getIntEnumOr("textHalign", HorAlignType::None);
+    params.textValign = obj.getIntEnumOr("textValign", VerAlignType::None);
     params.fontSize = getFontSize(obj);
 
     return params;

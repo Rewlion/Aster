@@ -26,6 +26,8 @@ namespace Engine::Render
       void render(std::string_view text, const float2& pos, 
         const float& size, const float4& color, gapi::CmdEncoder& encoder);
 
+      float2 getBbox(const float size, std::string_view text) const;
+
     private:
       void destroy();
       void preLoadAllGlyphs();

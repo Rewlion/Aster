@@ -78,6 +78,8 @@ namespace Engine::gui
       qjs::Value         onClick;
       bool               clipChilds;
       string             text;
+      HorAlignType       textHalign;
+      VerAlignType       textValign;
       PointValue         fontSize;
     };
 

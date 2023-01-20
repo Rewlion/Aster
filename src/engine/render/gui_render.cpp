@@ -71,7 +71,36 @@ namespace Engine::Render
     sc.size = elem.sceneParams.size;
     gapi::ScopedScissor scopedSc{sc, encoder};
 
-    m_FontRender.render(elem.params.text, elem.sceneParams.pos,
+    const float2 textBbox = m_FontRender.getBbox(elem.sceneParams.fontSize, elem.params.text);
+
+    const auto alignX = [](gui::HorAlignType align, float parent_width, float width){
+      switch (align)
+      {
+        case gui::HorAlignType::Left: return 0.0f;
+        case gui::HorAlignType::Right: return parent_width - width;
+        case gui::HorAlignType::Center: return (parent_width - width) / 2.0f;
+        default: return 0.0f;
+      }
+    };
+
+    const auto alignY = [](gui::VerAlignType align, float parent_height, float height){
+      switch (align)
+      {
+        case gui::VerAlignType::Top: return 0.0f;
+        case gui::VerAlignType::Bottom: return parent_height - height;
+        case gui::VerAlignType::Center: return (parent_height - height) / 2.0f;
+        default: return 0.0f;
+      }
+    };
+
+    const float2 textOffset = {
+      alignX(elem.params.textHalign, elem.sceneParams.size.x, textBbox.x),
+      alignY(elem.params.textValign, elem.sceneParams.size.y, textBbox.y)
+    };
+
+    const float2 textOrigin = elem.sceneParams.pos + textOffset;
+
+    m_FontRender.render(elem.params.text, textOrigin,
       elem.sceneParams.fontSize, elem.params.color.getRenderColor(), encoder);
   }
 

@@ -147,4 +147,23 @@ namespace Engine::Render
       advance += scaledAdvance;
     }
   }
+
+  float2 FontRender::getBbox(const float size, std::string_view text) const
+  {
+    float2 bbox {0, size};
+
+    for (char c: text)
+    {
+      if (c >= MAX_GLYPHS)
+        c = '#';
+
+      const GlyphInfo& glyph = m_Glyphs[c];
+      const float scale = size / INIT_GLYPH_HEIGHT;
+      const float scaledAdvance = (glyph.advance / 64.0 * scale);
+
+      bbox.x += scaledAdvance;
+    }
+
+    return bbox;
+  }
 }
