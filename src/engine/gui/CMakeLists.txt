@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 SET(GUI_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/gui/behavior.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/gui/element.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/element_tree_builder.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/gui.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/gui/point.cpp"

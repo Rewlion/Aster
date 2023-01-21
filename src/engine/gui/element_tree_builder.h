@@ -19,7 +19,7 @@ namespace Engine::gui
       Element::Ptr buildStaticElem(const qjs::Value&, const size_t z_order);
       Element::Ptr buildElem(const qjs::Value&, const size_t z_order);
       Element::Params buildParams(const qjs::Value&) const;
-      Element::DynamicParams buildDynamicParams(const qjs::Value& static_elem, const qjs::Value& constructor) const;
+      Element::DynamicParams buildDynamicParams(const qjs::Value& static_elem, const qjs::Value& constructor, Element* elem) const;
       eastl::vector<Element::Ptr> buildChilds(const qjs::Value&, const size_t z_order);
       
       eastl::vector<ReactStateRegistration> getObservedReactStates(const qjs::Value&) const;
@@ -27,7 +27,7 @@ namespace Engine::gui
       SizeParam getSize(qjs::ObjectView&) const;
       int2 getPos(qjs::ObjectView&) const;
       ColorParam getColor(qjs::ObjectView&) const;
-      BehaviorsArray getBehaviors(qjs::ObjectView&) const;
+      BehaviorsArray getBehaviors(qjs::ObjectView&, Element*) const;
       qjs::Value getOnClick(qjs::ObjectView&) const;
       PointValue getFontSize(qjs::ObjectView&) const;
     private:

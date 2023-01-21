@@ -63,7 +63,7 @@ namespace Engine::gui
         Element::Ptr elem = buildStaticElem(staticElem, z_order);
 
         if (elem)
-          elem->dynamicParams = buildDynamicParams(staticElem, constructor);
+          elem->dynamicParams = buildDynamicParams(staticElem, constructor, elem.get());
 
         return elem;
       }
@@ -109,7 +109,7 @@ namespace Engine::gui
     return params;
   }
 
-  Element::DynamicParams ElementTreeBuilder::buildDynamicParams(const qjs::Value& static_elem, const qjs::Value& constructor) const
+  Element::DynamicParams ElementTreeBuilder::buildDynamicParams(const qjs::Value& static_elem, const qjs::Value& constructor, Element* elem) const
   {
     auto obj = static_elem.as<qjs::ObjectView>();
     Element::DynamicParams params;
@@ -117,7 +117,7 @@ namespace Engine::gui
     params.constructor = constructor.duplicate();
     params.observes = getObservedReactStates(static_elem);
     params.observeBtnState = obj.getProperty("observeBtnState");
-    params.behaviors = getBehaviors(obj);
+    params.behaviors = getBehaviors(obj, elem);
     params.onClick = getOnClick(obj);
 
     return params;
@@ -277,16 +277,16 @@ namespace Engine::gui
     return color;
   }
 
-  BehaviorsArray ElementTreeBuilder::getBehaviors(qjs::ObjectView& v) const
+  BehaviorsArray ElementTreeBuilder::getBehaviors(qjs::ObjectView& v, Element* elem) const
   {
     BehaviorsArray result;
     qjs::Value behaviors = v.getProperty("behaviors");
 
-    const auto addBehavior = [&result, this](const BehaviorType type){
+    const auto addBehavior = [&result, &elem, this](const BehaviorType type){
       if (type != BehaviorType::None)
       {
         IBehavior* bhv = m_Behaviors.getBehavior(type);
-        result.emplace_back(bhv);
+        result.emplace_back(bhv, elem);
       }
       else
         logerror("ui: invalid behavior");

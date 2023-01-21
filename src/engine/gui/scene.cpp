@@ -38,11 +38,11 @@ namespace Engine::gui
       .size = Window::get_window_size()
     };
 
-    rebuildElem(fakeParent, *m_Root, dirty_states);
+    rebuildElem(fakeParent, m_Root, dirty_states);
     rebuildStackedElems();
   }
 
-  bool Scene::rebuildElem(Element& parent, Element& child, const DirtyStates& dirty_states)
+  bool Scene::rebuildElem(Element& parent, Element::Ptr& child, const DirtyStates& dirty_states)
   {
     const auto isDirty = [&dirty_states](const Element& elem) {
       if (!elem.isDynamic())
@@ -56,13 +56,13 @@ namespace Engine::gui
       return false;
     };
   
-    if (isDirty(child))
+    if (isDirty(*child))
     {
       ElementTreeBuilder rebuilder{m_Behaviors};
-      Element::Ptr newElem = rebuilder.buildDynamicElem(child.dynamicParams.constructor, child.zOrder);
+      Element::Ptr newElem = rebuilder.buildDynamicElem(child->dynamicParams.constructor, child->zOrder);
       if (newElem)
       {
-        child = std::move(*newElem);
+        child = std::move(newElem);
         ScenePlacer{m_ScreenSize}.placeChilds(parent);
         return true;
       }
@@ -71,15 +71,15 @@ namespace Engine::gui
     }
 
     eastl::vector<size_t> idsToRemove;
-    for (const Element::Ptr& e: child.childs)
+    for (Element::Ptr& e: child->childs)
     {
-      if (!rebuildElem(child, *e, dirty_states))
-        idsToRemove.emplace_back(child.id);
+      if (!rebuildElem(*child, e, dirty_states))
+        idsToRemove.emplace_back(child->id);
     }
 
     if (!idsToRemove.empty())
     {
-      eastl::erase_if(child.childs, [&idsToRemove](const Element::Ptr& el) {
+      eastl::erase_if(child->childs, [&idsToRemove](const Element::Ptr& el) {
         return eastl::find(idsToRemove.begin(), idsToRemove.end(), el->id) != idsToRemove.end();
       });
     }
@@ -102,7 +102,7 @@ namespace Engine::gui
     for (auto* elem: m_InputElems)
     {
       BhvResult res = BHV_RES_NONE;
-      for (IBehavior* bhv: elem->dynamicParams.behaviors)
+      for (ElemBehavior& bhv: elem->dynamicParams.behaviors)
         if (bhv->getInputSupport() & BHV_INPUT_MOUSE)
           res = (BhvResult) (res | bhv->onMouseStateChange(*elem, state, m_MousePos, res));
 

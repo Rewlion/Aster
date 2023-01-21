@@ -19,7 +19,7 @@ namespace Engine::gui
       void initFromJS(const qjs::Value& root_ui);
 
       void rebuildDirtyElems(const DirtyStates& dirty_states);
-      bool rebuildElem(Element& parent, Element& child, const DirtyStates& dirty_states);
+      bool rebuildElem(Element& parent, Element::Ptr& child, const DirtyStates& dirty_states);
 
       inline const eastl::vector<Element*>& getElemsToRender() const { return m_RenderElems; }
 

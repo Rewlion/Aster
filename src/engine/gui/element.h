@@ -59,9 +59,27 @@ namespace Engine::gui
     }
   };
 
+  class Element;
   class IBehavior;
-  using BehaviorsArray = eastl::vector<IBehavior*>;
+  class ElemBehavior
+  {
+    public:
+      ElemBehavior(IBehavior*, Element*);
+      ElemBehavior(ElemBehavior&&);
+      ~ElemBehavior();
+      inline IBehavior* operator->() const
+      {
+        return m_Bhv;
+      }
+
+    private:
+      IBehavior* m_Bhv = nullptr;
+      Element* m_Elem = nullptr;
+  };
+
+  using BehaviorsArray = eastl::vector<ElemBehavior>;
   using ObservedStates = eastl::vector<ReactStateRegistration>;
+
   struct Element
   {
     using Ptr = std::unique_ptr<Element>;
