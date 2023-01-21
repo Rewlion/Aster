@@ -36,7 +36,7 @@ namespace Engine::gui
     private:
       RuntimeState& m_RtState;
       BehaviorsStorage& m_Behaviors;
-      std::optional<Element> m_Root;
+      Element::Ptr m_Root;
       eastl::vector<Element*> m_InputElems;
       eastl::vector<Element*> m_RenderElems;
       float2 m_ScreenSize;

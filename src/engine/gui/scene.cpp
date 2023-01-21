@@ -20,16 +20,16 @@ namespace Engine::gui
     ElementTreeBuilder jsParser{m_Behaviors};
     m_Root = jsParser.buildFromRootUi(root_ui);
 
-    if (m_Root.has_value())
+    if (m_Root)
     {
-      ScenePlacer{Window::get_window_size()}.placeRoot(m_Root.value());
+      ScenePlacer{Window::get_window_size()}.placeRoot(*m_Root);
       rebuildStackedElems();
     }
   }
 
   void Scene::rebuildDirtyElems(const DirtyStates& dirty_states)
   {
-    if (!m_Root.has_value())
+    if (!m_Root)
       return;
 
     Element fakeParent;
@@ -38,7 +38,7 @@ namespace Engine::gui
       .size = Window::get_window_size()
     };
 
-    rebuildElem(fakeParent, m_Root.value(), dirty_states);
+    rebuildElem(fakeParent, *m_Root, dirty_states);
     rebuildStackedElems();
   }
 
@@ -59,11 +59,10 @@ namespace Engine::gui
     if (isDirty(child))
     {
       ElementTreeBuilder rebuilder{m_Behaviors};
-      std::optional<Element> newElem{std::in_place};
-      newElem = rebuilder.buildDynamicElem(child.dynamicParams.constructor, child.zOrder);
-      if (newElem.has_value())
+      Element::Ptr newElem = rebuilder.buildDynamicElem(child.dynamicParams.constructor, child.zOrder);
+      if (newElem)
       {
-        child = std::move(newElem.value());
+        child = std::move(*newElem);
         ScenePlacer{m_ScreenSize}.placeChilds(parent);
         return true;
       }
@@ -72,16 +71,16 @@ namespace Engine::gui
     }
 
     eastl::vector<size_t> idsToRemove;
-    for (Element& e: child.childs)
+    for (const Element::Ptr& e: child.childs)
     {
-      if (!rebuildElem(child, e, dirty_states))
+      if (!rebuildElem(child, *e, dirty_states))
         idsToRemove.emplace_back(child.id);
     }
 
     if (!idsToRemove.empty())
     {
-      eastl::erase_if(child.childs, [&idsToRemove](const Element& el) {
-        return eastl::find(idsToRemove.begin(), idsToRemove.end(), el.id) != idsToRemove.end();
+      eastl::erase_if(child.childs, [&idsToRemove](const Element::Ptr& el) {
+        return eastl::find(idsToRemove.begin(), idsToRemove.end(), el->id) != idsToRemove.end();
       });
     }
 
@@ -129,16 +128,16 @@ namespace Engine::gui
   {
     eastl::vector<Element*> elemsToProcess;
 
-    if (m_Root.has_value())
-      elemsToProcess.emplace_back(&m_Root.value());
+    if (m_Root)
+      elemsToProcess.emplace_back(m_Root.get());
 
     while(!elemsToProcess.empty())
     {
       Element* e = elemsToProcess.back();
       elemsToProcess.pop_back();
 
-      for (auto& child: e->childs)
-        elemsToProcess.emplace_back(&child);
+      for (const Element::Ptr& child: e->childs)
+        elemsToProcess.emplace_back(child.get());
 
       if (e->params.render != RenderType::None)
         m_RenderElems.emplace_back(e);

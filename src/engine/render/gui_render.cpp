@@ -44,8 +44,8 @@ namespace Engine::Render
       encoder.setScissor(sc);
     }
 
-    for (const auto& child: elem.childs)
-      renderElement(child, encoder);
+    for (const gui::Element::Ptr& child: elem.childs)
+      renderElement(*child, encoder);
 
     if (elem.params.clipChilds)
       encoder.setScissor(currentScissor);

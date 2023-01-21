@@ -19,37 +19,36 @@ namespace Engine::gui
   {
   }
 
-  std::optional<Element> ElementTreeBuilder::buildFromRootUi(const qjs::Value& root_ui)
+  Element::Ptr ElementTreeBuilder::buildFromRootUi(const qjs::Value& root_ui)
   {
     if (!root_ui.isObject())
     {
       logerror("ui: rootUI is not type of object.");
-      return std::nullopt;
+      return nullptr;
     }
 
     return buildElem(root_ui, 0);
   }
 
-  std::optional<Element> ElementTreeBuilder::buildStaticElem(const qjs::Value& v, const size_t z_order)
+  Element::Ptr ElementTreeBuilder::buildStaticElem(const qjs::Value& v, const size_t z_order)
   {
     static size_t id = 0;
 
     auto params = buildParams(v);
 
-    eastl::vector<Element> childs = buildChilds(v, z_order+1);
-    std::optional<Element> elem{std::in_place};
-    elem = Element{
+    eastl::vector<Element::Ptr> childs = buildChilds(v, z_order+1);
+    Element::Ptr elem {new Element{
       .id = id++,
       .zOrder = z_order,
       .params = std::move(params),
       .object = v.duplicate(),
       .childs = std::move(childs)
-    };
+    }};
 
     return elem;
   }
 
-  std::optional<Element> ElementTreeBuilder::buildDynamicElem(const qjs::Value& constructor, const size_t z_order)
+  Element::Ptr ElementTreeBuilder::buildDynamicElem(const qjs::Value& constructor, const size_t z_order)
   {
     const auto buildElem = constructor.as<qjs::FunctionView>();
     if (buildElem.getArgsCount() == 0)
@@ -61,10 +60,9 @@ namespace Engine::gui
         logerror("ui: invalid element: function has to return an object");
       else
       {
-        std::optional<Element> elem{std::in_place};
-        elem = buildStaticElem(staticElem, z_order);
+        Element::Ptr elem = buildStaticElem(staticElem, z_order);
 
-        if (elem.has_value())
+        if (elem)
           elem->dynamicParams = buildDynamicParams(staticElem, constructor);
 
         return elem;
@@ -73,10 +71,10 @@ namespace Engine::gui
     else
       logerror("ui: invalid element: function shouldn't have any arguments");
 
-    return std::nullopt;
+    return nullptr;
   }
 
-  std::optional<Element> ElementTreeBuilder::buildElem(const qjs::Value& v, const size_t z_order)
+  Element::Ptr ElementTreeBuilder::buildElem(const qjs::Value& v, const size_t z_order)
   {
     if (v.isPlainObject())
       return buildStaticElem(v, z_order);
@@ -85,7 +83,7 @@ namespace Engine::gui
       return buildDynamicElem(v, z_order);
     
     logerror("ui: invalid element description: it's not static(Object) nor dynamic(Function)");
-    return std::nullopt;
+    return nullptr;
   }
 
   Element::Params ElementTreeBuilder::buildParams(const qjs::Value& v) const
@@ -346,16 +344,15 @@ namespace Engine::gui
     return PointValue{1.0, PointValue::Type::General};
   }
 
-  eastl::vector<Element> ElementTreeBuilder::buildChilds(const qjs::Value& v, const size_t z_order)
+  eastl::vector<Element::Ptr> ElementTreeBuilder::buildChilds(const qjs::Value& v, const size_t z_order)
   {
-    eastl::vector<Element> childsElems;
+    eastl::vector<Element::Ptr> childsElems;
     const qjs::Value childs = v.as<qjs::ObjectView>().getProperty("childs");
     
     if (childs.isPlainObject())
     {
-      std::optional<Element> elem = buildElem(childs, z_order);
-      if (elem.has_value())
-        childsElems.push_back(std::move(elem.value()));
+      if (Element::Ptr elem = buildElem(childs, z_order))
+        childsElems.push_back(std::move(elem));
     }
     else if (childs.isArray())
     {
@@ -366,9 +363,8 @@ namespace Engine::gui
         const qjs::Value child = array[i];
         if (!child.isUndefined())
         {
-          auto optElem = buildElem(child, z_order);
-          if (optElem.has_value())
-            childsElems.push_back(std::move(optElem.value()));
+          if (Element::Ptr optElem = buildElem(child, z_order))
+            childsElems.push_back(std::move(optElem));
         }
       }
     }

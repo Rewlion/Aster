@@ -10,6 +10,7 @@
 #include <EASTL/vector.h>
 
 #include <array>
+#include <memory>
 #include <variant>
 
 namespace Engine::gui
@@ -63,6 +64,7 @@ namespace Engine::gui
   using ObservedStates = eastl::vector<ReactStateRegistration>;
   struct Element
   {
+    using Ptr = std::unique_ptr<Element>;
     struct Params
     {
       SizeParam          size;
@@ -105,7 +107,7 @@ namespace Engine::gui
     DynamicParams dynamicParams;
 
     qjs::Value object;
-    eastl::vector<Element> childs;
+    eastl::vector<Element::Ptr> childs;
 
     inline bool isDynamic() const
     {
