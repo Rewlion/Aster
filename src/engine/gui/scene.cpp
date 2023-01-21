@@ -91,6 +91,7 @@ namespace Engine::gui
   {
     float2 previousPos = m_MousePos;
     m_MousePos = pos;
+    processMouseEvent(BhvStateChange::OnMouseMove);
   }
 
   void Scene::setMouseClickState(const bool clicked)
@@ -99,9 +100,19 @@ namespace Engine::gui
       BhvStateChange::OnMouseClickBegin :
       BhvStateChange::OnMouseClickEnd;
 
+    processMouseEvent(state);
+  }
+
+  void Scene::setScreenSize(const float2 size)
+  {
+    m_ScreenSize = size;
+  }
+
+  void Scene::processMouseEvent(const BhvStateChange state)
+  {
+    BhvResult res = BHV_RES_NONE;
     for (auto* elem: m_InputElems)
     {
-      BhvResult res = BHV_RES_NONE;
       for (ElemBehavior& bhv: elem->dynamicParams.behaviors)
         if (bhv->getInputSupport() & BHV_INPUT_MOUSE)
           res = (BhvResult) (res | bhv->onMouseStateChange(*elem, state, m_MousePos, res));
@@ -109,11 +120,6 @@ namespace Engine::gui
       if (res & BHV_RES_PROCESSED)
         break;
     }
-  }
-
-  void Scene::setScreenSize(const float2 size)
-  {
-    m_ScreenSize = size;
   }
 
   void Scene::rebuildStackedElems()

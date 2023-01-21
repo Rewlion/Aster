@@ -23,7 +23,7 @@ globalThis.rootUI = {
       observe: [btnState],
       observeBtnState: btnState,
       behaviors: [ui.BEHAVIOR_BUTTON],
-      color: btnState.value & ui.BUTTON_HOVERED ? [255,255,255] : [255,255, 0],
+      color: btnState.value & ui.BUTTON_HOVERED ? [100,255,255] : [255,255, 0],
       childs: [
         () => ({
           size: btnState2.value & ui.BUTTON_CLICKED ? [80, 80] : [50, 50],

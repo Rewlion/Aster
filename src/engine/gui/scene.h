@@ -1,6 +1,7 @@
 #pragma once
 
 #include "element.h"
+#include "behavior.h"
 #include "runtime_state.h"
 
 #include <EASTL/vector.h>
@@ -29,6 +30,7 @@ namespace Engine::gui
       void setScreenSize(const float2);
 
     private:
+      void processMouseEvent(const BhvStateChange);
       void rebuildStackedElems();
       void rebuildStackedElemsInternal();
       void sortStackedElemsByZOrder();

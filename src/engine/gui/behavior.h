@@ -12,8 +12,7 @@ namespace Engine::gui
 {
   enum class BhvStateChange
   {
-    OnMouseHoverBegin,
-    OnMouseHoverEnd,
+    OnMouseMove,
     OnMouseClickBegin,
     OnMouseClickEnd
   };
@@ -21,7 +20,8 @@ namespace Engine::gui
   enum BhvResult: int
   {
     BHV_RES_NONE = 0,
-    BHV_RES_PROCESSED = 1
+    BHV_RES_PROCESSED = 1,
+    BHV_RES_HOVERED   = 1 << 2
   };
 
   enum BhvInputSupport: int
