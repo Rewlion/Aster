@@ -19,7 +19,7 @@ namespace Engine::gui
       void init();
       void tick();
 
-      inline const std::optional<Element>& getRootUI() const { return m_Scene.getRoot(); }
+      inline const eastl::vector<Element*>& getElemsToRender() const { return m_Scene.getElemsToRender(); }
 
       void setMouseCursorPos(const int2 pos);
       void setMouseClickState(const bool clicked);

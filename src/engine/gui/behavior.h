@@ -24,6 +24,12 @@ namespace Engine::gui
     BHV_RES_PROCESSED = 1
   };
 
+  enum BhvInputSupport: int
+  {
+    BHV_INPUT_NONE = 0,
+    BHV_INPUT_MOUSE = 1,
+  };
+
   class Element;
 
   class IBehavior
@@ -31,7 +37,8 @@ namespace Engine::gui
     public:
       virtual ~IBehavior(){};
       virtual BehaviorType getType() const = 0;
-      virtual BhvResult onStateChange(Element&, const BhvStateChange, const BhvResult) = 0;
+      virtual BhvResult onMouseStateChange(Element&, const BhvStateChange, const float2 pos, const BhvResult) = 0;
+      virtual BhvInputSupport getInputSupport() const { return BHV_INPUT_NONE; }
   };
 
   class BehaviorsStorage

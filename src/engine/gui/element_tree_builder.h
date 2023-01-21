@@ -16,12 +16,12 @@ namespace Engine::gui
     public:
       ElementTreeBuilder(BehaviorsStorage&);
       std::optional<Element> buildFromRootUi(const qjs::Value& root_ui);
-      std::optional<Element> buildDynamicElem(const qjs::Value&);
+      std::optional<Element> buildDynamicElem(const qjs::Value&, const size_t z_order);
     private:
-      std::optional<Element> buildStaticElem(const qjs::Value&);
-      std::optional<Element> buildElem(const qjs::Value&);
+      std::optional<Element> buildStaticElem(const qjs::Value&, const size_t z_order);
+      std::optional<Element> buildElem(const qjs::Value&, const size_t z_order);
       Element::Params buildParams(const qjs::Value&) const;
-      eastl::vector<Element> buildChilds(const qjs::Value&);
+      eastl::vector<Element> buildChilds(const qjs::Value&, const size_t z_order);
       
       eastl::vector<ReactStateRegistration> getObservedReactStates(const qjs::Value&) const;
       PointValue getPointValue(const qjs::Value& v) const;

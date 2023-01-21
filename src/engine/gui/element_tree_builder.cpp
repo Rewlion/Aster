@@ -27,19 +27,20 @@ namespace Engine::gui
       return std::nullopt;
     }
 
-    return buildElem(root_ui);
+    return buildElem(root_ui, 0);
   }
 
-  std::optional<Element> ElementTreeBuilder::buildStaticElem(const qjs::Value& v)
+  std::optional<Element> ElementTreeBuilder::buildStaticElem(const qjs::Value& v, const size_t z_order)
   {
     static size_t id = 0;
 
     auto params = buildParams(v);
 
-    eastl::vector<Element> childs = buildChilds(v);
+    eastl::vector<Element> childs = buildChilds(v, z_order+1);
     std::optional<Element> elem{std::in_place};
     elem = Element{
       .id = id++,
+      .zOrder = z_order,
       .params = std::move(params),
       .childs = std::move(childs)
     };
@@ -47,7 +48,7 @@ namespace Engine::gui
     return elem;
   }
 
-  std::optional<Element> ElementTreeBuilder::buildDynamicElem(const qjs::Value& v)
+  std::optional<Element> ElementTreeBuilder::buildDynamicElem(const qjs::Value& v, const size_t z_order)
   {
     const auto buildElem = v.as<qjs::FunctionView>();
     if (buildElem.getArgsCount() == 0)
@@ -59,7 +60,7 @@ namespace Engine::gui
         logerror("ui: invalid element: function has to return an object");
       else
       {
-        std::optional<Element> elem = buildStaticElem(r);
+        std::optional<Element> elem = buildStaticElem(r, z_order);
         if (elem.has_value())
         {
           elem.value().constructor = v.duplicate();
@@ -74,13 +75,13 @@ namespace Engine::gui
     return std::nullopt;
   }
 
-  std::optional<Element> ElementTreeBuilder::buildElem(const qjs::Value& v)
+  std::optional<Element> ElementTreeBuilder::buildElem(const qjs::Value& v, const size_t z_order)
   {
     if (v.isPlainObject())
-      return buildStaticElem(v);
+      return buildStaticElem(v, z_order);
 
     if (v.isFunction())
-      return buildDynamicElem(v);
+      return buildDynamicElem(v, z_order);
     
     logerror("ui: invalid element description: it's not static(Object) nor dynamic(Function)");
     return std::nullopt;
@@ -333,14 +334,14 @@ namespace Engine::gui
     return PointValue{1.0, PointValue::Type::General};
   }
 
-  eastl::vector<Element> ElementTreeBuilder::buildChilds(const qjs::Value& v)
+  eastl::vector<Element> ElementTreeBuilder::buildChilds(const qjs::Value& v, const size_t z_order)
   {
     eastl::vector<Element> childsElems;
     const qjs::Value childs = v.as<qjs::ObjectView>().getProperty("childs");
     
     if (childs.isPlainObject())
     {
-      std::optional<Element> elem = buildElem(childs);
+      std::optional<Element> elem = buildElem(childs, z_order);
       if (elem.has_value())
         childsElems.push_back(std::move(elem.value()));
     }
@@ -353,7 +354,7 @@ namespace Engine::gui
         const qjs::Value child = array[i];
         if (!child.isUndefined())
         {
-          auto optElem = buildElem(child);
+          auto optElem = buildElem(child, z_order);
           if (optElem.has_value())
             childsElems.push_back(std::move(optElem.value()));
         }

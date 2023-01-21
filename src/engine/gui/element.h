@@ -91,6 +91,7 @@ namespace Engine::gui
     };
 
     size_t id = 0;
+    size_t zOrder = 0;
 
     Params params;
     SceneParams sceneParams;

@@ -5,6 +5,8 @@
 
 #include <engine/window.h>
 
+#include <EASTL/sort.h>
+
 namespace Engine::gui
 {
   Scene::Scene(RuntimeState& state, BehaviorsStorage& behaviors)
@@ -20,7 +22,10 @@ namespace Engine::gui
     m_Root = jsParser.buildFromRootUi(root_ui);
 
     if (m_Root.has_value())
+    {
       ScenePlacer{Window::get_window_size()}.placeRoot(m_Root.value());
+      rebuildStackedElems();
+    }
   }
 
   void Scene::rebuildDirtyElems(const DirtyStates& dirty_states)
@@ -35,6 +40,7 @@ namespace Engine::gui
     };
 
     rebuildElem(fakeParent, m_Root.value(), dirty_states);
+    rebuildStackedElems();
   }
 
   bool Scene::rebuildElem(Element& parent, Element& child, const DirtyStates& dirty_states)
@@ -55,7 +61,7 @@ namespace Engine::gui
     {
       ElementTreeBuilder rebuilder{m_Behaviors};
       std::optional<Element> newElem{std::in_place};
-      newElem = rebuilder.buildDynamicElem(child.constructor);
+      newElem = rebuilder.buildDynamicElem(child.constructor, child.zOrder);
       if (newElem.has_value())
       {
         child = std::move(newElem.value());
@@ -85,12 +91,15 @@ namespace Engine::gui
 
   void Scene::setMouseCursorPos(const float2 pos)
   {
+    float2 previousPos = m_MousePos;
+    m_MousePos = pos;
+
     if (m_Root.has_value())
     {
       if (!setHoveredElem(&m_Root.value(), pos) && m_HoveredElem)
       {
         m_Behaviors.getBehavior(BehaviorType::Button)
-          ->onStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd, BHV_RES_NONE);
+          ->onMouseStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd, previousPos, BHV_RES_NONE);
         m_HoveredElem = nullptr;
       }
     }
@@ -117,11 +126,10 @@ namespace Engine::gui
         if (!isSame && m_HoveredElem)
         {
           IBehavior* prevBtn = getBtnBhv(m_HoveredElem);
-          prevBtn->onStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd, BHV_RES_NONE);
+          prevBtn->onMouseStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd, m_MousePos, BHV_RES_NONE);
         }
-        parentBtn->onStateChange(*parent, BhvStateChange::OnMouseHoverBegin, BHV_RES_NONE);
+        parentBtn->onMouseStateChange(*parent, BhvStateChange::OnMouseHoverBegin, m_MousePos, BHV_RES_NONE);
         m_HoveredElem = parent;
-        m_MousePos = pos;
         return true;
       }
       else
@@ -137,41 +145,72 @@ namespace Engine::gui
 
   void Scene::setMouseClickState(const bool clicked)
   {
-    if (!m_HoveredElem)
-      return;
-
-    Element* elem = m_HoveredElem;
-
     const auto state = clicked ?
       BhvStateChange::OnMouseClickBegin :
       BhvStateChange::OnMouseClickEnd;
 
-    const auto findNextChildToProcess = [](Element* elem, float2 pos)
-    {
-      for (auto& child: elem->childs)
-      {
-        if (child.isInside(pos))
-          return &child;
-      }
-
-      return (Element*)nullptr;
-    };
-
-    while (elem)
+    for (auto* elem: m_InputElems)
     {
       BhvResult res = BHV_RES_NONE;
       for (IBehavior* bhv: elem->params.behaviors)
-        res = (BhvResult) (res | bhv->onStateChange(*elem, state, res));
+        if (bhv->getInputSupport() & BHV_INPUT_MOUSE)
+          res = (BhvResult) (res | bhv->onMouseStateChange(*elem, state, m_MousePos, res));
 
       if (res & BHV_RES_PROCESSED)
         break;
-
-      elem = findNextChildToProcess(elem, m_MousePos);
     }
   }
 
   void Scene::setScreenSize(const float2 size)
   {
     m_ScreenSize = size;
+  }
+
+  void Scene::rebuildStackedElems()
+  {
+    m_InputElems.clear();
+    m_RenderElems.clear();
+    rebuildStackedElemsInternal();
+    sortStackedElemsByZOrder();
+  }
+
+  void Scene::rebuildStackedElemsInternal()
+  {
+    eastl::vector<Element*> elemsToProcess;
+
+    if (m_Root.has_value())
+      elemsToProcess.emplace_back(&m_Root.value());
+
+    while(!elemsToProcess.empty())
+    {
+      Element* e = elemsToProcess.back();
+      elemsToProcess.pop_back();
+
+      for (auto& child: e->childs)
+        elemsToProcess.emplace_back(&child);
+
+      if (e->params.render != RenderType::None)
+        m_RenderElems.emplace_back(e);
+      
+      for (const auto& bhv: e->params.behaviors)
+      {
+        if (bhv->getInputSupport() != BHV_INPUT_NONE)
+        {
+          m_InputElems.emplace_back(e);
+          break;
+        }
+      }
+    }
+  }
+
+  void Scene::sortStackedElemsByZOrder()
+  {
+    const auto sortElems = [](auto& array) {
+      eastl::sort(array.begin(), array.end(), 
+        [](Element* l, Element* r) { return l->zOrder > r->zOrder; });
+    };
+
+    sortElems(m_InputElems);
+    sortElems(m_RenderElems);
   }
 }

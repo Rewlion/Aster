@@ -12,10 +12,11 @@ namespace Engine::gui
   {
     public:
       virtual BehaviorType getType() const override { return BehaviorType::Button; }
-      virtual BhvResult onStateChange(Element& elem, const BhvStateChange stateChange, const BhvResult previous_results) override
+      virtual BhvInputSupport getInputSupport() const override { return BHV_INPUT_MOUSE; }
+      virtual BhvResult onMouseStateChange(Element& elem, const BhvStateChange stateChange, const float2 pos, const BhvResult previous_results) override
       {
-        if (elem.params.observeBtnState.isUndefined() || (previous_results & BHV_RES_PROCESSED))
-          return BHV_RES_PROCESSED;
+        if (!elem.isInside(pos) || elem.params.observeBtnState.isUndefined() || (previous_results & BHV_RES_PROCESSED))
+          return BHV_RES_NONE;
         
         qjs::ObjectView btnState = elem.params.observeBtnState.as<qjs::ObjectView>();
         qjs::Value v = btnState.getProperty("value");

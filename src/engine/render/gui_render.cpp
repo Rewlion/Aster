@@ -106,10 +106,7 @@ namespace Engine::Render
 
   void GuiRender::render(gapi::CmdEncoder& encoder)
   {
-    const std::optional<gui::Element>& rootUI = gui::manager.getRootUI();
-    if (!rootUI.has_value())
-      return;
-
-    renderElement(rootUI.value(), encoder);
+    for (auto* elem: gui::manager.getElemsToRender())
+      renderElement(*elem, encoder);
   }
 }
