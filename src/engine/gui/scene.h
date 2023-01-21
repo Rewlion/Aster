@@ -29,7 +29,6 @@ namespace Engine::gui
       void setScreenSize(const float2);
 
     private:
-      bool setHoveredElem(Element* parent, const float2 pos);
       void rebuildStackedElems();
       void rebuildStackedElemsInternal();
       void sortStackedElemsByZOrder();
@@ -42,7 +41,6 @@ namespace Engine::gui
       eastl::vector<Element*> m_RenderElems;
       float2 m_ScreenSize;
 
-      Element* m_HoveredElem;
       float2 m_MousePos;
   };
 }

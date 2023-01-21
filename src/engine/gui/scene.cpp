@@ -12,7 +12,6 @@ namespace Engine::gui
   Scene::Scene(RuntimeState& state, BehaviorsStorage& behaviors)
     : m_RtState(state)
     , m_Behaviors(behaviors)
-    , m_HoveredElem(nullptr)
   {
   }
 
@@ -93,54 +92,6 @@ namespace Engine::gui
   {
     float2 previousPos = m_MousePos;
     m_MousePos = pos;
-
-    if (m_Root.has_value())
-    {
-      if (!setHoveredElem(&m_Root.value(), pos) && m_HoveredElem)
-      {
-        m_Behaviors.getBehavior(BehaviorType::Button)
-          ->onMouseStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd, previousPos, BHV_RES_NONE);
-        m_HoveredElem = nullptr;
-      }
-    }
-  }
-
-  bool Scene::setHoveredElem(Element* parent, const float2 pos)
-  {
-    const auto getBtnBhv = [](Element* elem) {
-      for (const auto& bhv: elem->dynamicParams.behaviors)
-        if (bhv->getType() == BehaviorType::Button)
-          return bhv;
-      
-      return (IBehavior*)nullptr;
-    };
-
-    if (parent->isInside(pos))
-    {
-      if (IBehavior* parentBtn = getBtnBhv(parent))
-      {
-        bool isSame = m_HoveredElem == parent;
-        if (isSame)
-          return true;
-
-        if (!isSame && m_HoveredElem)
-        {
-          IBehavior* prevBtn = getBtnBhv(m_HoveredElem);
-          prevBtn->onMouseStateChange(*m_HoveredElem, BhvStateChange::OnMouseHoverEnd, m_MousePos, BHV_RES_NONE);
-        }
-        parentBtn->onMouseStateChange(*parent, BhvStateChange::OnMouseHoverBegin, m_MousePos, BHV_RES_NONE);
-        m_HoveredElem = parent;
-        return true;
-      }
-      else
-      {
-        for (auto& child: parent->childs)
-          if (setHoveredElem(&child, pos))
-            return true;
-      }
-    }
-
-    return false;
   }
 
   void Scene::setMouseClickState(const bool clicked)
