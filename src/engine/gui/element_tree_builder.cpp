@@ -42,6 +42,7 @@ namespace Engine::gui
       .id = id++,
       .zOrder = z_order,
       .params = std::move(params),
+      .object = v.duplicate(),
       .childs = std::move(childs)
     };
 
@@ -60,10 +61,12 @@ namespace Engine::gui
         logerror("ui: invalid element: function has to return an object");
       else
       {
-        std::optional<Element> elem = buildStaticElem(r, z_order);
+        std::optional<Element> elem{std::in_place};
+        elem = buildStaticElem(r, z_order);
+
         if (elem.has_value())
         {
-          elem.value().constructor = v.duplicate();
+          elem->constructor = v.duplicate();
           elem->observes = getObservedReactStates(r);
         }
         return elem;

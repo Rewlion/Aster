@@ -96,6 +96,7 @@ namespace Engine::gui
     Params params;
     SceneParams sceneParams;
 
+    qjs::Value object;
     qjs::Value constructor;
     eastl::vector<ReactStateRegistration> observes;
     eastl::vector<Element> childs;
