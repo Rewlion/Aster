@@ -50,7 +50,7 @@ namespace Engine::gui
         return false;
     
       for (const auto* state : dirty_states)
-        for (const auto& reg: elem.observes)
+        for (const auto& reg: elem.dynamicParams.observes)
           if (reg.getState() == state)
             return true;
 
@@ -61,7 +61,7 @@ namespace Engine::gui
     {
       ElementTreeBuilder rebuilder{m_Behaviors};
       std::optional<Element> newElem{std::in_place};
-      newElem = rebuilder.buildDynamicElem(child.constructor, child.zOrder);
+      newElem = rebuilder.buildDynamicElem(child.dynamicParams.constructor, child.zOrder);
       if (newElem.has_value())
       {
         child = std::move(newElem.value());
@@ -108,7 +108,7 @@ namespace Engine::gui
   bool Scene::setHoveredElem(Element* parent, const float2 pos)
   {
     const auto getBtnBhv = [](Element* elem) {
-      for (const auto& bhv: elem->params.behaviors)
+      for (const auto& bhv: elem->dynamicParams.behaviors)
         if (bhv->getType() == BehaviorType::Button)
           return bhv;
       
@@ -152,7 +152,7 @@ namespace Engine::gui
     for (auto* elem: m_InputElems)
     {
       BhvResult res = BHV_RES_NONE;
-      for (IBehavior* bhv: elem->params.behaviors)
+      for (IBehavior* bhv: elem->dynamicParams.behaviors)
         if (bhv->getInputSupport() & BHV_INPUT_MOUSE)
           res = (BhvResult) (res | bhv->onMouseStateChange(*elem, state, m_MousePos, res));
 
@@ -192,7 +192,7 @@ namespace Engine::gui
       if (e->params.render != RenderType::None)
         m_RenderElems.emplace_back(e);
       
-      for (const auto& bhv: e->params.behaviors)
+      for (const auto& bhv: e->dynamicParams.behaviors)
       {
         if (bhv->getInputSupport() != BHV_INPUT_NONE)
         {

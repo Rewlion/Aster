@@ -49,26 +49,24 @@ namespace Engine::gui
     return elem;
   }
 
-  std::optional<Element> ElementTreeBuilder::buildDynamicElem(const qjs::Value& v, const size_t z_order)
+  std::optional<Element> ElementTreeBuilder::buildDynamicElem(const qjs::Value& constructor, const size_t z_order)
   {
-    const auto buildElem = v.as<qjs::FunctionView>();
+    const auto buildElem = constructor.as<qjs::FunctionView>();
     if (buildElem.getArgsCount() == 0)
     {
-      qjs::Value r = buildElem({}, 0, nullptr);
-      if (r.isException())
-        qjs::logerror_exception(std::move(r));
-      else if (!r.isPlainObject())
+      qjs::Value staticElem = buildElem({}, 0, nullptr);
+      if (staticElem.isException())
+        qjs::logerror_exception(std::move(staticElem));
+      else if (!staticElem.isPlainObject())
         logerror("ui: invalid element: function has to return an object");
       else
       {
         std::optional<Element> elem{std::in_place};
-        elem = buildStaticElem(r, z_order);
+        elem = buildStaticElem(staticElem, z_order);
 
         if (elem.has_value())
-        {
-          elem->constructor = v.duplicate();
-          elem->observes = getObservedReactStates(r);
-        }
+          elem->dynamicParams = buildDynamicParams(staticElem, constructor);
+
         return elem;
       }
     }
@@ -104,14 +102,25 @@ namespace Engine::gui
     params.render = obj.getIntEnumOr("render", RenderType::None);
     params.halign = obj.getIntEnumOr("halign", HorAlignType::None);
     params.valign = obj.getIntEnumOr("valign", VerAlignType::None);
-    params.observeBtnState = obj.getProperty("observeBtnState");
-    params.behaviors = getBehaviors(obj);
-    params.onClick = getOnClick(obj);
     params.clipChilds = obj.getBoolOr("clipChilds", false);
     params.text = obj.getTextOr("text", "");
     params.textHalign = obj.getIntEnumOr("textHalign", HorAlignType::None);
     params.textValign = obj.getIntEnumOr("textValign", VerAlignType::None);
     params.fontSize = getFontSize(obj);
+
+    return params;
+  }
+
+  Element::DynamicParams ElementTreeBuilder::buildDynamicParams(const qjs::Value& static_elem, const qjs::Value& constructor) const
+  {
+    auto obj = static_elem.as<qjs::ObjectView>();
+    Element::DynamicParams params;
+
+    params.constructor = constructor.duplicate();
+    params.observes = getObservedReactStates(static_elem);
+    params.observeBtnState = obj.getProperty("observeBtnState");
+    params.behaviors = getBehaviors(obj);
+    params.onClick = getOnClick(obj);
 
     return params;
   }

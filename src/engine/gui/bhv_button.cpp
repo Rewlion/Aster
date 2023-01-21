@@ -15,10 +15,10 @@ namespace Engine::gui
       virtual BhvInputSupport getInputSupport() const override { return BHV_INPUT_MOUSE; }
       virtual BhvResult onMouseStateChange(Element& elem, const BhvStateChange stateChange, const float2 pos, const BhvResult previous_results) override
       {
-        if (!elem.isInside(pos) || elem.params.observeBtnState.isUndefined() || (previous_results & BHV_RES_PROCESSED))
+        if (!elem.isInside(pos) || elem.dynamicParams.observeBtnState.isUndefined() || (previous_results & BHV_RES_PROCESSED))
           return BHV_RES_NONE;
         
-        qjs::ObjectView btnState = elem.params.observeBtnState.as<qjs::ObjectView>();
+        qjs::ObjectView btnState = elem.dynamicParams.observeBtnState.as<qjs::ObjectView>();
         qjs::Value v = btnState.getProperty("value");
 
         int state = 0;
@@ -40,8 +40,8 @@ namespace Engine::gui
           case BhvStateChange::OnMouseClickBegin:
           {
             Utils::set_bit(state, BTN_ST_CLICKED);
-            if (elem.params.onClick.isValid() && elem.params.onClick.isFunction())
-              elem.params.onClick.as<qjs::FunctionView>()({}, 0, nullptr);
+            if (elem.dynamicParams.onClick.isValid() && elem.dynamicParams.onClick.isFunction())
+              elem.dynamicParams.onClick.as<qjs::FunctionView>()({}, 0, nullptr);
             break;
           }
           case BhvStateChange::OnMouseClickEnd:
@@ -52,8 +52,8 @@ namespace Engine::gui
           default: ASSERT(!"unsupported");
         }
 
-        JSContext* ctx = elem.params.observeBtnState.getContext();
-        JS_SetPropertyStr(ctx, elem.params.observeBtnState.getJsValue(), "value",  JS_NewInt32(ctx, state));
+        JSContext* ctx = elem.dynamicParams.observeBtnState.getContext();
+        JS_SetPropertyStr(ctx, elem.dynamicParams.observeBtnState.getJsValue(), "value",  JS_NewInt32(ctx, state));
 
         return BHV_RES_PROCESSED;
       }

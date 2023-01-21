@@ -21,6 +21,7 @@ namespace Engine::gui
       std::optional<Element> buildStaticElem(const qjs::Value&, const size_t z_order);
       std::optional<Element> buildElem(const qjs::Value&, const size_t z_order);
       Element::Params buildParams(const qjs::Value&) const;
+      Element::DynamicParams buildDynamicParams(const qjs::Value& static_elem, const qjs::Value& constructor) const;
       eastl::vector<Element> buildChilds(const qjs::Value&, const size_t z_order);
       
       eastl::vector<ReactStateRegistration> getObservedReactStates(const qjs::Value&) const;

@@ -39,6 +39,8 @@ namespace Engine::gui
       virtual BehaviorType getType() const = 0;
       virtual BhvResult onMouseStateChange(Element&, const BhvStateChange, const float2 pos, const BhvResult) = 0;
       virtual BhvInputSupport getInputSupport() const { return BHV_INPUT_NONE; }
+      virtual void onInit(Element&) {};
+      virtual void onDestroy() {};
   };
 
   class BehaviorsStorage
