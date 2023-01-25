@@ -1,14 +1,19 @@
-template1 @("entity_template"){
+template @("name: template1"){
   float2 test_float2 = 0.0, 0.0
   float test_float = 0.0
   text test_str = "a"
 }
 
-template2 @("entity_template") {
+template @("name: template2") {
   float2 test_float2 = 0.0, 0.0
 }
 
-camera @("entity_template")
+template @("name: template3; extends: template1, template2") {
+  text test_str = "new_a"
+  float3 test_float3 = 0.0, 0.0, 0.0
+}
+
+template @("name: camera")
 {
   float3 pos = 0.0, 0.0, 0.0
   float camera_fov = 0.0

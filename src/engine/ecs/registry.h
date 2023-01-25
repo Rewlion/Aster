@@ -23,7 +23,9 @@ namespace Engine::ECS
 
     public:
 
-      void addTemplate(const template_name_id& templateId, const eastl::vector<ComponentDescription>& desc);
+      void addTemplate(const string& tmpl,
+                       eastl::vector<ComponentDescription>&& desc,
+                       const eastl::vector<string>& extends_templates);
 
       void createEntity(const template_name_id templateNameId, CreationCb);
       bool destroyEntity(const EntityId eid);
@@ -84,7 +86,7 @@ namespace Engine::ECS
 
       DesiredArchetypes findDesiredArchetypes(const QueryComponents& queryComponents);
 
-      archetype_id getArchetype(const eastl::vector<ComponentDescription>& desc);
+      archetype_id getArchetype(const ArchetypeComponentsDescription& desc);
 
       EntityId getFreeEntity();
 

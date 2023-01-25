@@ -1,31 +1,90 @@
 #include "registry.h"
-
 #include "components_accessor.h"
 
 #include <engine/ecs/fs/load_templates.h>
 #include <engine/settings.h>
 #include <engine/log.h>
 
+#include <ranges>
+
 namespace Engine::ECS
 {
   Engine::ECS::Registry manager;
 
-  archetype_id Registry::getArchetype(const eastl::vector<ComponentDescription>& desc)
+  struct ArchetypeExtensionInfo
+  {
+    const string tmplName;
+    template_name_id templateId;
+    archetype_id archetypeId;
+  };
+
+  archetype_id Registry::getArchetype(const ArchetypeComponentsDescription& desc)
   {
     for (size_t i = 0; i < m_Archetypes.size(); ++i)
-      if (m_Archetypes[i].hasComponents(desc))
+      if (m_Archetypes[i].hasComponents(desc.components))
         return (archetype_id)i;
 
     return INVALID_ARCHETYPE_ID;
   }
 
-  void Registry::addTemplate(const template_name_id& templateId, const eastl::vector<ComponentDescription>& desc)
+  template<class T>
+  inline decltype(auto) transform_to_extension_info(const T& template_to_archetype_id_map)
   {
-    archetype_id archetypeId = getArchetype(desc);
+    return std::views::transform([&template_to_archetype_id_map](const string& str){
+      const template_name_id tmplId = str_hash(str.c_str());
+      const auto archIt = template_to_archetype_id_map.find(tmplId);
+      return ArchetypeExtensionInfo{
+        .tmplName = str,
+        .templateId = tmplId,
+        .archetypeId = archIt != template_to_archetype_id_map.end() ? archIt->second : INVALID_ARCHETYPE_ID
+        };
+    });
+  }
+
+  static inline decltype(auto) filter_invalid_archetypes()
+  {
+    return std::views::filter(
+      [](const ArchetypeExtensionInfo& ext)
+        { return ext.archetypeId == INVALID_ARCHETYPE_ID; });
+  }
+
+  void Registry::addTemplate(const string& tmpl,
+                             eastl::vector<ComponentDescription>&& desc,
+                             const eastl::vector<string>& extends_templates)
+  {
+    const template_name_id templateId = str_hash(tmpl.c_str());
+    if (m_TemplateToArhetypeMap.find(templateId) != m_TemplateToArhetypeMap.end())
+    {
+      logerror("template {} is registered already", tmpl);
+      return;
+    }
+
+    auto extensions = extends_templates | transform_to_extension_info(m_TemplateToArhetypeMap);
+    auto invalidExtensions = extensions | filter_invalid_archetypes();
+    auto invalidExtensionsCount = std::distance(invalidExtensions.begin(), invalidExtensions.end());
+    if (invalidExtensionsCount != 0)
+    {
+      logerror("template `{}` tries to extend unknown templates", tmpl);
+      for (const auto& ext: invalidExtensions)
+        logerror("invalid extend: {}", ext.tmplName);
+      return;
+    }
+
+    ArchetypeComponentsDescription archDesc{std::move(desc)};
+    for (const auto& parentExt: extensions)
+    {
+      if (!archDesc.merge(m_Archetypes[parentExt.archetypeId].getDescription()))
+      {
+        logerror("template `{}` is invalid. Failed to extend `{}` see previous errors", tmpl, parentExt.tmplName);
+        return;
+      }
+    }
+
+    archetype_id archetypeId = getArchetype(archDesc);
     if (archetypeId == INVALID_ARCHETYPE_ID)
     {
       archetypeId = (archetype_id)m_Archetypes.size();
-      m_Archetypes.emplace_back(desc);
+      m_Archetypes.emplace_back(std::move(archDesc));
     }
     m_TemplateToArhetypeMap.insert({templateId, archetypeId});
   }

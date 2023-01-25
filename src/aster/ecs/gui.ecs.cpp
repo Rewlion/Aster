@@ -19,3 +19,12 @@ static void input_handler(const ButtonActionInputEvent& evt)
   if (evt.action == str_hash("MouseClick"))
     Engine::gui::manager.setMouseClickState(evt.status == Engine::Input::ButtonStatus::Press);
 }
+
+ECS_SYSTEM()
+static void system_test_multiple_templates(const float& test_float, const string& test_str, const float2 test_float2, const float3 test_float3)
+{
+  volatile const float fl = test_float;
+  volatile const string str = test_str;
+  volatile const float2 fl2 = test_float2;
+  volatile const float3 fl3 = test_float3;
+}

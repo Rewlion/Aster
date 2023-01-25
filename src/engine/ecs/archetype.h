@@ -71,17 +71,25 @@ namespace Engine::ECS
       size_t m_BlockSize;
   };
 
+  struct ArchetypeComponentsDescription
+  {
+    eastl::vector<ComponentDescription> components;
+    bool merge(const ArchetypeComponentsDescription&);
+  };
+
   class Registry;
   class Archetype
   {
     friend Registry;
 
     public:
-      Archetype(const eastl::vector<ComponentDescription>& desc);
+      explicit Archetype(ArchetypeComponentsDescription&& desc);
 
       bool hasComponents(const eastl::vector<ComponentDescription>& desc) const;
 
       bool hasComponent(const component_type_id typeId, const component_name_id nameId) const;
+
+      const ArchetypeComponentsDescription& getDescription() const { return m_ComponentsDescription; }
 
       inline const ComponentMap getComponentMap() const
       {
@@ -96,6 +104,7 @@ namespace Engine::ECS
     private:
       ComponentMap m_ComponentsMap;
       ComponentsStorage m_CompStorage;
+      ArchetypeComponentsDescription m_ComponentsDescription;
   };
 
 }

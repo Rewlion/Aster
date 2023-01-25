@@ -65,13 +65,43 @@ namespace Engine::ECS
     blockId = 0;
     return true;
   }
-  
-  Archetype::Archetype(const eastl::vector<ComponentDescription>& desc)
+
+  bool ArchetypeComponentsDescription::merge(const ArchetypeComponentsDescription& rvl)
   {
-    m_ComponentsMap.reserve(desc.size());
+    eastl::vector<ComponentDescription> newComponents;
+    newComponents.reserve(rvl.components.size());
+
+    for (const auto& comp: rvl.components)
+    {
+      const auto it = eastl::find_if(components.begin(),
+                                     components.end(),
+                                     [&comp](const ComponentDescription& lvl){ return lvl.id == comp.id; });
+      if (it != components.end())
+      {
+        if (comp.type != it->type)
+        {
+          logerror("failed to overwrite a component `{}`: types are not equal", comp.name);
+          return false;
+        }
+      }
+      else
+      {
+        newComponents.push_back(comp);
+      }
+    }
+
+    for (const auto c: newComponents)
+      components.push_back(c);
+
+    return true;
+  }
+  
+  Archetype::Archetype(ArchetypeComponentsDescription&& desc)
+  {
+    m_ComponentsMap.reserve(desc.components.size());
   
     size_t blockOffset = 0;
-    for(const auto& d: desc)
+    for(const auto& d: desc.components)
     {
       m_ComponentsMap.insert({
         d.id,
@@ -88,6 +118,7 @@ namespace Engine::ECS
   
     const size_t blockSize = blockOffset;
     m_CompStorage.init(blockSize);
+    m_ComponentsDescription = std::move(desc);
   }
   
   bool Archetype::hasComponents(const eastl::vector<ComponentDescription>& desc) const

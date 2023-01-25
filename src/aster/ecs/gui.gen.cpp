@@ -38,3 +38,24 @@ static EventSystemRegistration input_handler_registration(
 
   }
 );
+
+
+static void system_test_multiple_templates_internal(ComponentsAccessor& accessor)
+{
+  const float& test_float = accessor.get<float>(str_hash("test_float"));
+  const string& test_str = accessor.get<string>(str_hash("test_str"));
+  float2 test_float2 = accessor.get<float2>(str_hash("test_float2"));
+  float3 test_float3 = accessor.get<float3>(str_hash("test_float3"));
+  system_test_multiple_templates(test_float,test_str,test_float2,test_float3);
+}
+
+
+static SystemRegistration system_test_multiple_templates_registration(
+  system_test_multiple_templates_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("test_float", float),
+    DESCRIBE_QUERY_COMPONENT("test_str", string),
+    DESCRIBE_QUERY_COMPONENT("test_float2", float2),
+    DESCRIBE_QUERY_COMPONENT("test_float3", float3)
+  }
+);
