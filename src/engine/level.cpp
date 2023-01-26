@@ -5,6 +5,9 @@
 #include <engine/ecs/registry.h>
 #include <engine/input/input.h>
 #include <engine/scene/scene.h>
+#include <engine/utils/string.hpp>
+
+#include <ranges>
 
 namespace
 {
@@ -114,11 +117,16 @@ namespace Engine
 {
   static void add_entity(const DataBlock& entityBlk)
   {
-    const string tmpl = entityBlk.getAnnotation();
+    string tmpl = entityBlk.getAnnotation();
     if (tmpl != "")
     {
-      const auto tmplHash = str_hash(tmpl.c_str());
-      ECS::manager.createEntity(tmplHash, From(entityBlk));
+      Utils::remove_spaces(tmpl);
+      eastl::vector<string> templates;
+
+      for (const auto& strRange: tmpl | std::views::split(','))
+        templates.push_back(string{strRange.begin(), strRange.end()});
+
+      ECS::manager.createEntity(templates, From(entityBlk));
     }
     else
     {

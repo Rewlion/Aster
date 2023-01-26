@@ -28,3 +28,10 @@ static void system_test_multiple_templates(const float& test_float, const string
   volatile const float2 fl2 = test_float2;
   volatile const float3 fl3 = test_float3;
 }
+
+ECS_SYSTEM()
+static void system_test_multiple_templates2(const string& test_str, const float2 test_float2)
+{
+  volatile const string str = test_str;
+  volatile const float2 fl2 = test_float2;
+}

@@ -18,6 +18,72 @@ namespace Engine::ECS
     archetype_id archetypeId;
   };
 
+  static string get_templates_final_name(const eastl::vector<string>& templates)
+  {
+    string res = templates[0];
+    for (size_t i = 1; i < templates.size(); ++i)
+      res += ',' + templates[i];
+
+    return res;
+  }
+
+  archetype_id Registry::getArchetype(const eastl::vector<string>& templates)
+  {
+    struct TemplateNameAndId
+    {
+      const string& name;
+      const archetype_id id;
+    };
+
+    const auto to_template_name_and_arch_id = [this]() {
+      return std::views::transform([this](const string& tmpl_name) {
+        const auto it = m_TemplateToArhetypeMap.find(str_hash(tmpl_name.c_str()));
+        return TemplateNameAndId{ tmpl_name, it != m_TemplateToArhetypeMap.end() ? it->second : INVALID_ARCHETYPE_ID };
+      });
+    };
+
+    const string tmpl = get_templates_final_name(templates);
+    const template_name_id requestedTmplId = str_hash(tmpl.c_str());
+    const auto currentArchIt = m_TemplateToArhetypeMap.find(requestedTmplId);
+
+    if (currentArchIt != m_TemplateToArhetypeMap.end())
+      return currentArchIt->second;
+
+    ArchetypeComponentsDescription newArchDesc;
+    for (const auto [name, archId] : templates | to_template_name_and_arch_id())
+    {
+      if (archId == INVALID_ARCHETYPE_ID)
+      {
+        logerror("invalid template `{}`: it's not registered", name);
+        return INVALID_ARCHETYPE_ID;
+      }
+
+      newArchDesc.merge(m_Archetypes[archId].getDescription());
+    }
+
+    const archetype_id newArchId = m_Archetypes.size();
+    m_Archetypes.emplace_back(std::move(newArchDesc));
+    m_TemplateToArhetypeMap.emplace(eastl::make_pair(requestedTmplId, newArchId));
+
+    for (const auto [_, oldArchId] : templates | to_template_name_and_arch_id())
+    {
+      const auto it = m_PendingArchetypeRegistrations.find(oldArchId);
+      if (it != m_PendingArchetypeRegistrations.end())
+      {
+        it->second.emplace_back(newArchId);
+      }
+      else
+      {
+        m_PendingArchetypeRegistrations.emplace(
+          eastl::make_pair(oldArchId, eastl::vector{newArchId})
+        );
+      }
+    }
+
+    loginfo("created new archetype from templates: {}", tmpl);
+    return newArchId;
+  }
+
   archetype_id Registry::getArchetype(const ArchetypeComponentsDescription& desc)
   {
     for (size_t i = 0; i < m_Archetypes.size(); ++i)
@@ -89,11 +155,15 @@ namespace Engine::ECS
     m_TemplateToArhetypeMap.insert({templateId, archetypeId});
   }
 
-  void Registry::createEntity(const template_name_id templateNameId, CreationCb cb)
+  void Registry::createEntity(const eastl::vector<string>& templates, CreationCb cb)
   {
-    const auto it = m_TemplateToArhetypeMap.find(templateNameId);
-    ASSERT(it != m_TemplateToArhetypeMap.end());
-    archetype_id archetypeId = it->second;
+    const archetype_id archetypeId = getArchetype(templates);
+    if (archetypeId == INVALID_ARCHETYPE_ID)
+    {
+      logerror("failed to create an entity");
+      return;
+    }
+
     EntityId eid = getFreeEntity();
 
     Archetype& archetype = m_Archetypes[archetypeId];
@@ -233,11 +303,43 @@ namespace Engine::ECS
 
   void Registry::tick()
   {
+    processPendingArchetypeRegistrations();
     processEvents();
 
     for(const RegisteredQueryInfo& query: m_RegisteredQueues)
       for(const archetype_id archetypeId: query.archetypes)
         queryArchetype(archetypeId, query.cb);
+  }
+
+  void Registry::processPendingArchetypeRegistrations()
+  {
+    for (const auto [oldArchId, newArchIds] : m_PendingArchetypeRegistrations)
+    {
+      for (auto& registeredQuery: m_RegisteredQueues)
+      {
+        const bool queryShouldHandleNewArchetype =
+          registeredQuery.archetypes.end() != 
+          eastl::find(registeredQuery.archetypes.begin(), registeredQuery.archetypes.end(), oldArchId);
+        
+        if (queryShouldHandleNewArchetype)
+          for (auto& newArchId: newArchIds)
+            registeredQuery.archetypes.emplace_back(newArchId);
+      }
+
+      for (auto& [event, queries]: m_EventHandleQueries)
+      {
+        for (auto& query: queries)
+        {
+          const bool queryShouldHandleNewArchetype =
+            query.archetypes.end() != 
+            eastl::find(query.archetypes.begin(), query.archetypes.end(), oldArchId);
+        
+          if (queryShouldHandleNewArchetype)
+            for (auto& newArchId: newArchIds)
+              query.archetypes.emplace_back(newArchId);
+        }
+      }
+    }
   }
 
   void Registry::processEvents()

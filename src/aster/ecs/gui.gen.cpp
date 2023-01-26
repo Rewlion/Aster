@@ -59,3 +59,20 @@ static SystemRegistration system_test_multiple_templates_registration(
     DESCRIBE_QUERY_COMPONENT("test_float3", float3)
   }
 );
+
+
+static void system_test_multiple_templates2_internal(ComponentsAccessor& accessor)
+{
+  const string& test_str = accessor.get<string>(str_hash("test_str"));
+  float2 test_float2 = accessor.get<float2>(str_hash("test_float2"));
+  system_test_multiple_templates2(test_str,test_float2);
+}
+
+
+static SystemRegistration system_test_multiple_templates2_registration(
+  system_test_multiple_templates2_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("test_str", string),
+    DESCRIBE_QUERY_COMPONENT("test_float2", float2)
+  }
+);

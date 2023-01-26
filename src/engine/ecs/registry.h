@@ -27,7 +27,7 @@ namespace Engine::ECS
                        eastl::vector<ComponentDescription>&& desc,
                        const eastl::vector<string>& extends_templates);
 
-      void createEntity(const template_name_id templateNameId, CreationCb);
+      void createEntity(const eastl::vector<string>& templates, CreationCb);
       bool destroyEntity(const EntityId eid);
 
       void registerCppQueries();
@@ -82,10 +82,12 @@ namespace Engine::ECS
       void registerSystem(const QueryCb& cb, const QueryComponents& components);
       void registerEventSystem(const EventQueryCb& cb, const event_hash_name event, const QueryComponents& components);
 
+      void processPendingArchetypeRegistrations();
       void processEvents();
 
       DesiredArchetypes findDesiredArchetypes(const QueryComponents& queryComponents);
 
+      archetype_id getArchetype(const eastl::vector<string>& templates);
       archetype_id getArchetype(const ArchetypeComponentsDescription& desc);
 
       EntityId getFreeEntity();
@@ -127,12 +129,15 @@ namespace Engine::ECS
     private:
       eastl::vector<Archetype> m_Archetypes;
       eastl::vector_map<template_name_id, archetype_id> m_TemplateToArhetypeMap;
+
       eastl::vector_map<event_hash_name, eastl::vector<RegisteredEventQueryInfo>> m_EventHandleQueries;
+      eastl::vector<RegisteredQueryInfo> m_RegisteredQueues;
+
+      eastl::vector_map<archetype_id, eastl::vector<archetype_id>> m_PendingArchetypeRegistrations;
 
       uint64_t m_NextEntityId = 1;
       eastl::vector_map<uint64_t, EntityInfo> m_EntitiesInfo;
 
-      eastl::vector<RegisteredQueryInfo> m_RegisteredQueues;
 
       EventsQueue m_EventsQueue;
   };

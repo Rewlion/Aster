@@ -84,6 +84,12 @@ entity @("template2")
   text test_str = "hi from template2"
 }
 
+entity @("template1, template2")
+{
+  float2 test_float2 = 26.0, 2.0
+  text test_str = "multiple templates! yay"
+}
+
 entity @("template3")
 {
   text test_str = "template3_string"
