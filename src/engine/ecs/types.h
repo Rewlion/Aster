@@ -1,5 +1,7 @@
 #pragma once
 
+#include <EASTL/vector_map.h>
+
 #include <stdint.h>
 
 namespace Engine::ECS
@@ -24,4 +26,6 @@ namespace Engine::ECS
   constexpr archetype_id INVALID_ARCHETYPE_ID = (archetype_id)-1;
   constexpr template_name_id INVALID_TEMPLATE_NAME_ID = (template_name_id)-1;
   constexpr query_id INVALID_QUERY_ID = (query_id)-1;
+
+  using TemplateToArchetypeMap = eastl::vector_map<template_name_id, archetype_id>;
 }

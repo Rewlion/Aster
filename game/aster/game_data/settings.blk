@@ -26,8 +26,3 @@ vulkan
   bool validation = on
 }
 
-events
-{
-  text event = "ButtonActionInputEvent"
-  text event = "TestEvent"
-}

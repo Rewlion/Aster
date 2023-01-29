@@ -12,6 +12,16 @@ namespace Engine::ECS
     m_Comps = std::move(comps);
   }
 
+  DirectQueryRegistration* DirectQueryRegistration::m_List = nullptr;
+  DirectQueryRegistration::DirectQueryRegistration(QueryComponents&& comps)
+  {
+    m_Next = m_List;
+    m_List = this;
+
+    m_Id = m_Next != nullptr ? m_Next->m_Id+1 : 0;
+    m_Comps = std::move(comps);
+  }
+
   EventSystemRegistration* EventSystemRegistration::m_List = nullptr;
   EventSystemRegistration::EventSystemRegistration(EventQueryCb&& cb, event_hash_name event, QueryComponents&& components)
   {

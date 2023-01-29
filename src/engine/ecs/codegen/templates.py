@@ -16,21 +16,22 @@ def generate_query_components_description(components, nesting):
   queryComponents = ',\n'.join(components)
   return queryComponents
 
+def generate_query_registration(query_name):
+  return "{}_queryReg".format(query_name)
+
 def generate_query_id(query_name):
   return "{}_queryId".format(query_name)
 
 def generate_query_id_declaration(query_name, components):
   return """
-const static query_id {query_id_name} = Registry::registerDirectQuery(
-  DirectQueryDescription{{
-    .components = {{
+const static DirectQueryRegistration {query_reg_name}{{{{
 {query_components}
-    }}
-  }}
-);
+}}}};
+const static query_id {query_id_name} = {query_reg_name}.getId();
 """.format(
   query_id_name = generate_query_id(query_name),
-  query_components = generate_query_components_description(components, 3)
+  query_reg_name = generate_query_registration(query_name),
+  query_components = generate_query_components_description(components, 1)
 )
 
 def generate_functor_params(components, nesting):
@@ -65,7 +66,7 @@ void {query_name} (eastl::function<
   void(
 {functor_params})> cb)
 {{
-  {ecs_namespace}::manager.query({query_id}, [&](ComponentsAccessor& accessor)
+  {ecs_namespace}::get_registry().query({query_id}, [&](ComponentsAccessor& accessor)
   {{
 {components_access}
     cb({callback_execute_args});

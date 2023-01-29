@@ -33,7 +33,7 @@ namespace Engine::ECS
 
   class EntityInitializer
   {
-    friend class Registry;
+    friend class ArchetypeStorage;
     public:
       inline EntityInitializer(const ComponentMap& compMap, const size_t blockSize)
         : m_ComponentMap(compMap)

@@ -1,191 +1,126 @@
 #include "registry.h"
 #include "components_accessor.h"
 
-#include <engine/ecs/fs/load_templates.h>
-#include <engine/settings.h>
 #include <engine/log.h>
+#include <engine/utils/string.h>
 
 #include <ranges>
 
 namespace Engine::ECS
 {
-  Engine::ECS::Registry manager;
-
-  struct ArchetypeExtensionInfo
+  bool Registry::isTemplateRegistered(const template_name_id id) const
   {
-    const string tmplName;
-    template_name_id templateId;
-    archetype_id archetypeId;
-  };
+    return m_TemplateToArhetypeMap.find(id) != m_TemplateToArhetypeMap.end();
+  }
 
-  static string get_templates_final_name(const eastl::vector<string>& templates)
+  eastl::vector<archetype_id> Registry::toArchetypeIds(const eastl::vector<string>& template_names) const
   {
-    string res = templates[0];
-    for (size_t i = 1; i < templates.size(); ++i)
-      res += ',' + templates[i];
+    eastl::vector<archetype_id> res;
+    res.reserve(template_names.size());
+    for (const auto& tmpl: template_names)
+    {
+      const auto archId = m_TemplateToArhetypeMap.find(str_hash(tmpl.c_str()));
+      res.emplace_back(archId != m_TemplateToArhetypeMap.end() ? 
+                        archId->second :
+                        INVALID_ARCHETYPE_ID);
+    }
 
     return res;
   }
 
-  archetype_id Registry::getArchetype(const eastl::vector<string>& templates)
-  {
-    struct TemplateNameAndId
-    {
-      const string& name;
-      const archetype_id id;
-    };
-
-    const auto to_template_name_and_arch_id = [this]() {
-      return std::views::transform([this](const string& tmpl_name) {
-        const auto it = m_TemplateToArhetypeMap.find(str_hash(tmpl_name.c_str()));
-        return TemplateNameAndId{ tmpl_name, it != m_TemplateToArhetypeMap.end() ? it->second : INVALID_ARCHETYPE_ID };
-      });
-    };
-
-    const string tmpl = get_templates_final_name(templates);
-    const template_name_id requestedTmplId = str_hash(tmpl.c_str());
-    const auto currentArchIt = m_TemplateToArhetypeMap.find(requestedTmplId);
-
-    if (currentArchIt != m_TemplateToArhetypeMap.end())
-      return currentArchIt->second;
-
-    ArchetypeComponentsDescription newArchDesc;
-    for (const auto [name, archId] : templates | to_template_name_and_arch_id())
-    {
-      if (archId == INVALID_ARCHETYPE_ID)
-      {
-        logerror("invalid template `{}`: it's not registered", name);
-        return INVALID_ARCHETYPE_ID;
-      }
-
-      newArchDesc.merge(m_Archetypes[archId].getDescription());
-    }
-
-    const archetype_id newArchId = m_Archetypes.size();
-    m_Archetypes.emplace_back(std::move(newArchDesc));
-    m_TemplateToArhetypeMap.emplace(eastl::make_pair(requestedTmplId, newArchId));
-
-    for (const auto [_, oldArchId] : templates | to_template_name_and_arch_id())
-    {
-      const auto it = m_PendingArchetypeRegistrations.find(oldArchId);
-      if (it != m_PendingArchetypeRegistrations.end())
-      {
-        it->second.emplace_back(newArchId);
-      }
-      else
-      {
-        m_PendingArchetypeRegistrations.emplace(
-          eastl::make_pair(oldArchId, eastl::vector{newArchId})
-        );
-      }
-    }
-
-    loginfo("created new archetype from templates: {}", tmpl);
-    return newArchId;
-  }
-
-  archetype_id Registry::getArchetype(const ArchetypeComponentsDescription& desc)
-  {
-    for (size_t i = 0; i < m_Archetypes.size(); ++i)
-      if (m_Archetypes[i].hasComponents(desc.components))
-        return (archetype_id)i;
-
-    return INVALID_ARCHETYPE_ID;
-  }
-
-  template<class T>
-  inline decltype(auto) transform_to_extension_info(const T& template_to_archetype_id_map)
-  {
-    return std::views::transform([&template_to_archetype_id_map](const string& str){
-      const template_name_id tmplId = str_hash(str.c_str());
-      const auto archIt = template_to_archetype_id_map.find(tmplId);
-      return ArchetypeExtensionInfo{
-        .tmplName = str,
-        .templateId = tmplId,
-        .archetypeId = archIt != template_to_archetype_id_map.end() ? archIt->second : INVALID_ARCHETYPE_ID
-        };
-    });
-  }
-
-  static inline decltype(auto) filter_invalid_archetypes()
-  {
-    return std::views::filter(
-      [](const ArchetypeExtensionInfo& ext)
-        { return ext.archetypeId == INVALID_ARCHETYPE_ID; });
-  }
-
   void Registry::addTemplate(const string& tmpl,
-                             eastl::vector<ComponentDescription>&& desc,
+                             eastl::vector<ComponentDescription>&& components,
                              const eastl::vector<string>& extends_templates)
   {
-    const template_name_id templateId = str_hash(tmpl.c_str());
-    if (m_TemplateToArhetypeMap.find(templateId) != m_TemplateToArhetypeMap.end())
+    const auto validateExtends = [&tmpl, &extends_templates](const auto& extendsArchetypes)
     {
-      logerror("template {} is registered already", tmpl);
-      return;
-    }
-
-    auto extensions = extends_templates | transform_to_extension_info(m_TemplateToArhetypeMap);
-    auto invalidExtensions = extensions | filter_invalid_archetypes();
-    auto invalidExtensionsCount = std::distance(invalidExtensions.begin(), invalidExtensions.end());
-    if (invalidExtensionsCount != 0)
-    {
-      logerror("template `{}` tries to extend unknown templates", tmpl);
-      for (const auto& ext: invalidExtensions)
-        logerror("invalid extend: {}", ext.tmplName);
-      return;
-    }
-
-    ArchetypeComponentsDescription archDesc{std::move(desc)};
-    for (const auto& parentExt: extensions)
-    {
-      if (!archDesc.merge(m_Archetypes[parentExt.archetypeId].getDescription()))
+      bool validTmpl = true;
+      for (size_t i = 0; const auto& archId: extendsArchetypes)
       {
-        logerror("template `{}` is invalid. Failed to extend `{}` see previous errors", tmpl, parentExt.tmplName);
-        return;
+        if (archId == INVALID_ARCHETYPE_ID)
+        {
+          logerror("template `{}` tries to extend unknown template `{}`", tmpl, extends_templates[i]);
+          validTmpl = false;
+        }
+        ++i;
       }
+      return validTmpl;
+    };
+
+    const template_name_id templateId = str_hash(tmpl.c_str());
+    if (isTemplateRegistered(templateId))
+    {
+      logerror("can't register a new template `{}`: it's registered already", tmpl);
+      return;
     }
 
-    archetype_id archetypeId = getArchetype(archDesc);
-    if (archetypeId == INVALID_ARCHETYPE_ID)
-    {
-      archetypeId = (archetype_id)m_Archetypes.size();
-      m_Archetypes.emplace_back(std::move(archDesc));
-    }
-    m_TemplateToArhetypeMap.insert({templateId, archetypeId});
+    const auto extendsArchetypes = toArchetypeIds(extends_templates);
+    if (!validateExtends(extendsArchetypes))
+      return;
+    
+    const archetype_id associatedArchId = m_ArchetypeConstructor(std::move(components),
+                                                                 extendsArchetypes,
+                                                                 extends_templates);
+
+    m_TemplateToArhetypeMap.insert(eastl::make_pair(templateId, associatedArchId));
   }
 
-  void Registry::createEntity(const eastl::vector<string>& templates, CreationCb cb)
+  archetype_id Registry::getArchetypeForEntity(string_view tmpl_view)
   {
-    const archetype_id archetypeId = getArchetype(templates);
+    const auto validateArchetypes = [](const auto archetypeIds, const auto& names)
+    {
+      bool isValid = true;
+      for (size_t i = 0; const auto archId: archetypeIds)
+        if (archId == INVALID_ARCHETYPE_ID)
+        {
+          logerror("unknown template {}", names[i]);
+          isValid = false;
+        }
+      return isValid;
+    };
+
+    string entityTemplate{tmpl_view};
+    Utils::remove_spaces(entityTemplate);
+    archetype_id archetypeId = m_ArchetypeSearcher.find(entityTemplate);
+
+    if (archetypeId != INVALID_ARCHETYPE_ID)
+      return archetypeId;
+
+    eastl::vector<string> templates = Utils::split(entityTemplate, ',');
+    eastl::vector<archetype_id> archetypes = toArchetypeIds(templates);
+
+    if (!validateArchetypes(archetypes, templates))
+      return INVALID_ARCHETYPE_ID;
+
+    archetypeId = m_ArchetypeConstructor(archetypes, templates);
+    loginfo("created new archetype from [{}]", entityTemplate);
+
+    m_DirtySystems = true;
+
+    return archetypeId;
+  }
+
+  void Registry::createEntity(const string_view tmpl, const CreationCb& cb)
+  {
+    const archetype_id archetypeId = getArchetypeForEntity(tmpl);
     if (archetypeId == INVALID_ARCHETYPE_ID)
     {
       logerror("failed to create an entity");
       return;
     }
 
-    EntityId eid = getFreeEntity();
-
-    Archetype& archetype = m_Archetypes[archetypeId];
-    EntityInitializer init = archetype.getNewEntityInitializer();
-    cb(eid, init);
-
-    uint16_t blockId = 0, chunkId = 0;
-
-    archetype.m_CompStorage.addEntity(init.m_Data, init.m_ComponentMap.size(), init.m_Offsets, init.m_Sizes, chunkId, blockId);
+    EntityId eid = EntityId::generate();
+    ChunkInfo chunkInfo = m_Archetypes[archetypeId].addEntity(eid, cb);
 
     const EntityInfo eInfo{
       .eid = eid,
       .archetypeId = archetypeId,
-      .blockId = blockId,
-      .chunkId = chunkId
+      .blockId = chunkInfo.blockId,
+      .chunkId = chunkInfo.chunkId
     };
 
     const uint64_t id = eid.id;
-    m_EntitiesInfo.insert({
-      id,
-      eInfo
-    });
+    m_EntitiesInfo.insert(eastl::make_pair(id, eInfo));
   }
 
   bool Registry::destroyEntity(const EntityId eid)
@@ -198,20 +133,16 @@ namespace Engine::ECS
     if (eInfo.eid.generation != eid.generation)
       return false;
 
-    Archetype& archetype = m_Archetypes[eInfo.archetypeId];
-
-    block_id replacedBlock = INVALID_BLOCK_ID;
-    archetype.m_CompStorage.destroyEntity(archetype.m_ComponentsMap, eInfo.chunkId, eInfo.blockId, replacedBlock);
+    ArchetypeStorage& archetype = m_Archetypes[eInfo.archetypeId];
+    DestroidEntityInfo dstrInfo = archetype.destroyEntity(eInfo.chunkId, eInfo.blockId);
 
     eInfo.eid.generation += 1;
 
-    if (replacedBlock != INVALID_BLOCK_ID)
-      for (auto& [_, replacingEInfo]: m_EntitiesInfo)
-        if (replacingEInfo.blockId == replacedBlock)
-        {
-          replacingEInfo.blockId = eInfo.blockId;
-          break;
-        }
+    if (dstrInfo.replacedBlockId != INVALID_BLOCK_ID)
+    {
+      EntityInfo eInfoToTweak = m_EntitiesInfo[dstrInfo.replacedBlockOwner.getId()];
+      eInfoToTweak.blockId = dstrInfo.replacedBlockId;
+    }
 
     return true;
   }
@@ -224,13 +155,13 @@ namespace Engine::ECS
 
     for (size_t i = 0; i < m_Archetypes.size(); ++i)
     {
-      const Archetype& archetype = m_Archetypes[i];
+      const ArchetypeStorage& arch = m_Archetypes[i];
 
       bool isDesiredArchetype = true;
       for (const QueryComponentDescription& compDesc: queryComponents)
       {
-        const auto it = archetype.m_ComponentsMap.find(compDesc.nameId);
-        if (it == archetype.m_ComponentsMap.end() || it->second.typeId != compDesc.typeId)
+        const auto it = arch.getComponentMap().find(compDesc.nameId);
+        if (it == arch.getComponentMap().end() || it->second.typeId != compDesc.typeId)
         {
           isDesiredArchetype = false;
           break;
@@ -247,16 +178,24 @@ namespace Engine::ECS
 
   void Registry::registerCppQueries()
   {
+    m_RegisteredQueues.clear();
+    for (auto& [event, queries] : m_EventHandleQueries)
+      queries.clear();
+    m_RegisteredDirectQueries.clear();
+    m_RegisteredDirectQueries.resize(DirectQueryRegistration::size());
+
     SystemRegistration::enumerate([this](const SystemRegistration& system_reg) {
       registerSystem(system_reg.m_Cb, system_reg.m_Comps);
+    });
+
+    DirectQueryRegistration::enumerate([this](const DirectQueryRegistration& query) {
+      m_RegisteredDirectQueries[query.getId()].desiredArchetypes = 
+        findDesiredArchetypes(query.getComponents());
     });
 
     EventSystemRegistration::enumerate([this](const EventSystemRegistration& event_system_reg) {
       registerEventSystem(event_system_reg.m_Cb, event_system_reg.m_Event, event_system_reg.m_Comps);
     });
-
-    for(DirectQuery& query: getDirectQueries())
-      query.desiredArchetypes = findDesiredArchetypes(query.components);
   }
 
   void Registry::registerSystem(const QueryCb& cb, const QueryComponents& components)
@@ -290,56 +229,24 @@ namespace Engine::ECS
 
   void Registry::query(const query_id queryId, DirectQueryCb cb)
   {
-    DirectQuery& directQuery = getDirectQueries()[queryId];
+    DirectQuery& directQuery = m_RegisteredDirectQueries[queryId];
     for (archetype_id archetypeId: directQuery.desiredArchetypes)
       queryArchetype(archetypeId, cb);
   }
 
-  EntityId Registry::getFreeEntity()
-  {
-    EntityId eid(m_NextEntityId++);
-    return eid;
-  }
-
   void Registry::tick()
   {
-    processPendingArchetypeRegistrations();
+    if (m_DirtySystems)
+    {
+      registerCppQueries();
+      m_DirtySystems = false;
+    }
+
     processEvents();
 
     for(const RegisteredQueryInfo& query: m_RegisteredQueues)
       for(const archetype_id archetypeId: query.archetypes)
         queryArchetype(archetypeId, query.cb);
-  }
-
-  void Registry::processPendingArchetypeRegistrations()
-  {
-    for (const auto [oldArchId, newArchIds] : m_PendingArchetypeRegistrations)
-    {
-      for (auto& registeredQuery: m_RegisteredQueues)
-      {
-        const bool queryShouldHandleNewArchetype =
-          registeredQuery.archetypes.end() != 
-          eastl::find(registeredQuery.archetypes.begin(), registeredQuery.archetypes.end(), oldArchId);
-        
-        if (queryShouldHandleNewArchetype)
-          for (auto& newArchId: newArchIds)
-            registeredQuery.archetypes.emplace_back(newArchId);
-      }
-
-      for (auto& [event, queries]: m_EventHandleQueries)
-      {
-        for (auto& query: queries)
-        {
-          const bool queryShouldHandleNewArchetype =
-            query.archetypes.end() != 
-            eastl::find(query.archetypes.begin(), query.archetypes.end(), oldArchId);
-        
-          if (queryShouldHandleNewArchetype)
-            for (auto& newArchId: newArchIds)
-              query.archetypes.emplace_back(newArchId);
-        }
-      }
-    }
   }
 
   void Registry::processEvents()
@@ -363,36 +270,37 @@ namespace Engine::ECS
     }
   }
 
-  void init_ecs_from_settings()
+  void Registry::queryArchetype(const archetype_id archetypeId, QueryCb cb)
   {
-    loginfo("initialization of ECS");
-    DataBlock* settings = get_app_settings();
-
-    loginfo("init events");
-    DataBlock* events = settings->getChildBlock("events");
-    for(const auto& attr: events->getAttributes())
+    ArchetypeStorage& archetype = m_Archetypes[archetypeId];
+    archetype.forEachEntity([cb](ComponentsAccessor& comps)
     {
-      if (attr.name == "event")
-      {
-        const string eventName = std::get<string>(attr.as);
-        manager.registerEvent(str_hash(eventName.c_str()));
-        loginfo("registered event `{}`", eventName);
-      }
-    }
+      cb(comps);
+    });
+  }
 
-    loginfo("init templates");
-    DataBlock* templates = settings->getChildBlock("entity_templates");
-    for(const auto& attr: templates->getAttributes())
+  void Registry::queryArchetype(const archetype_id archetypeId, const DirectQueryCb& cb)
+  {
+    ArchetypeStorage& archetype = m_Archetypes[archetypeId];
+    archetype.forEachEntity([&cb](ComponentsAccessor& comps)
     {
-      if (attr.type == DataBlock::ValueType::Text)
-      {
-        const string blkWithTemplates = std::get<string>(attr.as);
-        loginfo("reading templates from {}", blkWithTemplates);
+      cb(comps);
+    });
+  }
 
-        add_templates_from_blk(manager, blkWithTemplates);
-      }
-    }
+  void Registry::queryArchetypeByEvent(Event* event, const archetype_id archetypeId, EventQueryCb cb)
+  {
+    ArchetypeStorage& archetype = m_Archetypes[archetypeId];
+    archetype.forEachEntity([cb, event](ComponentsAccessor& comps)
+    {
+      cb(event, comps);
+    });
+  }
 
-    manager.registerCppQueries();
+  void Registry::processEventWithoutArchetypes(Event* event, EventQueryCb cb)
+  {
+     ComponentMap emptyCompMap;
+     ComponentsAccessor compAccessor(nullptr, emptyCompMap);
+     cb(event, compAccessor);
   }
 }

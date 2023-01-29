@@ -1,13 +1,21 @@
 #pragma once
 
-#include "types.h"
+#include "eid.h"
+#include "entity_cb.h"
 #include "entity_initializer.h"
 #include "query.h"
+#include "types.h"
 
 #include <engine/types.h>
 
 namespace Engine::ECS
 {
+  struct ArchetypeComponentsDescription
+  {
+    eastl::vector<ComponentDescription> components;
+    bool merge(const ArchetypeComponentsDescription&);
+  };
+
   struct Chunk
   {
     inline void reset()
@@ -16,6 +24,11 @@ namespace Engine::ECS
       {
         delete[] data;
         data = nullptr;
+      }
+      if (blocksOwners)
+      {
+        delete[] blocksOwners;
+        blocksOwners = nullptr;
       }
       capacity = 0;
       usedBlocks = 0;
@@ -30,81 +43,78 @@ namespace Engine::ECS
     {
       data = new uint8_t[size];
       capacity = (uint16_t)(size / blockSize);
+      blocksOwners = new EntityId[capacity];
+      std::memset(blocksOwners, 0, sizeof(*blocksOwners) * capacity);
       usedBlocks = 0;
     }
 
     uint8_t* data = nullptr;
+    EntityId* blocksOwners = nullptr;
     uint16_t capacity = 0;
     uint16_t usedBlocks = 0;
   };
 
-  class ComponentsStorage
+  struct ChunkInfo
+  {
+    chunk_id chunkId;
+    block_id blockId;
+  };
+
+  struct DestroidEntityInfo
+  {
+    block_id replacedBlockId;
+    EntityId replacedBlockOwner;
+  };
+
+  class ComponentsAccessor;
+  class ArchetypeStorage
   {
     friend class Registry;
 
     public:
-      inline ComponentsStorage()
-        : m_BlockSize(0)
+      using ForEachCb = eastl::function<void(ComponentsAccessor&)>;
+
+    public:
+      inline ArchetypeStorage(const size_t blockSize, ArchetypeComponentsDescription&& desc, ComponentMap&& comp_map)
+        : m_BlockSize(blockSize)
+        , m_Description(std::move(desc))
+        , m_ComponentsMap(std::move(comp_map))
       {
       }
 
-      bool addEntity(const uint8_t* data, const size_t nComps, const uint16_t* offsets, const uint16_t* sizes, chunk_id& chunkId, block_id& blockId);
+      ChunkInfo addEntity(EntityId, const CreationCb&);
 
-      void destroyEntity(const ComponentMap& compMap, const chunk_id chunkId, const block_id blockId, block_id& replacedBlockId);
-
-      inline void init(const size_t blockSize)
-      {
-        m_Chunks.clear();
-        m_BlockSize = blockSize;
-      }
+      DestroidEntityInfo destroyEntity(const chunk_id chunkId, const block_id blockId);
 
       inline size_t getBlockSize() const
       {
         return m_BlockSize;
       }
 
-    private:
-      bool getFreeChunk(chunk_id& chunkId, block_id& blockId);
-
-    private:
-      eastl::vector<Chunk> m_Chunks;
-      size_t m_BlockSize;
-  };
-
-  struct ArchetypeComponentsDescription
-  {
-    eastl::vector<ComponentDescription> components;
-    bool merge(const ArchetypeComponentsDescription&);
-  };
-
-  class Registry;
-  class Archetype
-  {
-    friend Registry;
-
-    public:
-      explicit Archetype(ArchetypeComponentsDescription&& desc);
-
-      bool hasComponents(const eastl::vector<ComponentDescription>& desc) const;
-
-      bool hasComponent(const component_type_id typeId, const component_name_id nameId) const;
-
-      const ArchetypeComponentsDescription& getDescription() const { return m_ComponentsDescription; }
-
-      inline const ComponentMap getComponentMap() const
+      inline const ComponentMap& getComponentMap() const
       {
         return m_ComponentsMap;
       }
 
-      inline EntityInitializer getNewEntityInitializer() const
+      inline const ArchetypeComponentsDescription& getDescription() const
       {
-        return EntityInitializer(m_ComponentsMap, m_CompStorage.getBlockSize());
+        return m_Description;
       }
 
-    private:
-      ComponentMap m_ComponentsMap;
-      ComponentsStorage m_CompStorage;
-      ArchetypeComponentsDescription m_ComponentsDescription;
-  };
+      void forEachEntity(const ForEachCb& cb);
 
+      bool hasComponents(const eastl::vector<ComponentDescription>&) const;
+      bool hasComponent(const component_type_id, const component_name_id) const;
+
+    private:
+      chunk_id getFreeChunkId();
+      ChunkInfo getFreeChunk(const EntityId eid);
+
+    private:
+      eastl::vector<Chunk> m_Chunks;
+      size_t m_BlockSize;
+
+      ArchetypeComponentsDescription m_Description;
+      ComponentMap m_ComponentsMap;
+  };
 }

@@ -2,10 +2,9 @@
 
 #include <engine/datablock/datablock.h>
 #include <engine/datablock/utils.h>
-#include <engine/ecs/registry.h>
+#include <engine/ecs/ecs.h>
 #include <engine/input/input.h>
 #include <engine/scene/scene.h>
-#include <engine/utils/string.hpp>
 
 #include <ranges>
 
@@ -19,7 +18,7 @@ namespace
       {
       }
 
-      void operator()(const EntityId& eid, Engine::ECS::EntityInitializer& init)
+      void operator()(const Engine::ECS::EntityId& eid, Engine::ECS::EntityInitializer& init)
       {
         for(const auto& attr: m_Entity.getAttributes())
         {
@@ -120,13 +119,7 @@ namespace Engine
     string tmpl = entityBlk.getAnnotation();
     if (tmpl != "")
     {
-      Utils::remove_spaces(tmpl);
-      eastl::vector<string> templates;
-
-      for (const auto& strRange: tmpl | std::views::split(','))
-        templates.push_back(string{strRange.begin(), strRange.end()});
-
-      ECS::manager.createEntity(templates, From(entityBlk));
+      ECS::get_registry().createEntity(tmpl, From(entityBlk));
     }
     else
     {

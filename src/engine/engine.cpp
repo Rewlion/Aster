@@ -1,12 +1,10 @@
 #include "engine.h"
 
 #include <engine/assets/assets_manager.h>
-#include <engine/ecs/archetype.h>
-#include <engine/ecs/components.h>
-#include <engine/ecs/components_accessor.h>
-#include <engine/ecs/registry.h>
+#include <engine/ecs/ecs.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gui/gui.h>
+#include <engine/input/events.h>
 #include <engine/input/input.h>
 #include <engine/level.h>
 #include <engine/render/world_render.h>
@@ -19,6 +17,11 @@
 
 namespace Engine
 {
+  void register_engine_events()
+  {
+    ECS::get_registry().registerEvent<ButtonActionInputEvent>();
+  }
+
   void init()
   {
     InitLog();
@@ -34,7 +37,9 @@ namespace Engine
     const DataBlock* settings = Engine::get_app_settings();
     tfx::load_materials_bin(settings->getChildBlock("graphics")->getText("materials_bin"));
 
-    ECS::init_ecs_from_settings();
+    ECS::init_from_settings();
+    register_engine_events();
+
     load_level(settings->getText("init_level") );
 
     Render::world_render.init();
@@ -50,7 +55,7 @@ namespace Engine
       Window::poll_wnd_messages();
       Input::manager.processInput();
 
-      ECS::manager.tick();
+      ECS::get_registry().tick();
       gui::manager.tick();
 
       const CameraData camera = get_camera();

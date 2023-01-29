@@ -3,7 +3,7 @@
 
 #include <engine/log.h>
 #include <engine/datablock/datablock.h>
-#include <engine/ecs/registry.h>
+#include <engine/ecs/ecs.h>
 
 #include <spdlog/fmt/fmt.h>
 
@@ -94,7 +94,7 @@ namespace Engine::Input
                                  auto inputEvent = ButtonActionInputEvent{};
                                  inputEvent.action = action;
                                  inputEvent.status = status;
-                                 ECS::manager.broadcastEvent<ButtonActionInputEvent>(eastl::move(inputEvent));
+                                 ECS::get_registry().broadcastEvent<ButtonActionInputEvent>(eastl::move(inputEvent));
                                };
 
     for (auto& mapping: it->second.buttons)

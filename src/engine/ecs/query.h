@@ -52,6 +52,34 @@ namespace Engine::ECS
       QueryComponents m_Comps;
   };
 
+  class DirectQueryRegistration
+  {
+    friend class Registry;
+    public:
+      DirectQueryRegistration(QueryComponents&& comps);
+
+      template<class T>
+      static void enumerate(T cb)
+      {
+        const DirectQueryRegistration* p = m_List;
+        while(p)
+        {
+          cb(*p);
+          p = p->m_Next;
+        }
+      }
+
+      inline query_id getId() const { return m_Id; }
+      static size_t size() { return m_List != nullptr ? m_List->m_Id+1 : 0; }
+      const QueryComponents& getComponents() const { return m_Comps; }
+    private:
+      static DirectQueryRegistration* m_List;
+      DirectQueryRegistration* m_Next;
+
+      query_id m_Id;
+      QueryComponents m_Comps;
+  };
+
   class EventSystemRegistration
   {
     friend class Registry;
@@ -96,7 +124,6 @@ namespace Engine::ECS
 
   struct DirectQuery
   {
-    QueryComponents components;
     DesiredArchetypes desiredArchetypes;
   };
 }
