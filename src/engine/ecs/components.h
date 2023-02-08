@@ -11,154 +11,139 @@
 
 namespace Engine::ECS
 {
-  struct Component
+  struct TemplateComponentDescription
   {
-    size_t size = 0;
-    size_t blockOffset = 0;
-    component_type_id typeId = INVALID_COMPONENT_TYPE_ID;
+    string name;
+    string type;
   };
 
-  typedef eastl::vector_map<component_name_id, Component> ComponentMap;
-
-  struct ComponentDescription
+  struct ArchetypeComponent
   {
-    string name = "";
-    component_name_id id = INVALID_HASH;
-    size_t size = 0;
-    component_type_id type = INVALID_COMPONENT_TYPE_ID;
+    component_name_id nameId;
+    component_type_id typeId;
+    size_t blockOffset;
   };
 
-  #define DESCRIBE_COMPONENT(componentName, componentType)\
-    ComponentDescription{\
-      .name = componentName,\
-      .id = str_hash(componentName),\
-      .size = sizeof(componentType),\
-      .type = str_hash(#componentType)\
-    }
+  using TemplateToArchetypeMap = eastl::vector_map<template_name_id, archetype_id>;
+  using CompToPlacementMap = eastl::vector_map<component_type_id, type_placement_id>;
+
+  class ComponentTypeId
+  {
+    public:
+      template<class T>
+      static component_type_id from()
+      {
+        return fromInternal<typename std::remove_cvref<T>::type>();
+      }
+    private:
+      template<class T>
+      static component_type_id fromInternal()
+      {
+        static component_type_id id = m_LastId++;
+        return id;
+      }
+    private:
+      static component_type_id m_LastId;
+  };
+
+  class TypeManager
+  {
+    public:
+      virtual void constructor(void* component) {}
+      virtual void destructor(void* component) {}
+      virtual void copy(void* __restrict__ to, const void* __restrict__ from) {}
+      virtual void move(void* __restrict__ to, void* __restrict__ from) {}
+  };
+
+  template<class T>
+  class TrivialTypeManager : public TypeManager
+  {
+    public:
+      virtual void constructor(void* component) override
+      {
+        std::memset(component, 0, sizeof(T));
+      }
+      virtual void destructor(void* component) override
+      {
+      }
+
+      virtual void copy(void* __restrict__ to, const void* __restrict__ from) override
+      {
+        std::memcpy(to, from, sizeof(T));
+      }
+
+      virtual void move(void* __restrict__ to, void* __restrict__ from) override
+      {
+        std::memcpy(to, from, sizeof(T));
+      }
+  };
 
   struct ComponentMeta
   {
-    size_t size = 0;
-    component_type_id typeId = INVALID_COMPONENT_TYPE_ID;
+    size_t size;
+    component_type_id typeId;
+    const char* typeName;
+
+    TypeManager* manager;
+
+    uint64_t isTrivial : 1;
+    uint64_t isTrivialRelocatable : 1;
   };
 
-  #define DECLARE_COMPONENT_META(type)\
-    constexpr ComponentMeta type ## _ComponentMeta = ComponentMeta\
-    {\
-     .size = sizeof(type),\
-     .typeId = str_hash(#type)\
-    };
-
-  DECLARE_COMPONENT_META(int)
-  DECLARE_COMPONENT_META(int2)
-  DECLARE_COMPONENT_META(int3)
-  DECLARE_COMPONENT_META(int4)
-  DECLARE_COMPONENT_META(float)
-  DECLARE_COMPONENT_META(float2)
-  DECLARE_COMPONENT_META(float3)
-  DECLARE_COMPONENT_META(float4)
-  DECLARE_COMPONENT_META(string)
-  DECLARE_COMPONENT_META(EntityId)
-
-  inline void component_initializer(uint8_t* comp_data, const component_type_id typeId, uint8_t* value)
+  class ComponentMetaRegistration
   {
-    #define declare_initialization(type)\
-    {\
-      case type ## _ComponentMeta.typeId:\
-      type* compData = new(comp_data) type;\
-      type* compValue = reinterpret_cast<type*>(value);\
-      *compData = std::move(*compValue);\
-      break;\
-    }
+    public:
+      ComponentMetaRegistration(const ComponentMeta&);
 
-    switch(typeId)
-    {
-      declare_initialization(int)
-      declare_initialization(int2)
-      declare_initialization(int3)
-      declare_initialization(int4)
-      declare_initialization(float)
-      declare_initialization(float2)
-      declare_initialization(float3)
-      declare_initialization(float4)
-      declare_initialization(string)
-      declare_initialization(EntityId)
-      default:
-        ASSERT(!"unknown type");
-    }
-
-    #undef declare_initialization
-  }
-
-  inline void component_default_initializer(uint8_t* data, const component_type_id typeId)
-  {
-    #define declare_initialization(type, ...)\
-      case type ## _ComponentMeta.typeId:\
-      {\
-        type default_value = type(__VA_ARGS__);\
-        component_initializer(data, typeId, reinterpret_cast<uint8_t*>(&default_value));\
-        break;\
+      template<class T>
+      static void enumerate(T cb)
+      {
+        const ComponentMetaRegistration* p = m_List;
+        while(p)
+        {
+          cb(p->m_Meta);
+          p = p->m_Next;
+        }
       }
 
-    switch(typeId)
-    {
-      declare_initialization(int, 0)
-      declare_initialization(int2, 0,0)
-      declare_initialization(int3, 0,0,0)
-      declare_initialization(int4, 0,0,0,0)
-      declare_initialization(float, 0.0f)
-      declare_initialization(float2, 0.0f, 0.0f)
-      declare_initialization(float3, 0.0f, 0.0f, 0.0f)
-      declare_initialization(float4, 0.0f, 0.0f, 0.0f, 0.0f)
-      declare_initialization(string, string{""})
-      declare_initialization(EntityId, EntityId{})
-      default:
-        ASSERT(!"unknown type");
-    }
+      static size_t size()
+      {
+        return m_List ? m_List->m_Id+1 : 0;
+      }
 
-    #undef declare_initialization
-  }
+    private:
+      static ComponentMetaRegistration* m_List;
+      ComponentMetaRegistration* m_Next;
 
-  template<class T> inline component_type_id get_component_type_id() { return INVALID_COMPONENT_TYPE_ID; }
-  #define declare_component_type_id_getter(type)\
-    template<> inline component_type_id get_component_type_id<type>() { return type ## _ComponentMeta.typeId; }
+      ComponentMeta m_Meta;
+      size_t m_Id;
+  };
 
-  declare_component_type_id_getter(int)
-  declare_component_type_id_getter(int2)
-  declare_component_type_id_getter(int3)
-  declare_component_type_id_getter(int4)
-  declare_component_type_id_getter(float)
-  declare_component_type_id_getter(float2)
-  declare_component_type_id_getter(float3)
-  declare_component_type_id_getter(float4)
-  declare_component_type_id_getter(string)
-  declare_component_type_id_getter(EntityId)
-  #undef declare_component_type_id_getter
+  #define DECLARE_ECS_COMPONENT(type, type_manager, is_trivial, is_trivial_relocatable) \
+    ComponentMetaRegistration type ## _reg{ ComponentMeta{ \
+      .size = sizeof(type), \
+      .typeId = ComponentTypeId::from<type>(), \
+      .typeName = #type, \
+      .manager = new type_manager, \
+      .isTrivial = is_trivial, \
+      .isTrivialRelocatable = is_trivial_relocatable }}
 
-  inline void component_destructor(uint8_t* data, component_type_id typeId)
+  #define DECLARE_TRIVIAL_ECS_COMPONENT(type) \
+          DECLARE_ECS_COMPONENT(type, TrivialTypeManager<type>, true, true)
+
+  class ComponentMetaStorage
   {
-    #define NO_DESTRUCTOR(type) case type ## _ComponentMeta.typeId: break;
-    #define DESTRUCTOR(type) case type ## _ComponentMeta.typeId: reinterpret_cast<type*>(data)->~type();
+    public:
+      void init();
 
-    switch(typeId)
-    {
-      NO_DESTRUCTOR(int)
-      NO_DESTRUCTOR(int2)
-      NO_DESTRUCTOR(int3)
-      NO_DESTRUCTOR(int4)
-      NO_DESTRUCTOR(float)
-      NO_DESTRUCTOR(float2)
-      NO_DESTRUCTOR(float3)
-      NO_DESTRUCTOR(float4)
-      NO_DESTRUCTOR(EntityId)
-      DESTRUCTOR(string)
+      const ComponentMeta& getMeta(const string_view type) const;
+      const ComponentMeta& getMeta(const component_type_id type_id) const;
 
-      default:
-        ASSERT(!"unknown type");
-    }
+    private:
+      eastl::vector<ComponentMeta> m_Metas;
+      eastl::vector_map<string_hash, component_type_id> m_NameToTypeId;
+  };
 
-    #undef NO_DESTRUCTOR
-    #undef DESTRUCTOR
-  }
-
+  void init_meta_storage();
+  const ComponentMetaStorage& get_meta_storage();
 }

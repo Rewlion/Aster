@@ -1,4 +1,5 @@
 #include "registry.h"
+#include "components.h"
 #include "components_accessor.h"
 
 #include <engine/log.h>
@@ -10,107 +11,241 @@ namespace Engine::ECS
 {
   bool Registry::isTemplateRegistered(const template_name_id id) const
   {
-    return m_TemplateToArhetypeMap.find(id) != m_TemplateToArhetypeMap.end();
+    return m_TemplateToArchetypeMap.find(id) != m_TemplateToArchetypeMap.end();
   }
 
   eastl::vector<archetype_id> Registry::toArchetypeIds(const eastl::vector<string>& template_names) const
   {
     eastl::vector<archetype_id> res;
     res.reserve(template_names.size());
+
+    bool isValid = true;
     for (const auto& tmpl: template_names)
     {
-      const auto archId = m_TemplateToArhetypeMap.find(str_hash(tmpl.c_str()));
-      res.emplace_back(archId != m_TemplateToArhetypeMap.end() ? 
-                        archId->second :
-                        INVALID_ARCHETYPE_ID);
+      const auto& tmplIt = m_TemplateToArchetypeMap.find(str_hash(tmpl.c_str()));
+      if (tmplIt != m_TemplateToArchetypeMap.end())
+        res.push_back(tmplIt->second);
+      else
+      {
+        logerror("ecs: unknown template {}", tmpl);
+        isValid = false;
+      }
     }
 
+    return isValid ? res : eastl::vector<archetype_id>{};
+  }
+
+  static eastl::vector<ArchetypeComponent> to_arch_comps(const eastl::vector<TemplateComponentDescription>& components)
+  {
+    eastl::vector<ArchetypeComponent> res;
+    res.reserve(components.size());
+
+    for (auto& c: components)
+    {
+      res.push_back({
+        .nameId = str_hash(c.name.c_str()),
+        .typeId = get_meta_storage().getMeta(c.type).typeId,
+        .blockOffset = 0
+      });
+    }
+    
     return res;
   }
 
-  void Registry::addTemplate(const string& tmpl,
-                             eastl::vector<ComponentDescription>&& components,
-                             const eastl::vector<string>& extends_templates)
+  eastl::tuple<CompToPlacementMap,size_t>
+   Registry::placeArchetypeTypes(eastl::vector<ArchetypeComponent>& types) const
   {
-    const auto validateExtends = [&tmpl, &extends_templates](const auto& extendsArchetypes)
-    {
-      bool validTmpl = true;
-      for (size_t i = 0; const auto& archId: extendsArchetypes)
-      {
-        if (archId == INVALID_ARCHETYPE_ID)
-        {
-          logerror("template `{}` tries to extend unknown template `{}`", tmpl, extends_templates[i]);
-          validTmpl = false;
-        }
-        ++i;
-      }
-      return validTmpl;
-    };
+    CompToPlacementMap compToPlacements;
+    size_t blockOffset = 0;
 
-    const template_name_id templateId = str_hash(tmpl.c_str());
-    if (isTemplateRegistered(templateId))
+    for(size_t i = 0; auto& type: types)
     {
-      logerror("can't register a new template `{}`: it's registered already", tmpl);
-      return;
+      type.blockOffset = blockOffset;
+      compToPlacements.insert({type.nameId, i});
+
+      blockOffset += get_meta_storage().getMeta(type.typeId).size;;
+      Sys::align(blockOffset);
+      ++i;
     }
-
-    const auto extendsArchetypes = toArchetypeIds(extends_templates);
-    if (!validateExtends(extendsArchetypes))
-      return;
-    
-    const archetype_id associatedArchId = m_ArchetypeConstructor(std::move(components),
-                                                                 extendsArchetypes,
-                                                                 extends_templates);
-
-    m_TemplateToArhetypeMap.insert(eastl::make_pair(templateId, associatedArchId));
+  
+    return {compToPlacements, blockOffset};
   }
 
-  archetype_id Registry::getArchetypeForEntity(string_view tmpl_view)
+  bool Registry::mergeArchetypeComponents(eastl::vector<ArchetypeComponent>& to, 
+                                          const eastl::vector<ArchetypeComponent>& from_comps) const
   {
-    const auto validateArchetypes = [](const auto archetypeIds, const auto& names)
+    bool isValid = true;
+    for (const auto& from: from_comps)
     {
-      bool isValid = true;
-      for (size_t i = 0; const auto archId: archetypeIds)
-        if (archId == INVALID_ARCHETYPE_ID)
+      const auto toIt = eastl::find_if(
+        to.begin(),
+        to.end(),
+        [&from](const ArchetypeComponent& t) { return t.nameId == from.nameId; }
+      );
+
+      if (toIt == to.end())
+        to.push_back(from);
+      else
+      {
+        if (toIt->typeId != from.typeId)
         {
-          logerror("unknown template {}", names[i]);
+          const string& compName = m_NameMap.find(toIt->nameId)->second;
+          const char* toTypeName = get_meta_storage().getMeta(toIt->typeId).typeName;
+          const char* fromTypeName = get_meta_storage().getMeta(from.typeId).typeName;
+          logerror("ecs: failed to merge component `{}`: invalid types {} != {}",
+            compName, toTypeName, fromTypeName);
           isValid = false;
         }
-      return isValid;
-    };
+      }
+    }
+    return isValid;
+  }                               
 
-    string entityTemplate{tmpl_view};
-    Utils::remove_spaces(entityTemplate);
-    archetype_id archetypeId = m_ArchetypeSearcher.find(entityTemplate);
+  archetype_id Registry::makeArchetype(eastl::vector<ArchetypeComponent>&& comps)
+  {
+    auto [compsMap, blockSize] = placeArchetypeTypes(comps);
 
-    if (archetypeId != INVALID_ARCHETYPE_ID)
-      return archetypeId;
-
-    eastl::vector<string> templates = Utils::split(entityTemplate, ',');
-    eastl::vector<archetype_id> archetypes = toArchetypeIds(templates);
-
-    if (!validateArchetypes(archetypes, templates))
-      return INVALID_ARCHETYPE_ID;
-
-    archetypeId = m_ArchetypeConstructor(archetypes, templates);
-    loginfo("created new archetype from [{}]", entityTemplate);
-
-    m_DirtySystems = true;
+    const archetype_id archetypeId = (archetype_id)m_Archetypes.size();
+    m_Archetypes.emplace_back(blockSize, std::move(comps), std::move(compsMap));
 
     return archetypeId;
   }
 
-  void Registry::createEntity(const string_view tmpl, const CreationCb& cb)
+  archetype_id Registry::findArchetype(const eastl::vector<ArchetypeComponent>& comps) const
   {
-    const archetype_id archetypeId = getArchetypeForEntity(tmpl);
-    if (archetypeId == INVALID_ARCHETYPE_ID)
+    for (size_t i = 0; i < m_Archetypes.size(); ++i)
+     if (m_Archetypes[i].hasComponents(comps))
+       return (archetype_id)i;
+
+    return INVALID_ARCHETYPE_ID;
+  }
+
+  archetype_id Registry::makeArchetype(eastl::vector<ArchetypeComponent>&& comps,
+                                       const eastl::vector<archetype_id>& extends)
+  {
+    for (const archetype_id archId: extends)
+      if (!mergeArchetypeComponents(comps, m_Archetypes[archId].getComponents()))
+        return INVALID_ARCHETYPE_ID;
+
+    archetype_id archetypeId = findArchetype(comps);
+    if (archetypeId != INVALID_ARCHETYPE_ID)
+      return archetypeId;
+
+    return makeArchetype(std::move(comps));
+  }
+
+  void Registry::addTemplate(const string& tmpl,
+                             eastl::vector<TemplateComponentDescription>&& components,
+                             const eastl::vector<string>& extends_templates)
+  {
+    const string tmplName = Utils::remove_spaces(tmpl);
+    const template_name_id templateId = str_hash(tmplName.c_str());
+
+    if (isTemplateRegistered(templateId))
     {
-      logerror("failed to create an entity");
+      logerror("can't register a new template `{}`: it's registered already", tmplName);
       return;
     }
 
+    const auto extendsArchetypes = toArchetypeIds(extends_templates);
+    if (!extends_templates.empty() && extendsArchetypes.empty())
+    {
+      logerror("ecs: failed to register template `{}`: there are invalid extensions", tmpl);
+      return;
+    }
+    
+    eastl::vector<ArchetypeComponent> comps = to_arch_comps(components);
+    for (size_t i = 0; const auto& comp: comps)
+    {
+      m_NameMap.insert({comp.nameId, std::move(components[i].name)});
+      ++i;
+    }
+
+    const archetype_id archId = makeArchetype(std::move(comps), extendsArchetypes);
+    if (archId != INVALID_ARCHETYPE_ID)
+      m_TemplateToArchetypeMap.insert({templateId, archId});
+    else
+      logerror("ecs: failed to register template `{}`: there are invalid extensions", tmpl);
+  }
+
+  archetype_id Registry::mergeTemplates(const string final_name,
+                                        const template_name_id final_id,
+                                        const eastl::vector<string>& tmpl_names)
+  {
+    eastl::vector<archetype_id> archetypes = toArchetypeIds(tmpl_names);
+    eastl::vector<ArchetypeComponent> components;
+    
+    bool isValid = true;
+    for (size_t i = 0; auto archId: archetypes)
+    {
+      if (!mergeArchetypeComponents(components, m_Archetypes[archId].getComponents()))
+      {
+        logerror("ecs: failed to merge template {}", tmpl_names[i]);
+        isValid = false;
+      }
+      ++i;
+    }
+
+    if (isValid)
+    {
+      loginfo("ecs: merged templates `{}`", final_name);
+      return makeArchetype(std::move(components));
+    }
+    else
+      return INVALID_ARCHETYPE_ID;
+  }
+
+  EntityComponents Registry::makeEntityComponents(const archetype_id arch_id) const
+  {
+    const ArchetypeStorage& archetype = m_Archetypes[arch_id];
+    return EntityComponents{
+      archetype.getBlockSize(),
+      archetype.getComponents(),
+      archetype.getCompToPlacementsMap()
+    };
+  }
+
+  void Registry::createEntity(const string_view tmpl, const CreationCb& cb)
+  {
+    const string tmplNameList = Utils::remove_spaces(string{tmpl});
+    eastl::vector<string> templateNames = Utils::split(tmplNameList, ',');
+
+    ASSERT_FMT(!templateNames.empty(), "ecs: can't create entity from empty template");
+
+    archetype_id archetypeId = INVALID_ARCHETYPE_ID;
+    if (templateNames.size() == 1)
+    {
+      const auto name = templateNames[0];
+      const template_name_id tmplId = str_hash(name.c_str());
+      const auto it = m_TemplateToArchetypeMap.find(tmplId);
+
+      if (it != m_TemplateToArchetypeMap.end())
+        archetypeId = it->second;
+      else
+        logerror("ecs: unknown template {}", name);
+    }
+    else
+    {
+      const template_name_id tmplId = str_hash(tmplNameList.c_str());
+      const auto it = m_TemplateToArchetypeMap.find(tmplId);
+      archetypeId = it != m_TemplateToArchetypeMap.end() ?
+                      it->second :
+                      mergeTemplates(tmplNameList, tmplId, templateNames);
+      m_DirtySystems = true;
+    }
+
+    if (archetypeId == INVALID_ARCHETYPE_ID)
+    {
+      logerror("ecs: failed to create entity from `{}`", tmplNameList);
+      return;
+    }
+    
     EntityId eid = EntityId::generate();
-    ChunkInfo chunkInfo = m_Archetypes[archetypeId].addEntity(eid, cb);
+    EntityComponents init = makeEntityComponents(archetypeId);
+
+    cb(eid, init);
+
+    ChunkInfo chunkInfo = m_Archetypes[archetypeId].addEntity(eid, std::move(init));
 
     const EntityInfo eInfo{
       .eid = eid,
@@ -121,6 +256,9 @@ namespace Engine::ECS
 
     const uint64_t id = eid.id;
     m_EntitiesInfo.insert(eastl::make_pair(id, eInfo));
+
+    loginfo("ecs: created entity[{}:{}] from `{}`",
+      eid.getId(), eid.getGeneration(), tmplNameList);
   }
 
   bool Registry::destroyEntity(const EntityId eid)
@@ -154,24 +292,8 @@ namespace Engine::ECS
       return desiredArchetypes;
 
     for (size_t i = 0; i < m_Archetypes.size(); ++i)
-    {
-      const ArchetypeStorage& arch = m_Archetypes[i];
-
-      bool isDesiredArchetype = true;
-      for (const QueryComponentDescription& compDesc: queryComponents)
-      {
-        const auto it = arch.getComponentMap().find(compDesc.nameId);
-        if (it == arch.getComponentMap().end() || it->second.typeId != compDesc.typeId)
-        {
-          isDesiredArchetype = false;
-          break;
-        }
-      }
-      if (isDesiredArchetype)
-      {
-        desiredArchetypes.emplace_back(i);
-      }
-    }
+      if (m_Archetypes[i].hasComponents(queryComponents))
+        desiredArchetypes.push_back(i);
 
     return desiredArchetypes;
   }
@@ -299,8 +421,9 @@ namespace Engine::ECS
 
   void Registry::processEventWithoutArchetypes(Event* event, EventQueryCb cb)
   {
-     ComponentMap emptyCompMap;
-     ComponentsAccessor compAccessor(nullptr, emptyCompMap);
+     CompToPlacementMap emptyCompMap;
+     const eastl::vector<ArchetypeComponent> emptyTypes;
+     ComponentsAccessor compAccessor(nullptr, emptyCompMap, emptyTypes);
      cb(event, compAccessor);
   }
 }

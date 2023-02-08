@@ -7,56 +7,20 @@
 
 namespace Engine::ECS
 {
-  bool ArchetypeStorage::hasComponents(const eastl::vector<ComponentDescription>& components) const
+  bool ArchetypeStorage::hasComponents(const eastl::vector<ArchetypeComponent>& comps) const
   {
-    for(const auto& comp: components)
+    for(const auto& c: comps)
     {
-      if (m_ComponentsMap.find(comp.id) == m_ComponentsMap.end())
-        return false;
-    }
-    return true;
-  }
-  
-  bool ArchetypeStorage::hasComponent(const component_type_id typeId, const component_name_id nameId) const
-  {
-    const auto it = m_ComponentsMap.find(nameId);
-    if (it != m_ComponentsMap.end() && it->second.typeId == typeId)
-      return true;
-  
-    return false;
-  }
-
-  bool ArchetypeComponentsDescription::merge(const ArchetypeComponentsDescription& rvl)
-  {
-    eastl::vector<ComponentDescription> newComponents;
-    newComponents.reserve(rvl.components.size());
-
-    bool isValid = true;
-    for (const auto& comp: rvl.components)
-    {
-      const auto it = eastl::find_if(components.begin(),
-                                     components.end(),
-                                     [&comp](const ComponentDescription& lvl){ return lvl.id == comp.id; });
-      if (it != components.end())
+      const auto it = m_CompToPlacementsMap.find(c.nameId);
+      if (it != m_CompToPlacementsMap.end())
       {
-        if (comp.type != it->type)
-        {
-          logerror("failed to overwrite a component `{}`: types are not equal", comp.name);
-          isValid = false;
-        }
+        const auto thisType = m_Components[it->second];
+        if (c.typeId != thisType.typeId)
+          return false;
       }
       else
-      {
-        newComponents.push_back(comp);
-      }
+        return false;
     }
-
-    if (!isValid)
-      return false;
-
-    for (const auto c: newComponents)
-      components.push_back(c);
-
     return true;
   }
 
@@ -93,31 +57,35 @@ namespace Engine::ECS
     return chunkInfo;
   }
 
-  ChunkInfo ArchetypeStorage::addEntity(EntityId eid, const CreationCb& cb)
+  ChunkInfo ArchetypeStorage::addEntity(EntityId eid, EntityComponents&& entity_comps)
   {
-    EntityInitializer init{m_ComponentsMap, m_BlockSize};
-    cb(eid, init);
-
     ChunkInfo chunkInfo = getFreeChunk(eid);
   
     uint8_t* block = m_Chunks[chunkInfo.chunkId].data + chunkInfo.blockId * m_BlockSize;
-    for(size_t i = 0; i < m_ComponentsMap.size(); ++i)
-    {
-      uint8_t* comp = block + init.m_Offsets[i];
-      const uint8_t* dataComp = init.m_Data + init.m_Offsets[i];
-      memcpy(comp, dataComp, init.m_Sizes[i]);
-    }
+    entity_comps.moveData((std::byte*)block);
 
     return chunkInfo;
   }
   
+  void ArchetypeStorage::destroyEntityData(std::byte* data)
+  {
+    for(const auto& comp: m_Components)
+    {
+      const size_t blockOffset = comp.blockOffset;
+      std::byte* compData = data + blockOffset;
+      const ComponentMeta& meta = get_meta_storage().getMeta(comp.typeId);
+      if (!meta.isTrivial)
+        meta.manager->destructor(compData);
+    }
+  }
+
   DestroidEntityInfo ArchetypeStorage::destroyEntity(const chunk_id chunkId, const block_id blockId)
   {
     DestroidEntityInfo dstrInfo;
     Chunk& chunk = m_Chunks[chunkId];
 
-    uint8_t* destroingData = chunk.data + blockId * m_BlockSize;
-    EntityDestroyer{m_ComponentsMap}.destroyEntity(destroingData);
+    std::byte* destroingData = (std::byte*)(chunk.data + blockId * m_BlockSize);
+    destroyEntityData(destroingData);
   
     const block_id lastBlockInUse = chunk.usedBlocks;
   
@@ -152,8 +120,8 @@ namespace Engine::ECS
     {
       for (int i = 0; i < chunk.usedBlocks; ++i)
       {
-        uint8_t* data = chunk.data + m_BlockSize * i;
-        ComponentsAccessor compAccessor(data, m_ComponentsMap);
+        std::byte* compData = (std::byte*)(chunk.data + m_BlockSize * i);
+        ComponentsAccessor compAccessor{compData, m_CompToPlacementsMap, m_Components };
         cb(compAccessor);
       }
     }

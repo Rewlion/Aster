@@ -6,6 +6,6 @@
 
 namespace Utils
 {
-  void remove_spaces(string& str);
+  string remove_spaces(const string& str);
   eastl::vector<string> split(const string& str, char delim);
 }

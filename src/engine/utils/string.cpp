@@ -4,12 +4,14 @@
 
 namespace Utils
 {
-  void remove_spaces(string& str)
+  string remove_spaces(const string& str)
   {
-    str.erase(std::remove_if(
-                str.begin(),
-                str.end(),
-                [](auto c) { return std::isspace(c); }), str.end());
+    string res = str;
+    res.erase(std::remove_if(
+                res.begin(),
+                res.end(),
+                [](auto c) { return std::isspace(c); }), res.end());
+    return res;
   }
 
   eastl::vector<string> split(const string& str, char delim)

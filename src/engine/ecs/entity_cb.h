@@ -6,6 +6,6 @@ class EntityId;
 
 namespace Engine::ECS
 {
-  class EntityInitializer;
-  typedef eastl::function<void(const EntityId&, EntityInitializer&)> CreationCb;
+  class EntityComponents;
+  typedef eastl::function<void(const EntityId&, EntityComponents&)> CreationCb;
 }

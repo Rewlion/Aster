@@ -12,6 +12,7 @@ namespace Engine::ECS
   using block_id = uint16_t;
   using component_type_id = string_hash;
   using archetype_id = uint16_t;
+  using type_placement_id = uint16_t;
   using template_name_id = string_hash;
   using query_id = uint16_t;
   using event_hash_name = string_hash;
@@ -24,8 +25,7 @@ namespace Engine::ECS
   constexpr component_type_id INVALID_COMPONENT_TYPE_ID = (component_type_id)-1;
   constexpr component_name_id INVALID_COMPONENT_NAME_ID = (component_name_id)-1;
   constexpr archetype_id INVALID_ARCHETYPE_ID = (archetype_id)-1;
+  constexpr type_placement_id INVALID_TYPE_PLACEMENT_ID = (type_placement_id)-1;
   constexpr template_name_id INVALID_TEMPLATE_NAME_ID = (template_name_id)-1;
   constexpr query_id INVALID_QUERY_ID = (query_id)-1;
-
-  using TemplateToArchetypeMap = eastl::vector_map<template_name_id, archetype_id>;
 }

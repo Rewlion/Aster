@@ -1,8 +1,6 @@
 #pragma once
 
 #include "archetype.h"
-#include "archetype_constructor.h"
-#include "archetype_searcher.h"
 #include "components.h"
 #include "eid.h"
 #include "entity_cb.h"
@@ -12,8 +10,9 @@
 
 #include <engine/log.h>
 
-#include <EASTL/vector_map.h>
+#include <EASTL/tuple.h>
 #include <EASTL/vector.h>
+#include <EASTL/vector_map.h>
 
 namespace Engine::ECS
 {
@@ -23,7 +22,7 @@ namespace Engine::ECS
   {
     public:
       void addTemplate(const string& tmpl,
-                       eastl::vector<ComponentDescription>&& desc,
+                       eastl::vector<TemplateComponentDescription>&&,
                        const eastl::vector<string>& extends_templates);
 
       void createEntity(const string_view tmpl, const CreationCb&);
@@ -63,16 +62,25 @@ namespace Engine::ECS
       void queryArchetypeByEvent(Event* event, const archetype_id archetypeId, EventQueryCb cb);
       void processEventWithoutArchetypes(Event* event, EventQueryCb cb);
 
+      eastl::tuple<CompToPlacementMap,size_t>
+        placeArchetypeTypes(eastl::vector<ArchetypeComponent>&) const;
+      bool mergeArchetypeComponents(eastl::vector<ArchetypeComponent>& to, 
+                                    const eastl::vector<ArchetypeComponent>& from) const;
+      archetype_id findArchetype(const eastl::vector<ArchetypeComponent>&) const;
+      archetype_id makeArchetype(eastl::vector<ArchetypeComponent>&&);
+      archetype_id makeArchetype(eastl::vector<ArchetypeComponent>&&,
+                                 const eastl::vector<archetype_id>& extends);
+
+      archetype_id mergeTemplates(const string final_name, const template_name_id final_id, const eastl::vector<string>& tmpls);
+      EntityComponents makeEntityComponents(const archetype_id) const;
       bool isTemplateRegistered(const template_name_id) const;
       eastl::vector<archetype_id> toArchetypeIds(const eastl::vector<string>& template_names) const;
-      archetype_id getArchetypeForEntity(const string_view tmpl);
 
     private:
       eastl::vector<ArchetypeStorage> m_Archetypes;
-      TemplateToArchetypeMap m_TemplateToArhetypeMap;
+      TemplateToArchetypeMap m_TemplateToArchetypeMap;
+      eastl::vector_map<string_hash, string> m_NameMap;
 
-      ArchetypeSearcher m_ArchetypeSearcher = {m_TemplateToArhetypeMap, m_Archetypes};
-      ArchetypeConstructor m_ArchetypeConstructor = {m_ArchetypeSearcher, m_Archetypes};
       bool m_DirtySystems = true;
 
       eastl::vector_map<event_hash_name, eastl::vector<RegisteredEventQueryInfo>> m_EventHandleQueries;

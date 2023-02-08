@@ -1,5 +1,6 @@
 #pragma once
 
+#include "components.h"
 #include "types.h"
 
 #include <EASTL/vector.h>
@@ -8,16 +9,10 @@
 
 namespace Engine::ECS
 {
-  struct QueryComponentDescription
-  {
-    component_type_id typeId = INVALID_COMPONENT_TYPE_ID;
-    component_name_id nameId = INVALID_COMPONENT_NAME_ID;
-  };
-
   using QueryCb = void(*)(class ComponentsAccessor&);
   using EventQueryCb = void(*)(struct Event*, class ComponentsAccessor&);
   using DirectQueryCb = eastl::function<void(class ComponentsAccessor&)>;
-  using QueryComponents = eastl::vector<QueryComponentDescription>;
+  using QueryComponents = eastl::vector<ArchetypeComponent>;
   using DesiredArchetypes = eastl::vector<archetype_id>;
 
   struct QueryDescription
@@ -129,8 +124,8 @@ namespace Engine::ECS
 }
 
 #define DESCRIBE_QUERY_COMPONENT(componentName, componentType)\
-  Engine::ECS::QueryComponentDescription\
+  Engine::ECS::ArchetypeComponent\
   {\
-    .typeId = str_hash(#componentType),\
-    .nameId = str_hash(componentName)\
+    .nameId = str_hash(componentName),\
+    .typeId = ComponentTypeId::from<componentType>(),\
   }

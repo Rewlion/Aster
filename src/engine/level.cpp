@@ -18,86 +18,35 @@ namespace
       {
       }
 
-      void operator()(const Engine::ECS::EntityId& eid, Engine::ECS::EntityInitializer& init)
+      void operator()(const Engine::ECS::EntityId& eid, Engine::ECS::EntityComponents& init)
       {
+        #define DECL_COMP_INIT(blk_type, type)\
+          case DataBlock::ValueType::blk_type:\
+          {\
+            init[str_hash(componentName)] = std::get<type>(attr.as);\
+            break;\
+          }
+
+
         for(const auto& attr: m_Entity.getAttributes())
         {
-          const string_hash componentName = str_hash(attr.name.c_str());
+          const string_view componentName{attr.name};
 
           switch(attr.type)
           {
-            case DataBlock::ValueType::Int:
-            {
-              auto value = std::get<int>(attr.as);
-              init.init_component(componentName, std::move(value));
-              break;
-            }
-            case DataBlock::ValueType::Int2:
-            {
-              auto value = std::get<int2>(attr.as);
-              init.init_component(componentName, std::move(value));
-              break;
-            }
-            case DataBlock::ValueType::Int3:
-            {
-              auto value = std::get<int3>(attr.as);
-              init.init_component(componentName, std::move(value));
-              break;
-            }
-            case DataBlock::ValueType::Int4:
-            {
-              auto value = std::get<int4>(attr.as);
-              init.init_component(componentName, std::move(value));
-              break;
-            }
-            case DataBlock::ValueType::Float:
-            {
-              auto value = std::get<float>(attr.as);
-              init.init_component(componentName, std::move(value));
-              break;
-            }
-            case DataBlock::ValueType::Float2:
-            {
-              auto value = std::get<float2>(attr.as);
-              init.init_component(componentName, std::move(value));
-              break;
-            }
-            case DataBlock::ValueType::Float3:
-            {
-              auto value = std::get<float3>(attr.as);
-              init.init_component(componentName, std::move(value));
-              break;
-            }
-            case DataBlock::ValueType::Float4:
-            {
-              auto value = std::get<float4>(attr.as);
-              init.init_component(componentName, std::move(value));
-              break;
-            }
-            case DataBlock::ValueType::Text:
-            {
-              auto value = std::get<string>(attr.as);
-              init.init_component(componentName, std::move(value));
-              break;
-            }
-            case DataBlock::ValueType::Mat3:
-            {
-              auto value = std::get<mat3>(attr.as);
-              init.init_component(componentName, std::move(value));
-              break;
-            }
-            case DataBlock::ValueType::Mat4:
-            {
-              auto value = std::get<mat4>(attr.as);
-              init.init_component(componentName, std::move(value));
-              break;
-            }
-            case DataBlock::ValueType::Bool:
-            {
-              auto value = std::get<bool>(attr.as);
-              init.init_component(componentName, std::move(value));
-              break;
-            }
+            DECL_COMP_INIT(Int,    int)
+            DECL_COMP_INIT(Int2,   int2)
+            DECL_COMP_INIT(Int3,   int3)
+            DECL_COMP_INIT(Int4,   int4)
+            DECL_COMP_INIT(Float,  float)
+            DECL_COMP_INIT(Float2, float2)
+            DECL_COMP_INIT(Float3, float3)
+            DECL_COMP_INIT(Float4, float4)
+            DECL_COMP_INIT(Text,   string)
+            DECL_COMP_INIT(Bool,   bool)
+            DECL_COMP_INIT(Mat3,   mat3)
+            DECL_COMP_INIT(Mat4,   mat4)
+           
             case DataBlock::ValueType::None:
             {
               ASSERT(!"no value inside datablock");
@@ -105,6 +54,8 @@ namespace
             }
           }
         }
+      
+      #undef DECL_COMP_INIT
       }
 
     private:

@@ -22,72 +22,39 @@ namespace Engine::ECS
     };
   }
 
-  eastl::vector<ComponentDescription> get_template_components(const DataBlock& tmpl)
+  eastl::vector<TemplateComponentDescription> get_template_components(const DataBlock& tmpl)
   {
-    eastl::vector<ComponentDescription> templateDesc;
+    eastl::vector<TemplateComponentDescription> comps;
+    #define ADD_TMPL_COMP(blk_type, _type) \
+      case DataBlock::ValueType::blk_type:\
+      {\
+        comps.push_back({.name = attr.name.c_str(), .type = #_type});\
+        break;\
+      }
 
     for(auto& attr: tmpl.getAttributes())
     {
       switch(attr.type)
       {
-        case DataBlock::ValueType::Int:
-        {
-          const auto comp = DESCRIBE_COMPONENT(attr.name.c_str(), int);
-          templateDesc.push_back(comp);
-          break;
-        }
-        case DataBlock::ValueType::Int2:
-        {
-          templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), int2));
-          break;
-        }
-        case DataBlock::ValueType::Int3:
-        {
-          templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), int3));
-          break;
-        }
-        case DataBlock::ValueType::Int4:
-        {
-          templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), int4));
-          break;
-        }
-        case DataBlock::ValueType::Float:
-        {
-          templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), float));
-          break;
-        }
-        case DataBlock::ValueType::Float2:
-        {
-          templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), float2));
-          break;
-        }
-        case DataBlock::ValueType::Float3:
-        {
-          templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), float3));
-          break;
-        }
-        case DataBlock::ValueType::Float4:
-        {
-          templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), float4));
-          break;
-        }
-        case DataBlock::ValueType::Text:
-        {
-          templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), string));
-          break;
-        }
-        case DataBlock::ValueType::Bool:
-        {
-          templateDesc.push_back(DESCRIBE_COMPONENT(attr.name.c_str(), bool));
-          break;
-        }
+        ADD_TMPL_COMP(Int, int)
+        ADD_TMPL_COMP(Int2, int2)
+        ADD_TMPL_COMP(Int3, int3)
+        ADD_TMPL_COMP(Int4, int4)
+        ADD_TMPL_COMP(Float, float)
+        ADD_TMPL_COMP(Float2, float2)
+        ADD_TMPL_COMP(Float3, float3)
+        ADD_TMPL_COMP(Float4, float4)
+        ADD_TMPL_COMP(Text, string)
+        ADD_TMPL_COMP(Bool, bool)
         default:
-          logwarn("manager: template {}: can't add template's attribute {}: unknown type {}",
+          logwarn("ecs: template {}: can't add template's attribute {}: unknown type {}",
             tmpl.getName(), attr.name, attr.type, attr.getTypeStr());
       }
     }
 
-    return templateDesc;
+    #undef ADD_TMPL_COMP
+
+    return comps;
   }
 
   static Annotations get_template_annotations(string& raw_str)
@@ -121,7 +88,7 @@ namespace Engine::ECS
     return annotations;
   }
 
-  static void dump_template(const Annotations& annotations, const eastl::vector<ComponentDescription>& components)
+  static void dump_template(const Annotations& annotations, const eastl::vector<TemplateComponentDescription>& components)
   {
     string extends = "";
     if (!annotations.extendsTemplates.empty())
@@ -135,12 +102,13 @@ namespace Engine::ECS
     string comps;
     for(auto& comp: components)
     {
-      comps = comps + "component: " + comp.name + "\n";
+      string desc = fmt::format("\n  component: {} {}", comp.type, comp.name);
+      comps = comps + desc;
     }
-    loginfo("adding template {}, {}\n{}", annotations.name, extends, comps);
+    loginfo("adding template {}, {} {}", annotations.name, extends, comps);
   }
 
-  void add_templates_from_blk(Registry& manager, const string& blkPath)
+  void add_templates_from_blk(Registry& registry, const string& blkPath)
   {
     DataBlock blk;
     if (!load_blk_from_file(&blk, blkPath.c_str()))
@@ -171,7 +139,7 @@ namespace Engine::ECS
 
       auto components = get_template_components(tmpl);
       dump_template(annotations, components);
-      manager.addTemplate(annotations.name, std::move(components), annotations.extendsTemplates);
+      registry.addTemplate(annotations.name, std::move(components), annotations.extendsTemplates);
     }
   }
 }
