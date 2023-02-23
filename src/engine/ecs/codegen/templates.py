@@ -24,14 +24,17 @@ def generate_query_id(query_name):
 
 def generate_query_id_declaration(query_name, components):
   return """
-const static DirectQueryRegistration {query_reg_name}{{{{
+const static DirectQueryRegistration {query_reg_name}{{
+  {{
 {query_components}
-}}}};
-const static query_id {query_id_name} = {query_reg_name}.getId();
+  }},
+  "{query_name}"}};
+const static query_id_t {query_id_name} = {query_reg_name}.getId();
 """.format(
   query_id_name = generate_query_id(query_name),
   query_reg_name = generate_query_registration(query_name),
-  query_components = generate_query_components_description(components, 1)
+  query_components = generate_query_components_description(components, 2),
+  query_name = query_name
 )
 
 def generate_functor_params(components, nesting):
@@ -48,7 +51,7 @@ def generate_functor_params(components, nesting):
   return functorParams
 
 def generate_components_access(components, nesting):
-  componentAccessTemplate = """{space}{is_const}{param_type}{is_ref} {param_name} = accessor.get<{param_type}>(str_hash("{param_name}"));"""
+  componentAccessTemplate = """{space}{is_const}{param_type}{is_ref} {param_name} = accessor.get<{param_type}>(compile_ecs_name_hash("{param_name}"));"""
   componentsAccessors = [
     componentAccessTemplate.format(
       space = generate_spaces(nesting),
@@ -66,7 +69,7 @@ void {query_name} (eastl::function<
   void(
 {functor_params})> cb)
 {{
-  {ecs_namespace}::get_registry().query({query_id}, [&](ComponentsAccessor& accessor)
+  {ecs_namespace}::get_registry().query({query_id_t}, [&](ComponentsAccessor& accessor)
   {{
 {components_access}
     cb({callback_execute_args});
@@ -76,7 +79,7 @@ void {query_name} (eastl::function<
   query_name = name,
   functor_params = generate_functor_params(components, 2),
   ecs_namespace = consts.ECS_NAMESPACE,
-  query_id = generate_query_id(name),
+  query_id_t = generate_query_id(name),
   components_access = generate_components_access(components, 2),
   callback_execute_args = ",".join([c.name for c in components])
 )
@@ -104,10 +107,11 @@ def generate_event_system_registration(name, event_name, components):
   return """
 static EventSystemRegistration {system_name}_registration(
   {system_name}_internal,
-  str_hash("{event_type}"),
+  compile_ecs_name_hash("{event_type}"),
   {{
 {components_descriptions}
-  }}
+  }},
+  "{system_name}"
 );
 """.format(
   system_name = name,
@@ -134,7 +138,8 @@ static SystemRegistration {system_name}_registration(
   {system_name}_internal,
   {{
 {components_descriptions}
-  }}
+  }},
+  "{system_name}"
 );
 """.format(
   system_name = name,

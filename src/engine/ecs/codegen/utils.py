@@ -17,7 +17,7 @@ def generate_ecs_impl(from_src, includeArgs, defineArgs):
     "",
     """#include "{}" """.format(os.path.basename(from_src)),
     "",
-    "using namespace Engine::ECS;"
+    "using namespace ecs;"
   ]
 
   index = clang.cindex.Index.create()

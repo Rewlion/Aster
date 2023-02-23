@@ -15,7 +15,7 @@ static void query_camera(eastl::function<void(
   const float& camera_fov,
   const float& camera_zNear,
   const float& camera_zFar)> cb);
-   
+
 namespace Engine
 {
   CameraData get_camera()

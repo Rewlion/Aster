@@ -26,6 +26,7 @@ target_link_libraries(engine
   "ktx"
   "user32"
   "vulkan-1"
+  "xxhash"
   )
 
 SET(ENGINE_SELF_REG_LIB

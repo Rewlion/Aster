@@ -212,6 +212,11 @@ namespace Utils
       return Iterator<T>(m_Values, m_Size);
     }
 
+    size_t getMaxSize() const
+    {
+      return N;
+    }
+
     private:
       T m_Values[N];
       size_t m_Size = 0;

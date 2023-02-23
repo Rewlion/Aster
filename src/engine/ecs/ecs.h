@@ -2,8 +2,8 @@
 
 #include "registry.h"
 
-namespace Engine::ECS
+namespace ecs
 {
-  Registry& get_registry();
+  auto get_registry() -> Registry&;
   void init_from_settings();
 }

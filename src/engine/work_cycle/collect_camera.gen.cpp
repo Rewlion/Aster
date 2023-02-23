@@ -6,16 +6,18 @@
 
 #include "collect_camera.ecs.cpp" 
 
-using namespace Engine::ECS;
+using namespace ecs;
 
-const static DirectQueryRegistration query_camera_queryReg{{
-  DESCRIBE_QUERY_COMPONENT("pos", float3),
-  DESCRIBE_QUERY_COMPONENT("forward", float3),
-  DESCRIBE_QUERY_COMPONENT("camera_fov", float),
-  DESCRIBE_QUERY_COMPONENT("camera_zNear", float),
-  DESCRIBE_QUERY_COMPONENT("camera_zFar", float)
-}};
-const static query_id query_camera_queryId = query_camera_queryReg.getId();
+const static DirectQueryRegistration query_camera_queryReg{
+  {
+    DESCRIBE_QUERY_COMPONENT("pos", float3),
+    DESCRIBE_QUERY_COMPONENT("forward", float3),
+    DESCRIBE_QUERY_COMPONENT("camera_fov", float),
+    DESCRIBE_QUERY_COMPONENT("camera_zNear", float),
+    DESCRIBE_QUERY_COMPONENT("camera_zFar", float)
+  },
+  "query_camera"};
+const static query_id_t query_camera_queryId = query_camera_queryReg.getId();
 
 
 void query_camera (eastl::function<
@@ -26,13 +28,13 @@ void query_camera (eastl::function<
     const float& camera_zNear,
     const float& camera_zFar)> cb)
 {
-  Engine::ECS::get_registry().query(query_camera_queryId, [&](ComponentsAccessor& accessor)
+  ecs::get_registry().query(query_camera_queryId, [&](ComponentsAccessor& accessor)
   {
-    const float3& pos = accessor.get<float3>(str_hash("pos"));
-    const float3& forward = accessor.get<float3>(str_hash("forward"));
-    const float& camera_fov = accessor.get<float>(str_hash("camera_fov"));
-    const float& camera_zNear = accessor.get<float>(str_hash("camera_zNear"));
-    const float& camera_zFar = accessor.get<float>(str_hash("camera_zFar"));
+    const float3& pos = accessor.get<float3>(compile_ecs_name_hash("pos"));
+    const float3& forward = accessor.get<float3>(compile_ecs_name_hash("forward"));
+    const float& camera_fov = accessor.get<float>(compile_ecs_name_hash("camera_fov"));
+    const float& camera_zNear = accessor.get<float>(compile_ecs_name_hash("camera_zNear"));
+    const float& camera_zFar = accessor.get<float>(compile_ecs_name_hash("camera_zFar"));
     cb(pos,forward,camera_fov,camera_zNear,camera_zFar);
   });
 }

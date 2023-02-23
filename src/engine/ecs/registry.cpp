@@ -1,5 +1,4 @@
 #include "registry.h"
-#include "components.h"
 #include "components_accessor.h"
 
 #include <engine/log.h>
@@ -7,295 +6,152 @@
 
 #include <ranges>
 
-namespace Engine::ECS
+namespace ecs
 {
-  bool Registry::isTemplateRegistered(const template_name_id id) const
+  void Registry::addTemplate(const string& name,
+                            TemplateParentNames&& parents,
+                            TemplateComponentsMap&& comps_map)
   {
-    return m_TemplateToArchetypeMap.find(id) != m_TemplateToArchetypeMap.end();
-  }
-
-  eastl::vector<archetype_id> Registry::toArchetypeIds(const eastl::vector<string>& template_names) const
-  {
-    eastl::vector<archetype_id> res;
-    res.reserve(template_names.size());
-
-    bool isValid = true;
-    for (const auto& tmpl: template_names)
+    if (m_Templates.hasTemplateDescription(name)) [[unlikely]]
     {
-      const auto& tmplIt = m_TemplateToArchetypeMap.find(str_hash(tmpl.c_str()));
-      if (tmplIt != m_TemplateToArchetypeMap.end())
-        res.push_back(tmplIt->second);
-      else
-      {
-        logerror("ecs: unknown template {}", tmpl);
-        isValid = false;
-      }
-    }
-
-    return isValid ? res : eastl::vector<archetype_id>{};
-  }
-
-  static eastl::vector<ArchetypeComponent> to_arch_comps(const eastl::vector<TemplateComponentDescription>& components)
-  {
-    eastl::vector<ArchetypeComponent> res;
-    res.reserve(components.size());
-
-    for (auto& c: components)
-    {
-      res.push_back({
-        .nameId = str_hash(c.name.c_str()),
-        .typeId = get_meta_storage().getMeta(c.type).typeId,
-        .blockOffset = 0
-      });
-    }
-    
-    return res;
-  }
-
-  eastl::tuple<CompToPlacementMap,size_t>
-   Registry::placeArchetypeTypes(eastl::vector<ArchetypeComponent>& types) const
-  {
-    CompToPlacementMap compToPlacements;
-    size_t blockOffset = 0;
-
-    for(size_t i = 0; auto& type: types)
-    {
-      type.blockOffset = blockOffset;
-      compToPlacements.insert({type.nameId, i});
-
-      blockOffset += get_meta_storage().getMeta(type.typeId).size;;
-      Sys::align(blockOffset);
-      ++i;
-    }
-  
-    return {compToPlacements, blockOffset};
-  }
-
-  bool Registry::mergeArchetypeComponents(eastl::vector<ArchetypeComponent>& to, 
-                                          const eastl::vector<ArchetypeComponent>& from_comps) const
-  {
-    bool isValid = true;
-    for (const auto& from: from_comps)
-    {
-      const auto toIt = eastl::find_if(
-        to.begin(),
-        to.end(),
-        [&from](const ArchetypeComponent& t) { return t.nameId == from.nameId; }
-      );
-
-      if (toIt == to.end())
-        to.push_back(from);
-      else
-      {
-        if (toIt->typeId != from.typeId)
-        {
-          const string& compName = m_NameMap.find(toIt->nameId)->second;
-          const char* toTypeName = get_meta_storage().getMeta(toIt->typeId).typeName;
-          const char* fromTypeName = get_meta_storage().getMeta(from.typeId).typeName;
-          logerror("ecs: failed to merge component `{}`: invalid types {} != {}",
-            compName, toTypeName, fromTypeName);
-          isValid = false;
-        }
-      }
-    }
-    return isValid;
-  }                               
-
-  archetype_id Registry::makeArchetype(eastl::vector<ArchetypeComponent>&& comps)
-  {
-    auto [compsMap, blockSize] = placeArchetypeTypes(comps);
-
-    const archetype_id archetypeId = (archetype_id)m_Archetypes.size();
-    m_Archetypes.emplace_back(blockSize, std::move(comps), std::move(compsMap));
-
-    return archetypeId;
-  }
-
-  archetype_id Registry::findArchetype(const eastl::vector<ArchetypeComponent>& comps) const
-  {
-    for (size_t i = 0; i < m_Archetypes.size(); ++i)
-     if (m_Archetypes[i].hasComponents(comps))
-       return (archetype_id)i;
-
-    return INVALID_ARCHETYPE_ID;
-  }
-
-  archetype_id Registry::makeArchetype(eastl::vector<ArchetypeComponent>&& comps,
-                                       const eastl::vector<archetype_id>& extends)
-  {
-    for (const archetype_id archId: extends)
-      if (!mergeArchetypeComponents(comps, m_Archetypes[archId].getComponents()))
-        return INVALID_ARCHETYPE_ID;
-
-    archetype_id archetypeId = findArchetype(comps);
-    if (archetypeId != INVALID_ARCHETYPE_ID)
-      return archetypeId;
-
-    return makeArchetype(std::move(comps));
-  }
-
-  void Registry::addTemplate(const string& tmpl,
-                             eastl::vector<TemplateComponentDescription>&& components,
-                             const eastl::vector<string>& extends_templates)
-  {
-    const string tmplName = Utils::remove_spaces(tmpl);
-    const template_name_id templateId = str_hash(tmplName.c_str());
-
-    if (isTemplateRegistered(templateId))
-    {
-      logerror("can't register a new template `{}`: it's registered already", tmplName);
+      logerror("ecs: failed to register template `{}`: it's already registered", name);
       return;
     }
 
-    const auto extendsArchetypes = toArchetypeIds(extends_templates);
-    if (!extends_templates.empty() && extendsArchetypes.empty())
+    for (const auto& parent: parents)
     {
-      logerror("ecs: failed to register template `{}`: there are invalid extensions", tmpl);
-      return;
-    }
-    
-    eastl::vector<ArchetypeComponent> comps = to_arch_comps(components);
-    for (size_t i = 0; const auto& comp: comps)
-    {
-      m_NameMap.insert({comp.nameId, std::move(components[i].name)});
-      ++i;
-    }
-
-    const archetype_id archId = makeArchetype(std::move(comps), extendsArchetypes);
-    if (archId != INVALID_ARCHETYPE_ID)
-      m_TemplateToArchetypeMap.insert({templateId, archId});
-    else
-      logerror("ecs: failed to register template `{}`: there are invalid extensions", tmpl);
-  }
-
-  archetype_id Registry::mergeTemplates(const string final_name,
-                                        const template_name_id final_id,
-                                        const eastl::vector<string>& tmpl_names)
-  {
-    eastl::vector<archetype_id> archetypes = toArchetypeIds(tmpl_names);
-    eastl::vector<ArchetypeComponent> components;
-    
-    bool isValid = true;
-    for (size_t i = 0; auto archId: archetypes)
-    {
-      if (!mergeArchetypeComponents(components, m_Archetypes[archId].getComponents()))
+      if (!m_Templates.hasTemplateDescription(parent))
       {
-        logerror("ecs: failed to merge template {}", tmpl_names[i]);
-        isValid = false;
+        logerror("ecs: failed to register template `{}`: parent `{}` is unknown", name, parent);
+        return;
       }
-      ++i;
     }
 
-    if (isValid)
-    {
-      loginfo("ecs: merged templates `{}`", final_name);
-      return makeArchetype(std::move(components));
-    }
-    else
-      return INVALID_ARCHETYPE_ID;
+    const bool added = m_Templates.addTemplateDesc(TemplateDescription{name, std::move(parents), std::move(comps_map)},
+                                                   m_RegisteredComponents);
+    if (!added) [[unlikely]]
+      logerror("ecs: failed to register template `{}`, see logs above", name);
   }
 
-  EntityComponents Registry::makeEntityComponents(const archetype_id arch_id) const
+  void Registry::createEntity(const string_view tmpl_name, EntityComponents&& inits)
   {
-    const ArchetypeStorage& archetype = m_Archetypes[arch_id];
-    return EntityComponents{
-      archetype.getBlockSize(),
-      archetype.getComponents(),
-      archetype.getCompToPlacementsMap()
-    };
-  }
-
-  void Registry::createEntity(const string_view tmpl, const CreationCb& cb)
-  {
-    const string tmplNameList = Utils::remove_spaces(string{tmpl});
-    eastl::vector<string> templateNames = Utils::split(tmplNameList, ',');
-
-    ASSERT_FMT(!templateNames.empty(), "ecs: can't create entity from empty template");
-
-    archetype_id archetypeId = INVALID_ARCHETYPE_ID;
-    if (templateNames.size() == 1)
+    const template_id_t tmplId = m_Templates.requestTemplate(tmpl_name, m_Archetypes, m_RegisteredComponents);
+    if (tmplId == INVALID_TEMPLATE_ID) [[unlikely]]
     {
-      const auto name = templateNames[0];
-      const template_name_id tmplId = str_hash(name.c_str());
-      const auto it = m_TemplateToArchetypeMap.find(tmplId);
-
-      if (it != m_TemplateToArchetypeMap.end())
-        archetypeId = it->second;
-      else
-        logerror("ecs: unknown template {}", name);
-    }
-    else
-    {
-      const template_name_id tmplId = str_hash(tmplNameList.c_str());
-      const auto it = m_TemplateToArchetypeMap.find(tmplId);
-      archetypeId = it != m_TemplateToArchetypeMap.end() ?
-                      it->second :
-                      mergeTemplates(tmplNameList, tmplId, templateNames);
-      m_DirtySystems = true;
-    }
-
-    if (archetypeId == INVALID_ARCHETYPE_ID)
-    {
-      logerror("ecs: failed to create entity from `{}`", tmplNameList);
+      logerror("ecs: failed to create entity from `{}`", tmpl_name);
       return;
     }
-    
-    EntityId eid = EntityId::generate();
-    EntityComponents init = makeEntityComponents(archetypeId);
 
-    cb(eid, init);
+    const Template& tmpl = m_Templates.getTemplate(tmplId);
+    const archetype_id_t archId = tmpl.archetypeId;
 
-    ChunkInfo chunkInfo = m_Archetypes[archetypeId].addEntity(eid, std::move(init));
+    const auto& offsets = m_Archetypes.getComponentOffsets(archId);
+    const auto& types = m_Archetypes.getComponentTypes(archId);
+    const auto& sizes = m_Archetypes.getComponentSizes(archId);
+    const auto& compIds = m_Archetypes.getComponentIds(archId);
+    const components_count_t compsCount = m_Archetypes.getComponentsCount(archId);
 
-    const EntityInfo eInfo{
-      .eid = eid,
-      .archetypeId = archetypeId,
-      .blockId = chunkInfo.blockId,
-      .chunkId = chunkInfo.chunkId
-    };
+    eastl::vector_map<registered_component_id_t, const TemplateComponent*> compIdToInit;
+    for (const EntityComponentInit& init: inits.getInits())
+    {
+      const registered_component_id_t compId = m_RegisteredComponents.getComponentId(init.name.hash);
+      if (compId == INVALID_REG_COMPONENT_ID) [[unlikely]]
+      {
+        logerror("ecs: unknown component ({} {}) during entity construction with tmpl {}, skipping this component",
+          init.component.getMeta()->typeName, init.name.str, tmpl_name);
+        continue;
+      }
 
-    const uint64_t id = eid.id;
-    m_EntitiesInfo.insert(eastl::make_pair(id, eInfo));
+      const bool tmplHasComponent = tmpl.regCompToTmplComp.find(compId) != tmpl.regCompToTmplComp.end();
+      if (!tmplHasComponent) [[unlikely]]
+      {
+        logerror("ecs: template {} doesn't have component ({} {}), skipping this component",
+          tmpl_name, init.component.getMeta()->typeName, init.name.str);
+        continue;
+      }
 
-    loginfo("ecs: created entity[{}:{}] from `{}`",
-      eid.getId(), eid.getGeneration(), tmplNameList);
+      compIdToInit.insert({compId, &init.component});
+    }
+
+    std::byte* initBuffer = tmpl.initBuffer.get();
+
+    for (components_count_t i{0}; i < compsCount; ++i)
+    {
+      std::byte* compDataForInit = initBuffer + offsets[i];
+      const registered_component_id_t compId = compIds[i];
+      
+      const TemplateComponent* tmplComp = nullptr;
+      if (auto initIt = compIdToInit.find(compId); initIt != compIdToInit.end())
+        tmplComp = initIt->second;
+      else
+        tmplComp = tmpl.regCompToTmplComp.find(compIds[i])->second;
+
+      const void* tmplInitData = tmplComp->getData();
+
+      get_meta_storage()
+        .getMeta(types[i])
+        ->manager->constructor(compDataForInit, tmplInitData);
+    }
+
+    EntityStorage& storage = m_Archetypes.getEntityStorage(archId);
+    const EntityId newEid = EntityId::generate();
+    const auto [chunkId, chunkEid] = storage.allocateEntityPlace();
+    storage.placeEntity(compsCount,
+                        initBuffer,
+                        offsets.data(),
+                        sizes.data(),
+                        newEid,
+                        chunkId, chunkEid);
+
+    m_EntityInfosMap.insert(eastl::make_pair(
+      newEid.getId(), 
+      EntityInfo{
+        .eid = newEid,
+        .chunkId = chunkId,
+        .chunkEid = chunkEid
+      }
+    ));
   }
 
   bool Registry::destroyEntity(const EntityId eid)
   {
-    auto it = m_EntitiesInfo.find(eid.id);
-    if (it == m_EntitiesInfo.end())
-      return false;
+    // auto it = m_EntitiesInfo.find(eid.id);
+    // if (it == m_EntitiesInfo.end())
+    //   return false;
 
-    EntityInfo& eInfo = it->second;
-    if (eInfo.eid.generation != eid.generation)
-      return false;
+    // EntityInfo& eInfo = it->second;
+    // if (eInfo.eid.generation != eid.generation)
+    //   return false;
 
-    ArchetypeStorage& archetype = m_Archetypes[eInfo.archetypeId];
-    DestroidEntityInfo dstrInfo = archetype.destroyEntity(eInfo.chunkId, eInfo.blockId);
+    // ArchetypeStorage& archetype = m_Archetypes[eInfo.archetypeId];
+    // DestroidEntityInfo dstrInfo = archetype.destroyEntity(eInfo.chunkId, eInfo.blockId);
 
-    eInfo.eid.generation += 1;
+    // eInfo.eid.generation += 1;
 
-    if (dstrInfo.replacedBlockId != INVALID_BLOCK_ID)
-    {
-      EntityInfo eInfoToTweak = m_EntitiesInfo[dstrInfo.replacedBlockOwner.getId()];
-      eInfoToTweak.blockId = dstrInfo.replacedBlockId;
-    }
+    // if (dstrInfo.replacedBlockId != INVALID_BLOCK_ID)
+    // {
+    //   EntityInfo eInfoToTweak = m_EntitiesInfo[dstrInfo.replacedBlockOwner.getId()];
+    //   eInfoToTweak.blockId = dstrInfo.replacedBlockId;
+    // }
 
     return true;
   }
 
-  DesiredArchetypes Registry::findDesiredArchetypes(const QueryComponents& queryComponents)
+  auto Registry::findDesiredArchetypes(const QueryComponents& queryComponents)
+    -> eastl::vector<archetype_id_t>
   {
-    DesiredArchetypes desiredArchetypes;
-    if (queryComponents.empty())
-      return desiredArchetypes;
+    eastl::vector<registered_component_id_t> comps;
+    comps.reserve(queryComponents.size());
+    for (const auto& qc: queryComponents)
+    {
+      const auto [rc, compId] = m_RegisteredComponents.getComponentAndId(qc.nameHash);
+      if (rc->typeMeta.typeId != qc.typeId)
+        return {};
+      
+      comps.push_back(compId);
+    }
 
-    for (size_t i = 0; i < m_Archetypes.size(); ++i)
-      if (m_Archetypes[i].hasComponents(queryComponents))
-        desiredArchetypes.push_back(i);
-
-    return desiredArchetypes;
+    return m_Archetypes.findArchetypesWithComponents(comps);
   }
 
   void Registry::registerCppQueries()
@@ -322,7 +178,7 @@ namespace Engine::ECS
 
   void Registry::registerSystem(const QueryCb& cb, const QueryComponents& components)
   {
-    const DesiredArchetypes desiredArchetypes = findDesiredArchetypes(components);
+    const  eastl::vector<archetype_id_t> desiredArchetypes = findDesiredArchetypes(components);
     if (desiredArchetypes.size() > 0)
     {
       m_RegisteredQueues.push_back(RegisteredQueryInfo{
@@ -332,42 +188,41 @@ namespace Engine::ECS
     }
   }
 
-  void Registry::registerEventSystem(const EventQueryCb& cb, const event_hash_name event, const QueryComponents& components)
+  void Registry::registerEventSystem(const EventQueryCb& cb,
+                                     const name_hash_t event,
+                                     const QueryComponents& components)
   {
-    if (event != INVALID_HASH)
-    {
-      const DesiredArchetypes desiredArchetypes = findDesiredArchetypes(components);
+    const  eastl::vector<archetype_id_t> desiredArchetypes = findDesiredArchetypes(components);
 
-      auto it = m_EventHandleQueries.find(event);
-      if (it != m_EventHandleQueries.end())
-      {
-        it->second.push_back(RegisteredEventQueryInfo{
-          .eventCb = cb,
-          .archetypes = eastl::move(desiredArchetypes)
-        });
-      }
+    auto it = m_EventHandleQueries.find(event);
+    if (it != m_EventHandleQueries.end())
+    {
+      it->second.push_back(RegisteredEventQueryInfo{
+        .eventCb = cb,
+        .archetypes = eastl::move(desiredArchetypes)
+      });
     }
   }
 
-  void Registry::query(const query_id queryId, DirectQueryCb cb)
+  void Registry::query(const query_id_t queryId, DirectQueryCb cb)
   {
     DirectQuery& directQuery = m_RegisteredDirectQueries[queryId];
-    for (archetype_id archetypeId: directQuery.desiredArchetypes)
+    for (archetype_id_t archetypeId: directQuery.desiredArchetypes)
       queryArchetype(archetypeId, cb);
   }
 
   void Registry::tick()
   {
-    if (m_DirtySystems)
+    if (m_Templates.hasPendingRegistration())
     {
       registerCppQueries();
-      m_DirtySystems = false;
+      m_Templates.markRegistered();
     }
 
     processEvents();
 
     for(const RegisteredQueryInfo& query: m_RegisteredQueues)
-      for(const archetype_id archetypeId: query.archetypes)
+      for(const archetype_id_t archetypeId: query.archetypes)
         queryArchetype(archetypeId, query.cb);
   }
 
@@ -381,7 +236,7 @@ namespace Engine::ECS
       {
         if (!query.archetypes.empty())
         {
-          for(const archetype_id archetypeId: query.archetypes)
+          for(const archetype_id_t archetypeId: query.archetypes)
             queryArchetypeByEvent(event, archetypeId, query.eventCb);
         }
         else
@@ -392,38 +247,35 @@ namespace Engine::ECS
     }
   }
 
-  void Registry::queryArchetype(const archetype_id archetypeId, QueryCb cb)
+  void Registry::queryArchetype(const archetype_id_t arch_id, QueryCb cb)
   {
-    ArchetypeStorage& archetype = m_Archetypes[archetypeId];
-    archetype.forEachEntity([cb](ComponentsAccessor& comps)
+    m_Archetypes.forEachEntityInArchetype(arch_id,
+      [cb](ComponentsAccessor& comps)
+      {
+        cb(comps);
+      });
+  }
+
+  void Registry::queryArchetype(const archetype_id_t arch_id, const DirectQueryCb& cb)
+  {
+    m_Archetypes.forEachEntityInArchetype(arch_id,[&cb](ComponentsAccessor& comps)
     {
       cb(comps);
     });
   }
 
-  void Registry::queryArchetype(const archetype_id archetypeId, const DirectQueryCb& cb)
+  void Registry::queryArchetypeByEvent(Event* event, const archetype_id_t arch_id, EventQueryCb cb)
   {
-    ArchetypeStorage& archetype = m_Archetypes[archetypeId];
-    archetype.forEachEntity([&cb](ComponentsAccessor& comps)
-    {
-      cb(comps);
-    });
-  }
-
-  void Registry::queryArchetypeByEvent(Event* event, const archetype_id archetypeId, EventQueryCb cb)
-  {
-    ArchetypeStorage& archetype = m_Archetypes[archetypeId];
-    archetype.forEachEntity([cb, event](ComponentsAccessor& comps)
-    {
-      cb(event, comps);
-    });
+    m_Archetypes.forEachEntityInArchetype(arch_id,
+      [cb, event](ComponentsAccessor& comps)
+      {
+        cb(event, comps);
+      });
   }
 
   void Registry::processEventWithoutArchetypes(Event* event, EventQueryCb cb)
   {
-     CompToPlacementMap emptyCompMap;
-     const eastl::vector<ArchetypeComponent> emptyTypes;
-     ComponentsAccessor compAccessor(nullptr, emptyCompMap, emptyTypes);
-     cb(event, compAccessor);
+     ComponentsAccessor emptyCompAccessor(nullptr, nullptr, {});
+     cb(event, emptyCompAccessor);
   }
 }

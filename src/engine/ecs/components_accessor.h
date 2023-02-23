@@ -1,49 +1,31 @@
 #pragma once
 
-#include "components.h"
-
 #include <engine/assert.h>
 
-namespace Engine::ECS
+#include "core_types.h"
+
+#include <EASTL/vector_map.h>
+
+namespace ecs
 {
   class ComponentsAccessor
   {
     public:
-      inline ComponentsAccessor(std::byte* compData,
-                                const CompToPlacementMap& comp_to_placement_map,
-                                const eastl::vector<ArchetypeComponent>& comps)
-        : m_ComponentsData(compData)
-        , m_CompToPlacementMap(comp_to_placement_map)
-        , m_Components(comps)
-      {
-      }
+      ComponentsAccessor(std::byte* entity_data,
+                         const component_offset_t* offsets,
+                         const eastl::vector_map<name_hash_t, component_id_t>& name_to_comp_map);
 
       template<class T>
-      T& get(const component_name_id component)
-      {
-        const auto it = m_CompToPlacementMap.find(component);
-        ASSERT(it != m_CompToPlacementMap.end());
-
-        const size_t blockOffset = m_Components[it->second].blockOffset;
-        return reinterpret_cast<T&>(*(m_ComponentsData + blockOffset));
-      }
+      auto get(const name_hash_t name) -> T&;
 
       template<class T>
-      T& get(const component_name_id component, T& defValue)
-      {
-         const auto it = m_CompToPlacementMap.find(component);
-        if (it != m_CompToPlacementMap.end())
-        {
-          const size_t blockOffset = m_Components[it->second].blockOffset;
-          return reinterpret_cast<T&>(*(m_ComponentsData + blockOffset));
-        }
-
-        return defValue;
-      }
+      auto get(const name_hash_t name, T&& defValue) -> T&;
 
     private:
-      std::byte* m_ComponentsData;
-      const CompToPlacementMap& m_CompToPlacementMap;
-      const eastl::vector<ArchetypeComponent>& m_Components;
+      std::byte* m_EntityData;
+      const component_offset_t* m_Offsets;
+      const eastl::vector_map<name_hash_t, component_id_t>& m_NameToCompMap;
   };
 }
+
+#include "components_accessor.inc.hpp"

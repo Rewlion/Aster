@@ -11,8 +11,7 @@ namespace Engine::gui
       case Type::ScreenHeight: return screen_size.y * m_Value / 100.0f;
       case Type::ParentWidth:  return parent_size.x * m_Value / 100.0f;
       case Type::ParentHeight: return parent_size.y * m_Value / 100.0f;
+      default: return 0.0f;
     }
-
-    return 0.0f;
   }
 }

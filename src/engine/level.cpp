@@ -10,57 +10,47 @@
 
 namespace
 {
-  class From
+  ecs::EntityComponents entity_components(const DataBlock& entity)
   {
-    public:
-      From(const DataBlock& entity)
-        : m_Entity(entity)
-      {
+    ecs::EntityComponents init;
+
+    #define DECL_COMP_INIT(blk_type, type)\
+      case DataBlock::ValueType::blk_type:\
+      {\
+        init[ecs::hashed_name(componentName)] = std::get<type>(attr.as);\
+        break;\
       }
 
-      void operator()(const Engine::ECS::EntityId& eid, Engine::ECS::EntityComponents& init)
+
+    for(const auto& attr: entity.getAttributes())
+    {
+      const string_view componentName{attr.name};
+
+      switch(attr.type)
       {
-        #define DECL_COMP_INIT(blk_type, type)\
-          case DataBlock::ValueType::blk_type:\
-          {\
-            init[str_hash(componentName)] = std::get<type>(attr.as);\
-            break;\
-          }
-
-
-        for(const auto& attr: m_Entity.getAttributes())
+        DECL_COMP_INIT(Int,    int)
+        DECL_COMP_INIT(Int2,   int2)
+        DECL_COMP_INIT(Int3,   int3)
+        DECL_COMP_INIT(Int4,   int4)
+        DECL_COMP_INIT(Float,  float)
+        DECL_COMP_INIT(Float2, float2)
+        DECL_COMP_INIT(Float3, float3)
+        DECL_COMP_INIT(Float4, float4)
+        DECL_COMP_INIT(Text,   string)
+        DECL_COMP_INIT(Bool,   bool)
+        DECL_COMP_INIT(Mat3,   mat3)
+        DECL_COMP_INIT(Mat4,   mat4)
+       
+        case DataBlock::ValueType::None:
         {
-          const string_view componentName{attr.name};
-
-          switch(attr.type)
-          {
-            DECL_COMP_INIT(Int,    int)
-            DECL_COMP_INIT(Int2,   int2)
-            DECL_COMP_INIT(Int3,   int3)
-            DECL_COMP_INIT(Int4,   int4)
-            DECL_COMP_INIT(Float,  float)
-            DECL_COMP_INIT(Float2, float2)
-            DECL_COMP_INIT(Float3, float3)
-            DECL_COMP_INIT(Float4, float4)
-            DECL_COMP_INIT(Text,   string)
-            DECL_COMP_INIT(Bool,   bool)
-            DECL_COMP_INIT(Mat3,   mat3)
-            DECL_COMP_INIT(Mat4,   mat4)
-           
-            case DataBlock::ValueType::None:
-            {
-              ASSERT(!"no value inside datablock");
-              break;
-            }
-          }
+          ASSERT(!"no value inside datablock");
+          break;
         }
-      
-      #undef DECL_COMP_INIT
       }
-
-    private:
-      const DataBlock& m_Entity;
-  };
+    }
+    #undef DECL_COMP_INIT
+    return init;
+  }
 }
 
 namespace Engine
@@ -70,7 +60,7 @@ namespace Engine
     string tmpl = entityBlk.getAnnotation();
     if (tmpl != "")
     {
-      ECS::get_registry().createEntity(tmpl, From(entityBlk));
+      ecs::get_registry().createEntity(tmpl, entity_components(entityBlk));
     }
     else
     {

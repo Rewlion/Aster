@@ -1,6 +1,6 @@
 #include <engine/ecs/events.h>
 
-struct TestEvent: public Engine::ECS::Event
+struct TestEvent: public ecs::Event
 {
   string testString;
 

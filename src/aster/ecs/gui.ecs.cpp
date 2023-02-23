@@ -30,8 +30,13 @@ static void system_test_multiple_templates(const float& test_float, const string
 }
 
 ECS_SYSTEM()
-static void system_test_multiple_templates2(const string& test_str, const float2 test_float2)
+static void system_test_default_str(const string& default_str)
 {
-  volatile const string str = test_str;
+  volatile const string str = default_str;
+}
+
+ECS_SYSTEM()
+static void system_test_test_float2(const float2 test_float2)
+{
   volatile const float2 fl2 = test_float2;
 }

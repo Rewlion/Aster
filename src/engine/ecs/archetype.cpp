@@ -1,129 +1,114 @@
 #include "archetype.h"
-#include "components_accessor.h"
-#include "entity_cb.h"
 
-#include <engine/assert.h>
-#include <engine/platform/memory.h>
-
-namespace Engine::ECS
+namespace ecs
 {
-  bool ArchetypeStorage::hasComponents(const eastl::vector<ArchetypeComponent>& comps) const
+  auto Archetypes::addArchetype(entity_size_t entity_size,
+                               eastl::vector_map<name_hash_t, component_id_t>&& name_to_comp_map,
+                               eastl::vector<registered_component_id_t>&& comp_ids,                  
+                               eastl::vector<component_offset_t>&& offsets,
+                               eastl::vector<component_size_t>&& sizes,
+                               eastl::vector<component_type_id_t>&& types) -> archetype_id_t
   {
-    for(const auto& c: comps)
+    const archetype_id_t id = (archetype_id_t)m_Archetypes.size();
+    EntityStorage storage{entity_size};
+
+    components_set_hash_t compsIdsHash = hashCompIds(comp_ids);
+    m_CompsHashToArchetypes.insert({compsIdsHash, id});
+
+    m_Archetypes.emplace_back(
+      std::move(entity_size),
+      std::move(name_to_comp_map),
+      std::move(storage),
+      (components_count_t)types.size(),
+      std::move(compsIdsHash),
+      std::move(comp_ids),
+      std::move(offsets),
+      std::move(sizes),
+      std::move(types)
+    );
+
+    return id;
+  }
+
+  auto Archetypes::getArchetypesCount() const -> archetype_id_t
+  {
+    return (archetype_id_t)m_Archetypes.size();
+  }
+
+  void Archetypes::forEachEntityInArchetype(const archetype_id_t arch_id,
+                                           const eastl::function<void(ComponentsAccessor&)>& cb)
+  {
+    const auto& offsets = getComponentOffsets(arch_id);
+    auto& chunks = getEntityStorage(arch_id).getChunks();
+    const entity_size_t entitySize = getEntitySize(arch_id);
+    const auto& nameToCompMap = getNameToComponentsMap(arch_id);
+
+    const chunk_id_t chunksCount{chunks.size()};
+    for (chunk_id_t chunkId{0}; chunkId < chunksCount; ++chunkId)
     {
-      const auto it = m_CompToPlacementsMap.find(c.nameId);
-      if (it != m_CompToPlacementsMap.end())
+      auto& chunk = chunks[chunkId];
+      const chunk_eid_t entitiesCount{chunk.usedBlocks};
+      for (chunk_eid_t chunkEid{0}; chunkEid < entitiesCount; ++chunkEid)
       {
-        const auto thisType = m_Components[it->second];
-        if (c.typeId != thisType.typeId)
-          return false;
+        std::byte* entityData = chunk.data + entitySize * chunkEid;
+        ComponentsAccessor accessor{entityData, offsets.data(), nameToCompMap};
+        cb(accessor);
       }
-      else
-        return false;
     }
-    return true;
   }
 
-  chunk_id ArchetypeStorage::getFreeChunkId()
+  auto Archetypes::findArchetypesWithComponents(const eastl::vector<registered_component_id_t>& comps)
+    -> eastl::vector<archetype_id_t>
   {
-    for(size_t i = 0; i < m_Chunks.size(); ++i)
+    components_set_hash_t hash = hashCompIds(comps);
+    const auto getDesiredArchs = [hash, this]() -> eastl::vector<archetype_id_t>
     {
-      Chunk& chunk = m_Chunks[i];
-      if (chunk.usedBlocks < chunk.capacity)
-        return i;
-    }
-  
-    Chunk& chunk = m_Chunks.push_back();
-    chunk.allocate(CHUNK_SIZE, m_BlockSize);
-
-    return m_Chunks.size()-1;
-  }
-
-  ChunkInfo ArchetypeStorage::getFreeChunk(const EntityId eid)
-  {
-    const chunk_id freeChunkId = getFreeChunkId();
-
-    Chunk& chunk = m_Chunks[freeChunkId];
-    const block_id freeBlockId = chunk.usedBlocks;
-    
-    ChunkInfo chunkInfo {
-      .chunkId = freeChunkId,
-      .blockId = freeBlockId
+      eastl::vector<archetype_id_t> res;
+      const auto [lb, ub] = m_CompsHashToArchetypes.equal_range(hash);
+      if (lb != m_CompsHashToArchetypes.end())
+      {
+        const size_t count = eastl::distance(lb, ub) + 1;
+        res.reserve(count);
+        for (auto it = lb; it != ub; ++it)
+          res.push_back(it->second);
+      }
+      return res;
     };
 
-    chunk.blocksOwners[freeBlockId] = eid;
-    chunk.usedBlocks += 1;
+    auto desiredArchs = getDesiredArchs();
+    if (!desiredArchs.empty())
+      return desiredArchs;
 
-    return chunkInfo;
-  }
-
-  ChunkInfo ArchetypeStorage::addEntity(EntityId eid, EntityComponents&& entity_comps)
-  {
-    ChunkInfo chunkInfo = getFreeChunk(eid);
-  
-    uint8_t* block = m_Chunks[chunkInfo.chunkId].data + chunkInfo.blockId * m_BlockSize;
-    entity_comps.moveData((std::byte*)block);
-
-    return chunkInfo;
-  }
-  
-  void ArchetypeStorage::destroyEntityData(std::byte* data)
-  {
-    for(const auto& comp: m_Components)
+    const auto isDesiredArch = [this, &comps] (const archetype_id_t arch_id)
     {
-      const size_t blockOffset = comp.blockOffset;
-      std::byte* compData = data + blockOffset;
-      const ComponentMeta& meta = get_meta_storage().getMeta(comp.typeId);
-      if (!meta.isTrivial)
-        meta.manager->destructor(compData);
-    }
-  }
-
-  DestroidEntityInfo ArchetypeStorage::destroyEntity(const chunk_id chunkId, const block_id blockId)
-  {
-    DestroidEntityInfo dstrInfo;
-    Chunk& chunk = m_Chunks[chunkId];
-
-    std::byte* destroingData = (std::byte*)(chunk.data + blockId * m_BlockSize);
-    destroyEntityData(destroingData);
-  
-    const block_id lastBlockInUse = chunk.usedBlocks;
-  
-    if (blockId == lastBlockInUse)
-    {
-      chunk.usedBlocks -= 1;
-      chunk.blocksOwners[blockId] = {};
-      dstrInfo.replacedBlockId = INVALID_BLOCK_ID;
-      dstrInfo.replacedBlockOwner = {};
-      return dstrInfo;
-    }
-  
-    const block_id replacedBlockId = lastBlockInUse;
-    EntityId& replacedBlockOwner = chunk.blocksOwners[replacedBlockId];
-
-    uint8_t* replacingData = chunk.data + replacedBlockId * m_BlockSize;
-    memcpy(destroingData, replacingData, m_BlockSize);
-    chunk.blocksOwners[blockId] = replacedBlockOwner;
-    
-    dstrInfo.replacedBlockId = replacedBlockId;
-    dstrInfo.replacedBlockOwner = replacedBlockOwner;
-
-    replacedBlockOwner = {};
-    chunk.usedBlocks -= 1;
-
-    return dstrInfo;
-  }
-
-  void ArchetypeStorage::forEachEntity(const ForEachCb& cb)
-  {
-    for(Chunk& chunk: m_Chunks)
-    {
-      for (int i = 0; i < chunk.usedBlocks; ++i)
+      const eastl::vector<registered_component_id_t>& archComps = getComponentIds(arch_id);
+      if (archComps.size() >= comps.size() )
       {
-        std::byte* compData = (std::byte*)(chunk.data + m_BlockSize * i);
-        ComponentsAccessor compAccessor{compData, m_CompToPlacementsMap, m_Components };
-        cb(compAccessor);
+        for (auto required_id: comps)
+        {
+          const auto archId = eastl::find(archComps.begin(), archComps.end(), required_id);
+          if (archId == archComps.end())
+            return false;
+        }
+        return true;
       }
-    }
+
+      return false;
+    };
+
+    const archetype_id_t archsCount = (archetype_id_t)m_Archetypes.size();
+    for (archetype_id_t i{0}; i < archsCount; ++i)
+      if (isDesiredArch(i))
+        m_CompsHashToArchetypes.insert({hash, i});
+
+    return getDesiredArchs();
+  }
+
+  auto Archetypes::hashCompIds(const eastl::vector<registered_component_id_t>& ids) const
+    -> components_set_hash_t
+  {
+    uint32_t seed = 0;
+    uint32_t hash = XXH32(ids.data(), ids.size() * sizeof(ids[0]), seed);
+    return (components_set_hash_t) hash;
   }
 }

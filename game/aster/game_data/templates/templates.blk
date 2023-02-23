@@ -1,16 +1,17 @@
 template @("name: template1"){
-  float2 test_float2 = 0.0, 0.0
-  float test_float = 0.0
+  float2 test_float2 = 33.0, 33.0
+  float test_float = 22.0
   text test_str = "a"
 }
 
 template @("name: template2") {
-  float2 test_float2 = 0.0, 0.0
+  float2 test_float2 = 0.0, 66.0
+  text default_str = "default value"
 }
 
 template @("name: template3; extends: template1, template2") {
   text test_str = "new_a"
-  float3 test_float3 = 0.0, 0.0, 0.0
+  float3 test_float3 = 11.0, 11.0, 11.0
 }
 
 template @("name: camera")

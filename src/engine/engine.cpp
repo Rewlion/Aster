@@ -19,7 +19,7 @@ namespace Engine
 {
   void register_engine_events()
   {
-    ECS::get_registry().registerEvent<ButtonActionInputEvent>();
+    ecs::get_registry().registerEvent<ButtonActionInputEvent>();
   }
 
   void init()
@@ -37,7 +37,7 @@ namespace Engine
     const DataBlock* settings = Engine::get_app_settings();
     tfx::load_materials_bin(settings->getChildBlock("graphics")->getText("materials_bin"));
 
-    ECS::init_from_settings();
+    ecs::init_from_settings();
     register_engine_events();
 
     load_level(settings->getText("init_level") );
@@ -55,7 +55,7 @@ namespace Engine
       Window::poll_wnd_messages();
       Input::manager.processInput();
 
-      ECS::get_registry().tick();
+      ecs::get_registry().tick();
       gui::manager.tick();
 
       const CameraData camera = get_camera();

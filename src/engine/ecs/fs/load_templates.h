@@ -2,7 +2,7 @@
 
 #include <engine/types.h>
 
-namespace Engine::ECS
+namespace ecs
 {
   class Registry;
 

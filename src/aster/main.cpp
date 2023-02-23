@@ -5,7 +5,7 @@
 
 void register_aster_events()
 {
-  Engine::ECS::get_registry().registerEvent<TestEvent>();
+  ecs::get_registry().registerEvent<TestEvent>();
 }
 
 int main()

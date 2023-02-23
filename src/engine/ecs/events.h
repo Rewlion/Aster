@@ -1,6 +1,7 @@
 #pragma once
 
-#include "types.h"
+#include "core_types.h"
+#include "hash.h"
 
 #include <engine/algorithm/hash.h>
 
@@ -14,7 +15,7 @@
 
 #define EVENT_STATIC_DESTR_NAME(eventStruct) eventStruct ## _destructor
 
-#define BASE_EVENT_CONSTRUCTOR(eventStruct) Event(str_hash(#eventStruct), sizeof(eventStruct),  EVENT_STATIC_DESTR_NAME(eventStruct))
+#define BASE_EVENT_CONSTRUCTOR(eventStruct) Event(compile_ecs_name_hash(#eventStruct), sizeof(eventStruct),  EVENT_STATIC_DESTR_NAME(eventStruct))
 
 #define EVENT_CONSTRUCTOR(eventStruct)\
   static constexpr const char* eventName = #eventStruct;\
@@ -26,7 +27,7 @@
   eventStruct()\
     : BASE_EVENT_CONSTRUCTOR(eventStruct)
 
-namespace Engine::ECS
+namespace ecs
 {
   struct ECS_EVENT_BASE() Event;
 
@@ -37,7 +38,7 @@ namespace Engine::ECS
     friend class EventsQueue;
     friend class Registry;
 
-    Event(event_hash_name hashName, size_t size, void (*destr)(Event*))
+    Event(name_hash_t hashName, size_t size, void (*destr)(Event*))
       : eventNameHash(hashName)
       , eventSize(size)
       , _destr(destr)
@@ -45,7 +46,7 @@ namespace Engine::ECS
     }
 
     private:
-      event_hash_name eventNameHash = 0;
+      name_hash_t eventNameHash{0};
       size_t eventSize = 0;
       size_t allocationSize = 0;
       size_t previousAllocationOffset = 0;

@@ -1,115 +1,109 @@
 #pragma once
 
-#include "components.h"
-#include "types.h"
+#include "core_types.h"
 
 #include <EASTL/vector.h>
 
 #include <EASTL/functional.h>
 
-namespace Engine::ECS
+namespace ecs
 {
   using QueryCb = void(*)(class ComponentsAccessor&);
   using EventQueryCb = void(*)(struct Event*, class ComponentsAccessor&);
   using DirectQueryCb = eastl::function<void(class ComponentsAccessor&)>;
-  using QueryComponents = eastl::vector<ArchetypeComponent>;
-  using DesiredArchetypes = eastl::vector<archetype_id>;
+  struct QueryComponent
+  {
+    name_hash_t nameHash;
+    component_type_id_t typeId;
+  };
+  using QueryComponents = eastl::vector<QueryComponent>;
 
   struct QueryDescription
   {
     QueryCb cb;
     QueryComponents components;
     EventQueryCb eventCb;
-    event_hash_name event = INVALID_HASH;
+    name_hash_t event;
   };
 
   class SystemRegistration
   {
     friend class Registry;
     public:
-      SystemRegistration(QueryCb&& cb, QueryComponents&& comps);
+      SystemRegistration(QueryCb&& cb, QueryComponents&& comps, const char* name);
 
       template<class T>
-      static void enumerate(T cb)
-      {
-        const SystemRegistration* p = m_List;
-        while(p)
-        {
-          cb(*p);
-          p = p->m_Next;
-        }
-      }
+      static
+      void enumerate(T cb);
+
     private:
       static SystemRegistration* m_List;
       SystemRegistration* m_Next;
 
       QueryCb m_Cb;
       QueryComponents m_Comps;
+      const char* m_Name;
   };
 
   class DirectQueryRegistration
   {
     friend class Registry;
     public:
-      DirectQueryRegistration(QueryComponents&& comps);
+      DirectQueryRegistration(QueryComponents&& comps, const char* name);
 
       template<class T>
-      static void enumerate(T cb)
-      {
-        const DirectQueryRegistration* p = m_List;
-        while(p)
-        {
-          cb(*p);
-          p = p->m_Next;
-        }
-      }
+      static
+      void enumerate(T cb);
 
-      inline query_id getId() const { return m_Id; }
-      static size_t size() { return m_List != nullptr ? m_List->m_Id+1 : 0; }
-      const QueryComponents& getComponents() const { return m_Comps; }
+      auto getId() const -> query_id_t;
+      
+      static
+      auto size() -> size_t;
+      
+      auto getComponents() const -> const QueryComponents&;
+
     private:
       static DirectQueryRegistration* m_List;
       DirectQueryRegistration* m_Next;
 
-      query_id m_Id;
+      query_id_t m_Id;
       QueryComponents m_Comps;
+      const char* m_Name;
   };
 
   class EventSystemRegistration
   {
     friend class Registry;
     public:
-      EventSystemRegistration(EventQueryCb&& cb, event_hash_name event, QueryComponents&& components);
+      EventSystemRegistration(EventQueryCb&& cb,
+                              name_hash_t event,
+                              QueryComponents&& components,
+                              const char* name);
 
       template<class T>
-      static void enumerate(T cb)
-      {
-        EventSystemRegistration* p = m_List;
-        while(p)
-        {
-          cb(*p);
-          p = p->m_Next;
-        }
-      }
+      static
+      void enumerate(T cb);
+
     private:
       static EventSystemRegistration* m_List;
       EventSystemRegistration* m_Next;
 
       EventQueryCb m_Cb;
-      event_hash_name m_Event;
+      name_hash_t m_Event;
       QueryComponents m_Comps;
+      const char* m_Name;
   };
 
   struct RegisteredQueryInfo
   {
     QueryCb cb;
-    DesiredArchetypes archetypes;
+    eastl::vector<archetype_id_t> archetypes;
   };
 
   struct RegisteredEventQueryInfo
   {
     EventQueryCb eventCb;
-    DesiredArchetypes archetypes;
+    eastl::vector<archetype_id_t> archetypes;
   };
 
   struct DirectQueryDescription
@@ -119,13 +113,15 @@ namespace Engine::ECS
 
   struct DirectQuery
   {
-    DesiredArchetypes desiredArchetypes;
+    eastl::vector<archetype_id_t> desiredArchetypes;
   };
 }
 
 #define DESCRIBE_QUERY_COMPONENT(componentName, componentType)\
-  Engine::ECS::ArchetypeComponent\
+  ecs::QueryComponent\
   {\
-    .nameId = str_hash(componentName),\
-    .typeId = ComponentTypeId::from<componentType>(),\
+    .nameHash = compile_ecs_name_hash(componentName),\
+    .typeId = CompileTypeId::from<componentType>(),\
   }
+
+#include "query.inc.hpp"

@@ -11,24 +11,25 @@
 #include <algorithm>
 #include <ranges>
 
-namespace Engine::ECS
+namespace ecs
 {
   namespace
   {
     struct Annotations
     {
       string name;
-      eastl::vector<string> extendsTemplates;
+      TemplateParentNames extendsTemplates;
     };
   }
 
-  eastl::vector<TemplateComponentDescription> get_template_components(const DataBlock& tmpl)
+  auto get_template_components(const DataBlock& tmpl) -> TemplateComponentsMap 
   {
-    eastl::vector<TemplateComponentDescription> comps;
+    TemplateComponentsMap comps;
     #define ADD_TMPL_COMP(blk_type, _type) \
       case DataBlock::ValueType::blk_type:\
       {\
-        comps.push_back({.name = attr.name.c_str(), .type = #_type});\
+        const string& name = attr.name;\
+        comps[name] = std::get<_type>(attr.as);\
         break;\
       }
 
@@ -57,7 +58,8 @@ namespace Engine::ECS
     return comps;
   }
 
-  static Annotations get_template_annotations(string& raw_str)
+  static
+  auto get_template_annotations(string& raw_str) -> Annotations
   {
     Annotations annotations;
     eastl::vector<string> strs;
@@ -80,7 +82,7 @@ namespace Engine::ECS
           const size_t delimiter = sizeof("extends:")-1;
           string_view extends = str.substr(delimiter, str.length() - delimiter);
           for (const auto& extendRange: std::views::split(extends, ','))
-            annotations.extendsTemplates.push_back({extendRange.begin(), extendRange.end()});
+            annotations.extendsTemplates.push({extendRange.begin(), extendRange.end()});
         }
       }
     }
@@ -88,10 +90,11 @@ namespace Engine::ECS
     return annotations;
   }
 
-  static void dump_template(const Annotations& annotations, const eastl::vector<TemplateComponentDescription>& components)
+  static
+  void dump_template(const Annotations& annotations, const TemplateComponentsMap& components)
   {
     string extends = "";
-    if (!annotations.extendsTemplates.empty())
+    if (annotations.extendsTemplates.hasAny())
     {
       extends = "extends:[";
       for (const auto& extend: annotations.extendsTemplates)
@@ -99,13 +102,7 @@ namespace Engine::ECS
       extends += "]";
     }
 
-    string comps;
-    for(auto& comp: components)
-    {
-      string desc = fmt::format("\n  component: {} {}", comp.type, comp.name);
-      comps = comps + desc;
-    }
-    loginfo("adding template {}, {} {}", annotations.name, extends, comps);
+    loginfo("adding template {} {}", annotations.name, extends);
   }
 
   void add_templates_from_blk(Registry& registry, const string& blkPath)
@@ -125,12 +122,6 @@ namespace Engine::ECS
       string rawAnnotations = tmpl.getAnnotation();
       auto annotations = get_template_annotations(rawAnnotations);
 
-      if (annotations.name.find('.') != annotations.name.npos)
-      {
-        logerror("template has invalid name `{}`,  `.` is not allowed for template names", annotations.name);
-        continue;
-      }
-
       if (annotations.name.empty())
       {
         logerror("template without a name has encountered");
@@ -139,7 +130,7 @@ namespace Engine::ECS
 
       auto components = get_template_components(tmpl);
       dump_template(annotations, components);
-      registry.addTemplate(annotations.name, std::move(components), annotations.extendsTemplates);
+      registry.addTemplate(annotations.name, std::move(annotations.extendsTemplates), std::move(components));
     }
   }
 }

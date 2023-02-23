@@ -29,6 +29,7 @@ include_directories(
   "${CMAKE_SOURCE_DIR}/deps/spdlog-1.9.2/include"
   "${CMAKE_SOURCE_DIR}/deps/tinygltf-2.5.0/include"
   "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/include"
+  "${CMAKE_SOURCE_DIR}/deps/xxhash/include"
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -45,6 +46,7 @@ link_directories(
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/win64"
   "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/win64/"
   "${CMAKE_SOURCE_DIR}/deps/quickjs/win64"
+  "${CMAKE_SOURCE_DIR}/deps/xxhash/win64"
 )
 
 #workaround for dxcompiler linkage

@@ -1,14 +1,13 @@
 #include "ecs.h"
 
-#include <engine/ecs/components.h>
 #include <engine/ecs/fs/load_templates.h>
 #include <engine/settings.h>
 
-namespace Engine::ECS
+namespace ecs
 {
   Registry registry;
 
-  Registry& get_registry()
+  auto get_registry() -> Registry&
   {
     return registry;
   }
@@ -16,7 +15,7 @@ namespace Engine::ECS
   void init_from_settings()
   {
     loginfo("ecs: initialization of ECS");
-    DataBlock* settings = get_app_settings();
+    DataBlock* settings = Engine::get_app_settings();
 
     loginfo("ecs: initializing components meta");
     init_meta_storage();

@@ -81,13 +81,7 @@ entity @("template1")
 
 entity @("template2")
 {
-  text test_str = "hi from template2"
-}
-
-entity @("template1, template2")
-{
-  float2 test_float2 = 26.0, 2.0
-  text test_str = "multiple templates! yay"
+  float2 test_float2 = 213.0, 1.0
 }
 
 entity @("template3")
