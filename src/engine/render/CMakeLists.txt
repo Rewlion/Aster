@@ -1,12 +1,10 @@
 cmake_minimum_required(VERSION 3.21)
 
-file(GLOB_RECURSE render_src
-  "${CMAKE_SOURCE_DIR}/src/engine/render/*.cpp")
-
 set(WORLD_RENDER_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/debug_text.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/world_render.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/render/gui_render.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/imgui_render.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/world_render.cpp"
 )
 
 set(FRAMEGRAPH_SRC

@@ -102,8 +102,8 @@ namespace gapi::vulkan
     vk::PipelineRasterizationStateCreateInfo rasterizationStateCi;
     rasterizationStateCi.depthClampEnable = false;
     rasterizationStateCi.polygonMode = vk::PolygonMode::eFill;
-    rasterizationStateCi.cullMode = vk::CullModeFlagBits::eFront;
-    rasterizationStateCi.frontFace = vk::FrontFace::eClockwise;
+    rasterizationStateCi.cullMode = get_cull_mode(description.cullMode);
+    rasterizationStateCi.frontFace = get_front_face(description.cullMode);
     rasterizationStateCi.depthBiasEnable = false;
     rasterizationStateCi.lineWidth = 1.0f;
 

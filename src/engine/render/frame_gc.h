@@ -1,5 +1,7 @@
 #pragma once
 
+#include "consts.h"
+
 #include <engine/gapi/gapi.h>
 #include <engine/gapi/resources.h>
 
@@ -28,7 +30,7 @@ namespace Engine::Render
 
       void nextFrame()
       {
-        frame = (frame + 1) % 2;
+        frame = (frame + 1) % FRAMES_COUNT;
         auto& resources = m_Resources[frame];
         for(auto& resource: resources)
           std::visit([](const auto& c) {
@@ -39,6 +41,6 @@ namespace Engine::Render
 
     private:
     size_t frame = 0;
-    eastl::vector<Resource> m_Resources[2];
+    eastl::vector<Resource> m_Resources[FRAMES_COUNT];
   };
 }

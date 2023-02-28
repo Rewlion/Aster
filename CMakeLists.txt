@@ -24,6 +24,7 @@ include_directories(
   "${CMAKE_SOURCE_DIR}/deps/eastl-3.17.06/include"
   "${CMAKE_SOURCE_DIR}/deps/freetype-2.12.1/include"
   "${CMAKE_SOURCE_DIR}/deps/glm-0.9.9.8/include"
+  "${CMAKE_SOURCE_DIR}/deps/imgui/src"
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/include"
   "${CMAKE_SOURCE_DIR}/deps/quickjs/include"
   "${CMAKE_SOURCE_DIR}/deps/spdlog-1.9.2/include"
@@ -54,6 +55,7 @@ configure_file("${CMAKE_SOURCE_DIR}/deps/dxc-1.7.0/win64/dxcompiler.lib" "${CMAK
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/assets")
+add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/console")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/datablock")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/ecs")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/gapi")
@@ -67,6 +69,8 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/utils")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/work_cycle")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/deps/SPIRV-Cross-moltenvk_1.1.5/src")
+add_subdirectory("${CMAKE_SOURCE_DIR}/deps/imgui/src/imgui")
+
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/shaders_compiler")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/aster")

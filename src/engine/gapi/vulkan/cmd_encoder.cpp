@@ -6,6 +6,8 @@
 #include <engine/gapi/vulkan/cache/renderpass_storage.h>
 #include <engine/gapi/vulkan/cache/pipelines_storage.h>
 
+#undef MemoryBarrier //wtf ? winnt
+
 namespace gapi::vulkan
 {
   CmdEncoder::CmdEncoder(Device& device, FrameGarbageCollector& frameGc,
@@ -361,6 +363,25 @@ namespace gapi::vulkan
       0, nullptr,
       0, nullptr,
       1, &layoutBarrier
+    );
+  }
+
+  void CmdEncoder::insertGlobalBufferBarrier(const BufferState old_state, const BufferState new_state)
+  {
+    ASSERT(m_RenderPassState.rp == vk::RenderPass{});
+    insureActiveCmd();
+
+    vk::MemoryBarrier memBarrier;
+    memBarrier.srcAccessMask = get_access_flag_for_buffer_state(old_state);
+    memBarrier.dstAccessMask = get_access_flag_for_buffer_state(new_state);
+
+    m_CmdBuf.pipelineBarrier(
+      get_pipeline_stage_for_buffer_state(old_state),
+      get_pipeline_stage_for_buffer_state(new_state),
+      vk::DependencyFlags{},
+      1, &memBarrier,
+      0, nullptr,
+      0, nullptr
     );
   }
 

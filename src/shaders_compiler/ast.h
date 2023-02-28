@@ -143,6 +143,7 @@ namespace ShadersSystem
   {
     enum class StateType
     {
+      CullMode,
       PrimitiveTopology,
       DepthTest,
       DepthWrite,
@@ -251,6 +252,17 @@ namespace ShadersSystem
         delete buffers;
         buffers = nullptr;
       }
+    }
+  };
+
+  struct CullModeExp: public RenderStateExp
+  {
+    gapi::CullMode cm;
+
+    CullModeExp(const gapi::CullMode cm)
+      : RenderStateExp(RenderStateExp::StateType::CullMode)
+      , cm(cm)
+    {
     }
   };
 

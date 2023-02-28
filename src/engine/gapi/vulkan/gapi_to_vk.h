@@ -18,6 +18,16 @@ namespace gapi::vulkan
     return static_cast<vk::StencilOp>(op);
   }
 
+  inline vk::CullModeFlags get_cull_mode(const CullMode mode)
+  {
+    return mode != CullMode::None ? vk::CullModeFlagBits::eFront : vk::CullModeFlagBits::eNone;
+  }
+
+  inline vk::FrontFace get_front_face(const CullMode mode)
+  {
+    return mode == CullMode::CW ? vk::FrontFace::eClockwise : vk::FrontFace::eCounterClockwise;
+  }
+
   inline vk::PrimitiveTopology get_primitive_topology(const PrimitiveTopology topology)
   {
     return static_cast<vk::PrimitiveTopology>(topology);
@@ -352,6 +362,71 @@ namespace gapi::vulkan
     }
   }
 
+  inline
+  vk::PipelineStageFlags get_pipeline_stage_for_buffer_state(const BufferState states)
+  {
+    vk::PipelineStageFlags flags;
+    for (int i = 1; i <= BufferState::BF_STATE_LAST; i = i << 1)
+    {
+      switch (i & states)
+      {
+        case 0: break;
+        case BF_STATE_VERTEX:
+        case BF_STATE_INDEX:
+        {
+          flags |= vk::PipelineStageFlagBits::eVertexInput;
+          break;
+        }
+        case BF_STATE_TRANSFER_DST:
+        {
+          flags |= vk::PipelineStageFlagBits::eTransfer;
+          break;
+        }
+        default:
+        {
+          ASSERT(!"unsupported BufferState");
+        }
+      }
+    }
+
+    return flags;
+  }
+
+  inline
+  vk::AccessFlags get_access_flag_for_buffer_state(const BufferState states)
+  {
+    vk::AccessFlags flags;
+
+    for (int i = 1; i <= BufferState::BF_STATE_LAST; i = i << 1)
+    {
+      switch (i & states)
+      {
+        case 0: break;
+        case BF_STATE_VERTEX:
+        {
+          flags |= vk::AccessFlagBits::eVertexAttributeRead;
+          break;
+        }
+        case BF_STATE_INDEX:
+        {
+          flags |= vk::AccessFlagBits::eIndexRead;
+          break;
+        }
+        case BF_STATE_TRANSFER_DST:
+        {
+          flags |= vk::AccessFlagBits::eTransferWrite;
+          break;
+        }
+        default:
+        {
+          ASSERT(!"unsupported BufferState");
+        }
+      }
+    }
+
+    return flags;
+  }
+
   inline vk::ImageLayout get_image_layout_for_texture_state(const TextureState state)
   {
     switch (state)
@@ -429,14 +504,15 @@ namespace gapi::vulkan
   {
     switch (type)
     {
-       case gapi::AttributeType::Float:  return vk::Format::eR32Sfloat;
-       case gapi::AttributeType::Float2: return vk::Format::eR32G32Sfloat;
-       case gapi::AttributeType::Float3: return vk::Format::eR32G32B32Sfloat;
-       case gapi::AttributeType::Float4: return vk::Format::eR32G32B32A32Sfloat;
-       case gapi::AttributeType::Int:    return vk::Format::eR32Sint;
-       case gapi::AttributeType::Int2:   return vk::Format::eR32G32Sint;
-       case gapi::AttributeType::Int3:   return vk::Format::eR32G32B32Sint;
-       case gapi::AttributeType::Int4:   return vk::Format::eR32G32B32A32Sint;
+       case gapi::AttributeType::Float:       return vk::Format::eR32Sfloat;
+       case gapi::AttributeType::Float2:      return vk::Format::eR32G32Sfloat;
+       case gapi::AttributeType::Float3:      return vk::Format::eR32G32B32Sfloat;
+       case gapi::AttributeType::Float4:      return vk::Format::eR32G32B32A32Sfloat;
+       case gapi::AttributeType::Float4_u8:   return vk::Format::eR8G8B8A8Unorm;
+       case gapi::AttributeType::Int:         return vk::Format::eR32Sint;
+       case gapi::AttributeType::Int2:        return vk::Format::eR32G32Sint;
+       case gapi::AttributeType::Int3:        return vk::Format::eR32G32B32Sint;
+       case gapi::AttributeType::Int4:        return vk::Format::eR32G32B32A32Sint;
        default:
        {
         ASSERT(!"unsupported");

@@ -1,0 +1,67 @@
+scope ImGuiScope {
+  reserve:
+    descriptor_set(1);
+    cbuffer(0);
+    register(texture, 1-2);
+    register(sampler, 2-3);
+    
+  sampler modelSampler = extern(model_sampler);
+  Texture2D fontTex = extern(imgui_fontTex);
+
+  float4 scale_translate = extern(imgui_scale_translate);
+};
+
+technique ImGui {
+  support scope ImGuiScope;
+    
+  render_state:
+    cull_mode = none;
+    input:
+      buffer(0):
+        float2 pos:       POSITION0;
+        float2 uv:        TEXTURE0;
+        float4_u8 color:  TEXTURE1;
+    depth:
+      test = no;
+      write = no;
+    blending:
+      mrt(0):
+        has_blending = yes;
+        src_color_blend_factor = src_alpha;
+        dst_color_blend_factor = one_minus_src_alpha;
+        color_blend_op = add;
+        src_alpha_blend_factor = one;
+        dst_alpha_blend_factor = one_minus_src_alpha;
+        alpha_blend_op = add;
+  
+#hlsl
+  struct VsOutput
+  {
+    float4 pos: SV_Position;
+    float2 uv: TEXTURE0;
+    float4 color: TEXTURE1;
+  };
+
+  VsOutput vs_main(ImGui_input input)
+  {
+    VsOutput output;
+    output.color = input.color;
+    output.uv = input.uv;
+
+    float2 scale = ImGuiScope.scale_translate.xy;
+    float2 tr = ImGuiScope.scale_translate.zw;
+    output.pos = float4(input.pos * scale + tr, 0, 1);
+
+    return output;
+  }
+
+  float4 ps_main(VsOutput input): SV_Target0
+  {
+     float4 color = input.color * fontTex.Sample(modelSampler, input.uv);
+     return color;
+  }
+#end
+
+  compile(vs_6_1, vs_main);
+  compile(ps_6_1, ps_main);
+};

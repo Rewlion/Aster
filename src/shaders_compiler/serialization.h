@@ -56,6 +56,7 @@ namespace boost::serialization
   void serialize(Archive& a, tfx::RenderState& st, const unsigned version)
   {
     a & st.ia
+      & st.cullMode
       & st.topology
       & make_binary_object(&st.depthStencil, sizeof(st.depthStencil))
       & make_binary_object(&st.blending, sizeof(st.blending));

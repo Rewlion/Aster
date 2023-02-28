@@ -6,7 +6,9 @@ file(GLOB engine_src
 add_library(engine ${engine_src})
 
 target_link_libraries(engine
+  deps_imgui
   engine_assets
+  engine_console
   engine_datablock
   engine_ecs
   engine_font_render

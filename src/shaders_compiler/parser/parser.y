@@ -55,6 +55,7 @@
   InputAttributeExp* inputAttributeExp;
 
   RenderStateExp* renderStateExp;
+  gapi::CullMode cullMode;
   gapi::PrimitiveTopology primitiveTopology;
   gapi::CompareOp compareOp;
   gapi::StencilOp stencilOp;
@@ -101,6 +102,10 @@
 %token TFX_TOKEN_ACTIVATE "activate"
 %token TFX_TOKEN_COMPILE "compile"
 %token TFX_TOKEN_RENDER_STATE "render_state"
+%token TFX_TOKEN_CULL_MODE "cull_mode"
+%token TFX_TOKEN_NONE "none"
+%token TFX_TOKEN_CCW "ccw"
+%token TFX_TOKEN_CW "cw"
 %token TFX_TOKEN_PRIMITIVE_TOPOLOGY "primitive_topology"
 %token TFX_TOKEN_PT_POINT_LIST "point_list"
 %token TFX_TOKEN_PT_LINE_LIST "line_list"
@@ -209,6 +214,7 @@
 %token TFX_TOKEN_FLOAT2 "float2"
 %token TFX_TOKEN_FLOAT3 "float3"
 %token TFX_TOKEN_FLOAT4 "float4"
+%token TFX_TOKEN_FLOAT4_u8 "float4_u8"
 %token TFX_TOKEN_FLOAT4X4 "float4x4"
 %token TFX_TOKEN_INT "int"
 %token TFX_TOKEN_INT2 "int2"
@@ -234,6 +240,7 @@
 %type <inputAttributeExp>    INPUT_ATTRIBUTE
 %type <inputAttributeExp>    INPUT_ATTRIBUTE_LIST
 %type <attributeType>        ATTRIBUTE_TYPE
+%type <cullMode>             CULL_MODE
 %type <primitiveTopology>    PRIMITIVE_TOPOLOGY
 %type <renderStateExp>       RENDER_STATE_EXP
 %type <renderStateExp>       RENDER_STATE_EXP_LIST
@@ -326,7 +333,10 @@ RENDER_STATE_EXP_LIST
   ;
 
 RENDER_STATE_EXP
-  : "primitive_topology" "=" PRIMITIVE_TOPOLOGY[v] ";"{
+  : "cull_mode" "=" CULL_MODE[m] ";" {
+    $$ = new CullModeExp($m);
+  }
+  | "primitive_topology" "=" PRIMITIVE_TOPOLOGY[v] ";"{
     $$ = new PrimitiveTopologyExp($v);
   }
   | "input" ":" INPUT_BUFFER_LIST[buffers] {
@@ -395,6 +405,17 @@ STENCIL_EXP
     $$ = new StencilReferenceValueExp($v);
   }
   ;
+
+CULL_MODE
+  : "none" {
+    $$ = gapi::CullMode::None;
+  }
+  | "cw" {
+    $$ = gapi::CullMode::CW;
+  }
+  | "ccw" {
+    $$ = gapi::CullMode::CCW;
+  }
 
 PRIMITIVE_TOPOLOGY
   : "point_list" {
@@ -811,6 +832,9 @@ ATTRIBUTE_TYPE
   }
   | TFX_TOKEN_FLOAT4 {
     $$ = gapi::AttributeType::Float4;
+  }
+  | TFX_TOKEN_FLOAT4_u8 {
+    $$ = gapi::AttributeType::Float4_u8;
   }
   | TFX_TOKEN_FLOAT4X4 {
     $$ = gapi::AttributeType::Float4x4;

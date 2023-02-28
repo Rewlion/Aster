@@ -55,6 +55,7 @@ namespace gapi
     for(const auto handler: shaders)
       hash_combine(hash, handler);
     hash_combine(hash, ia.hash());
+    hash_combine(hash, cullMode);
     hash_combine(hash, topology);
     hash_combine(hash, depthStencilState.hash());
     hash_combine(hash, blendState.hash());
@@ -100,6 +101,7 @@ namespace gapi
   {
     switch (type)
     {
+      case AttributeType::Float4_u8:
       case AttributeType::Float:
       case AttributeType::Int:
         return 4;
@@ -127,15 +129,16 @@ namespace gapi
   {
     switch (type)
     {
-      case AttributeType::Float:    return "float";
-      case AttributeType::Int:      return "int";
-      case AttributeType::Float2:   return "float2";
-      case AttributeType::Int2:     return "int2";
-      case AttributeType::Float3:   return "float3";
-      case AttributeType::Int3:     return "int3";
-      case AttributeType::Float4:   return "float4";
-      case AttributeType::Int4:     return "int4";
-      case AttributeType::Float4x4: return "float4x4";
+      case AttributeType::Float:        return "float";
+      case AttributeType::Int:          return "int";
+      case AttributeType::Float2:       return "float2";
+      case AttributeType::Int2:         return "int2";
+      case AttributeType::Float3:       return "float3";
+      case AttributeType::Int3:         return "int3";
+      case AttributeType::Float4:       return "float4";
+      case AttributeType::Float4_u8:    return "float4";
+      case AttributeType::Int4:         return "int4";
+      case AttributeType::Float4x4:     return "float4x4";
 
       default:
       {

@@ -20,6 +20,7 @@ namespace tfx
   struct RenderState
   {
     gapi::VertexInputDescription ia;
+    gapi::CullMode cullMode = gapi::CullMode::CW;
     gapi::PrimitiveTopology topology = gapi::PrimitiveTopology::TriangleList;
     gapi::DepthStencilStateDescription depthStencil;
     gapi::BlendState blending;

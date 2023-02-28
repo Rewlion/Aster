@@ -225,6 +225,10 @@ float4 {
   return TFX_TOKEN_FLOAT4;
 }
 
+float4_u8 {
+  return TFX_TOKEN_FLOAT4_u8;
+}
+
 float4x4 {
   return TFX_TOKEN_FLOAT4X4;
 }
@@ -275,6 +279,22 @@ compile {
 
 render_state {
   return TFX_TOKEN_RENDER_STATE;
+}
+
+cull_mode {
+  return TFX_TOKEN_CULL_MODE;
+}
+
+none {
+  return TFX_TOKEN_NONE;
+}
+
+ccw {
+  return TFX_TOKEN_CCW;
+}
+
+cw {
+  return TFX_TOKEN_CW;
 }
 
 primitive_topology {

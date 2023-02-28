@@ -406,6 +406,7 @@ namespace ShadersSystem
           {
             switch (exp->stateType)
             {
+              SET_RENDER_STATE(CullMode, cullMode, CullModeExp, cm);
               SET_RENDER_STATE(PrimitiveTopology, topology, PrimitiveTopologyExp, tp);
               SET_RENDER_STATE(DepthTest, depthStencil.depthTestEnabled, DepthTestExp, enabled);
               SET_RENDER_STATE(DepthWrite, depthStencil.depthWriteEnabled, DepthWriteExp, enabled);

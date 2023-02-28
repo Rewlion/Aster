@@ -1,6 +1,6 @@
 #pragma once
 
-#include "frame_gc.h"
+#include "consts.h"
 
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/gapi/resources.h>
@@ -18,10 +18,9 @@ namespace fg
 
 namespace Engine::Render
 {
-  constexpr size_t FRAMES_COUNT = 3;
-
   class FontRender;
   class GuiRender;
+  class ImGuiRender;
 
   class WorldRender
   {
@@ -69,6 +68,7 @@ namespace Engine::Render
 
       std::unique_ptr<FontRender> m_FontRender;
       std::unique_ptr<GuiRender> m_GuiRender;
+      std::unique_ptr<ImGuiRender> m_ImGuiRender;
       dbg::TextDbgQueue<10, 128> m_DbgTextQueue;
   };
 

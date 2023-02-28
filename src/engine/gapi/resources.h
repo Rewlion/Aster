@@ -150,6 +150,13 @@ namespace gapi
     size_t hash() const;
   };
 
+  enum class CullMode: uint8_t
+  {
+    None = 0,
+    CCW  = 1,
+    CW   = 2
+  };
+
   enum class PrimitiveTopology: uint8_t
   {
     PointList                  = 0,
@@ -400,6 +407,14 @@ namespace gapi
     TransferDst
   };
 
+  enum BufferState
+  {
+    BF_STATE_INDEX            = 1,
+    BF_STATE_VERTEX           = 1 << 2,
+    BF_STATE_TRANSFER_DST     = 1 << 3,
+    BF_STATE_LAST             = BF_STATE_TRANSFER_DST
+  };
+
   struct RenderPassAttachment
   {
     TextureHandle texture    = TextureHandle::Invalid;
@@ -491,7 +506,7 @@ namespace gapi
   enum class AttributeType: uint8_t
   {
     None,
-    Float, Float2, Float3, Float4,
+    Float, Float2, Float3, Float4, Float4_u8,
     Float4x4,
     Int, Int2, Int3, Int4,
   };
@@ -532,6 +547,7 @@ namespace gapi
     PipelineLayoutHandler              layout;
     eastl::vector<ShaderModuleHandler> shaders;
     VertexInputDescription             ia;
+    CullMode                           cullMode;
     PrimitiveTopology                  topology;
     DepthStencilStateDescription       depthStencilState;
     BlendState                         blendState;

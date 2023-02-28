@@ -58,6 +58,8 @@ namespace gapi::vulkan
                                        const TextureState oldState, const TextureState newState,
                                        const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
                                        const uint32_t firstArraySlice, const uint32_t arraySliceCount) override;
+      virtual
+      void insertGlobalBufferBarrier(const BufferState old_state, const BufferState new_state) override;
       virtual void updateResources() override;
       virtual void writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags) override;
       virtual void copyBufferToTexture(const TextureHandle texture, const void* src, const size_t size) override;

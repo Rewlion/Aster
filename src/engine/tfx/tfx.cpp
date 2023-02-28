@@ -267,6 +267,7 @@ namespace tfx
             .layout = layout,
             .shaders = std::move(modules),
             .ia = t.renderState.ia,
+            .cullMode = t.renderState.cullMode,
             .topology = t.renderState.topology,
             .depthStencilState = t.renderState.depthStencil,
             .blendState = t.renderState.blending

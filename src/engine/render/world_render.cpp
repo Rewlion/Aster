@@ -1,5 +1,6 @@
 #include "world_render.h"
 #include "gui_render.h"
+#include "imgui_render.h"
 
 #include <engine/algorithm/hash.h>
 #include <engine/assets/assets_manager.h>
@@ -31,6 +32,8 @@ namespace Engine::Render
 
     m_FontRender = std::make_unique<FontRender>();
     m_GuiRender = std::make_unique<GuiRender>(*m_FontRender.get());
+    m_ImGuiRender = std::make_unique<ImGuiRender>();
+    m_ImGuiRender->init();
 
     const DataBlock* settings = Engine::get_app_settings();
     const string fontFolder = settings->getText("fonts_folder");
@@ -73,6 +76,8 @@ namespace Engine::Render
     tfx::set_extern("model_sampler", m_ModelSampler);
     tfx::set_extern("viewport_size", float2(m_WindowSize.x, m_WindowSize.y));
     tfx::activate_scope("FrameScope", *m_FrameData.cmdEncoder);
+
+    m_ImGuiRender->beforeRender(*m_FrameData.cmdEncoder);
   }
 
   void WorldRender::renderWorld()
@@ -156,6 +161,7 @@ namespace Engine::Render
       },
       [&](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
         m_GuiRender->render(encoder);
+        m_ImGuiRender->render(encoder);
       }
     );
 
