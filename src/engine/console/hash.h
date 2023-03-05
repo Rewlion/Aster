@@ -12,4 +12,10 @@ namespace console
   {
     return cmd_hash_t{fnv1a<uint32_t>(str, const_strlen(str))};
   }
+
+  constexpr
+  auto cmd_name_hash(const string_view str) -> cmd_hash_t
+  {
+    return cmd_hash_t{fnv1a<uint32_t>(str.data(), str.size())};
+  }
 }

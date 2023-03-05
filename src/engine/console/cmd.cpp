@@ -2,6 +2,7 @@
 
 namespace console
 {
+  CmdRegistration* CmdRegistration::m_List = nullptr;
   CmdRegistration::CmdRegistration(const char* name,
                       int min_args,
                       int max_args,

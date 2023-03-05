@@ -2,6 +2,7 @@
 
 #include <engine/types.h>
 
+#include <EASTL/span.h>
 #include <EASTL/vector.h>
 
 namespace console
@@ -9,7 +10,7 @@ namespace console
   class CmdRegistration
   {
     friend class Manager;
-    using Cb = void(*)(eastl::vector<string>);
+    using Cb = void(*)(eastl::span<string_view>);
 
     public:
       CmdRegistration(const char* name,
@@ -34,3 +35,5 @@ namespace console
 }
 
 #include "cmd.inc.hpp"
+
+#define CONSOLE_CMD(name, min_args, max_args, cb) console::CmdRegistration cmdReg ## __LINE__(name, min_args, max_args, cb)

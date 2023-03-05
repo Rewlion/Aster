@@ -1,6 +1,7 @@
 #include "engine.h"
 
 #include <engine/assets/assets_manager.h>
+#include <engine/console/console.h>
 #include <engine/ecs/ecs.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gui/gui.h>
@@ -44,6 +45,8 @@ namespace Engine
 
     Render::world_render.init();
     gui::manager.init();
+
+    console::init();
   }
 
   void start_tick()
