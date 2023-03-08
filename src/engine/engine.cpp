@@ -8,6 +8,7 @@
 #include <engine/input/events.h>
 #include <engine/input/input.h>
 #include <engine/level.h>
+#include <engine/render/imgui.h>
 #include <engine/render/world_render.h>
 #include <engine/settings.h>
 #include <engine/tfx/tfx.h>
@@ -43,6 +44,7 @@ namespace Engine
 
     load_level(settings->getText("init_level") );
 
+    Render::ImGuiManager::init();
     Render::world_render.init();
     gui::manager.init();
 
@@ -62,6 +64,7 @@ namespace Engine
       gui::manager.tick();
 
       const CameraData camera = get_camera();
+      Render::ImGuiManager::tick();
       Render::world_render.render(camera);
     }
   }

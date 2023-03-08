@@ -2,6 +2,8 @@
 
 #include <imgui/imgui.h>
 
+#include <engine/window.h>
+
 namespace Engine::Render
 {
   class ImGuiGlobalWindowRegistration
@@ -13,7 +15,8 @@ namespace Engine::Render
                                     DrawCb cb,
                                     ImGuiWindowFlags flags);
 
-      static void drawAllWindows();
+      static
+      void drawAllWindows();
 
     private:
       static ImGuiGlobalWindowRegistration* m_List;
@@ -22,6 +25,31 @@ namespace Engine::Render
       const char* m_Name;
       DrawCb m_Cb;
       ImGuiWindowFlags m_Flags;
+  };
+
+  class ImGuiManager: public Window::IWndProcHandler
+  {
+    public:
+      static
+      void init();
+
+      static
+      void destroy();
+
+      virtual
+      void handleWndEvent(void* hwnd,
+                          unsigned int msg,
+                          unsigned long long wParam,
+                          long long param) override;
+
+      static void tick();
+
+    private:
+      ImGuiManager();
+      ~ImGuiManager();
+
+    private:
+      static ImGuiManager* m_Mngr;
   };
 
 }

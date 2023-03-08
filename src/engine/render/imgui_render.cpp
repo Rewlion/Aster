@@ -5,20 +5,12 @@
 #include <engine/tfx/tfx.h>
 #include <engine/window.h>
 
-#include <imgui/imgui_impl_win32.h>
-
 #include <memory>
 
 namespace Engine::Render
 {
   void ImGuiRender::init()
   {
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-
-    ImGui::StyleColorsDark();
-    ImGui_ImplWin32_Init(*(void**)Engine::Window::get_hwnd());
-
     ImGuiIO& io = ImGui::GetIO();
 
     unsigned char* pixels;
@@ -51,18 +43,11 @@ namespace Engine::Render
 
   ImGuiRender::~ImGuiRender()
   {
-    ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
   }
 
   void ImGuiRender::beforeRender(gapi::CmdEncoder& encoder)
   {
     m_FrameGC.nextFrame();
-
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
-    ImGuiGlobalWindowRegistration::drawAllWindows();
-    ImGui::Render();
 
     ImDrawData* drawData = ImGui::GetDrawData();
     if (drawData == nullptr || drawData->TotalVtxCount <= 0)

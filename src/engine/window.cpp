@@ -3,16 +3,30 @@
 #include <engine/settings.h>
 #include <engine/assert.h>
 
-#include <imgui/imgui_impl_win32.h>
+#include <EASTL/vector.h>
 
 #include <Windows.h>
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 namespace Engine::Window
 {
+  static eastl::vector<IWndProcHandler*> wnd_proc_handlers;
+
   HWND CURRENT_WINDOW_HANDLER = 0;
   int2 window_size = {0,0};
+
+  void reg_wnd_proc_handler(IWndProcHandler* h)
+  {
+    const auto it = eastl::find(wnd_proc_handlers.begin(), wnd_proc_handlers.end(), h);
+    if (it != wnd_proc_handlers.end())
+      logerror("trying to register already registered WndProcHandler");
+    else
+      wnd_proc_handlers.push_back(h);
+  }
+
+  void unreg_wnd_proc_handler(IWndProcHandler* h)
+  {
+    wnd_proc_handlers.erase(eastl::find(wnd_proc_handlers.begin(), wnd_proc_handlers.end(), h));
+  }
 
   void* get_hwnd()
   {
@@ -50,7 +64,9 @@ namespace Engine::Window
 
   static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   {
-    ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam);
+    for (auto* handler: wnd_proc_handlers)
+      handler->handleWndEvent(hwnd, uMsg, wParam, lParam);
+
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
   }
 
