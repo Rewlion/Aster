@@ -33,6 +33,14 @@ namespace Utils
         batch |= 0x1ull << j;
       }
 
+      inline void set(const size_t i, const bool val)
+      {
+        if (val)
+          set(i);
+        else
+          reset(i);
+      }
+
       inline void reset(const size_t i)
       {
         ASSERT_FMT(i < N, "{} >= {} (i >= container size)", i, N);
@@ -41,10 +49,10 @@ namespace Utils
         batch &= ~(0x1ull << j);
       }
 
-      inline bool isSet(const size_t i)
+      inline bool isSet(const size_t i) const
       {
         ASSERT_FMT(i < N, "{} >= {} (i >= container size)", i, N);
-        BatchType& batch = getBatch(i);
+        const BatchType& batch = getBatch(i);
         const size_t j = getPosInBatch(i);
         size_t bit = 0x1ull & (batch >> j);
 
@@ -58,7 +66,12 @@ namespace Utils
         return batches[batchId];
       }
 
-      size_t getPosInBatch(const size_t i)
+      const BatchType& getBatch(const size_t i) const
+      {
+        return const_cast<BitCapacity&>(*this).getBatch(i);
+      }
+
+      size_t getPosInBatch(const size_t i) const
       {
         return i % batchSize;
       }

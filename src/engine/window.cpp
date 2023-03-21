@@ -64,8 +64,23 @@ namespace Engine::Window
 
   static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   {
+    UINT engineMsg = uMsg;
+    switch (uMsg)
+    {
+      case WM_KEYDOWN:     engineMsg = WND_MSG_KEY_DOWN;                           break;
+      case WM_KEYUP:       engineMsg = WND_MSG_KEY_UP;                             break;
+      case WM_LBUTTONDOWN: engineMsg = WND_MSG_BMOUSE_DOWN;  wParam = KEY_LBMOUSE; break;
+      case WM_LBUTTONUP:   engineMsg = WND_MSG_BMOUSE_UP;    wParam = KEY_LBMOUSE; break;
+      case WM_RBUTTONDOWN: engineMsg = WND_MSG_BMOUSE_DOWN;  wParam = KEY_RBMOUSE; break;
+      case WM_RBUTTONUP:   engineMsg = WND_MSG_BMOUSE_UP;    wParam = KEY_RBMOUSE; break;
+      case WM_MBUTTONDOWN: engineMsg = WND_MSG_BMOUSE_DOWN;  wParam = KEY_MBMOUSE; break;
+      case WM_MBUTTONUP:   engineMsg = WND_MSG_BMOUSE_UP;    wParam = KEY_MBMOUSE; break;
+      case WM_MOUSEMOVE:   engineMsg = WND_MSG_MOUSE_MOVE;                         break;
+      default: return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
+
     for (auto* handler: wnd_proc_handlers)
-      handler->handleWndEvent(hwnd, uMsg, wParam, lParam);
+      handler->handleWndEvent(hwnd, engineMsg, wParam, lParam);
 
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
   }

@@ -12,8 +12,8 @@
 
 static const bool has_input(const char* action)
 {
-  const auto status = Engine::Input::manager.getButtonStatus(str_hash(action));
-  return status == Engine::Input::ButtonStatus::Press;
+  const int id = Engine::Input::InputManager::getButtonActionId(action);
+  return Engine::Input::InputManager::getButtonActionState(id);
 }
 
 ECS_SYSTEM()
@@ -54,7 +54,8 @@ static void camera_rotation(
   float3& forward
 )
 {
-  const float2 delta = Engine::Input::manager.getAnalogStatus(str_hash("CameraRotation"));
+  const int id = Engine::Input::InputManager::getAnalogActionId("CameraRotation");
+  const float2 delta = Engine::Input::InputManager::getAnalogActionData(id) * int2{1,-1};
   camera_rotations += delta * 0.25f;
 
   camera_rotations.y = glm::clamp(camera_rotations.y, -90.0f, 90.0f);

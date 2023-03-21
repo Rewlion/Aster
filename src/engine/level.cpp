@@ -80,7 +80,7 @@ namespace Engine
         add_entity(entityBlk);
 
     const string actionSet = blk.getText("input.initial_action_set");
-    Input::manager.setActionSet(str_hash(actionSet.c_str()));
+    Input::InputManager::enableActionSet(actionSet, true);
 
     const DataBlock* sceneBlk = blk.getChildBlock("scene");
     ::Engine::scene.loadScene(*sceneBlk);

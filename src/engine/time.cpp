@@ -53,6 +53,11 @@ namespace Engine::Time
     return last_hires_clock - start_hires_clock;
   }
 
+  uint64_t get_time_ms_since_start()
+  {
+    return (last_hires_clock * 1000) / perf_counter_frequency;
+  }
+
   float get_sec_since_start()
   {
     return convert_to_sec(get_time_since_start());

@@ -1,57 +1,58 @@
-ControllerMappings
+Bindings
 {
-  Keyboard
+  MoveLeft
   {
-    Actions
-    {
-      FlyingCamera
-      {
-        Button
-        {
-          int MoveLeft = 65
-          int MoveRight = 68
-          int MoveForward = 87
-          int MoveBackward = 83
-          int MoveUp = 32
-          int MoveDown = 67
-        }
-      }
-
-      Gui{
-      }
-    }
+    int device = 0
+    int button = 35
   }
 
-  Mouse
+  MoveRight
   {
-    Actions
-    {
-      FlyingCamera
-      {
-        Analog
-        {
-          CameraRotation
-          {
-            int device = 0
-          }
-        }
-      }
+    int device = 0
+    int button = 38
+  }
 
-      Gui
-      {
-        Button
-        {
-          int MouseClick = 1
-        }
-        Analog
-        {
-          MouseMove
-          {
-            bool absoluteMouse = yes
-            int device = 0
-          }
-        }
-      }
-    }
+  MoveForward
+  {
+    int device = 0
+    int button = 57
+  }
+
+  MoveBackward
+  {
+    int device = 0
+    int button = 53
+  }
+
+  MoveUp
+  {
+    int device = 0
+    int button = 10
+  }
+
+  MoveDown
+  {
+    int device = 0
+    int button = 22
+  }
+
+  CameraRotation
+  {
+    int device = 1
+    int x_axis = 0
+    int y_axis = 1
+  }
+
+  GuiMouseClick
+  {
+    int device = 1
+    int button = 0
+  }
+
+  GuiMouseMove
+  {
+    int device = 1
+    int x_axis = 0
+    int y_axis = 1
   }
 }

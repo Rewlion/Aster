@@ -1,4 +1,4 @@
-text input.initial_action_set = "Gui"
+text input.initial_action_set = "FlyingCamera"
 
 scene
 {

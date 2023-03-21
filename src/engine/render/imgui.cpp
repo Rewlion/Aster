@@ -57,7 +57,7 @@ namespace Engine::Render
                                     unsigned long long wParam,
                                     long long param)
   {
-    ImGui_ImplWin32_WndProcHandler((HWND)hwnd, msg, wParam, param);
+    //ImGui_ImplWin32_WndProcHandler((HWND)hwnd, msg, wParam, param);
   }
 
   ImGuiManager::ImGuiManager()

@@ -4,6 +4,25 @@
 
 namespace Engine::Window
 {
+  enum
+  {
+    WND_MSG_KEY_UP      = 1,
+    WND_MSG_KEY_DOWN    = 1 << 2,
+    WND_MSG_MOUSE_MOVE  = 1 << 3,
+    WND_MSG_BMOUSE_UP   = 1 << 4,
+    WND_MSG_BMOUSE_DOWN = 1 << 5,
+
+    WND_MSG_KEY_MASK       = WND_MSG_KEY_UP | WND_MSG_KEY_DOWN,
+    WND_MSG_MOUSE_KEY_MASK = WND_MSG_BMOUSE_UP | WND_MSG_BMOUSE_DOWN,
+  };
+
+  enum
+  {
+    KEY_LBMOUSE,
+    KEY_RBMOUSE,
+    KEY_MBMOUSE
+  };
+
   class IWndProcHandler
   {
     public:
@@ -11,7 +30,7 @@ namespace Engine::Window
       void handleWndEvent(void* hwnd,
                           unsigned int msg,
                           unsigned long long wParam,
-                          long long param) = 0;
+                          long long lParam) = 0;
   };
 
   void     reg_wnd_proc_handler(IWndProcHandler*);

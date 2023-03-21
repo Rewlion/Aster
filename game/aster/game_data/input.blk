@@ -1,50 +1,37 @@
-Actions
+ActionSets
 {
   FlyingCamera
   {
-    Button
+    MoveLeft @("button")
     {
-      MoveLeft
-      {
-      }
-      MoveRight
-      {
-      }
-      MoveForward
-      {
-      }
-      MoveBackward
-      {
-      }
-      MoveUp
-      {
-      }
-      MoveDown
-      {
-      }
     }
-
-    Analog
+    MoveRight @("button")
     {
-      CameraRotation
-      {
-      }
+    }
+    MoveForward @("button")
+    {
+    }
+    MoveBackward @("button")
+    {
+    }
+    MoveUp @("button")
+    {
+    }
+    MoveDown @("button")
+    {
+    }
+    CameraRotation @("joy_delta")
+    {
     }
   }
 
   Gui
   {
-    Button
+    GuiMouseClick @("button")
     {
-      MouseClick
-      {
-      }
     }
-    Analog
+    GuiMouseMove @("joy_move")
     {
-      MouseMove
-      {
-      }
     }
   }
 }

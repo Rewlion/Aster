@@ -8,40 +8,6 @@
 
 using namespace ecs;
 
-static void camera_rotation_internal(ComponentsAccessor& accessor)
-{
-  const float2& camera_rotations = accessor.get<float2>(compile_ecs_name_hash("camera_rotations"));
-  camera_rotation(camera_rotations);
-}
-
-
-static SystemRegistration camera_rotation_registration(
-  camera_rotation_internal,
-  {
-    DESCRIBE_QUERY_COMPONENT("camera_rotations", float2)
-  },
-  "camera_rotation"
-);
-
-
-static void input_handler_internal(Event* event, ComponentsAccessor& accessor)
-{
-  ButtonActionInputEvent* casted_event = reinterpret_cast<ButtonActionInputEvent*>(event);
-
-  input_handler(*casted_event);
-}
-
-
-static EventSystemRegistration input_handler_registration(
-  input_handler_internal,
-  compile_ecs_name_hash("ButtonActionInputEvent"),
-  {
-
-  },
-  "input_handler"
-);
-
-
 static void system_test_multiple_templates_internal(ComponentsAccessor& accessor)
 {
   const float& test_float = accessor.get<float>(compile_ecs_name_hash("test_float"));

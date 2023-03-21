@@ -5,8 +5,9 @@
 #include <engine/ecs/ecs.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gui/gui.h>
-#include <engine/input/events.h>
+#include <engine/input/drivers/drivers.h>
 #include <engine/input/input.h>
+#include <engine/input/input_router.h>
 #include <engine/level.h>
 #include <engine/render/imgui.h>
 #include <engine/render/world_render.h>
@@ -21,7 +22,13 @@ namespace Engine
 {
   void register_engine_events()
   {
-    ecs::get_registry().registerEvent<ButtonActionInputEvent>();
+  }
+
+  void init_input()
+  {
+    Input::init_drivers();
+    Input::InputRouter::init();
+    Input::InputManager::init();
   }
 
   void init()
@@ -34,7 +41,8 @@ namespace Engine
 
     gapi::init();
     assets_manager.init();
-    Input::manager.init();
+    
+    init_input();
 
     const DataBlock* settings = Engine::get_app_settings();
     tfx::load_materials_bin(settings->getChildBlock("graphics")->getText("materials_bin"));
@@ -58,7 +66,7 @@ namespace Engine
       Time::tick();
 
       Window::poll_wnd_messages();
-      Input::manager.processInput();
+      Input::InputManager::processInput();
 
       ecs::get_registry().tick();
       gui::manager.tick();
