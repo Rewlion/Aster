@@ -73,7 +73,6 @@ namespace Engine::Input
       const int x = GET_X_LPARAM(lParam);
       const int y = GET_Y_LPARAM(lParam);
       POINT point{GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
-      ScreenToClient((HWND)hwnd, &point);
 
       const int2 oldPos = m_Ms.getPointerPos();
       const int2 newPos = int2{point.x, point.y};

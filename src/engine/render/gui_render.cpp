@@ -106,7 +106,7 @@ namespace Engine::Render
 
   void GuiRender::render(gapi::CmdEncoder& encoder)
   {
-    for (auto* elem: gui::manager.getElemsToRender())
+    for (auto* elem: gui::Gui::getElemsToRender())
       renderElement(*elem, encoder);
   }
 }

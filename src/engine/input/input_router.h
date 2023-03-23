@@ -21,17 +21,17 @@ namespace Engine::Input
       virtual
       auto onMouseButtonStateChanged(const IPointer& device,
                                      const int key, 
-                                     const bool pressed) -> InputRouterProcessStatus = 0;
+                                     const bool pressed) -> InputRouterProcessStatus { return InputRouterProcessStatus::ProcessFurther; }
 
       virtual
       auto onMouseMove(const IPointer& device,
                        const int2 new_pos,
-                       const int2 delta) -> InputRouterProcessStatus = 0;
+                       const int2 delta) -> InputRouterProcessStatus { return InputRouterProcessStatus::ProcessFurther; }
 
       virtual
       auto onKeyStateChanged(const IKeyboard& device,
                              const int key,
-                             const bool pressed) -> InputRouterProcessStatus = 0;
+                             const bool pressed) -> InputRouterProcessStatus { return InputRouterProcessStatus::ProcessFurther; }
   };
 
   struct InputRouterPrioritySort

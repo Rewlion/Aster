@@ -1,5 +1,7 @@
 #include "gui.h"
 
+#include <engine/assert.h>
+#include <engine/input/drivers/buttons.h>
 #include <engine/log.h>
 #include <engine/qjs/value.hpp>
 #include <engine/utils/fs.h>
@@ -7,26 +9,12 @@
 
 namespace Engine::gui
 {
-  Gui manager;
+  Gui* Gui::m_This = nullptr;
 
   Gui::Gui()
-    : m_Scene(m_RtState, m_Behaviors)
   {
-  }
+    Input::InputRouter::registerListener(this);
 
-  void Gui::loadRootUiScript()
-  {
-    const char* srcFile = "scripts/ui/main.js";
-    loginfo("ui: loading root ui from {}", srcFile);
-
-    const string src = Utils::read_file_as_string(srcFile);
-    m_Vm.pushCurrentFileName(srcFile);
-    m_Vm.eval(src);
-  }
-
-  void Gui::init()
-  {
-    loginfo("gui initialization");
     m_Vm.init();
     m_Vm.setUserState(&m_RtState);
     loadRootUiScript();
@@ -48,15 +36,61 @@ namespace Engine::gui
     m_Scene.initFromJS(rootUI);
   }
 
+  Gui::~Gui(){
+    Input::InputRouter::unregisterListener(this);
+  }
+
+  void Gui::loadRootUiScript()
+  {
+    const char* srcFile = "scripts/ui/main.js";
+    loginfo("ui: loading root ui from {}", srcFile);
+
+    const string src = Utils::read_file_as_string(srcFile);
+    m_Vm.pushCurrentFileName(srcFile);
+    m_Vm.eval(src);
+  }
+
+  void Gui::init()
+  {
+    ASSERT(m_This == nullptr);
+    loginfo("gui initialization");
+    m_This = new Gui;
+  }
+
+  void Gui::destroy()
+  {
+    ASSERT(m_This != nullptr);
+    delete m_This;
+    m_This = nullptr;
+  }
+
+  auto Gui::onMouseButtonStateChanged(const Input::IPointer& device,
+                                      const int key, 
+                                      const bool pressed) -> Input::InputRouterProcessStatus
+  {
+    if (key == Input::BKEY_LBMOUSE)
+      setMouseClickState(pressed);
+
+    return Input::InputRouterProcessStatus::ProcessFurther;
+  }
+
+  auto Gui::onMouseMove(const Input::IPointer& device,
+                        const int2 new_pos,
+                        const int2 delta) -> Input::InputRouterProcessStatus
+  {
+    setMouseCursorPos(new_pos);
+    return Input::InputRouterProcessStatus::ProcessFurther;
+  }
+
   void Gui::tick()
   {
-    if (m_RtState.reactStorage.hasDirtyStates())
+    if (m_This->m_RtState.reactStorage.hasDirtyStates())
     {
-      m_Scene.rebuildDirtyElems(m_RtState.reactStorage.getDirtyStates());
-      m_RtState.reactStorage.clearDirtyStates();
+      m_This->m_Scene.rebuildDirtyElems(m_This->m_RtState.reactStorage.getDirtyStates());
+      m_This->m_RtState.reactStorage.clearDirtyStates();
     }
 
-    m_RtState.timers.tick();
+    m_This->m_RtState.timers.tick();
   }
 
   void Gui::setMouseCursorPos(const int2 pos)

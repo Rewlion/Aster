@@ -54,7 +54,7 @@ namespace Engine
 
     Render::ImGuiManager::init();
     Render::world_render.init();
-    gui::manager.init();
+    gui::Gui::init();
 
     console::init();
   }
@@ -69,7 +69,7 @@ namespace Engine
       Input::InputManager::processInput();
 
       ecs::get_registry().tick();
-      gui::manager.tick();
+      gui::Gui::tick();
 
       const CameraData camera = get_camera();
       Render::ImGuiManager::tick();
