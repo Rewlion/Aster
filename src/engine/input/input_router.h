@@ -16,7 +16,8 @@ namespace Engine::Input
   class IInputRouterListener
   {
     public:
-      virtual int getInputRouterPriority() = 0;
+      virtual
+      auto getInputRouterPriority() -> int = 0;
 
       virtual
       auto onMouseButtonStateChanged(const IPointer& device,

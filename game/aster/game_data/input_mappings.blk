@@ -3,25 +3,25 @@ Bindings
   MoveLeft
   {
     int device = 0
-    int button = 35
+    int button = 34
   }
 
   MoveRight
   {
     int device = 0
-    int button = 38
+    int button = 37
   }
 
   MoveForward
   {
     int device = 0
-    int button = 57
+    int button = 56
   }
 
   MoveBackward
   {
     int device = 0
-    int button = 53
+    int button = 52
   }
 
   MoveUp
@@ -33,7 +33,7 @@ Bindings
   MoveDown
   {
     int device = 0
-    int button = 22
+    int button = 21
   }
 
   CameraRotation

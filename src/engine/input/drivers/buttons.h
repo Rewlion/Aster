@@ -26,7 +26,6 @@ namespace Engine::Input
     BKEY_RIGHT,
     BKEY_DOWN,
     BKEY_SELECT,
-    BKEY_PRINT,
     BKEY_PRINTSCREEN,
     BKEY_LCTRL,
     BKEY_RCTRL,
@@ -81,12 +80,12 @@ namespace Engine::Input
     BKEY_NUMPAD7,
     BKEY_NUMPAD8,
     BKEY_NUMPAD9,
-    BKEY_MULTIPLY,
-    BKEY_ADD,
-    BKEY_SEPARATOR,
-    BKEY_SUBTRACT,
-    BKEY_DECIMAL,
-    BKEY_DIVIDE,
+    BKEY_NUMPAD_MULTIPLY,
+    BKEY_NUMPAD_ADD,
+    BKEY_NUMPAD_SEPARATOR,
+    BKEY_NUMPAD_SUBTRACT,
+    BKEY_NUMPAD_DECIMAL,
+    BKEY_NUMPAD_DIVIDE,
     BKEY_F1,
     BKEY_F2,
     BKEY_F3,
@@ -111,9 +110,13 @@ namespace Engine::Input
     BKEY_F22,
     BKEY_F23,
     BKEY_F24,
-    BKEY_KEYBOARD_COUNT = BKEY_F24,
-  
-    BKEY_EXTRA
+    BKEY_MINUS,
+    BKEY_EQUAL,
+    BKEY_COMMA,
+    BKEY_PERIOD,
+
+    BKEY_KEYBOARD_COUNT,
+    BKEY_EXTRA,
   };
 
   enum MouseButtons

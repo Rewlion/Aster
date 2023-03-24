@@ -3,6 +3,7 @@
 #include <imgui/imgui.h>
 
 #include <engine/window.h>
+#include <engine/input/input_router.h>
 
 namespace Engine::Render
 {
@@ -27,22 +28,31 @@ namespace Engine::Render
       ImGuiWindowFlags m_Flags;
   };
 
-  class ImGuiManager: public Window::IWndProcHandler
+  class ImGuiManager: public Input::IInputRouterListener
   {
     public:
+      auto getInputRouterPriority() -> int override { return 0; }
+
+      auto onMouseButtonStateChanged(const Input::IPointer& device,
+                                     const int key, 
+                                     const bool pressed) -> Input::InputRouterProcessStatus override;
+
+      auto onMouseMove(const Input::IPointer& device,
+                       const int2 new_pos,
+                       const int2 delta) -> Input::InputRouterProcessStatus override;
+
+      auto onKeyStateChanged(const Input::IKeyboard& device,
+                             const int key,
+                             const bool pressed) -> Input::InputRouterProcessStatus override;
+
       static
       void init();
 
       static
       void destroy();
 
-      virtual
-      void handleWndEvent(void* hwnd,
-                          unsigned int msg,
-                          unsigned long long wParam,
-                          long long param) override;
-
-      static void tick();
+      static
+      void tick();
 
     private:
       ImGuiManager();
