@@ -39,10 +39,12 @@ namespace Engine::gui
       RuntimeState& m_RtState;
       BehaviorsStorage& m_Behaviors;
       Element::Ptr m_Root;
+      eastl::vector<Element*> m_ElemsWithCursor;
       eastl::vector<Element*> m_InputElems;
       eastl::vector<Element*> m_RenderElems;
       float2 m_ScreenSize;
 
-      float2 m_MousePos;
+      float2 m_CursorPos;
+      bool m_IsInsideCursorArea;
   };
 }

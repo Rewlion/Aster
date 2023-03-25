@@ -105,6 +105,7 @@ namespace Engine::gui
     params.textHalign = obj.getIntEnumOr("textHalign", HorAlignType::None);
     params.textValign = obj.getIntEnumOr("textValign", VerAlignType::None);
     params.fontSize = getFontSize(obj);
+    params.cursor = obj.getBoolOr("cursor", false);
 
     return params;
   }

@@ -12,6 +12,9 @@ namespace Engine::gui
   Scene::Scene(RuntimeState& state, BehaviorsStorage& behaviors)
     : m_RtState(state)
     , m_Behaviors(behaviors)
+    , m_ScreenSize(0.0, 0.0)
+    , m_CursorPos(0.0, 0.0)
+    , m_IsInsideCursorArea(false)
   {
   }
 
@@ -89,8 +92,26 @@ namespace Engine::gui
 
   void Scene::setMouseCursorPos(const float2 pos)
   {
-    float2 previousPos = m_MousePos;
-    m_MousePos = pos;
+    float2 previousPos = m_CursorPos;
+
+    bool insideCursorArea = false;
+    for (Element* e: m_ElemsWithCursor)
+    {
+      if (e->isInside(pos))
+      {
+        insideCursorArea = true;
+        break;
+      }
+    }
+
+    if (m_IsInsideCursorArea != insideCursorArea)
+    {
+      Window::show_cursor(insideCursorArea);
+      m_IsInsideCursorArea = insideCursorArea;
+    }
+
+    m_CursorPos = insideCursorArea ? pos : float2{-1.0, 1.0};
+
     processMouseEvent(BhvStateChange::OnMouseMove);
   }
 
@@ -115,7 +136,7 @@ namespace Engine::gui
     {
       for (ElemBehavior& bhv: elem->dynamicParams.behaviors)
         if (bhv->getInputSupport() & BHV_INPUT_MOUSE)
-          res = (BhvResult) (res | bhv->onMouseStateChange(*elem, state, m_MousePos, res));
+          res = (BhvResult) (res | bhv->onMouseStateChange(*elem, state, m_CursorPos, res));
 
       if (res & BHV_RES_PROCESSED)
         break;
@@ -124,6 +145,7 @@ namespace Engine::gui
 
   void Scene::rebuildStackedElems()
   {
+    m_ElemsWithCursor.clear();
     m_InputElems.clear();
     m_RenderElems.clear();
     rebuildStackedElemsInternal();
@@ -148,6 +170,9 @@ namespace Engine::gui
       if (e->params.render != RenderType::None)
         m_RenderElems.emplace_back(e);
       
+      if (e->params.cursor)
+        m_ElemsWithCursor.emplace_back(e);
+      
       for (const auto& bhv: e->dynamicParams.behaviors)
       {
         if (bhv->getInputSupport() != BHV_INPUT_NONE)
@@ -166,6 +191,7 @@ namespace Engine::gui
         [](Element* l, Element* r) { return l->zOrder > r->zOrder; });
     };
 
+    sortElems(m_ElemsWithCursor);
     sortElems(m_InputElems);
     sortElems(m_RenderElems);
   }

@@ -99,6 +99,7 @@ namespace Engine::gui
       HorAlignType       textHalign;
       VerAlignType       textValign;
       PointValue         fontSize;
+      bool               cursor;
     };
 
     struct DynamicParams

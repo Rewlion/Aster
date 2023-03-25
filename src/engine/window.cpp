@@ -122,6 +122,8 @@ namespace Engine::Window
       NULL        // Additional application data
     );
 
+    ShowCursor(FALSE);
+
     ASSERT(CURRENT_WINDOW_HANDLER != 0);
     ShowWindow(CURRENT_WINDOW_HANDLER, SW_SHOWDEFAULT);
   }
@@ -158,6 +160,9 @@ namespace Engine::Window
 
   void show_cursor(const bool v)
   {
-    ShowCursor(v);
+    if (v)
+      while(ShowCursor(TRUE) <= 0);
+    else
+      while(ShowCursor(FALSE) >= 0);
   }
 }
