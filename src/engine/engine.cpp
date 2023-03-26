@@ -3,6 +3,7 @@
 #include <engine/assets/assets_manager.h>
 #include <engine/console/console.h>
 #include <engine/ecs/ecs.h>
+#include <engine/ecs/ecs_events.h>
 #include <engine/editor/editor.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gui/gui.h>
@@ -23,6 +24,7 @@ namespace Engine
 {
   void register_engine_events()
   {
+    ecs::get_registry().registerEvent<ecs::OnEntityCreated>();
   }
 
   void init_input()

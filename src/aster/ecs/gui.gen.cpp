@@ -8,6 +8,24 @@
 
 using namespace ecs;
 
+static void system_init_internal(Event* event, ComponentsAccessor& accessor)
+{
+  OnEntityCreated* casted_event = reinterpret_cast<OnEntityCreated*>(event);
+  float2 test_float2 = accessor.get<float2>(compile_ecs_name_hash("test_float2"));
+  system_init(*casted_event, test_float2);
+}
+
+
+static EventSystemRegistration system_init_registration(
+  system_init_internal,
+  compile_ecs_name_hash("OnEntityCreated"),
+  {
+    DESCRIBE_QUERY_COMPONENT("test_float2", float2)
+  },
+  "system_init"
+);
+
+
 static void system_test_multiple_templates_internal(ComponentsAccessor& accessor)
 {
   const float& test_float = accessor.get<float>(compile_ecs_name_hash("test_float"));

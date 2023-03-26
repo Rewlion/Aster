@@ -1,3 +1,4 @@
+#include <engine/ecs/ecs_events.h>
 #include <engine/ecs/macros.h>
 #include <engine/gui/gui.h>
 #include <engine/input/input.h>
@@ -18,6 +19,12 @@
 //   if (evt.action == str_hash("MouseClick"))
 //     Engine::gui::manager.setMouseClickState(evt.status == Engine::Input::ButtonStatus::Press);
 // }
+
+ECS_EVENT_SYSTEM()
+static void system_init(ecs::OnEntityCreated& evt, const float2 test_float2)
+{
+  volatile bool f = false;
+}
 
 ECS_SYSTEM()
 static void system_test_multiple_templates(const float& test_float, const string& test_str, const float2 test_float2, const float3 test_float3)

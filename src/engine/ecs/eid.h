@@ -15,6 +15,7 @@ namespace ecs
       EntityId(uint64_t id);
 
       auto operator=(const EntityId& r) -> const EntityId&;
+      auto operator==(const EntityId& r) const -> bool;
 
       auto getId() const -> uint64_t;
       auto getGeneration() const -> uint64_t;

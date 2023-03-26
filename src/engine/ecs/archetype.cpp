@@ -57,6 +57,21 @@ namespace ecs
     }
   }
 
+  void Archetypes::accessEntityInArchetype(const archetype_id_t arch_id,
+                                        const chunk_id_t chunk_id,
+                                        const chunk_eid_t chunk_eid,
+                                        const eastl::function<void(ComponentsAccessor&)>& cb)
+  {
+    const auto& offsets = getComponentOffsets(arch_id);
+    auto& chunks = getEntityStorage(arch_id).getChunks();
+    const entity_size_t entitySize = getEntitySize(arch_id);
+    const auto& nameToCompMap = getNameToComponentsMap(arch_id);
+
+    std::byte* entityData = chunks[chunk_id].data + entitySize * chunk_eid;
+    ComponentsAccessor accessor{entityData, offsets.data(), nameToCompMap};
+    cb(accessor);
+  }
+
   auto Archetypes::findArchetypesWithComponents(const eastl::vector<registered_component_id_t>& comps)
     -> eastl::vector<archetype_id_t>
   {

@@ -28,6 +28,8 @@ namespace ecs
 
       template<BasedFromEcsEvent T>
       void broadcastEvent(T&& event);
+      template<BasedFromEcsEvent T>
+      void sendEvent(T&& event, const EntityId eid);
 
       template<BasedFromEcsEvent T>
       void registerEvent();
@@ -44,6 +46,8 @@ namespace ecs
                                const name_hash_t event,
                                const QueryComponents& components);
 
+      void processDirectEvent(Event*);
+      void processBroadcastEvent(Event*);
       void processEvents();
 
       auto findDesiredArchetypes(const QueryComponents&) -> eastl::vector<archetype_id_t>;
@@ -57,6 +61,7 @@ namespace ecs
       struct EntityInfo
       {
         EntityId eid;
+        archetype_id_t archId;
         chunk_id_t chunkId;
         chunk_eid_t chunkEid;
       };
@@ -72,6 +77,38 @@ namespace ecs
       
       EventsQueue m_EventsQueue;
   };
-}
 
-#include "registry.inc.hpp"
+  template<BasedFromEcsEvent T>
+  void Registry::broadcastEvent(T&& event)
+  {
+    if (m_EventHandleQueries.find(event.eventNameHash) != m_EventHandleQueries.end())
+      m_EventsQueue.pushEvent(eastl::forward<T>(event));
+    else
+      logerror("can't broadcast event `{}`, it is not registered.", event.eventNameHash);
+  }
+
+  template<BasedFromEcsEvent T>
+  void Registry::sendEvent(T&& event, const EntityId eid)
+  {
+    event.receiver = eid;
+    if (m_EventHandleQueries.find(event.eventNameHash) != m_EventHandleQueries.end())
+      m_EventsQueue.pushEvent(eastl::forward<T>(event));
+    else
+      logerror("can't send event `{}`, it is not registered.", event.eventNameHash);
+  }
+
+  template<BasedFromEcsEvent T>
+  void Registry::registerEvent()
+  {
+    loginfo("ecs: registering event `{}`", T::eventName);
+    const name_hash_t hash = compile_ecs_name_hash(T::eventName);
+
+    ASSERT_FMT(m_EventHandleQueries.find(hash) == m_EventHandleQueries.end(),
+      "ecs: can't register a new event `{}` it's already registered", T::eventName);
+
+    m_EventHandleQueries.insert({
+      hash,
+      eastl::vector<RegisteredEventQueryInfo>{}
+    });
+  }
+}

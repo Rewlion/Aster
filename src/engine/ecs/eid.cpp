@@ -27,6 +27,11 @@ namespace ecs
     return *this;
   }
 
+  auto EntityId::operator==(const EntityId& r) const -> bool
+  {
+    return (id == r.id) && (generation == r.generation);
+  }
+
   auto EntityId::getId() const -> uint64_t
   {
     return id;

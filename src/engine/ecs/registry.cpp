@@ -1,5 +1,6 @@
 #include "registry.h"
 #include "components_accessor.h"
+#include "ecs_events.h"
 
 #include <engine/log.h>
 #include <engine/utils/string.h>
@@ -107,10 +108,13 @@ namespace ecs
       newEid.getId(), 
       EntityInfo{
         .eid = newEid,
+        .archId = archId,
         .chunkId = chunkId,
         .chunkEid = chunkEid
       }
     ));
+
+    sendEvent(OnEntityCreated{}, newEid);
 
     return newEid;
   }
@@ -228,22 +232,54 @@ namespace ecs
         queryArchetype(archetypeId, query.cb);
   }
 
+  void Registry::processDirectEvent(Event* event)
+  {
+    eastl::vector<RegisteredEventQueryInfo>& queries = m_EventHandleQueries[event->eventNameHash];
+
+    const auto it = m_EntityInfosMap.find(event->receiver.getId());
+    if ((it != m_EntityInfosMap.end()) && (it->second.eid == event->receiver))
+    {
+      const archetype_id_t archetypeId = it->second.archId;
+      for (const auto& query: queries)
+      {
+        const bool hasValidArch = eastl::find(query.archetypes.begin(), query.archetypes.end(), archetypeId)
+                                    != query.archetypes.end();
+        if (hasValidArch)
+        {
+          m_Archetypes.accessEntityInArchetype(
+            archetypeId,it->second.chunkId, it->second.chunkEid,
+            [cb = query.eventCb, event](ComponentsAccessor& comps)
+            {
+              cb(event, comps);
+            });
+        }
+      }
+    }
+  }
+
+  void Registry::processBroadcastEvent(Event* event)
+  {
+    eastl::vector<RegisteredEventQueryInfo>& queries = m_EventHandleQueries[event->eventNameHash];
+    for(const auto& query: queries)
+    {
+      if (!query.archetypes.empty())
+      {
+        for(const archetype_id_t archetypeId: query.archetypes)
+          queryArchetypeByEvent(event, archetypeId, query.eventCb);
+      }
+      else
+        processEventWithoutArchetypes(event, query.eventCb);
+    }
+  }
+
   void Registry::processEvents()
   {
     while (Event* event = m_EventsQueue.popEvent())
     {
-      eastl::vector<RegisteredEventQueryInfo>& queries = m_EventHandleQueries[event->eventNameHash];
-
-      for(const auto& query: queries)
-      {
-        if (!query.archetypes.empty())
-        {
-          for(const archetype_id_t archetypeId: query.archetypes)
-            queryArchetypeByEvent(event, archetypeId, query.eventCb);
-        }
-        else
-          processEventWithoutArchetypes(event, query.eventCb);
-      }
+      if (event->receiver.isValid())
+        processDirectEvent(event);
+      else
+        processBroadcastEvent(event);
 
       event->_destr(event);
     }

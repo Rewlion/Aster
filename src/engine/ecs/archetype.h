@@ -56,6 +56,11 @@ namespace ecs
       void forEachEntityInArchetype(const archetype_id_t arch_id,
                                     const eastl::function<void(ComponentsAccessor&)>& cb);
 
+      void accessEntityInArchetype(const archetype_id_t arch_id,
+                                   const chunk_id_t chunk_id,
+                                   const chunk_eid_t chunk_eid,
+                                   const eastl::function<void(ComponentsAccessor&)>& cb);
+
       auto findArchetypesWithComponents(const eastl::vector<registered_component_id_t>& comps)
         -> eastl::vector<archetype_id_t>;
 
