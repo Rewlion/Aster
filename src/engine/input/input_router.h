@@ -38,11 +38,11 @@ namespace Engine::Input
                              const bool pressed) -> InputRouterProcessStatus { return InputRouterProcessStatus::ProcessFurther; }
   };
 
-  class InputRouter : public IPointerListener, IKeyboardListener
+  class Router : public IPointerListener, IKeyboardListener
   {
     public:
-      InputRouter();
-      ~InputRouter();
+      Router();
+      ~Router();
 
       void onMouseButtonStateChanged(const IPointer& device,
                                      const int key,
@@ -69,7 +69,7 @@ namespace Engine::Input
       void destroy();
 
     private:
-      static InputRouter* m_Router;
+      static Router* m_Router;
 
       struct RoutingComparator
       {

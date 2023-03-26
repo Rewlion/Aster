@@ -27,7 +27,7 @@ namespace Engine
   void init_input()
   {
     Input::init_drivers();
-    Input::InputRouter::init();
+    Input::Router::init();
     Input::Manager::init();
   }
 

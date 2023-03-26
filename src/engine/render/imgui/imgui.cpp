@@ -203,7 +203,7 @@ namespace Engine::imgui
 
   Manager::Manager()
   {
-    Input::InputRouter::registerListener(this);
+    Input::Router::registerListener(this);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -218,7 +218,7 @@ namespace Engine::imgui
 
   Manager::~Manager()
   {
-    Input::InputRouter::unregisterListener(this);
+    Input::Router::unregisterListener(this);
 
     ImGuiIO& io = ImGui::GetIO();
     io.BackendPlatformName = nullptr;

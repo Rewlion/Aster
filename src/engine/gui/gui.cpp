@@ -13,7 +13,7 @@ namespace Engine::gui
 
   Gui::Gui()
   {
-    Input::InputRouter::registerListener(this);
+    Input::Router::registerListener(this);
 
     m_Vm.init();
     m_Vm.setUserState(&m_RtState);
@@ -37,7 +37,7 @@ namespace Engine::gui
   }
 
   Gui::~Gui(){
-    Input::InputRouter::unregisterListener(this);
+    Input::Router::unregisterListener(this);
   }
 
   void Gui::loadRootUiScript()

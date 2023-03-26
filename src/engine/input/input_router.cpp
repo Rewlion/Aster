@@ -4,34 +4,34 @@
 
 namespace Engine::Input
 {
-  InputRouter* InputRouter::m_Router = nullptr;
+  Router* Router::m_Router = nullptr;
 
-  InputRouter::InputRouter()
+  Router::Router()
   {
     get_keyboard_driver()->setListener(this);
     get_pointer_driver()->setListener(this);
   }
 
-  InputRouter::~InputRouter()
+  Router::~Router()
   {
     get_keyboard_driver()->setListener(nullptr);
     get_pointer_driver()->setListener(nullptr);
   }
 
-  void InputRouter::init()
+  void Router::init()
   {
     ASSERT(m_Router == nullptr);
-    m_Router = new InputRouter;
+    m_Router = new Router;
   }
 
-  void InputRouter::destroy()
+  void Router::destroy()
   {
     ASSERT(m_Router != nullptr);
     delete m_Router;
     m_Router = nullptr;
   }
 
-  void InputRouter::onMouseButtonStateChanged(const IPointer& device,
+  void Router::onMouseButtonStateChanged(const IPointer& device,
                                               const int key,
                                               const bool pressed)
   {
@@ -43,7 +43,7 @@ namespace Engine::Input
     }
   }
 
-  void InputRouter::onMouseMove(const IPointer& device,
+  void Router::onMouseMove(const IPointer& device,
                                 const int2 new_pos,
                                 const int2 delta)
   {
@@ -55,7 +55,7 @@ namespace Engine::Input
     }
   }
 
-  void InputRouter::onKeyStateChanged(const IKeyboard& device,
+  void Router::onKeyStateChanged(const IKeyboard& device,
                                       const int key,
                                       const bool pressed)
   {
@@ -67,14 +67,14 @@ namespace Engine::Input
     }
   }
 
-  void InputRouter::registerListener(IInputRouterListener* l)
+  void Router::registerListener(IInputRouterListener* l)
   {
     auto it = eastl::find(m_Router->m_Listeners.begin(), m_Router->m_Listeners.end(), l);
     if (it == m_Router->m_Listeners.end())
       m_Router->m_Listeners.insert(l);
   }
 
-  void InputRouter::unregisterListener(IInputRouterListener* l)
+  void Router::unregisterListener(IInputRouterListener* l)
   {
     const auto it = eastl::remove(m_Router->m_Listeners.begin(), m_Router->m_Listeners.end(), l);
     (void)it;

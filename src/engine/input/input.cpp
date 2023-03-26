@@ -17,12 +17,12 @@ namespace Engine::Input
 
   Manager::Manager()
   {
-    InputRouter::registerListener(this);
+    Router::registerListener(this);
   }
 
   Manager::~Manager()
   {
-    InputRouter::unregisterListener(this);
+    Router::unregisterListener(this);
   }
 
   auto Manager::onMouseButtonStateChanged(const IPointer& device,
