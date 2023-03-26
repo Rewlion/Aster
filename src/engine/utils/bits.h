@@ -15,4 +15,10 @@ namespace Utils
   {
     in &= ~(bit);
   }
+
+  template<class T>
+  void toggle_bit(T& in, const uint8_t bit)
+  {
+    in = (T)(in ^ (1 << bit));
+  }
 }

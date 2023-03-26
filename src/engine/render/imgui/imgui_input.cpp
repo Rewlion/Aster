@@ -8,17 +8,22 @@ namespace Engine::imgui
                                                const int key, 
                                                const bool pressed) -> Input::InputRouterProcessStatus
   {
-    ImGuiIO& io = ImGui::GetIO();
-    int btn = -1;
-    switch (key)
+    if (m_State == State::ShowAndConsumeInput)
     {
-      case Input::BKEY_LBMOUSE: btn = 0; break;
-      case Input::BKEY_RBMOUSE: btn = 1; break;
-      case Input::BKEY_MBMOUSE: btn = 2; break;
-    }
-    if (btn != -1)
-      io.AddMouseButtonEvent(btn, pressed);
+      ImGuiIO& io = ImGui::GetIO();
+      int btn = -1;
+      switch (key)
+      {
+        case Input::BKEY_LBMOUSE: btn = 0; break;
+        case Input::BKEY_RBMOUSE: btn = 1; break;
+        case Input::BKEY_MBMOUSE: btn = 2; break;
+      }
+      if (btn != -1)
+        io.AddMouseButtonEvent(btn, pressed);
 
+      return Input::InputRouterProcessStatus::StopProcessing;
+    }
+    
     return Input::InputRouterProcessStatus::ProcessFurther;
   }
 
@@ -26,8 +31,14 @@ namespace Engine::imgui
                                  const int2 new_pos,
                                  const int2 delta) -> Input::InputRouterProcessStatus
   {
-    ImGuiIO& io = ImGui::GetIO();
-    io.AddMousePosEvent((float)new_pos.x, (float)new_pos.y);
+    if (m_State == State::ShowAndConsumeInput)
+    {
+      ImGuiIO& io = ImGui::GetIO();
+      io.AddMousePosEvent((float)new_pos.x, (float)new_pos.y);
+
+      return Input::InputRouterProcessStatus::StopProcessing;
+    }
+
     return Input::InputRouterProcessStatus::ProcessFurther;
   }
 
@@ -140,17 +151,23 @@ namespace Engine::imgui
       case Input::BKEY_EQUAL:             btn = ImGuiKey_Equal;           ch = toCh('=', '+'); break;
       case Input::BKEY_COMMA:             btn = ImGuiKey_Comma;           ch = toCh(',', '<'); break;
       case Input::BKEY_PERIOD:            btn = ImGuiKey_Period;          ch = toCh('.', '>'); break;
+      case Input::BKEY_GRAVE_ACCENT:      btn = ImGuiKey_GraveAccent;     ch = toCh('`', '~'); break;
       default: break;
     }
 
-    if (btn != -1) [[unlikely]]
+    if (m_State == State::ShowAndConsumeInput)
     {
-      io.AddKeyEvent((ImGuiKey)btn, pressed);
-      
-      if (ch != -1 && pressed)
-        io.AddInputCharacter(ch);
+      if (btn != -1) [[unlikely]]
+      {
+        io.AddKeyEvent((ImGuiKey)btn, pressed);
+
+        if (ch != -1 && pressed)
+          io.AddInputCharacter(ch);
+      }
     }
 
-    return Input::InputRouterProcessStatus::ProcessFurther;
+    return m_State == State::ShowAndConsumeInput ?
+            Input::InputRouterProcessStatus::StopProcessing :
+            Input::InputRouterProcessStatus::ProcessFurther;
   }
 }

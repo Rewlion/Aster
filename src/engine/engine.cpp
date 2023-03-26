@@ -3,6 +3,7 @@
 #include <engine/assets/assets_manager.h>
 #include <engine/console/console.h>
 #include <engine/ecs/ecs.h>
+#include <engine/editor/editor.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gui/gui.h>
 #include <engine/input/drivers/drivers.h>
@@ -43,6 +44,7 @@ namespace Engine
     assets_manager.init();
     
     init_input();
+    editor::Manager::init();
 
     const DataBlock* settings = Engine::get_app_settings();
     tfx::load_materials_bin(settings->getChildBlock("graphics")->getText("materials_bin"));

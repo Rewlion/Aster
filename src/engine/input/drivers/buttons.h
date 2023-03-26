@@ -114,6 +114,7 @@ namespace Engine::Input
     BKEY_EQUAL,
     BKEY_COMMA,
     BKEY_PERIOD,
+    BKEY_GRAVE_ACCENT,
 
     BKEY_KEYBOARD_COUNT,
     BKEY_EXTRA,

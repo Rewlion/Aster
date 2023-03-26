@@ -6,6 +6,7 @@ namespace console
 {
   void init();
   void exec(string_view msg);
-  void log(string&& msg);
-  void logerror(string&& msg);
+  void clog(string&& msg);
+  void clogerror(string&& msg);
+  void enable(const bool enabled);
 }

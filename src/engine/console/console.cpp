@@ -14,6 +14,7 @@
 namespace console
 {
   constexpr size_t LOGS_LIMIT = 20;
+  bool enabled = false;
 
   class Manager
   {
@@ -101,18 +102,26 @@ namespace console
     manager.executeCommand(msg);
   }
 
-  void log(string&& msg)
+  void clog(string&& msg)
   {
     manager.log(std::move(msg));
   }
   
-  void logerror(string&& msg)
+  void clogerror(string&& msg)
   {
     manager.logerror(std::move(msg));
   }
 
+  void enable(const bool e)
+  {
+    enabled = e;
+  }
+
   void imgui_console_wnd()
   {
+    if (!enabled)
+      return;
+
     const auto& logs = manager.getLogs();
     const size_t logsCount = logs.size();
 
@@ -145,7 +154,7 @@ void hello_cmd(eastl::span<string_view> argv)
                fmt::format("{} {}", argv[0], argv[1]) :
                string{argv[0]};
 
-  console::log(std::move(msg));
+  console::clog(std::move(msg));
 }
 
 CONSOLE_CMD("echo", 1, 2, hello_cmd);

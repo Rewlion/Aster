@@ -150,6 +150,7 @@ namespace Engine::Input
       case VK_OEM_PLUS:   key = BKEY_EQUAL; break;
       case VK_OEM_COMMA:  key = BKEY_COMMA; break;
       case VK_OEM_PERIOD: key = BKEY_PERIOD; break;
+      case VK_OEM_3:      key = BKEY_GRAVE_ACCENT; break;
       default: break;
     }
 

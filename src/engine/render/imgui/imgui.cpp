@@ -63,6 +63,8 @@ namespace Engine::imgui
     io.BackendPlatformName = "engine win64";
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+
+    m_State = State::Disabled;
   }
 
   Manager::~Manager()

@@ -31,7 +31,22 @@ namespace Engine::imgui
   class Manager: public Input::IInputRouterListener
   {
     public:
-      auto getInputRouterPriority() -> int override { return 0; }
+      enum class State
+      {
+        Disabled,
+        ShowAndConsumeInput,
+        ShowOnly,
+        Last
+      };
+
+      class StateChanger
+      {
+        public:
+          void setImGuiState(State state) { Manager::setState(state); }
+      };
+
+    public:
+      auto getInputRouterPriority() -> int override { return 1; }
 
       auto onMouseButtonStateChanged(const Input::IPointer& device,
                                      const int key, 
@@ -54,12 +69,20 @@ namespace Engine::imgui
       static
       void tick();
 
+      static
+      auto getState() -> State { return m_This->m_State; }
+
     private:
       Manager();
       ~Manager();
 
+      static
+      void setState(State state) { m_This->m_State = state; }
+
     private:
       static Manager* m_This;
+
+      State m_State;
   };
 
 }

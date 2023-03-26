@@ -11,6 +11,7 @@ target_link_libraries(engine
   engine_console
   engine_datablock
   engine_ecs
+  engine_editor
   engine_font_render
   engine_framegraph
   engine_gapi
