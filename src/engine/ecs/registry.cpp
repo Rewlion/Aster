@@ -33,13 +33,13 @@ namespace ecs
       logerror("ecs: failed to register template `{}`, see logs above", name);
   }
 
-  void Registry::createEntity(const string_view tmpl_name, EntityComponents&& inits)
+  auto Registry::createEntity(const string_view tmpl_name, EntityComponents&& inits) -> EntityId
   {
     const template_id_t tmplId = m_Templates.requestTemplate(tmpl_name, m_Archetypes, m_RegisteredComponents);
     if (tmplId == INVALID_TEMPLATE_ID) [[unlikely]]
     {
       logerror("ecs: failed to create entity from `{}`", tmpl_name);
-      return;
+      return {};
     }
 
     const Template& tmpl = m_Templates.getTemplate(tmplId);
@@ -111,6 +111,8 @@ namespace ecs
         .chunkEid = chunkEid
       }
     ));
+
+    return newEid;
   }
 
   bool Registry::destroyEntity(const EntityId eid)
