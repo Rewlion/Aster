@@ -15,6 +15,7 @@ target_link_libraries(engine
   engine_framegraph
   engine_gapi
   engine_gui
+  engine_imgui
   engine_input
   engine_input_drivers
   engine_qjs

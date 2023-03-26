@@ -1,8 +1,7 @@
 #pragma once
 
-#include "frame_gc.h"
-
 #include <engine/gapi/resource_wrappers.h>
+#include <engine/render/frame_gc.h>
 
 struct ImDrawData;
 

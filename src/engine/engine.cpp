@@ -9,7 +9,7 @@
 #include <engine/input/input.h>
 #include <engine/input/input_router.h>
 #include <engine/level.h>
-#include <engine/render/imgui.h>
+#include <engine/render/imgui/imgui.h>
 #include <engine/render/world_render.h>
 #include <engine/settings.h>
 #include <engine/tfx/tfx.h>

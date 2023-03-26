@@ -1,6 +1,5 @@
 #include "world_render.h"
 #include "gui_render.h"
-#include "imgui_render.h"
 
 #include <engine/algorithm/hash.h>
 #include <engine/assets/assets_manager.h>
@@ -10,6 +9,7 @@
 #include <engine/render/font/font_render.h>
 #include <engine/render/frame_graph/blackboard.hpp>
 #include <engine/render/frame_graph/frame_graph.h>
+#include <engine/render/imgui/imgui_render.h>
 #include <engine/scene/scene.h>
 #include <engine/settings.h>
 #include <engine/time.h>
