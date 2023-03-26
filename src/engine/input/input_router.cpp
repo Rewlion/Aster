@@ -69,14 +69,14 @@ namespace Engine::Input
 
   void InputRouter::registerListener(IInputRouterListener* l)
   {
-    const auto it = std::find(m_Router->m_Listeners.begin(), m_Router->m_Listeners.end(), l);
+    auto it = eastl::find(m_Router->m_Listeners.begin(), m_Router->m_Listeners.end(), l);
     if (it == m_Router->m_Listeners.end())
-      m_Router->m_Listeners.push(l);
+      m_Router->m_Listeners.insert(l);
   }
 
   void InputRouter::unregisterListener(IInputRouterListener* l)
   {
-    const auto it = std::remove(m_Router->m_Listeners.begin(), m_Router->m_Listeners.end(), l);
+    const auto it = eastl::remove(m_Router->m_Listeners.begin(), m_Router->m_Listeners.end(), l);
     (void)it;
   }
 }

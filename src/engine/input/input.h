@@ -34,20 +34,16 @@ namespace Engine::Input
       InputManager();
       ~InputManager();
       
-      virtual 
-      auto getInputRouterPriority() -> int override { return std::numeric_limits<int>::max(); };
+      auto getInputRouterPriority() -> int override { return PRIORITY_DONT_CARE; };
 
-      virtual
       auto onMouseButtonStateChanged(const IPointer& device,
                                      const int key, 
                                      const bool pressed) -> InputRouterProcessStatus override;
 
-      virtual
       auto onMouseMove(const IPointer& device,
                        const int2 new_pos,
                        const int2 delta) -> InputRouterProcessStatus override;
 
-      virtual
       auto onKeyStateChanged(const IKeyboard& device,
                              const int key,
                              const bool pressed) -> InputRouterProcessStatus override;

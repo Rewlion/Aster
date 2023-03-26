@@ -2,8 +2,9 @@
 
 #include <engine/input/drivers/drivers.h>
 
-#include <queue>
-#include <EASTL/vector.h>
+#include <EASTL/vector_multiset.h>
+
+#include <limits>
 
 namespace Engine::Input
 {
@@ -16,6 +17,8 @@ namespace Engine::Input
   class IInputRouterListener
   {
     public:
+      constexpr static int PRIORITY_DONT_CARE = std::numeric_limits<int>::max();
+
       virtual
       auto getInputRouterPriority() -> int = 0;
 
@@ -35,59 +38,46 @@ namespace Engine::Input
                              const bool pressed) -> InputRouterProcessStatus { return InputRouterProcessStatus::ProcessFurther; }
   };
 
-  struct InputRouterPrioritySort
-  {
-    bool operator()(IInputRouterListener* l, IInputRouterListener* r)
-    {
-      return l->getInputRouterPriority() < r->getInputRouterPriority();
-    };
-  };
-
-  using InputPriorityQueueBase = std::priority_queue<IInputRouterListener*,
-                                   eastl::vector<IInputRouterListener*>,
-                                   InputRouterPrioritySort>;
-  class InputPriorityQueue: public InputPriorityQueueBase
-  {
-    public:
-      using container_type = eastl::vector<IInputRouterListener*>;
-
-      auto begin() -> container_type::iterator { return InputPriorityQueueBase::c.begin(); }
-      auto end() -> container_type::iterator { return InputPriorityQueueBase::c.end(); }
-  };
-
   class InputRouter : public IPointerListener, IKeyboardListener
   {
     public:
       InputRouter();
       ~InputRouter();
 
-      virtual
       void onMouseButtonStateChanged(const IPointer& device,
                                      const int key,
                                      const bool pressed) override;
 
-      virtual
       void onMouseMove(const IPointer& device,
                        const int2 new_pos,
                        const int2 delta) override;
 
-      virtual
       void onKeyStateChanged(const IKeyboard& device,
                              const int key,
                              const bool pressed) override;
 
       static
       void registerListener(IInputRouterListener*);
-      
+
       static
       void unregisterListener(IInputRouterListener*);
     
-      static void init();
-      static void destroy();
+      static
+      void init();
+
+      static
+      void destroy();
 
     private:
       static InputRouter* m_Router;
 
-      InputPriorityQueue m_Listeners;
+      struct RoutingComparator
+      {
+        auto operator()(IInputRouterListener* l, IInputRouterListener* r) const -> bool
+        {
+          return l->getInputRouterPriority() < r->getInputRouterPriority();
+        }
+      };
+      eastl::vector_multiset<IInputRouterListener*, RoutingComparator> m_Listeners;
   };
 }

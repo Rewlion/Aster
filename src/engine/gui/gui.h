@@ -24,7 +24,7 @@ namespace Engine::gui
       static
       void destroy();
 
-      int getInputRouterPriority() override { return std::numeric_limits<int>::max(); };
+      int getInputRouterPriority() override { return PRIORITY_DONT_CARE; };
 
       auto onMouseButtonStateChanged(const Input::IPointer& device,
                                      const int key, 
