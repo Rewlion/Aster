@@ -59,7 +59,7 @@ namespace Engine::imgui
       ~Manager();
 
     private:
-      static Manager* m_Mngr;
+      static Manager* m_This;
   };
 
 }

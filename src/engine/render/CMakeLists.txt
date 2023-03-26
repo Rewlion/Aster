@@ -8,6 +8,7 @@ set(WORLD_RENDER_SRC
 
 set(IMGUI_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/imgui/imgui.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/imgui/imgui_input.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/render/imgui/imgui_render.cpp")
 
 set(FRAMEGRAPH_SRC
