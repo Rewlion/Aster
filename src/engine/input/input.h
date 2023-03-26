@@ -28,11 +28,11 @@ namespace Engine::Input
       }
   };
 
-  class InputManager : public IInputRouterListener
+  class Manager : public IInputRouterListener
   {
     public:
-      InputManager();
-      ~InputManager();
+      Manager();
+      ~Manager();
       
       auto getInputRouterPriority() -> int override { return PRIORITY_DONT_CARE; };
 
@@ -80,7 +80,7 @@ namespace Engine::Input
       void processActions();
 
     private:
-      static InputManager* m_This;
+      static Manager* m_This;
 
       constexpr static uint64_t DBL_CLK_MSEC = 200;
       constexpr static uint64_t LONG_PRESS_MSEC = 250;

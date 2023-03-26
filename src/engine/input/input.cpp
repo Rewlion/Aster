@@ -13,19 +13,19 @@
 
 namespace Engine::Input
 {
-  InputManager* InputManager::m_This = nullptr;
+  Manager* Manager::m_This = nullptr;
 
-  InputManager::InputManager()
+  Manager::Manager()
   {
     InputRouter::registerListener(this);
   }
 
-  InputManager::~InputManager()
+  Manager::~Manager()
   {
     InputRouter::unregisterListener(this);
   }
 
-  auto InputManager::onMouseButtonStateChanged(const IPointer& device,
+  auto Manager::onMouseButtonStateChanged(const IPointer& device,
                                                const int key, 
                                                const bool pressed) -> InputRouterProcessStatus
   {
@@ -33,7 +33,7 @@ namespace Engine::Input
     return InputRouterProcessStatus::ProcessFurther;
   }
 
-  auto InputManager::onMouseMove(const IPointer& device,
+  auto Manager::onMouseMove(const IPointer& device,
                                  const int2 new_pos,
                                  const int2 delta) -> InputRouterProcessStatus
   {
@@ -41,7 +41,7 @@ namespace Engine::Input
     return InputRouterProcessStatus::ProcessFurther;
   }
 
-  auto InputManager::onKeyStateChanged(const IKeyboard& device,
+  auto Manager::onKeyStateChanged(const IKeyboard& device,
                                        const int key,
                                        const bool pressed) -> InputRouterProcessStatus
   {
@@ -49,10 +49,10 @@ namespace Engine::Input
     return InputRouterProcessStatus::ProcessFurther;
   }
 
-  void InputManager::init()
+  void Manager::init()
   {
-    ASSERT(InputManager::m_This == nullptr);
-    InputManager::m_This = new InputManager;
+    ASSERT(Manager::m_This == nullptr);
+    Manager::m_This = new Manager;
 
     string inputFile = Engine::get_app_settings()->getText("input_settings");
     ASSERT(inputFile != "");
@@ -63,7 +63,7 @@ namespace Engine::Input
     const bool inputLoaded = load_blk_from_file(&inputSettings, inputFile.c_str());
     ASSERT(inputLoaded);
 
-    InputManager::m_This->loadRegisteredActions(*inputSettings.getChildBlock("ActionSets"));
+    Manager::m_This->loadRegisteredActions(*inputSettings.getChildBlock("ActionSets"));
 
     string mappingsFile = Engine::get_app_settings()->getText("input_mappings");
     ASSERT(mappingsFile != "");
@@ -73,16 +73,16 @@ namespace Engine::Input
     ASSERT(mappingsLoaded);
 
     DataBlock* bindingsBlk = controllerMappings.getChildBlock("Bindings");
-    InputManager::m_This->loadControllerMappings(*bindingsBlk);
+    Manager::m_This->loadControllerMappings(*bindingsBlk);
 
-    InputManager::m_This->removeActionsWithoutBinding();
+    Manager::m_This->removeActionsWithoutBinding();
   }
 
-  void InputManager::destroy()
+  void Manager::destroy()
   {
-    ASSERT(InputManager::m_This != nullptr);
-    delete InputManager::m_This;
-    InputManager::m_This = nullptr;
+    ASSERT(Manager::m_This != nullptr);
+    delete Manager::m_This;
+    Manager::m_This = nullptr;
   }
 
   static
@@ -113,7 +113,7 @@ namespace Engine::Input
     }
   }
 
-  void InputManager::loadRegisteredActions(const DataBlock& actions_blk)
+  void Manager::loadRegisteredActions(const DataBlock& actions_blk)
   {
     for (const auto& set: actions_blk.getChildBlocks())
     {
@@ -171,7 +171,7 @@ namespace Engine::Input
     return InputDevice{device};
   }
 
-  void InputManager::loadControllerMappings(const DataBlock& bindings_blk)
+  void Manager::loadControllerMappings(const DataBlock& bindings_blk)
   {
     for (const auto binding: bindings_blk.getChildBlocks())
     {
@@ -222,7 +222,7 @@ namespace Engine::Input
     }
   }
 
-  void InputManager::removeActionsWithoutBinding()
+  void Manager::removeActionsWithoutBinding()
   {
     eastl::vector_set<int> emptyActionIds;
     for (const auto& [_, actSet]: m_ActionSets)
@@ -264,13 +264,13 @@ namespace Engine::Input
         dumpAction(act->name);
   }
 
-  void InputManager::processInput()
+  void Manager::processInput()
   {
-    InputManager::m_This->processInputMessages();
-    InputManager::m_This->processActions();
+    Manager::m_This->processInputMessages();
+    Manager::m_This->processActions();
   }
 
-  auto InputManager::remapButtonId(const InputDevice device, const int id) -> int const
+  auto Manager::remapButtonId(const InputDevice device, const int id) -> int const
   {
     switch (device)
     {
@@ -280,7 +280,7 @@ namespace Engine::Input
     }
   }
 
-  auto InputManager::remapAxisId(const InputDevice device, const int2 id) -> int2 const
+  auto Manager::remapAxisId(const InputDevice device, const int2 id) -> int2 const
   {
     switch (device)
     {
@@ -290,7 +290,7 @@ namespace Engine::Input
     }
   }
 
-  void InputManager::processInputMessages()
+  void Manager::processInputMessages()
   {
     for (int i = 0; i < TOTAL_BUTTONS; ++i)
       m_ButtonStates[i].prevState = m_ButtonStates[i].state;
@@ -331,7 +331,7 @@ namespace Engine::Input
     });
   }
 
-  void InputManager::processActions()
+  void Manager::processActions()
   {
     for (auto& [_, actSet]: m_ActionSets)
     {
@@ -422,10 +422,10 @@ namespace Engine::Input
     }
   }
 
-  void InputManager::enableActionSet(const string& name, const bool enable)
+  void Manager::enableActionSet(const string& name, const bool enable)
   {
-    auto it = InputManager::m_This->m_ActionSets.find(name);
-    if (it != InputManager::m_This->m_ActionSets.end())
+    auto it = Manager::m_This->m_ActionSets.find(name);
+    if (it != Manager::m_This->m_ActionSets.end())
     {
       it->second.isEnabled = enable;
       loginfo("input: activating actionSet `{}`", name);
@@ -434,39 +434,39 @@ namespace Engine::Input
       logerror("input: unknown actionSet `{}` for enabling", name);
   }
 
-  auto InputManager::getButtonActionId(const string& name) -> int
+  auto Manager::getButtonActionId(const string& name) -> int
   {
-    const auto it = InputManager::m_This->m_NameToActionInfo.find(name);
-    if (it != InputManager::m_This->m_NameToActionInfo.end() && it->second.type == ActionType::Button)
+    const auto it = Manager::m_This->m_NameToActionInfo.find(name);
+    if (it != Manager::m_This->m_NameToActionInfo.end() && it->second.type == ActionType::Button)
       return it->second.id;
     
     return UNKNOWN_ACTION_ID;
   }
 
-  auto InputManager::getAnalogActionId(const string& name) -> int
+  auto Manager::getAnalogActionId(const string& name) -> int
   {
-    const auto it = InputManager::m_This->m_NameToActionInfo.find(name);
-    if (it != InputManager::m_This->m_NameToActionInfo.end() && ((int)it->second.type & (int)ActionType::JoyAction))
+    const auto it = Manager::m_This->m_NameToActionInfo.find(name);
+    if (it != Manager::m_This->m_NameToActionInfo.end() && ((int)it->second.type & (int)ActionType::JoyAction))
       return it->second.id;
     
     return UNKNOWN_ACTION_ID;
   }
 
-  auto InputManager::getButtonActionState(const int id) -> bool
+  auto Manager::getButtonActionState(const int id) -> bool
   {
     return std::get<ButtonActionData>(
-      InputManager::m_This->m_ActionDatas[id]).isActive;
+      Manager::m_This->m_ActionDatas[id]).isActive;
   }
 
-  auto InputManager::getAnalogActionState(const int id) -> bool
+  auto Manager::getAnalogActionState(const int id) -> bool
   {
     return std::get<AnalogActionData>(
-      InputManager::m_This->m_ActionDatas[id]).isActive;
+      Manager::m_This->m_ActionDatas[id]).isActive;
   }
 
-  auto InputManager::getAnalogActionData(const int id) -> int2
+  auto Manager::getAnalogActionData(const int id) -> int2
   {
     return std::get<AnalogActionData>(
-      InputManager::m_This->m_ActionDatas[id]).values;
+      Manager::m_This->m_ActionDatas[id]).values;
   }
 }

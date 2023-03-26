@@ -28,7 +28,7 @@ namespace Engine
   {
     Input::init_drivers();
     Input::InputRouter::init();
-    Input::InputManager::init();
+    Input::Manager::init();
   }
 
   void init()
@@ -66,7 +66,7 @@ namespace Engine
       Time::tick();
 
       Window::poll_wnd_messages();
-      Input::InputManager::processInput();
+      Input::Manager::processInput();
 
       ecs::get_registry().tick();
       gui::Gui::tick();
