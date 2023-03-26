@@ -6,9 +6,9 @@
 
 #include <Windows.h>
 
-namespace Engine::Render
+namespace Engine::imgui
 {
-  ImGuiManager* ImGuiManager::m_Mngr = nullptr;
+  Manager* Manager::m_Mngr = nullptr;
 
   ImGuiGlobalWindowRegistration* ImGuiGlobalWindowRegistration::m_List = nullptr;
   ImGuiGlobalWindowRegistration::ImGuiGlobalWindowRegistration(const char* name,
@@ -36,22 +36,22 @@ namespace Engine::Render
     }
   }
 
-  void ImGuiManager::init()
+  void Manager::init()
   {
     if (!m_Mngr)
-      m_Mngr = new ImGuiManager();
+      m_Mngr = new Manager();
   }
 
-  void ImGuiManager::destroy()
+  void Manager::destroy()
   {
     if (m_Mngr)
     {
-      m_Mngr->~ImGuiManager();
+      m_Mngr->~Manager();
       m_Mngr = nullptr;
     }
   }
 
-  auto ImGuiManager::onMouseButtonStateChanged(const Input::IPointer& device,
+  auto Manager::onMouseButtonStateChanged(const Input::IPointer& device,
                                                const int key, 
                                                const bool pressed) -> Input::InputRouterProcessStatus
   {
@@ -69,7 +69,7 @@ namespace Engine::Render
     return Input::InputRouterProcessStatus::ProcessFurther;
   }
 
-  auto ImGuiManager::onMouseMove(const Input::IPointer& device,
+  auto Manager::onMouseMove(const Input::IPointer& device,
                                  const int2 new_pos,
                                  const int2 delta) -> Input::InputRouterProcessStatus
   {
@@ -78,7 +78,7 @@ namespace Engine::Render
     return Input::InputRouterProcessStatus::ProcessFurther;
   }
 
-  auto ImGuiManager::onKeyStateChanged(const Input::IKeyboard& device,
+  auto Manager::onKeyStateChanged(const Input::IKeyboard& device,
                                        const int key,
                                        const bool pressed) -> Input::InputRouterProcessStatus
   {
@@ -201,7 +201,7 @@ namespace Engine::Render
     return Input::InputRouterProcessStatus::ProcessFurther;
   }
 
-  ImGuiManager::ImGuiManager()
+  Manager::Manager()
   {
     Input::InputRouter::registerListener(this);
 
@@ -216,7 +216,7 @@ namespace Engine::Render
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
   }
 
-  ImGuiManager::~ImGuiManager()
+  Manager::~Manager()
   {
     Input::InputRouter::unregisterListener(this);
 
@@ -227,7 +227,7 @@ namespace Engine::Render
     ImGui::DestroyContext();
   }
 
-  void ImGuiManager::tick()
+  void Manager::tick()
   {
     ASSERT_FMT(m_Mngr, "ImGui Manager is not initialized");
     

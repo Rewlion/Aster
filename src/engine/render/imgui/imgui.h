@@ -5,7 +5,7 @@
 #include <engine/window.h>
 #include <engine/input/input_router.h>
 
-namespace Engine::Render
+namespace Engine::imgui
 {
   class ImGuiGlobalWindowRegistration
   {
@@ -28,7 +28,7 @@ namespace Engine::Render
       ImGuiWindowFlags m_Flags;
   };
 
-  class ImGuiManager: public Input::IInputRouterListener
+  class Manager: public Input::IInputRouterListener
   {
     public:
       auto getInputRouterPriority() -> int override { return 0; }
@@ -55,13 +55,13 @@ namespace Engine::Render
       void tick();
 
     private:
-      ImGuiManager();
-      ~ImGuiManager();
+      Manager();
+      ~Manager();
 
     private:
-      static ImGuiManager* m_Mngr;
+      static Manager* m_Mngr;
   };
 
 }
 
-#define IMGUI_REG_WND(name, cb, flags) static const Engine::Render::ImGuiGlobalWindowRegistration imgui_wnd ## __LINE__{name, cb, flags}
+#define IMGUI_REG_WND(name, cb, flags) static const Engine::imgui::ImGuiGlobalWindowRegistration imgui_wnd ## __LINE__{name, cb, flags}

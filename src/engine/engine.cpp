@@ -52,7 +52,7 @@ namespace Engine
 
     load_level(settings->getText("init_level") );
 
-    Render::ImGuiManager::init();
+    imgui::Manager::init();
     Render::world_render.init();
     gui::Gui::init();
 
@@ -72,7 +72,7 @@ namespace Engine
       gui::Gui::tick();
 
       const CameraData camera = get_camera();
-      Render::ImGuiManager::tick();
+      imgui::Manager::tick();
       Render::world_render.render(camera);
     }
   }
