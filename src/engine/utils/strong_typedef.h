@@ -9,6 +9,8 @@ class NEW_TYPE\
     \
     NEW_TYPE() = default;\
     NEW_TYPE(const NEW_TYPE& v) = default;\
+    NEW_TYPE(NEW_TYPE&& v) = default;\
+    NEW_TYPE& operator= (NEW_TYPE&& rvl) = default;\
     NEW_TYPE& operator= (const NEW_TYPE& rvl) = default;\
     NEW_TYPE& operator= (const BASE_TYPE& rvl)\
     {\

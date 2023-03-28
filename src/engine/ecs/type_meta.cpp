@@ -66,7 +66,8 @@ namespace ecs
       virtual
       void destructor(void* component) override
       {
-        reinterpret_cast<string*>(component)->~string();
+        string* s =  reinterpret_cast<string*>(component);
+        delete s;
       }
 
       virtual

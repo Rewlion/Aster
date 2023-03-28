@@ -157,7 +157,7 @@ namespace Utils
         return *this;
       }
 
-      inline const FixedStack<T,N>& operator=(FixedStack<T,N>&& rvl)
+      inline FixedStack<T,N>& operator=(FixedStack<T,N>&& rvl)
       {
         clear();
         for(auto& v: rvl)

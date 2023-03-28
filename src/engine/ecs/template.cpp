@@ -8,7 +8,7 @@ namespace ecs
     : tmplId(INVALID_TEMPLATE_ID)
     , name(name)
     , parents(std::move(parents))
-    , compsMap(comps_map)
+    , compsMap(std::move(comps_map))
   {
   }
 

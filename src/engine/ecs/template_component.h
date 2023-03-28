@@ -13,7 +13,11 @@ namespace ecs
     friend class EntityComponents;
 
     public:
-      TemplateComponent() = default;
+      TemplateComponent();
+      TemplateComponent(TemplateComponent&&);
+      ~TemplateComponent();
+
+      TemplateComponent& operator=(TemplateComponent&&);
 
       template<class T>
       void operator=(T&& v) &;
@@ -25,8 +29,6 @@ namespace ecs
     private:
       TemplateComponent(const name_hash_t hash);
 
-      void destroy();
-
       template<class T>
       static
       auto isBoxedType() -> bool;
@@ -36,6 +38,7 @@ namespace ecs
 
       auto getData() const -> const void*;
 
+    private:
       union
       {
         void* ptr;
@@ -56,8 +59,6 @@ namespace ecs
       auto getMap() const -> const eastl::vector_map<name_hash_t, TemplateComponent>&;
 
       auto getComponentName(const name_hash_t name) const -> string_view;
-
-      ~TemplateComponentsMap();
 
     private:
       eastl::vector_map<name_hash_t, TemplateComponent> m_Components;
