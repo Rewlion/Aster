@@ -42,6 +42,14 @@ namespace ecs
                        const chunk_id_t,
                        const chunk_eid_t);
 
+      struct RemovementResult
+      {
+        EntityId movedEntity;
+        chunk_eid_t newEntityChunkEid = INVALID_CHUNK_EID;
+      };
+      auto removeEntity(const chunk_id_t,
+                        const chunk_eid_t) -> RemovementResult;
+
       auto getChunks() const -> const eastl::vector<Chunk>&;
 
     private:

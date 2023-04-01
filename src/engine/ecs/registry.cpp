@@ -36,6 +36,11 @@ namespace ecs
 
   auto Registry::createEntity(const string_view tmpl_name, EntityComponents&& inits) -> EntityId
   {
+    return recreateEntity({}, tmpl_name, std::move(inits));
+  }
+
+  auto Registry::recreateEntity(const EntityId eid, const string_view tmpl_name, EntityComponents&& inits) -> EntityId
+  {
     const template_id_t tmplId = m_Templates.requestTemplate(tmpl_name, m_Archetypes, m_RegisteredComponents);
     if (tmplId == INVALID_TEMPLATE_ID) [[unlikely]]
     {
@@ -43,8 +48,17 @@ namespace ecs
       return {};
     }
 
+    const bool isRecreating = eid.isValid();
+
     const Template& tmpl = m_Templates.getTemplate(tmplId);
     const archetype_id_t archId = tmpl.archetypeId;
+
+    const EntityInfo* srcEinfo = nullptr;
+    const eastl::vector<registered_component_id_t>* srcCompIds = nullptr;
+
+    const auto srcEinfoIt = m_EntityInfosMap.find(eid.getId());
+    if (srcEinfoIt != m_EntityInfosMap.end())
+      srcCompIds = &m_Archetypes.getComponentIds(srcEinfoIt->second.archId);
 
     const auto& offsets = m_Archetypes.getComponentOffsets(archId);
     const auto& types = m_Archetypes.getComponentTypes(archId);
@@ -74,25 +88,56 @@ namespace ecs
       compIdToInit.insert({compId, &init.component});
     }
 
+    eastl::vector<int> compToSrcCompRemap;
+    if (isRecreating)
+    {
+      compToSrcCompRemap.reserve(compsCount);
+      for (auto compId: compIds)
+      {
+        auto it = eastl::lower_bound(srcCompIds->begin(), srcCompIds->end(), compId);
+        const bool found = it != srcCompIds->end() && compId == *it;
+        compToSrcCompRemap.push_back(
+          found ? (int)(it - srcCompIds->begin()) : -1
+        );
+      }
+    }
+
     std::byte* initBuffer = tmpl.initBuffer.get();
+    ComponentsAccessorById srcCompsAccessor;
+    if (isRecreating)
+    {
+      srcCompsAccessor = m_Archetypes.accessEntityComponents(
+        srcEinfoIt->second.archId, srcEinfoIt->second.chunkId, srcEinfoIt->second.chunkEid);
+    }
 
     for (components_count_t i{0}; i < compsCount; ++i)
     {
       std::byte* compDataForInit = initBuffer + offsets[i];
       const registered_component_id_t compId = compIds[i];
-      
-      const TemplateComponent* tmplComp = nullptr;
-      if (auto initIt = compIdToInit.find(compId); initIt != compIdToInit.end())
-        tmplComp = initIt->second;
+
+      auto initIt = compIdToInit.find(compId);
+      const bool hasInitData = initIt != compIdToInit.end();
+
+      const int srcCompId = isRecreating ? compToSrcCompRemap[i] : -1;
+      const bool moveFromSrc = !hasInitData && isRecreating && (srcCompId != -1);
+
+      auto& typeMgr = get_meta_storage().getMeta(types[i])->manager;
+      if (moveFromSrc)
+      {
+        void* tmplInitData = srcCompsAccessor[srcCompId];
+        typeMgr->moveConstructor(compDataForInit, tmplInitData);
+      }
       else
-        tmplComp = tmpl.regCompToTmplComp.find(compIds[i])->second;
-
-      const void* tmplInitData = tmplComp->getData();
-
-      get_meta_storage()
-        .getMeta(types[i])
-        ->manager->constructor(compDataForInit, tmplInitData);
+      {
+        const void* tmplInitData = hasInitData ?
+                                    initIt->second->getData() :
+                                    tmpl.regCompToTmplComp.find(compIds[i])->second->getData();
+        typeMgr->constructor(compDataForInit, tmplInitData);
+      }
     }
+
+    if (isRecreating)
+      destroyEntity(eid);
 
     EntityStorage& storage = m_Archetypes.getEntityStorage(archId);
     const EntityId newEid = EntityId::generate();
@@ -119,28 +164,27 @@ namespace ecs
     return newEid;
   }
 
-  bool Registry::destroyEntity(const EntityId eid)
+  void Registry::destroyEntity(const EntityId eid)
   {
-    // auto it = m_EntitiesInfo.find(eid.id);
-    // if (it == m_EntitiesInfo.end())
-    //   return false;
+    auto it = m_EntityInfosMap.find(eid.id);
+    if (it == m_EntityInfosMap.end())
+      return;
 
-    // EntityInfo& eInfo = it->second;
-    // if (eInfo.eid.generation != eid.generation)
-    //   return false;
+    EntityInfo& eInfo = it->second;
+    if (eInfo.eid.generation != eid.generation)
+      return;
 
-    // ArchetypeStorage& archetype = m_Archetypes[eInfo.archetypeId];
-    // DestroidEntityInfo dstrInfo = archetype.destroyEntity(eInfo.chunkId, eInfo.blockId);
+    for(auto[compData, typeId] : 
+      m_Archetypes.accessEntityComponents(eInfo.archId, eInfo.chunkId, eInfo.chunkEid))
+    {
+      const auto& typeMeta = get_meta_storage().getMeta(typeId);
+      if (!typeMeta->isTrivial)
+        typeMeta->manager->destructor(compData);
+    }
 
-    // eInfo.eid.generation += 1;
-
-    // if (dstrInfo.replacedBlockId != INVALID_BLOCK_ID)
-    // {
-    //   EntityInfo eInfoToTweak = m_EntitiesInfo[dstrInfo.replacedBlockOwner.getId()];
-    //   eInfoToTweak.blockId = dstrInfo.replacedBlockId;
-    // }
-
-    return true;
+    m_Archetypes
+      .getEntityStorage(eInfo.archId)
+      .removeEntity(eInfo.chunkId, eInfo.chunkEid);
   }
 
   auto Registry::findDesiredArchetypes(const QueryComponents& queryComponents)

@@ -23,8 +23,9 @@ namespace ecs
                        TemplateParentNames&&,
                        TemplateComponentsMap&&);
 
-      auto createEntity(const string_view tmpl, EntityComponents&& comps) -> EntityId;
-      auto destroyEntity(const EntityId eid) -> bool;
+      auto createEntity(const string_view tmpl, EntityComponents&& inits) -> EntityId;
+      auto recreateEntity(const EntityId eid, const string_view tmpl, EntityComponents&& inits) -> EntityId;
+      void destroyEntity(const EntityId eid);
 
       template<BasedFromEcsEvent T>
       void broadcastEvent(T&& event);

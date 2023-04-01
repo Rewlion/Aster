@@ -64,6 +64,10 @@ namespace ecs
       auto findArchetypesWithComponents(const eastl::vector<registered_component_id_t>& comps)
         -> eastl::vector<archetype_id_t>;
 
+      auto accessEntityComponents(const archetype_id_t,
+                                  const chunk_id_t,
+                                  const chunk_eid_t) -> ComponentsAccessorById;
+
     private:
       auto hashCompIds(const eastl::vector<registered_component_id_t>& ids) const
         -> components_set_hash_t;

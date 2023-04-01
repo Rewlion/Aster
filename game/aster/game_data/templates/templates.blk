@@ -23,3 +23,15 @@ template @("name: camera")
   float2 camera_rotations = 0.0, 0.0
   float3 forward = 0.0, 0.0, 0.0
 }
+
+template @("name: src_tmpl")
+{
+  float fl_data = 0.1
+  text txt_data = "myText"
+}
+
+template @("name: dst_tmpl")
+{
+  float fl_data = 0.2
+  text txt_data2 = "newText"
+}

@@ -92,6 +92,31 @@ namespace ecs
     }
   }
 
+  auto EntityStorage::removeEntity(const chunk_id_t chunk_id,
+                                   const chunk_eid_t chunk_eid) -> RemovementResult
+  {
+    RemovementResult res;
+
+    Chunk& chunk = m_Chunks[chunk_id];
+    const chunk_eid_t lastEid = chunk_eid_t{chunk.usedBlocks-1};
+      
+    if (chunk_eid != lastEid)
+    {
+      res.movedEntity = chunk.blocksOwners[lastEid];
+      res.newEntityChunkEid = chunk_eid;
+
+      std::byte* lastEntityData = chunk.data + m_EntitySize * lastEid;
+      std::byte* removingEntityData = chunk.data + m_EntitySize * chunk_eid;
+      std::memcpy(removingEntityData, lastEntityData, m_EntitySize);
+    }
+
+    std::memset(chunk.data + m_EntitySize*lastEid, 0, m_EntitySize);
+    chunk.blocksOwners[lastEid] = EntityId{};
+    --chunk.usedBlocks;
+
+    return res;
+  }
+
   auto EntityStorage::getChunks() const -> const eastl::vector<Chunk>&
   {
     return m_Chunks;

@@ -78,3 +78,39 @@ static SystemRegistration system_test_test_float2_registration(
   },
   "system_test_test_float2"
 );
+
+
+static void system_src_tmpl_internal(ComponentsAccessor& accessor)
+{
+  float fl_data = accessor.get<float>(compile_ecs_name_hash("fl_data"));
+  const string& txt_data = accessor.get<string>(compile_ecs_name_hash("txt_data"));
+  system_src_tmpl(fl_data,txt_data);
+}
+
+
+static SystemRegistration system_src_tmpl_registration(
+  system_src_tmpl_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("fl_data", float),
+    DESCRIBE_QUERY_COMPONENT("txt_data", string)
+  },
+  "system_src_tmpl"
+);
+
+
+static void system_dst_tmpl_internal(ComponentsAccessor& accessor)
+{
+  float fl_data = accessor.get<float>(compile_ecs_name_hash("fl_data"));
+  const string& txt_data2 = accessor.get<string>(compile_ecs_name_hash("txt_data2"));
+  system_dst_tmpl(fl_data,txt_data2);
+}
+
+
+static SystemRegistration system_dst_tmpl_registration(
+  system_dst_tmpl_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("fl_data", float),
+    DESCRIBE_QUERY_COMPONENT("txt_data2", string)
+  },
+  "system_dst_tmpl"
+);

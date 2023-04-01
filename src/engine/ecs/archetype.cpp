@@ -126,4 +126,18 @@ namespace ecs
     uint32_t hash = XXH32(ids.data(), ids.size() * sizeof(ids[0]), seed);
     return (components_set_hash_t) hash;
   }
+
+  auto Archetypes::accessEntityComponents(const archetype_id_t arch_id,
+                                          const chunk_id_t chunk_id,
+                                          const chunk_eid_t chunk_eid) -> ComponentsAccessorById
+  {
+    const auto& offsets = getComponentOffsets(arch_id);
+    const auto& types = getComponentTypes(arch_id);
+    const auto compsCount = getComponentsCount(arch_id);
+    auto& chunk = getEntityStorage(arch_id).getChunks()[chunk_id];
+    const entity_size_t entitySize = getEntitySize(arch_id);
+    std::byte* entityData = chunk.data + entitySize * chunk_eid;
+
+    return ComponentsAccessorById{entityData, offsets.data(), types.data(), compsCount};
+  }
 }

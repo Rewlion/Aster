@@ -15,7 +15,7 @@ namespace ecs
   {
     friend class Registry;
     public:
-      auto operator[](const hashed_name name) -> TemplateComponent&;
+      auto operator[](const char* name) -> TemplateComponent&;
 
     private:
       auto getInits() const -> const eastl::vector<EntityComponentInit>&;

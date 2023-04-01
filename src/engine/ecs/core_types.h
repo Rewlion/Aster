@@ -24,4 +24,5 @@ namespace ecs
   constexpr registered_component_id_t INVALID_REG_COMPONENT_ID = registered_component_id_t{-1};
   constexpr component_type_id_t INVALID_COMPONENT_TYPE_ID = component_type_id_t{-1};
   constexpr template_id_t INVALID_TEMPLATE_ID = template_id_t{-1};
+  constexpr chunk_eid_t INVALID_CHUNK_EID = chunk_eid_t{-1};
 }

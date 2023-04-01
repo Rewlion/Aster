@@ -1,6 +1,7 @@
 #pragma once
 
 #include <engine/types.h>
+#include <engine/utils/macros.h>
 
 #include <EASTL/span.h>
 #include <EASTL/vector.h>
@@ -36,4 +37,4 @@ namespace console
 
 #include "cmd.inc.hpp"
 
-#define CONSOLE_CMD(name, min_args, max_args, cb) console::CmdRegistration cmdReg ## __LINE__(name, min_args, max_args, cb)
+#define CONSOLE_CMD(name, min_args, max_args, cb) console::CmdRegistration NAME_WITH_LINE(cmdReg)(name, min_args, max_args, cb)

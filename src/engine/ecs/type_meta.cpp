@@ -57,17 +57,23 @@ namespace ecs
   {
     public:
       virtual
-      void constructor(void* component, const void* init_comp) override
+      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) override
       {
         const string& init = *reinterpret_cast<const string*>(init_comp);
         new (component) string(init);
+      }
+
+      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) override
+      {
+        string& init = *reinterpret_cast<string*>(init_comp);
+        new (component) string(std::move(init));
       }
 
       virtual
       void destructor(void* component) override
       {
         string* s =  reinterpret_cast<string*>(component);
-        delete s;
+        s->~string();
       }
 
       virtual

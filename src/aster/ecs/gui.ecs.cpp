@@ -3,6 +3,8 @@
 #include <engine/gui/gui.h>
 #include <engine/input/input.h>
 #include <engine/types.h>
+#include <engine/console/cmd.h>
+#include <engine/ecs/ecs.h>
 
 // ECS_SYSTEM()
 // static void camera_rotation(
@@ -46,3 +48,37 @@ static void system_test_test_float2(const float2 test_float2)
 {
   volatile const float2 fl2 = test_float2;
 }
+
+ECS_SYSTEM()
+static
+void system_src_tmpl(const float fl_data, const string& txt_data)
+{
+  volatile const float fl = fl_data;
+}
+
+ECS_SYSTEM()
+static
+void system_dst_tmpl(const float fl_data, const string& txt_data2)
+{
+  volatile const float fl = fl_data;
+}
+
+ecs::EntityId srcEid;
+
+void create_src(eastl::span<string_view> args)
+{
+  auto& ecs = ecs::get_registry();
+  srcEid = ecs.createEntity("src_tmpl", {});
+}
+
+void recreate_src(eastl::span<string_view> args)
+{
+  auto& ecs = ecs::get_registry();
+  ecs::EntityComponents init;
+  init["fl_data"] = 0.5f;
+  init["txt_data2"] = string{"Mbbbbbb"};
+  srcEid = ecs.recreateEntity(srcEid, "dst_tmpl", std::move(init));
+}
+
+CONSOLE_CMD("create_src", 0, 0, create_src);
+CONSOLE_CMD("recreate", 0, 0, recreate_src);

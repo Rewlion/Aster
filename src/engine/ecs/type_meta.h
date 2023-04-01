@@ -28,8 +28,11 @@ namespace ecs
   {
     public:
       virtual
-      void constructor(void* component, const void* init_comp) {}
+      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) {}
       
+      virtual
+      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) {}
+
       virtual
       void destructor(void* component) {}
 
@@ -44,24 +47,25 @@ namespace ecs
   class TrivialTypeManager : public TypeManager
   {
     public:
-      virtual
-      void constructor(void* component, const void* init_comp) override
+      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) override
       {
         std::memcpy(component, init_comp, sizeof(T));
       }
 
-      virtual
+      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) override
+      {
+         std::memcpy(component, init_comp, sizeof(T));
+      }
+
       void destructor(void* component) override
       {
       }
 
-      virtual
       void copy(void* __restrict__ to, const void* __restrict__ from) override
       {
         std::memcpy(to, from, sizeof(T));
       }
 
-      virtual
       void move(void* __restrict__ to, void* __restrict__ from) override
       {
         std::memcpy(to, from, sizeof(T));

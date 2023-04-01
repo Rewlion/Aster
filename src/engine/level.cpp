@@ -17,15 +17,13 @@ namespace
     #define DECL_COMP_INIT(blk_type, type)\
       case DataBlock::ValueType::blk_type:\
       {\
-        init[ecs::hashed_name(componentName)] = std::get<type>(attr.as);\
+        init[attr.name.c_str()] = std::get<type>(attr.as);\
         break;\
       }
 
 
     for(const auto& attr: entity.getAttributes())
     {
-      const string_view componentName{attr.name};
-
       switch(attr.type)
       {
         DECL_COMP_INIT(Int,    int)
