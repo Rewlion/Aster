@@ -22,6 +22,7 @@ namespace ecs
       void addTemplate(const string& name,
                        TemplateParentNames&&,
                        TemplateComponentsMap&&);
+      auto getEntityTemplateName(const EntityId eid) const -> string_view;
 
       auto createEntity(const string_view tmpl, EntityComponents&& inits) -> EntityId;
       auto recreateEntity(const EntityId eid, const string_view tmpl, EntityComponents&& inits) -> EntityId;
@@ -65,6 +66,7 @@ namespace ecs
         archetype_id_t archId;
         chunk_id_t chunkId;
         chunk_eid_t chunkEid;
+        string templateName;
       };
 
       Templates m_Templates;

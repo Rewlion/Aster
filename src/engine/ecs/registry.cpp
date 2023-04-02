@@ -34,6 +34,15 @@ namespace ecs
       logerror("ecs: failed to register template `{}`, see logs above", name);
   }
 
+  auto Registry::getEntityTemplateName(const EntityId eid) const -> string_view
+  {
+    const auto eInfoIt = m_EntityInfosMap.find(eid.getId());
+    if (eInfoIt != m_EntityInfosMap.end() && eInfoIt->second.eid == eid)
+      return eInfoIt->second.templateName;
+    
+    return "";
+  }
+
   auto Registry::createEntity(const string_view tmpl_name, EntityComponents&& inits) -> EntityId
   {
     return recreateEntity({}, tmpl_name, std::move(inits));
@@ -155,7 +164,8 @@ namespace ecs
         .eid = newEid,
         .archId = archId,
         .chunkId = chunkId,
-        .chunkEid = chunkEid
+        .chunkEid = chunkEid,
+        .templateName = string{tmpl_name}
       }
     ));
 
