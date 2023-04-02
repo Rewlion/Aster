@@ -183,7 +183,9 @@ namespace ecs
       }
     ));
 
-    sendEvent(OnEntityCreated{}, newEid);
+    OnEntityCreated evt;
+    evt.eid = newEid;
+    sendEvent(std::move(evt), newEid);
 
     return newEid;
   }

@@ -40,3 +40,14 @@ template @("name: subt")
 {
   bool flag = true
 }
+
+template @("name: pawn")
+{
+  float pawn_pos = 0.24
+}
+
+template @("name: controller")
+{
+  entity_id @("pawn_eid") {}
+  bool controller_flag = false
+}

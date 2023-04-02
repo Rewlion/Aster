@@ -16,6 +16,8 @@ def get_template_real_type(cursor_type):
 def get_real_type_name(real_type):
   if real_type.kind == clang.cindex.TypeKind.TYPEDEF:
     return real_type.get_typedef_name()
+  elif real_type.kind == clang.cindex.TypeKind.ELABORATED:
+    return real_type.get_named_type().spelling
   elif real_type.kind == clang.cindex.TypeKind.INT:
     return "int"
   elif real_type.kind == clang.cindex.TypeKind.FLOAT:

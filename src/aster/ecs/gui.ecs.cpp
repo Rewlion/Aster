@@ -107,7 +107,34 @@ void system_flag(const bool flag)
   const volatile bool f = flag;
 }
 
+void create_pawn(eastl::span<string_view> args)
+{
+  auto& ecs = ecs::get_registry();
+  ecs.createEntity("pawn");
+}
+
+ECS_EVENT_SYSTEM()
+static
+void system_on_pawn_creation(const ecs::OnEntityCreated& evt, const float pawn_pos)
+{
+  ecs::EntityComponents init;
+  init["pawn_eid"] = evt.eid;
+
+  console::clog(fmt::format("created pawn with id:{}", evt.eid.getId()));
+
+  auto& ecs = ecs::get_registry();
+  ecs.createEntity("controller", std::move(init));
+}
+
+ECS_SYSTEM()
+static
+void system_controller(const ecs::EntityId pawn_eid, bool controller_flag)
+{
+  volatile const bool f = controller_flag;
+}
+
 CONSOLE_CMD("create_src", 0, 0, create_src);
 CONSOLE_CMD("recreate", 0, 0, recreate_src);
 CONSOLE_CMD("add", 0, 0, add_subt);
 CONSOLE_CMD("del", 0, 0, remove_subt);
+CONSOLE_CMD("pawn", 0, 0, create_pawn);

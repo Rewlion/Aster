@@ -55,6 +55,17 @@ namespace ecs
 
     #undef ADD_TMPL_COMP
 
+    for (auto& child: tmpl.getChildBlocks())
+    {
+      const string& type = child.getName();
+      const string& name = child.getAnnotation();
+
+      if (type == "entity_id")
+      {
+        comps[name] = EntityId{};
+      }
+    }
+
     return comps;
   }
 

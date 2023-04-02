@@ -17,7 +17,7 @@ namespace ecs
       TemplateComponent(TemplateComponent&&);
       ~TemplateComponent();
 
-      TemplateComponent& operator=(TemplateComponent&&);
+      auto operator=(TemplateComponent&&) -> TemplateComponent&;
 
       template<class T>
       void operator=(T&& v) &;
@@ -49,6 +49,26 @@ namespace ecs
       name_hash_t m_NameHash;
   };
 
+  template<class T>
+  void TemplateComponent::operator=(T&& v) &
+  {
+    if (isBoxedType<T>())
+    {
+      using PtrType = typename std::remove_cvref<T>::type;
+      as.ptr = new PtrType;
+      *(PtrType*)as.ptr = std::move(v);
+    }
+    else
+      std::memcpy(&as.rawValue, &v, sizeof(v));
+    m_TypeId = CompileTypeId::from<T>();
+  }
+
+  template<class T>
+  auto TemplateComponent::isBoxedType() -> bool
+  {
+    return isBoxedType(sizeof(T));
+  }
+
   class TemplateComponentsMap
   {
     public:
@@ -65,5 +85,3 @@ namespace ecs
       eastl::vector_map<name_hash_t, string> m_Names;
   };
 }
-
-#include "template_component.inc.hpp"

@@ -24,7 +24,7 @@ namespace ecs
                        TemplateComponentsMap&&);
       auto getEntityTemplateName(const EntityId eid) const -> string_view;
 
-      auto createEntity(const string_view tmpl, EntityComponents&& inits) -> EntityId;
+      auto createEntity(const string_view tmpl, EntityComponents&& inits = {}) -> EntityId;
       auto recreateEntity(const EntityId eid, const string_view tmpl, EntityComponents&& inits) -> EntityId;
       void destroyEntity(const EntityId eid);
 

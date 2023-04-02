@@ -59,7 +59,7 @@ namespace ecs
     }
   }
 
-  TemplateComponent& TemplateComponent::operator=(TemplateComponent&& rvl)
+  auto TemplateComponent::operator=(TemplateComponent&& rvl) -> TemplateComponent&
   {
     this->~TemplateComponent();
     std::swap(as.rawValue, rvl.as.rawValue);

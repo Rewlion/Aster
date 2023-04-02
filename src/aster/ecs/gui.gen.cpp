@@ -130,3 +130,39 @@ static SystemRegistration system_flag_registration(
   },
   "system_flag"
 );
+
+
+static void system_on_pawn_creation_internal(Event* event, ComponentsAccessor& accessor)
+{
+  OnEntityCreated* casted_event = reinterpret_cast<OnEntityCreated*>(event);
+  float pawn_pos = accessor.get<float>(compile_ecs_name_hash("pawn_pos"));
+  system_on_pawn_creation(*casted_event, pawn_pos);
+}
+
+
+static EventSystemRegistration system_on_pawn_creation_registration(
+  system_on_pawn_creation_internal,
+  compile_ecs_name_hash("OnEntityCreated"),
+  {
+    DESCRIBE_QUERY_COMPONENT("pawn_pos", float)
+  },
+  "system_on_pawn_creation"
+);
+
+
+static void system_controller_internal(ComponentsAccessor& accessor)
+{
+  ecs::EntityId pawn_eid = accessor.get<ecs::EntityId>(compile_ecs_name_hash("pawn_eid"));
+  bool controller_flag = accessor.get<bool>(compile_ecs_name_hash("controller_flag"));
+  system_controller(pawn_eid,controller_flag);
+}
+
+
+static SystemRegistration system_controller_registration(
+  system_controller_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("pawn_eid", ecs::EntityId),
+    DESCRIBE_QUERY_COMPONENT("controller_flag", bool)
+  },
+  "system_controller"
+);
