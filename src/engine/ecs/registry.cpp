@@ -280,11 +280,21 @@ namespace ecs
     }
   }
 
-  void Registry::query(const query_id_t queryId, DirectQueryCb cb)
+  void Registry::query(const query_id_t query_id, DirectQueryCb cb)
   {
-    DirectQuery& directQuery = m_RegisteredDirectQueries[queryId];
+    DirectQuery& directQuery = m_RegisteredDirectQueries[query_id];
     for (archetype_id_t archetypeId: directQuery.desiredArchetypes)
       queryArchetype(archetypeId, cb);
+  }
+
+  void Registry::query(const EntityId eid, DirectQueryCb cb)
+  {
+    const auto it = m_EntityInfosMap.find(eid.getId());
+    if (it != m_EntityInfosMap.end())
+    {
+      const auto& eInfo = it->second;
+      m_Archetypes.accessEntityInArchetype(eInfo.archId, eInfo.chunkId, eInfo.chunkEid, cb);
+    }
   }
 
   void Registry::tick()

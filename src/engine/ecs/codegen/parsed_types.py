@@ -65,13 +65,22 @@ class Query:
   def parseParams(self, param_cursors):
     paramsCount = len(param_cursors)
 
-    if paramsCount != 1:
-      raise ValueError("query has invalid number params:{}, 1 expected [{}]"
-        .format(paramsCount, param_cursors.location))
+    if not (paramsCount >= 0 or paramsCount < 2):
+      err = 'query has invalid params. Expected: (eastl::function) or (EntityId, eastl::function) [{}]'.format(param_cursors.location)
+      raise ValueError(err)
 
-    paramCursor = param_cursors[0]
-    if not utils.is_eastl_functor(paramCursor):
-      raise ValueError("query has invalid param:{}, eastl::function expected [{}]".format(paramCursor.spelling, param_cursor.location))
+    if paramsCount == 2:
+      if utils.is_entity_id(param_cursors[0]):
+        self.isDirectQuery = True
+        self.eidName = param_cursors[0].spelling
+      else:
+        raise ValueError("direct query has invalid param: {}. It has to be EntityId [{}]".format(paramCursor.spelling, param_cursors[1].location))
+      if not utils.is_eastl_functor(param_cursors[1]):
+        raise ValueError("query has invalid param:{}, eastl::function expected [{}]".format(paramCursor.spelling, param_cursors[1].location))
+    else:
+      self.isDirectQuery = False
+
+    paramCursor = param_cursors[1] if self.isDirectQuery else param_cursors[0]
 
     templateParamNames = utils.get_template_param_names(paramCursor)
     realType = utils.get_template_real_type(paramCursor.type)
@@ -84,7 +93,12 @@ class Query:
     self.params = self.parseParams(param_cursors)
   
   def generate(self):
+    body = ""
+    if self.isDirectQuery:
+      body = templates.generate_direct_query_body(self.eidName, self.name, self.params)
+    else:
+      body = templates.generate_query_body(self.name, self.params)
     return "\n".join([
       templates.generate_query_id_declaration(self.name, self.params),
-      templates.generate_query_body(self.name, self.params)
+      body
     ])

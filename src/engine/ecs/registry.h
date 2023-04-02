@@ -36,7 +36,8 @@ namespace ecs
       template<BasedFromEcsEvent T>
       void registerEvent();
 
-      void query(const query_id_t queryId, DirectQueryCb cb);
+      void query(const query_id_t, DirectQueryCb);
+      void query(const EntityId, DirectQueryCb);
 
       void tick();
 

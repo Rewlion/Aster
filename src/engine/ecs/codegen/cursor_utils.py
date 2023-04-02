@@ -39,8 +39,11 @@ def is_eastl_functor(param_cursor):
     and namespaceType.spelling == "eastl"
   isEastlFunction = paramType.kind == clang.cindex.CursorKind.TEMPLATE_REF\
     and paramType.spelling == "function"
-
   return isEastlNamespace and isEastlFunction
+
+def is_entity_id(param_cursor):
+  typeName = get_cursor_type_name(param_cursor.type)
+  return typeName == "EntityId" or typeName == "ecs::EntityId"
 
 def get_template_param_names(param_cursor):
   templateParamNames = []

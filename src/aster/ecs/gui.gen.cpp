@@ -150,6 +150,26 @@ static EventSystemRegistration system_on_pawn_creation_registration(
 );
 
 
+const static DirectQueryRegistration query_pawn_queryReg{
+  {
+    DESCRIBE_QUERY_COMPONENT("pawn_pos", float)
+  },
+  "query_pawn"};
+const static query_id_t query_pawn_queryId = query_pawn_queryReg.getId();
+
+
+void query_pawn (EntityId eid, eastl::function<
+  void(
+    float pawn_pos)> cb)
+{
+  ecs::get_registry().query(eid, [&](ComponentsAccessor& accessor)
+  {
+    float pawn_pos = accessor.get<float>(compile_ecs_name_hash("pawn_pos"));
+    cb(pawn_pos);
+  });
+}
+
+
 static void system_controller_internal(ComponentsAccessor& accessor)
 {
   ecs::EntityId pawn_eid = accessor.get<ecs::EntityId>(compile_ecs_name_hash("pawn_eid"));

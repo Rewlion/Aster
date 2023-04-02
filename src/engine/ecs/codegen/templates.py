@@ -84,6 +84,27 @@ void {query_name} (eastl::function<
   callback_execute_args = ",".join([c.name for c in components])
 )
 
+def generate_direct_query_body(eid, name, components):
+  return """
+void {query_name} (EntityId {eid_name}, eastl::function<
+  void(
+{functor_params})> cb)
+{{
+  {ecs_namespace}::get_registry().query({eid_name}, [&](ComponentsAccessor& accessor)
+  {{
+{components_access}
+    cb({callback_execute_args});
+  }});
+}}
+""".format(
+  query_name = name,
+  eid_name = eid,
+  functor_params = generate_functor_params(components, 2),
+  ecs_namespace = consts.ECS_NAMESPACE,
+  components_access = generate_components_access(components, 2),
+  callback_execute_args = ",".join([c.name for c in components])
+)
+
 def generate_event_system_internal(name, event_name, components):
   cbArgs = ",".join([c.name for c in components])
   if len(cbArgs) > 0:

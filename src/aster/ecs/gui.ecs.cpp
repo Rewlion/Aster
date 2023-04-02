@@ -126,11 +126,20 @@ void system_on_pawn_creation(const ecs::OnEntityCreated& evt, const float pawn_p
   ecs.createEntity("controller", std::move(init));
 }
 
+ECS_QUERY()
+static
+void query_pawn(const ecs::EntityId eid, eastl::function<void(const float pawn_pos)>);
+
 ECS_SYSTEM()
 static
 void system_controller(const ecs::EntityId pawn_eid, bool controller_flag)
 {
   volatile const bool f = controller_flag;
+
+  volatile float fv = 0.0f;
+  query_pawn(pawn_eid, [&](const float v){
+    fv = v;
+  });
 }
 
 CONSOLE_CMD("create_src", 0, 0, create_src);
