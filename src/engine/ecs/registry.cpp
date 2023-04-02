@@ -195,7 +195,7 @@ namespace ecs
     for (const auto& qc: queryComponents)
     {
       const auto [rc, compId] = m_RegisteredComponents.getComponentAndId(qc.nameHash);
-      if (rc->typeMeta.typeId != qc.typeId)
+      if (!rc || rc->typeMeta.typeId != qc.typeId)
         return {};
       
       comps.push_back(compId);
