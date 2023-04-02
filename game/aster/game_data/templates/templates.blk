@@ -35,3 +35,8 @@ template @("name: dst_tmpl")
   float fl_data = 0.2
   text txt_data2 = "newText"
 }
+
+template @("name: subt")
+{
+  bool flag = true
+}

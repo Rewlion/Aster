@@ -12,11 +12,16 @@ namespace ecs
   {
   }
 
-  auto Templates::getDescription(const name_hash_t name) -> Templates::DescAccessResult
+  auto Templates::getDescription(const name_hash_t name) -> TemplateDescription*
   {
     const auto it = m_DescMap.find(name);
-    const bool valid = it != m_DescMap.end();
-    return {it->second, valid};
+    return it != m_DescMap.end() ? &it->second : nullptr;
+  }
+
+  auto Templates::getDescription(const string_view name) -> TemplateDescription*
+  {
+    const name_hash_t id = ecs_name_hash(name);
+    return getDescription(id);
   }
 
   auto Templates::addTemplateDesc(TemplateDescription&& desc,
@@ -48,24 +53,24 @@ namespace ecs
                                   const RegisteredComponents& registered_comps) -> template_id_t
   {
     const name_hash_t id = ecs_name_hash(name);
-    auto [templateDesc, valid] = getDescription(id);
-    if (!valid) [[unlikely]]
+    TemplateDescription* templateDesc = getDescription(id);
+    if (!templateDesc) [[unlikely]]
     {
       logerror("ecs: unknown template {}", name);
       return INVALID_TEMPLATE_ID;
     }
 
-    if (templateDesc.tmplId == INVALID_TEMPLATE_ID) [[unlikely]]
+    if (templateDesc->tmplId == INVALID_TEMPLATE_ID) [[unlikely]]
     {
-      templateDesc.tmplId = createTemplate(templateDesc, archetypes, registered_comps);
-      if (templateDesc.tmplId == INVALID_TEMPLATE_ID) [[unlikely]]
+      templateDesc->tmplId = createTemplate(*templateDesc, archetypes, registered_comps);
+      if (templateDesc->tmplId == INVALID_TEMPLATE_ID) [[unlikely]]
       {
         logerror("ecs: failed to create template `{}`", name);
         return INVALID_TEMPLATE_ID;
       }
     }
 
-    return templateDesc.tmplId;
+    return templateDesc->tmplId;
   }
 
   auto Templates::hasPendingRegistration() const -> bool

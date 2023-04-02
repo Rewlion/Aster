@@ -114,3 +114,19 @@ static SystemRegistration system_dst_tmpl_registration(
   },
   "system_dst_tmpl"
 );
+
+
+static void system_flag_internal(ComponentsAccessor& accessor)
+{
+  bool flag = accessor.get<bool>(compile_ecs_name_hash("flag"));
+  system_flag(flag);
+}
+
+
+static SystemRegistration system_flag_registration(
+  system_flag_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("flag", bool)
+  },
+  "system_flag"
+);

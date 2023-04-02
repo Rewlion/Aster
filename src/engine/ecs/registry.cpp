@@ -13,9 +13,23 @@ namespace ecs
                             TemplateParentNames&& parents,
                             TemplateComponentsMap&& comps_map)
   {
-    if (m_Templates.hasTemplateDescription(name)) [[unlikely]]
+    auto* tDesc = m_Templates.getDescription(name);
+    if (tDesc)
     {
-      logerror("ecs: failed to register template `{}`: it's already registered", name);
+      if (tDesc->parents != parents)
+      {
+        const auto dumpParents = [](const TemplateParentNames& parents){
+          string res;
+          for (auto p: parents)
+            if (res.empty())
+              res = p;
+            else
+              res = fmt::format("{} {}", res, p);
+          return res;
+        };
+        logerror("ecs: failed to register template `{}`: it's already registered with different parents. Registered:[{}] New:[{}]",
+          name, dumpParents(tDesc->parents), dumpParents(parents));
+      }
       return;
     }
 

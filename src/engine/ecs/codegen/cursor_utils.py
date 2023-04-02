@@ -20,8 +20,10 @@ def get_real_type_name(real_type):
     return "int"
   elif real_type.kind == clang.cindex.TypeKind.FLOAT:
     return "float"
+  elif real_type.kind == clang.cindex.TypeKind.BOOL:
+    return "bool"
   else:
-    raise ('{} is unknown type'.format(real_type.spelling))
+    raise Exception('{} is unknown type'.format(real_type.spelling))
 
 def get_cursor_type_name(cursor_type):
   realType = get_real_type(cursor_type)

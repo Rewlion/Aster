@@ -1,9 +1,11 @@
 #include <engine/ecs/ecs_events.h>
 #include <engine/ecs/macros.h>
+#include <engine/ecs/template_utils.h>
 #include <engine/gui/gui.h>
 #include <engine/input/input.h>
 #include <engine/types.h>
 #include <engine/console/cmd.h>
+#include <engine/console/console.h>
 #include <engine/ecs/ecs.h>
 
 // ECS_SYSTEM()
@@ -80,5 +82,32 @@ void recreate_src(eastl::span<string_view> args)
   srcEid = ecs.recreateEntity(srcEid, "dst_tmpl", std::move(init));
 }
 
+void add_subt(eastl::span<string_view>args)
+{
+  auto& ecs = ecs::get_registry();
+  auto eTmpl = ecs.getEntityTemplateName(srcEid);
+  console::clog(fmt::format("adding template subt to entity with tmpl {}", eTmpl));
+  srcEid = ecs::add_sub_template(srcEid, "subt");
+  console::clog(fmt::format("new template: {}", ecs.getEntityTemplateName(srcEid)));
+}
+
+void remove_subt(eastl::span<string_view>args)
+{
+  auto& ecs = ecs::get_registry();
+  auto eTmpl = ecs.getEntityTemplateName(srcEid);
+  console::clog(fmt::format("removing template subt from entity with tmpl {}", eTmpl));
+  srcEid = ecs::remove_sub_template(srcEid, "subt");
+  console::clog(fmt::format("new template: {}", ecs.getEntityTemplateName(srcEid)));
+}
+
+ECS_SYSTEM()
+static
+void system_flag(const bool flag)
+{
+  const volatile bool f = flag;
+}
+
 CONSOLE_CMD("create_src", 0, 0, create_src);
 CONSOLE_CMD("recreate", 0, 0, recreate_src);
+CONSOLE_CMD("add", 0, 0, add_subt);
+CONSOLE_CMD("del", 0, 0, remove_subt);

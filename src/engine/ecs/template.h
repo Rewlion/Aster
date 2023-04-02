@@ -40,13 +40,8 @@ namespace ecs
   class Templates
   {
     public:
-      struct DescAccessResult
-      {
-        TemplateDescription& desc;
-        bool valid;
-      };
-
-      auto getDescription(const name_hash_t name) -> DescAccessResult;
+      auto getDescription(const name_hash_t name) -> TemplateDescription*;
+      auto getDescription(const string_view name) -> TemplateDescription*;
 
       auto addTemplateDesc(TemplateDescription&& desc,
                            RegisteredComponents& registered_comps) -> bool;
