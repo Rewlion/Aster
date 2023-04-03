@@ -5,13 +5,13 @@
   #include <engine/log.h>
 
 // Declare stuff from Flex that Bison needs to know about:
-  extern int yylex(Ast::Config* rootAst);
-  extern int yyparse(Ast::Config* rootAst);
-  extern void yyerror(Ast::Config* rootAst, const char* msg);
-  extern FILE *yyin;
-  extern int yylineno;
+  extern int bklex(Ast::Config* rootAst);
+  extern int bkparse(Ast::Config* rootAst);
+  extern void bkerror(Ast::Config* rootAst, const char* msg);
+  extern FILE *bkin;
+  extern int bklineno;
   extern int columno;
-  extern char* yytext;
+  extern char* bktext;
 %}
 
 %code requires  {
@@ -29,6 +29,7 @@
 }
 
 %define parse.error detailed
+%define api.prefix {bk}
 
 %lex-param {Ast::Config* rootAst}
 %parse-param {Ast::Config* rootAst}
@@ -160,7 +161,7 @@ ATTRIBUTE
       valueTypeStr, expectedTypeStr
       );
 
-      yyerror(nullptr, buffer);
+      bkerror(nullptr, buffer);
     }
   }
   ;
@@ -274,7 +275,7 @@ ROW4
 
 %%
 
-void yyerror(Ast::Config* rootAst, const char* msg) {
-  logerror("[{}] blk parsing error: {} {}", rootAst->blkFile, yylineno, msg);
+void bkerror(Ast::Config* rootAst, const char* msg) {
+  logerror("[{}] blk parsing error: {} {}", rootAst->blkFile, bklineno, msg);
   rootAst->isValid = false;
 }

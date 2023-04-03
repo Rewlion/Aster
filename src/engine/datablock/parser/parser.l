@@ -1,11 +1,11 @@
 %{
-    #define YY_DECL int yylex(Ast::Config* rootAst)
+    #define YY_DECL int bklex(Ast::Config* rootAst)
 
     #include <stdio.h>
     #include "parser.tab.hpp"
 
-    void yyerror(Ast::Config* rootAst, const char* msg);
-    extern int yylex(Ast::Config* rootAst);
+    void bkerror(Ast::Config* rootAst, const char* msg);
+    extern int bklex(Ast::Config* rootAst);
     int columno = 1;
     std::string lineText;
 %}
@@ -14,6 +14,7 @@
 %option nounistd
 %option never-interactive
 %option noyywrap
+%option prefix="bk"
 
 %x include
 
@@ -32,7 +33,7 @@
   if (!yyin)
   {
     std::string err = std::string("can't include file: ") + fileName + ": file not found";
-    yyerror(rootAst, err.c_str());
+    bkerror(rootAst, err.c_str());
     yyterminate();
   }
 
@@ -42,7 +43,7 @@
 
 <include>. {
   std::string err = std::string("unexpected string: ") + yytext;
-  yyerror(rootAst, err.c_str());
+  bkerror(rootAst, err.c_str());
   yyterminate();
 }
 
@@ -154,45 +155,45 @@ bool {
 }
 
 yes {
-  yylval.bval = true; return BOOL_VAL;
+  bklval.bval = true; return BOOL_VAL;
 }
 
 true {
-  yylval.bval = true; return BOOL_VAL;
+  bklval.bval = true; return BOOL_VAL;
 }
 
 on {
-  yylval.bval = true; return BOOL_VAL;
+  bklval.bval = true; return BOOL_VAL;
 }
 
 no {
-  yylval.bval = false; return BOOL_VAL;
+  bklval.bval = false; return BOOL_VAL;
 }
 
 false {
-  yylval.bval = false; return BOOL_VAL;
+  bklval.bval = false; return BOOL_VAL;
 }
 
 off {
-  yylval.bval = false; return BOOL_VAL;
+  bklval.bval = false; return BOOL_VAL;
 }
 
 [-+]?[0-9]+ {
-  yylval.ival = atoi(yytext); return INT_VAL; 
+  bklval.ival = atoi(yytext); return INT_VAL; 
 }
 
 [-+]?[0-9]+[.][0-9]* { 
-  yylval.fval = atof(yytext); return FLOAT_VAL;
+  bklval.fval = atof(yytext); return FLOAT_VAL;
 }
 
 [a-zA-Z\-_][0-9a-zA-Z\-_.]* {
-  yylval.sval = strdup(yytext); return NAME_VAL;
+  bklval.sval = strdup(yytext); return NAME_VAL;
 }
 
 ["][^\t\r\n\"]*["] {
   char* text = yytext + 1;
   text[strlen(yytext) - 2] = '\0';
-  yylval.sval = strdup(text); return TEXT_VAL;
+  bklval.sval = strdup(text); return TEXT_VAL;
 }
 
 . { printf("Syntax error in line %d, `%s`\n", yylineno, yytext); exit(1); }

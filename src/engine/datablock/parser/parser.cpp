@@ -5,9 +5,9 @@
 #include <cstdio>
 #include <cstdlib>
 
-extern int yyparse(Ast::Config* root);
-extern void yyrestart(FILE* f);
-extern FILE *yyin;
+extern int bkparse(Ast::Config* root);
+extern void bkrestart(FILE* f);
+extern FILE *bkin;
 
 DataBlock BlkParser::ParseFile(const string& path)
 {
@@ -19,12 +19,12 @@ DataBlock BlkParser::ParseFile(const string& path)
       exit(-1);
   }
 
-  yyin = f;
+  bkin = f;
   Ast::Config root;
   root.blkFile = path;
 
-  yyrestart(f);
-  yyparse(&root);
+  bkrestart(f);
+  bkparse(&root);
   fclose(f);
 
   if (!root.isValid)

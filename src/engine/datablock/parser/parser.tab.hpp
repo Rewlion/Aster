@@ -35,14 +35,22 @@
    especially those whose name start with YY_ or yy_.  They are
    private implementation details that can be changed or removed.  */
 
-#ifndef YY_YY_SRC_ENGINE_DATABLOCK_PARSER_PARSER_TAB_HPP_INCLUDED
-# define YY_YY_SRC_ENGINE_DATABLOCK_PARSER_PARSER_TAB_HPP_INCLUDED
+#ifndef YY_BK_SRC_ENGINE_DATABLOCK_PARSER_PARSER_TAB_HPP_INCLUDED
+# define YY_BK_SRC_ENGINE_DATABLOCK_PARSER_PARSER_TAB_HPP_INCLUDED
 /* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
+#ifndef BKDEBUG
+# if defined YYDEBUG
 #if YYDEBUG
-extern int yydebug;
+#   define BKDEBUG 1
+#  else
+#   define BKDEBUG 0
+#  endif
+# else /* ! defined YYDEBUG */
+#  define BKDEBUG 0
+# endif /* ! defined YYDEBUG */
+#endif  /* ! defined BKDEBUG */
+#if BKDEBUG
+extern int bkdebug;
 #endif
 /* "%code requires" blocks.  */
 #line 17 "src/engine/datablock/parser/parser.y"
@@ -59,17 +67,17 @@ extern int yydebug;
   using glm::mat3;
   using glm::mat4;
 
-#line 63 "src/engine/datablock/parser/parser.tab.hpp"
+#line 71 "src/engine/datablock/parser/parser.tab.hpp"
 
 /* Token kinds.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
+#ifndef BKTOKENTYPE
+# define BKTOKENTYPE
+  enum bktokentype
   {
-    YYEMPTY = -2,
-    YYEOF = 0,                     /* "end of file"  */
-    YYerror = 256,                 /* error  */
-    YYUNDEF = 257,                 /* "invalid token"  */
+    BKEMPTY = -2,
+    BKEOF = 0,                     /* "end of file"  */
+    BKerror = 256,                 /* error  */
+    BKUNDEF = 257,                 /* "invalid token"  */
     BOOL_VAL = 258,                /* BOOL_VAL  */
     INT_VAL = 259,                 /* INT_VAL  */
     FLOAT_VAL = 260,               /* FLOAT_VAL  */
@@ -99,14 +107,14 @@ extern int yydebug;
     MAT3_TYPE = 284,               /* MAT3_TYPE  */
     BOOL_TYPE = 285                /* BOOL_TYPE  */
   };
-  typedef enum yytokentype yytoken_kind_t;
+  typedef enum bktokentype bktoken_kind_t;
 #endif
 
 /* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-union YYSTYPE
+#if ! defined BKSTYPE && ! defined BKSTYPE_IS_DECLARED
+union BKSTYPE
 {
-#line 36 "src/engine/datablock/parser/parser.y"
+#line 37 "src/engine/datablock/parser/parser.y"
 
   bool bval;
   int ival;
@@ -125,17 +133,17 @@ union YYSTYPE
   Ast::AttributeType attributeType;
   Ast::AttributeValue* attributeValue;
 
-#line 129 "src/engine/datablock/parser/parser.tab.hpp"
+#line 137 "src/engine/datablock/parser/parser.tab.hpp"
 
 };
-typedef union YYSTYPE YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
+typedef union BKSTYPE BKSTYPE;
+# define BKSTYPE_IS_TRIVIAL 1
+# define BKSTYPE_IS_DECLARED 1
 #endif
 
 
-extern YYSTYPE yylval;
+extern BKSTYPE bklval;
 
-int yyparse (Ast::Config* rootAst);
+int bkparse (Ast::Config* rootAst);
 
-#endif /* !YY_YY_SRC_ENGINE_DATABLOCK_PARSER_PARSER_TAB_HPP_INCLUDED  */
+#endif /* !YY_BK_SRC_ENGINE_DATABLOCK_PARSER_PARSER_TAB_HPP_INCLUDED  */
