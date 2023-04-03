@@ -1,6 +1,8 @@
 %{
     #define YY_DECL int bklex(Ast::Config* rootAst)
 
+    #include <engine/log.h>
+
     #include <stdio.h>
     #include "parser.tab.hpp"
 
@@ -32,8 +34,8 @@
 
   if (!yyin)
   {
-    std::string err = std::string("can't include file: ") + fileName + ": file not found";
-    bkerror(rootAst, err.c_str());
+    const string error = fmt::format("can't include file `{}`: File not found", fileName);
+    bkerror(rootAst, error.c_str());
     yyterminate();
   }
 
@@ -42,8 +44,8 @@
 }
 
 <include>. {
-  std::string err = std::string("unexpected string: ") + yytext;
-  bkerror(rootAst, err.c_str());
+  const std::string error = fmt::format("unexpected string: {}", yytext);
+  bkerror(rootAst, error.c_str());
   yyterminate();
 }
 
