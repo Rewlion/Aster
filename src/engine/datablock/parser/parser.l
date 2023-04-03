@@ -1,15 +1,15 @@
 %{
-    #define YY_DECL int bklex(Ast::Config* rootAst)
+    #define YY_DECL int bklex(BlkParser& parser)
 
+    #include "parser.h"
     #include <engine/log.h>
 
     #include <stdio.h>
     #include "parser.tab.hpp"
 
-    void bkerror(Ast::Config* rootAst, const char* msg);
-    extern int bklex(Ast::Config* rootAst);
+    void bkerror(BlkParser& parser, const char* msg);
+    extern int bklex(BlkParser& parser);
     int columno = 1;
-    std::string lineText;
 %}
 
 %option yylineno
@@ -35,9 +35,11 @@
   if (!yyin)
   {
     const string error = fmt::format("can't include file `{}`: File not found", fileName);
-    bkerror(rootAst, error.c_str());
+    bkerror(parser, error.c_str());
     yyterminate();
   }
+
+  parser.pushFile(string{fileName});
 
 	yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
   BEGIN(INITIAL);
@@ -45,7 +47,7 @@
 
 <include>. {
   const std::string error = fmt::format("unexpected string: {}", yytext);
-  bkerror(rootAst, error.c_str());
+  bkerror(parser, error.c_str());
   yyterminate();
 }
 
@@ -64,8 +66,12 @@
 
 [/][/][^\n]* ; // comment
 
-[ \t\n]* {
-  columno = 1;
+[ \t]* {
+  parser.incColumnno();
+}
+
+\n {
+  parser.incLineno();
 }
 
 @ {
@@ -200,7 +206,7 @@ off {
 
 . { 
   const string error =  fmt::format("unexpected symbol `{}`", yytext);
-  bkerror(rootAst, error.c_str());
+  bkerror(parser, error.c_str());
 }
 
 %%

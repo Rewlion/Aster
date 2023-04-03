@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-extern int bkparse(Ast::Config* root);
+extern int bkparse(BlkParser& parser);
 extern void bkrestart(FILE* f);
 extern FILE *bkin;
 
@@ -20,22 +20,21 @@ DataBlock BlkParser::ParseFile(const string& path)
   }
 
   bkin = f;
-  Ast::Config root;
-  root.blkFile = path;
 
   bkrestart(f);
-  bkparse(&root);
+  pushFile(path);
+  bkparse(*this);
   fclose(f);
 
-  if (!root.isValid)
+  if (!isParsingOk())
     ASSERT(!"failed to parse blk file");
 
-  return TraverseAst(root);
+  return TraverseAst();
 }
 
-DataBlock BlkParser::TraverseAst(const Ast::Config& ast)
+DataBlock BlkParser::TraverseAst()
 {
-  return ConstructBlock(ast.paramList);
+  return ConstructBlock(m_Root);
 }
 
 DataBlock BlkParser::ConstructBlock(const Ast::AnnotatedParam* paramList)

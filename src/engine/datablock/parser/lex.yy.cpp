@@ -633,8 +633,8 @@ static void yynoreturn yy_fatal_error ( const char* msg  );
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
-#define YY_NUM_RULES 40
-#define YY_END_OF_BUFFER 41
+#define YY_NUM_RULES 41
+#define YY_END_OF_BUFFER 42
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -644,16 +644,16 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[97] =
     {   0,
-        6,    6,    1,    1,   41,   39,    6,    6,   39,   39,
-       10,   11,   39,   16,   37,   39,   35,    8,    9,    7,
-       37,   14,   15,   37,   37,   37,   37,   37,   37,   37,
-       37,   12,   13,    3,    1,   40,    3,    6,    0,   38,
-        0,   35,   37,   35,    5,   36,   37,   37,   37,   37,
-       37,   32,   37,   31,   37,   37,   37,    1,    0,    0,
-       36,    5,   36,   37,   37,   37,   17,   37,   34,   37,
-       37,   29,    2,    0,   36,   28,   37,   37,   23,   24,
-       25,   26,   27,   19,   30,    0,   33,   18,    0,   20,
-       21,   22,    0,    0,    4,    0
+        6,    6,    1,    1,   42,   40,    6,    7,   40,   40,
+       11,   12,   40,   17,   38,   40,   36,    9,   10,    8,
+       38,   15,   16,   38,   38,   38,   38,   38,   38,   38,
+       38,   13,   14,    3,    1,   41,    3,    6,    0,   39,
+        0,   36,   38,   36,    5,   37,   38,   38,   38,   38,
+       38,   33,   38,   32,   38,   38,   38,    1,    0,    0,
+       37,    5,   37,   38,   38,   38,   18,   38,   35,   38,
+       38,   30,    2,    0,   37,   29,   38,   38,   24,   25,
+       26,   27,   28,   20,   31,    0,   34,   19,    0,   21,
+       22,   23,    0,    0,    4,    0
 
     } ;
 
@@ -700,18 +700,18 @@ static const YY_CHAR yy_meta[44] =
 
 static const flex_int16_t yy_base[102] =
     {   0,
-        0,    0,   42,   47,  167,  168,   52,   56,  160,  134,
-      168,  168,   47,  168,   51,  150,   57,  168,  168,  168,
-        0,  168,  168,  128,   46,  128,  136,  125,   26,   47,
-      130,  168,  168,  168,   75,  168,    0,   79,  152,  168,
-      123,   72,    0,   78,    0,   82,  121,  123,  119,  115,
-      114,    0,  121,    0,  110,  110,  111,   99,  141,  119,
-       90,    0,   94,  113,  107,  118,   97,   85,    0,  102,
-      107,    0,  129,  102,  101,    0,  101,   91,    0,    0,
-        0,    0,    0,    0,    0,   53,    0,  104,   58,    0,
-        0,    0,   50,   46,  168,  168,  122,  127,   41,  132,
+        0,    0,   42,   47,  162,  163,   49,  163,  155,  129,
+      163,  163,   40,  163,   44,  145,   50,  163,  163,  163,
+        0,  163,  163,  123,   39,  123,  131,  120,   39,   41,
+      125,  163,  163,  163,   70,  163,    0,   74,  147,  163,
+      118,   65,    0,   71,    0,   75,  116,  118,  114,  110,
+      109,    0,  116,    0,  105,  105,  106,   92,  136,  114,
+       83,    0,   87,  108,  102,  113,   90,   78,    0,   99,
+      107,    0,  127,   97,   94,    0,   99,   89,    0,    0,
+        0,    0,    0,    0,    0,   84,    0,   97,   94,    0,
+        0,    0,   56,   69,  163,  163,  115,  120,   41,  125,
 
-      137
+      130
     } ;
 
 static const flex_int16_t yy_def[102] =
@@ -730,68 +730,66 @@ static const flex_int16_t yy_def[102] =
        96
     } ;
 
-static const flex_int16_t yy_nxt[212] =
+static const flex_int16_t yy_nxt[207] =
     {   0,
         6,    7,    8,    6,    7,    9,   10,   11,   12,   13,
        14,   15,    6,   16,   17,   17,   17,   17,   18,   19,
        20,   21,   22,   23,   21,   24,   21,   21,   21,   25,
        26,   21,   27,   28,   29,   21,   21,   30,   21,   21,
        31,   32,   33,   35,   36,   43,   35,   37,   35,   36,
-       95,   35,   37,   38,   38,   53,   38,   38,   38,   54,
-       38,   42,   42,   42,   42,   44,   44,   44,   44,   46,
-       48,   42,   42,   42,   42,   55,   58,   49,   94,   58,
-       38,   38,   56,   38,   46,   93,   42,   42,   42,   42,
-       61,   89,   44,   44,   44,   44,   63,   63,   63,   63,
+       38,   35,   37,   38,   42,   42,   42,   42,   44,   44,
+       44,   44,   46,   48,   42,   42,   42,   42,   53,   55,
+       49,   58,   54,   95,   58,   38,   56,   46,   38,   42,
+       42,   42,   42,   61,   94,   44,   44,   44,   44,   63,
+       63,   63,   63,   58,   82,   83,   58,   75,   75,   75,
 
-       58,   82,   83,   58,   75,   75,   75,   75,   63,   63,
-       63,   63,   79,   80,   81,   75,   75,   75,   75,   90,
-       91,   92,   34,   34,   34,   34,   34,   39,   88,   87,
-       39,   39,   59,   86,   73,   85,   59,   62,   62,   84,
-       62,   62,   78,   77,   76,   74,   73,   72,   71,   70,
-       69,   68,   67,   66,   65,   64,   60,   40,   57,   52,
-       51,   50,   47,   45,   41,   40,   96,    5,   96,   96,
+       75,   63,   63,   63,   63,   79,   80,   81,   75,   75,
+       75,   75,   90,   91,   92,   34,   34,   34,   34,   34,
+       39,   93,   89,   39,   39,   59,   88,   87,   86,   59,
+       62,   62,   73,   62,   62,   85,   84,   78,   77,   76,
+       74,   73,   72,   71,   70,   69,   68,   67,   66,   65,
+       64,   60,   40,   57,   52,   51,   50,   47,   45,   41,
+       40,   96,    5,   96,   96,   96,   96,   96,   96,   96,
        96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
        96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
        96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
 
-       96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
-       96
+       96,   96,   96,   96,   96,   96
     } ;
 
-static const flex_int16_t yy_chk[212] =
+static const flex_int16_t yy_chk[207] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    3,    3,   99,    3,    3,    4,    4,
-       94,    4,    4,    7,    7,   29,    7,    8,    8,   29,
-        8,   13,   13,   13,   13,   15,   15,   15,   15,   17,
-       25,   17,   17,   17,   17,   30,   35,   25,   93,   35,
-       38,   38,   30,   38,   42,   89,   42,   42,   42,   42,
-       44,   86,   44,   44,   44,   44,   46,   46,   46,   46,
+        7,    4,    4,    7,   13,   13,   13,   13,   15,   15,
+       15,   15,   17,   25,   17,   17,   17,   17,   29,   30,
+       25,   35,   29,   94,   35,   38,   30,   42,   38,   42,
+       42,   42,   42,   44,   93,   44,   44,   44,   44,   46,
+       46,   46,   46,   58,   68,   68,   58,   61,   61,   61,
 
-       58,   68,   68,   58,   61,   61,   61,   61,   63,   63,
-       63,   63,   67,   67,   67,   75,   75,   75,   75,   88,
-       88,   88,   97,   97,   97,   97,   97,   98,   78,   77,
-       98,   98,  100,   74,   73,   71,  100,  101,  101,   70,
-      101,  101,   66,   65,   64,   60,   59,   57,   56,   55,
-       53,   51,   50,   49,   48,   47,   41,   39,   31,   28,
-       27,   26,   24,   16,   10,    9,    5,   96,   96,   96,
+       61,   63,   63,   63,   63,   67,   67,   67,   75,   75,
+       75,   75,   88,   88,   88,   97,   97,   97,   97,   97,
+       98,   89,   86,   98,   98,  100,   78,   77,   74,  100,
+      101,  101,   73,  101,  101,   71,   70,   66,   65,   64,
+       60,   59,   57,   56,   55,   53,   51,   50,   49,   48,
+       47,   41,   39,   31,   28,   27,   26,   24,   16,   10,
+        9,    5,   96,   96,   96,   96,   96,   96,   96,   96,
        96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
        96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
        96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
 
-       96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
-       96
+       96,   96,   96,   96,   96,   96
     } ;
 
 /* Table of booleans, true if rule could match eol. */
-static const flex_int32_t yy_rule_can_match_eol[41] =
+static const flex_int32_t yy_rule_can_match_eol[42] =
     {   0,
-0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0,     };
+    0, 0,     };
 
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
@@ -809,21 +807,21 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "src/engine/datablock/parser/parser.l"
 #line 2 "src/engine/datablock/parser/parser.l"
-    #define YY_DECL int bklex(Ast::Config* rootAst)
+    #define YY_DECL int bklex(BlkParser& parser)
 
+    #include "parser.h"
     #include <engine/log.h>
 
     #include <stdio.h>
     #include "parser.tab.hpp"
 
-    void bkerror(Ast::Config* rootAst, const char* msg);
-    extern int bklex(Ast::Config* rootAst);
+    void bkerror(BlkParser& parser, const char* msg);
+    extern int bklex(BlkParser& parser);
     int columno = 1;
-    std::string lineText;
-#line 823 "src/engine/datablock/parser/lex.yy.cpp"
+#line 821 "src/engine/datablock/parser/lex.yy.cpp"
 #define YY_NO_UNISTD_H 1
 
-#line 826 "src/engine/datablock/parser/lex.yy.cpp"
+#line 824 "src/engine/datablock/parser/lex.yy.cpp"
 
 #define INITIAL 0
 #define include 1
@@ -1044,7 +1042,7 @@ YY_DECL
 #line 23 "src/engine/datablock/parser/parser.l"
 
 
-#line 1047 "src/engine/datablock/parser/lex.yy.cpp"
+#line 1045 "src/engine/datablock/parser/lex.yy.cpp"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1126,9 +1124,11 @@ YY_RULE_SETUP
   if (!yyin)
   {
     const string error = fmt::format("can't include file `{}`: File not found", fileName);
-    bkerror(rootAst, error.c_str());
+    bkerror(parser, error.c_str());
     yyterminate();
   }
+
+  parser.pushFile(string{fileName});
 
 	yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
   BEGIN(INITIAL);
@@ -1136,23 +1136,23 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 46 "src/engine/datablock/parser/parser.l"
+#line 48 "src/engine/datablock/parser/parser.l"
 {
   const std::string error = fmt::format("unexpected string: {}", yytext);
-  bkerror(rootAst, error.c_str());
+  bkerror(parser, error.c_str());
   yyterminate();
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 52 "src/engine/datablock/parser/parser.l"
+#line 54 "src/engine/datablock/parser/parser.l"
 {
   BEGIN(include);
 }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(include):
-#line 56 "src/engine/datablock/parser/parser.l"
+#line 58 "src/engine/datablock/parser/parser.l"
 {
   fclose(yyin);
   yypop_buffer_state();
@@ -1164,257 +1164,264 @@ case YY_STATE_EOF(include):
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 65 "src/engine/datablock/parser/parser.l"
+#line 67 "src/engine/datablock/parser/parser.l"
 ; // comment
 	YY_BREAK
 case 6:
-/* rule 6 can match eol */
 YY_RULE_SETUP
-#line 67 "src/engine/datablock/parser/parser.l"
+#line 69 "src/engine/datablock/parser/parser.l"
 {
-  columno = 1;
+  parser.incColumnno();
 }
 	YY_BREAK
 case 7:
+/* rule 7 can match eol */
 YY_RULE_SETUP
-#line 71 "src/engine/datablock/parser/parser.l"
+#line 73 "src/engine/datablock/parser/parser.l"
 {
-  return AT;
+  parser.incLineno();
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 75 "src/engine/datablock/parser/parser.l"
+#line 77 "src/engine/datablock/parser/parser.l"
 {
-  return COLON;
+  return AT;
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 79 "src/engine/datablock/parser/parser.l"
+#line 81 "src/engine/datablock/parser/parser.l"
 {
-  return EQUAL_OP;
+  return COLON;
 }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 83 "src/engine/datablock/parser/parser.l"
+#line 85 "src/engine/datablock/parser/parser.l"
 {
-  return LEFT_PARENTHESIS;
+  return EQUAL_OP;
 }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 87 "src/engine/datablock/parser/parser.l"
+#line 89 "src/engine/datablock/parser/parser.l"
 {
-  return RIGHT_PARENTHESIS;
+  return LEFT_PARENTHESIS;
 }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 91 "src/engine/datablock/parser/parser.l"
+#line 93 "src/engine/datablock/parser/parser.l"
 {
-  return LEFT_BRACKET;
+  return RIGHT_PARENTHESIS;
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 95 "src/engine/datablock/parser/parser.l"
+#line 97 "src/engine/datablock/parser/parser.l"
 {
-  return RIGHT_BRACKET;
+  return LEFT_BRACKET;
 }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 99 "src/engine/datablock/parser/parser.l"
+#line 101 "src/engine/datablock/parser/parser.l"
 {
-  return LEFT_SQUARE_BRACKET;
+  return RIGHT_BRACKET;
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 103 "src/engine/datablock/parser/parser.l"
+#line 105 "src/engine/datablock/parser/parser.l"
 {
-  return RIGHT_SQUARE_BRACKET;
+  return LEFT_SQUARE_BRACKET;
 }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 107 "src/engine/datablock/parser/parser.l"
+#line 109 "src/engine/datablock/parser/parser.l"
 {
-  return COMMA;
+  return RIGHT_SQUARE_BRACKET;
 }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 111 "src/engine/datablock/parser/parser.l"
+#line 113 "src/engine/datablock/parser/parser.l"
 {
-  return INT_TYPE;
+  return COMMA;
 }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 115 "src/engine/datablock/parser/parser.l"
+#line 117 "src/engine/datablock/parser/parser.l"
 {
-  return FLOAT_TYPE;
+  return INT_TYPE;
 }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 119 "src/engine/datablock/parser/parser.l"
+#line 121 "src/engine/datablock/parser/parser.l"
 {
-  return TEXT_TYPE;
+  return FLOAT_TYPE;
 }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 123 "src/engine/datablock/parser/parser.l"
+#line 125 "src/engine/datablock/parser/parser.l"
 {
-  return POINT_2D_TYPE;
+  return TEXT_TYPE;
 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 127 "src/engine/datablock/parser/parser.l"
+#line 129 "src/engine/datablock/parser/parser.l"
 {
-  return POINT_3D_TYPE;
+  return POINT_2D_TYPE;
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 131 "src/engine/datablock/parser/parser.l"
+#line 133 "src/engine/datablock/parser/parser.l"
 {
-  return POINT_4D_TYPE;
+  return POINT_3D_TYPE;
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 135 "src/engine/datablock/parser/parser.l"
+#line 137 "src/engine/datablock/parser/parser.l"
 {
-  return INT_POINT_2D_TYPE;
+  return POINT_4D_TYPE;
 }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 139 "src/engine/datablock/parser/parser.l"
+#line 141 "src/engine/datablock/parser/parser.l"
 {
-  return INT_POINT_3D_TYPE;
+  return INT_POINT_2D_TYPE;
 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 143 "src/engine/datablock/parser/parser.l"
+#line 145 "src/engine/datablock/parser/parser.l"
 {
-  return INT_POINT_4D_TYPE;
+  return INT_POINT_3D_TYPE;
 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 147 "src/engine/datablock/parser/parser.l"
+#line 149 "src/engine/datablock/parser/parser.l"
 {
-  return MAT3_TYPE;
+  return INT_POINT_4D_TYPE;
 }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 151 "src/engine/datablock/parser/parser.l"
+#line 153 "src/engine/datablock/parser/parser.l"
 {
-  return MAT4_TYPE;
+  return MAT3_TYPE;
 }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 155 "src/engine/datablock/parser/parser.l"
+#line 157 "src/engine/datablock/parser/parser.l"
 {
-  return BOOL_TYPE;
+  return MAT4_TYPE;
 }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 159 "src/engine/datablock/parser/parser.l"
+#line 161 "src/engine/datablock/parser/parser.l"
 {
-  bklval.bval = true; return BOOL_VAL;
+  return BOOL_TYPE;
 }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 163 "src/engine/datablock/parser/parser.l"
+#line 165 "src/engine/datablock/parser/parser.l"
 {
   bklval.bval = true; return BOOL_VAL;
 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 167 "src/engine/datablock/parser/parser.l"
+#line 169 "src/engine/datablock/parser/parser.l"
 {
   bklval.bval = true; return BOOL_VAL;
 }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 171 "src/engine/datablock/parser/parser.l"
+#line 173 "src/engine/datablock/parser/parser.l"
 {
-  bklval.bval = false; return BOOL_VAL;
+  bklval.bval = true; return BOOL_VAL;
 }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 175 "src/engine/datablock/parser/parser.l"
+#line 177 "src/engine/datablock/parser/parser.l"
 {
   bklval.bval = false; return BOOL_VAL;
 }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 179 "src/engine/datablock/parser/parser.l"
+#line 181 "src/engine/datablock/parser/parser.l"
 {
   bklval.bval = false; return BOOL_VAL;
 }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 183 "src/engine/datablock/parser/parser.l"
+#line 185 "src/engine/datablock/parser/parser.l"
 {
-  bklval.ival = atoi(yytext); return INT_VAL; 
+  bklval.bval = false; return BOOL_VAL;
 }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 187 "src/engine/datablock/parser/parser.l"
-{ 
-  bklval.fval = atof(yytext); return FLOAT_VAL;
+#line 189 "src/engine/datablock/parser/parser.l"
+{
+  bklval.ival = atoi(yytext); return INT_VAL; 
 }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 191 "src/engine/datablock/parser/parser.l"
-{
-  bklval.sval = strdup(yytext); return NAME_VAL;
+#line 193 "src/engine/datablock/parser/parser.l"
+{ 
+  bklval.fval = atof(yytext); return FLOAT_VAL;
 }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 195 "src/engine/datablock/parser/parser.l"
+#line 197 "src/engine/datablock/parser/parser.l"
+{
+  bklval.sval = strdup(yytext); return NAME_VAL;
+}
+	YY_BREAK
+case 39:
+YY_RULE_SETUP
+#line 201 "src/engine/datablock/parser/parser.l"
 {
   char* text = yytext + 1;
   text[strlen(yytext) - 2] = '\0';
   bklval.sval = strdup(text); return TEXT_VAL;
 }
 	YY_BREAK
-case 39:
-YY_RULE_SETUP
-#line 201 "src/engine/datablock/parser/parser.l"
-{ 
-  const string error =  fmt::format("unexpected symbol `{}`", yytext);
-  bkerror(rootAst, error.c_str());
-}
-	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 206 "src/engine/datablock/parser/parser.l"
+#line 207 "src/engine/datablock/parser/parser.l"
+{ 
+  const string error =  fmt::format("unexpected symbol `{}`", yytext);
+  bkerror(parser, error.c_str());
+}
+	YY_BREAK
+case 41:
+YY_RULE_SETUP
+#line 212 "src/engine/datablock/parser/parser.l"
 ECHO;
 	YY_BREAK
-#line 1417 "src/engine/datablock/parser/lex.yy.cpp"
+#line 1424 "src/engine/datablock/parser/lex.yy.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2430,6 +2437,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 206 "src/engine/datablock/parser/parser.l"
+#line 212 "src/engine/datablock/parser/parser.l"
 
 

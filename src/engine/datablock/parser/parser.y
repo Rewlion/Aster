@@ -1,13 +1,14 @@
 
 %{
+  #include "parser.h"
   #include "ast.h"
   #include <glm/glm.hpp>
   #include <engine/log.h>
 
 // Declare stuff from Flex that Bison needs to know about:
-  extern int bklex(Ast::Config* rootAst);
-  extern int bkparse(Ast::Config* rootAst);
-  extern void bkerror(Ast::Config* rootAst, const char* msg);
+  extern int bklex(BlkParser& parser);
+  extern int bkparse(BlkParser& parser);
+  extern void bkerror(BlkParser& parser, const char* msg);
   extern FILE *bkin;
   extern int bklineno;
   extern int columno;
@@ -31,8 +32,8 @@
 %define parse.error detailed
 %define api.prefix {bk}
 
-%lex-param {Ast::Config* rootAst}
-%parse-param {Ast::Config* rootAst}
+%lex-param {BlkParser& parser}
+%parse-param {BlkParser& parser}
 
 %union {
   bool bval;
@@ -45,7 +46,6 @@
   ivec2 i2val;
   ivec3 i3val;
   ivec4 ival4;
-  Ast::Config* configNode;
   Ast::AnnotatedParam* paramListNode;
   Ast::Block* blockNode;
   Ast::Attribute* attributeNode;
@@ -82,7 +82,6 @@
 %token MAT3_TYPE
 %token BOOL_TYPE;
 
-%type <configNode> CONFIG;
 %type <paramListNode> PARAM_LIST;
 %type <paramListNode> ANNOTATED_PARAM;
 %type <sval> PARAM_NAME;
@@ -96,7 +95,7 @@
 
 CONFIG
   : PARAM_LIST[params] {
-    rootAst->paramList = $params;
+    parser.setRoot($params);
   }
   ;
 
@@ -161,7 +160,7 @@ ATTRIBUTE
       valueTypeStr, expectedTypeStr
       );
 
-      bkerror(nullptr, buffer);
+      bkerror(parser, buffer);
     }
   }
   ;
@@ -275,7 +274,7 @@ ROW4
 
 %%
 
-void bkerror(Ast::Config* rootAst, const char* msg) {
-  logerror("[{}] blk parsing error: {} {}", rootAst->blkFile, bklineno, msg);
-  rootAst->isValid = false;
+void bkerror(BlkParser& parser, const char* msg) {
+  logerror("parsing error: {} [{} {}:{}]", msg, parser.getCurrentFileName(), parser.getLineno(), parser.getColumnno());
+  parser.markParsingFailed();
 }

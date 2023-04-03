@@ -53,7 +53,7 @@
 extern int bkdebug;
 #endif
 /* "%code requires" blocks.  */
-#line 17 "src/engine/datablock/parser/parser.y"
+#line 18 "src/engine/datablock/parser/parser.y"
 
   #include "ast.h"
   #include <cstdio>
@@ -114,7 +114,7 @@ extern int bkdebug;
 #if ! defined BKSTYPE && ! defined BKSTYPE_IS_DECLARED
 union BKSTYPE
 {
-#line 37 "src/engine/datablock/parser/parser.y"
+#line 38 "src/engine/datablock/parser/parser.y"
 
   bool bval;
   int ival;
@@ -126,14 +126,13 @@ union BKSTYPE
   ivec2 i2val;
   ivec3 i3val;
   ivec4 ival4;
-  Ast::Config* configNode;
   Ast::AnnotatedParam* paramListNode;
   Ast::Block* blockNode;
   Ast::Attribute* attributeNode;
   Ast::AttributeType attributeType;
   Ast::AttributeValue* attributeValue;
 
-#line 137 "src/engine/datablock/parser/parser.tab.hpp"
+#line 136 "src/engine/datablock/parser/parser.tab.hpp"
 
 };
 typedef union BKSTYPE BKSTYPE;
@@ -144,6 +143,6 @@ typedef union BKSTYPE BKSTYPE;
 
 extern BKSTYPE bklval;
 
-int bkparse (Ast::Config* rootAst);
+int bkparse (BlkParser& parser);
 
 #endif /* !YY_BK_SRC_ENGINE_DATABLOCK_PARSER_PARSER_TAB_HPP_INCLUDED  */
