@@ -1404,14 +1404,17 @@ YY_RULE_SETUP
 case 39:
 YY_RULE_SETUP
 #line 201 "src/engine/datablock/parser/parser.l"
-{ printf("Syntax error in line %d, `%s`\n", yylineno, yytext); exit(1); }
+{ 
+  const string error =  fmt::format("unexpected symbol `{}`", yytext);
+  bkerror(rootAst, error.c_str());
+}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 203 "src/engine/datablock/parser/parser.l"
+#line 206 "src/engine/datablock/parser/parser.l"
 ECHO;
 	YY_BREAK
-#line 1414 "src/engine/datablock/parser/lex.yy.cpp"
+#line 1417 "src/engine/datablock/parser/lex.yy.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2427,6 +2430,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 203 "src/engine/datablock/parser/parser.l"
+#line 206 "src/engine/datablock/parser/parser.l"
 
 

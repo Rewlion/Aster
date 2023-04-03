@@ -198,6 +198,9 @@ off {
   bklval.sval = strdup(text); return TEXT_VAL;
 }
 
-. { printf("Syntax error in line %d, `%s`\n", yylineno, yytext); exit(1); }
+. { 
+  const string error =  fmt::format("unexpected symbol `{}`", yytext);
+  bkerror(rootAst, error.c_str());
+}
 
 %%
