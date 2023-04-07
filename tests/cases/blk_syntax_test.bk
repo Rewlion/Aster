@@ -1,0 +1,50 @@
+int  imyvar = 1
+int2 imyvar = 2, 2
+int3 imyvar = 3, 1.0, 1
+int4 imyvar = 4.0, 1, 4, 5
+
+float  myvar = 2
+float2 myvar = 2.0, 3.0
+float3 myvar = 1.0, 1.0, 1.0
+float4 myvar = 1.0, 0.0, 1.0, 0.0
+
+bool b1 = yes
+bool b2 = true
+bool b3 = no
+bool b4 = false
+
+text txt = "text"
+
+block1 {
+  int var = 0
+}
+
+"block2" {
+
+}
+
+annotated_block1 @("annotation") {
+  int var2 = 5
+  int avar = 3 @("val")
+}
+
+nested {
+  int v = 1
+  nested2{
+    text nested_text = "nested"
+  }
+}
+
+order {
+  int v = 1
+  int v = 2
+  
+  bk0 {
+
+  }
+  int v = 3
+
+  bk1 {
+
+  }
+}

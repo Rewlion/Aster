@@ -26,7 +26,7 @@ namespace ecs
   {
     TemplateComponentsMap comps;
     #define ADD_TMPL_COMP(blk_type, _type) \
-      case DataBlock::ValueType::blk_type:\
+      case DataBlock::Attribute::Type::blk_type:\
       {\
         const string& name = attr.name;\
         comps[name] = std::get<_type>(attr.as);\
@@ -47,9 +47,6 @@ namespace ecs
         ADD_TMPL_COMP(Float4, float4)
         ADD_TMPL_COMP(Text, string)
         ADD_TMPL_COMP(Bool, bool)
-        default:
-          logwarn("ecs: template {}: can't add template's attribute {}: unknown type {}",
-            tmpl.getName(), attr.name, attr.type, attr.getTypeStr());
       }
     }
 

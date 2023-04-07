@@ -138,7 +138,7 @@ namespace Engine
 
     for (const auto& attribute: matBlk.getAttributes())
     {
-      if (attribute.type != DataBlock::ValueType::Text || attribute.annotation != "texture")
+      if (attribute.type != DataBlock::Attribute::Type::Text || attribute.annotation != "texture")
         continue;
 
       const string textureName = std::get<string>(attribute.as);

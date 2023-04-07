@@ -1,9 +1,13 @@
 
 %{
   #include "parser.h"
-  #include "ast.h"
-  #include <glm/glm.hpp>
+  
   #include <engine/log.h>
+  #include <engine/types.h>
+
+  #include <glm/glm.hpp>
+  
+  #include <variant>
 
 // Declare stuff from Flex that Bison needs to know about:
   extern int bklex(BlkParser& parser);
@@ -11,23 +15,178 @@
   extern void bkerror(BlkParser& parser, const char* msg);
   extern FILE *bkin;
   extern int bklineno;
-  extern int columno;
   extern char* bktext;
 %}
 
 %code requires  {
-  #include "ast.h"
-  #include <cstdio>
+  #include "parser.h"
 
-  using glm::vec2;
-  using glm::vec3;
-  using glm::vec4;
-  using glm::ivec2;
-  using glm::ivec3;
-  using glm::ivec4;
-  using glm::mat3;
-  using glm::mat4;
+  #include <ranges>
+  #include <variant>
+
+  using BlockParam = std::variant<DataBlock, DataBlock::Attribute>;
+  using BlockParams = eastl::vector<BlockParam>;
+
+  static
+  auto block_params_to_bk(BlockParams&& params) -> DataBlock
+  {
+    DataBlock bk;
+    for (auto& param: params | std::views::reverse)
+    {
+      if (auto* bkChild = std::get_if<DataBlock>(&param))
+        bk.insertBlock(*bkChild);
+      else
+       bk.insertAttribute(std::get<DataBlock::Attribute>(param));
+    }
+
+    return bk;
+  }
+
+  using Number = std::variant<int, float>;
+  struct Number2
+  {
+    Number v0, v1;
+  };
+
+  struct Number3
+  {
+    Number v0, v1, v2;
+  };
+
+  struct Number4
+  {
+    Number v0, v1, v2, v3;
+  };
+
+  #define BKSTYPE std::variant<         \
+    DataBlock::Attribute::Type,         \
+    bool, string,                       \
+    Number, Number2, Number3, Number4,  \
+    mat3, mat4,                         \
+    DataBlock, DataBlock::Attribute,    \
+    BlockParam, BlockParams>
+
+  static
+  const char* bkstype_to_string(const BKSTYPE& v)
+  {
+    if (auto* t = std::get_if<DataBlock::Attribute::Type>(&v))
+      return "attribute type";
+    if (auto* t = std::get_if<bool>(&v))
+      return "bool";
+    if (auto* t = std::get_if<string>(&v))
+      return "text";
+    if (auto* t = std::get_if<Number>(&v))
+      return "number";
+    if (auto* t = std::get_if<Number2>(&v))
+      return "number2";
+    if (auto* t = std::get_if<Number3>(&v))
+      return "number3";
+    if (auto* t = std::get_if<Number4>(&v))
+      return "number4";
+    if (auto* t = std::get_if<mat3>(&v))
+      return "mat3";
+    if (auto* t = std::get_if<mat4>(&v))
+      return "mat4";
+    if (auto* t = std::get_if<DataBlock>(&v))
+      return "block";
+    if (auto* t = std::get_if<DataBlock::Attribute>(&v))
+      return "attribute";
+    if (auto* t = std::get_if<BlockParam>(&v))
+      return "block param";
+    if (auto* t = std::get_if<BlockParams>(&v))
+      return "block params";
+    else
+      return "";
+  }
+
+  static
+  auto number_to_float(const BKSTYPE& bkstype) -> float
+  {
+    const Number& n = std::get<Number>(bkstype);
+    if (auto* fl = std::get_if<float>(&n))
+      return *fl;
+    else
+      return static_cast<float>(std::get<int>(n));
+  }
+
+  static
+  auto number_to_int(const BKSTYPE& bkstype) -> int
+  {
+    const Number& n = std::get<Number>(bkstype);
+    if (auto* v = std::get_if<int>(&n))
+      return *v;
+    else
+      return static_cast<int>(std::get<float>(n));
+  }
+
+  static
+  auto number2_to_float2(const BKSTYPE& bkstype) -> float2
+  {
+    const Number2& n = std::get<Number2>(bkstype);
+    return float2{
+      number_to_float(n.v0),
+      number_to_float(n.v1)
+    };
+  }
+
+  static
+  auto number3_to_float3(const BKSTYPE& bkstype) -> float3
+  {
+    const Number3& n = std::get<Number3>(bkstype);
+    return float3{
+      number_to_float(n.v0),
+      number_to_float(n.v1),
+      number_to_float(n.v2)
+    };
+  }
+
+  static
+  auto number4_to_float4(const BKSTYPE& bkstype) -> float4
+  {
+    const Number4& n = std::get<Number4>(bkstype);
+    return float4{
+      number_to_float(n.v0),
+      number_to_float(n.v1),
+      number_to_float(n.v2),
+      number_to_float(n.v3)
+    };
+  }
+
+  static
+  auto number2_to_int2(const BKSTYPE& bkstype) -> int2
+  {
+    const Number2& n = std::get<Number2>(bkstype);
+    return int2{
+      number_to_int(n.v0),
+      number_to_int(n.v1)
+    };
+  }
+
+  static
+  auto number3_to_int3(const BKSTYPE& bkstype) -> int3
+  {
+    const Number3& n = std::get<Number3>(bkstype);
+    return int3{
+      number_to_int(n.v0),
+      number_to_int(n.v1),
+      number_to_int(n.v2)
+    };
+  }
+
+  static
+  auto number4_to_int4(const BKSTYPE& bkstype) -> int4
+  {
+    const Number4& n = std::get<Number4>(bkstype);
+    return int4{
+      number_to_int(n.v0),
+      number_to_int(n.v1),
+      number_to_int(n.v2),
+      number_to_int(n.v3)
+    };
+  }
 }
+
+%locations
 
 %define parse.error detailed
 %define api.prefix {bk}
@@ -35,29 +194,11 @@
 %lex-param {BlkParser& parser}
 %parse-param {BlkParser& parser}
 
-%union {
-  bool bval;
-  int ival;
-  float fval;
-  char* sval;
-  vec2 f2val;
-  vec3 f3val;
-  vec4 f4val;
-  ivec2 i2val;
-  ivec3 i3val;
-  ivec4 ival4;
-  Ast::AnnotatedParam* paramListNode;
-  Ast::Block* blockNode;
-  Ast::Attribute* attributeNode;
-  Ast::AttributeType attributeType;
-  Ast::AttributeValue* attributeValue;
-}
-
-%token <bval> BOOL_VAL
-%token <ival> INT_VAL
-%token <fval> FLOAT_VAL
-%token <sval> TEXT_VAL
-%token <sval> NAME_VAL
+%token BOOL_VAL
+%token INT_VAL
+%token FLOAT_VAL
+%token TEXT_VAL
+%token NAME_VAL
 %token AT "@"
 %token COLON ":"
 %token SEMICOLON ";"
@@ -69,212 +210,207 @@
 %token LEFT_SQUARE_BRACKET "["
 %token RIGHT_SQUARE_BRACKET "]"
 %token COMMA ","
-%token INT_TYPE
-%token FLOAT_TYPE
-%token TEXT_TYPE
-%token POINT_2D_TYPE
-%token POINT_3D_TYPE
-%token POINT_4D_TYPE
-%token INT_POINT_2D_TYPE
-%token INT_POINT_3D_TYPE
-%token INT_POINT_4D_TYPE
-%token MAT4_TYPE
-%token MAT3_TYPE
-%token BOOL_TYPE;
+%token TEXT_TYPE "text"
+%token FLOAT_TYPE "float"
+%token POINT_2D_TYPE "float2"
+%token POINT_3D_TYPE "float3"
+%token POINT_4D_TYPE "float4"
+%token INT_TYPE "int"
+%token INT_POINT_2D_TYPE "int2"
+%token INT_POINT_3D_TYPE "int3"
+%token INT_POINT_4D_TYPE "int4"
+%token MAT3_TYPE "mat3"
+%token MAT4_TYPE "mat4"
+%token BOOL_TYPE "bool"
 
-%type <paramListNode> PARAM_LIST;
-%type <paramListNode> ANNOTATED_PARAM;
-%type <sval> PARAM_NAME;
-%type <blockNode> BLOCK;
-%type <attributeNode> ATTRIBUTE;
-%type <f4val> ROW4;
-%type <f3val> ROW3;
-%type <attributeType> ATTRIBUTE_TYPE
-%type <attributeValue> ATTRIBUTE_VALUE
 %%
 
 CONFIG
-  : PARAM_LIST[params] {
-    parser.setRoot($params);
+  : PARAM_LIST[list] {
+    auto& params = std::get<BlockParams>($list);
+    DataBlock bk = block_params_to_bk(std::move(params));
+    parser.setBlock(std::move(bk));
   }
   ;
 
 PARAM_LIST
-  : ANNOTATED_PARAM[p] PARAM_LIST[next] {
-    $$ = $p;
-    $$->next = $next;
+  : ANNOTATED_PARAM[p] PARAM_LIST[list] {
+    std::get<BlockParams>($list).push_back() = std::move(std::get<BlockParam>($p));
+    $$ = std::move($list);
   }
   | ANNOTATED_PARAM[p] {
-    $$ = $p;
+    BlockParams params;
+    params.push_back() = std::move(std::get<BlockParam>($p));
+    $$ = params;
   }
   ;
 
 ANNOTATED_PARAM
   : PARAM_NAME[name] "@" "(" TEXT_VAL[a] ")" BLOCK[block] {
-    $$ = $block;
-    $$->name = $name; free($name);
-    $$->annotation = $a;
+    auto& bk = std::get<DataBlock>($block);
+    parser.setBkName(bk, std::move(std::get<string>($name)));
+    parser.setBkAnnotation(bk, std::move(std::get<string>($a)));
+    $$ = BlockParam{bk};
   }
   | PARAM_NAME[name] BLOCK[block] {
-    $$ = $block;
-    $$->name = $name; free($name);
+    auto& bk = std::get<DataBlock>($block);
+    parser.setBkName(bk, std::move(std::get<string>($name)));
+    $$ = BlockParam{bk};
   }
   | ATTRIBUTE[attr] "@" "(" TEXT_VAL[a] ")" {
-    $$ = $attr;
-    $$->annotation = $a;
+    auto& attribute = std::get<DataBlock::Attribute>($attr);
+    attribute.annotation = std::move(std::get<string>($a));
+    $$ = BlockParam{std::move(attribute)};
   }
   | ATTRIBUTE[attr] {
-    $$ = $attr;
+    $$ = BlockParam{std::move(std::get<DataBlock::Attribute>($attr))};
   }
   ;
 
 BLOCK
-  : "{" PARAM_LIST[params] "}" {
-    $$ = new Ast::Block;
-    $$->paramList = $params;
+  : "{" PARAM_LIST[list] "}" {
+    auto& params = std::get<BlockParams>($list);
+    $$ = block_params_to_bk(std::move(params));
   }
   | "{" "}" {
-    $$ = new Ast::Block;
+    $$ = DataBlock{};
   }
   ;
 
 ATTRIBUTE
-  : ATTRIBUTE_TYPE[type] PARAM_NAME[name] "=" ATTRIBUTE_VALUE[value] {
-    auto valueType = $value->GetType();
-    if ( $type == valueType )
-    {
-      $$ = new Ast::Attribute;
-      $$->valueNode = $value;
-      $$->name = $name; free($name);
-      $$->type = $type;
-    }
-    else
-    {
-      auto expectedTypeStr = Ast::GetAttributeTypeStr($type);
-      auto valueTypeStr = Ast::GetAttributeTypeStr(valueType);
-      auto valueStr = $value->ToStr();
+  : ATTRIBUTE_TYPE[type] PARAM_NAME[name] "=" ATTRIBUTE_VALUE[v] {
+    DataBlock::Attribute attr{
+      .name = std::move(std::get<string>($name)),
+      .annotation = "",
+      .type = std::get<DataBlock::Attribute::Type>($type)
+    };
 
-      char buffer [100];
-      std::snprintf(buffer, 100,"%s=%s  error: value has wrong type `%s`, `%s` expected",
-      expectedTypeStr,  valueStr.c_str(),
-      valueTypeStr, expectedTypeStr
-      );
+    #define AS_IS(v) std::move(v)
+    #define ATTRIBUTE_CASE(AttrType, ValueType, Getter)                                        \
+      case DataBlock::Attribute::Type::AttrType:                                               \
+      {                                                                                        \
+        if (auto* value = std::get_if<ValueType>(&$v))                                         \
+          attr.as = Getter(*value);                                                            \
+        else                                                                                   \
+        {                                                                                      \
+          auto err = fmt::format("invalid type of attribute value. Expected: {} Provided: {}", \
+            #ValueType, bkstype_to_string($v));                                                \
+          bkerror(parser, err.c_str());                                                        \
+        }                                                                                      \
+        break;                                                                                 \
+      }
 
-      bkerror(parser, buffer);
+    auto attrType = std::get<DataBlock::Attribute::Type>($type);
+    switch (attrType)
+    {
+      ATTRIBUTE_CASE(Bool,   bool,    AS_IS)
+      ATTRIBUTE_CASE(Int,    Number,  number_to_int)
+      ATTRIBUTE_CASE(Int2,   Number2, number2_to_int2)
+      ATTRIBUTE_CASE(Int3,   Number3, number3_to_int3)
+      ATTRIBUTE_CASE(Int4,   Number4, number4_to_int4)
+      ATTRIBUTE_CASE(Float,  Number,  number_to_float)
+      ATTRIBUTE_CASE(Float2, Number2, number2_to_float2)
+      ATTRIBUTE_CASE(Float3, Number3, number3_to_float3)
+      ATTRIBUTE_CASE(Float4, Number4, number4_to_float4)
+      ATTRIBUTE_CASE(Text,   string,  AS_IS)
+      ATTRIBUTE_CASE(Mat3,   mat3,    AS_IS)
+      ATTRIBUTE_CASE(Mat4,   mat4,    AS_IS)
     }
+    #undef AS_IS
+    #undef ATTRIBUTE_CASE
+
+    $$ = attr;
   }
   ;
 
 PARAM_NAME
-  : NAME_VAL[name] { $$ = $name; }
-  | TEXT_VAL[name] { $$ = $name; }
+  : NAME_VAL[name] { $$ = std::move($name); }
+  | TEXT_VAL[name] { $$ = std::move($name); }
   ;
 
 ATTRIBUTE_TYPE
-  : INT_TYPE {
-    $$ = Ast::AttributeType::Int;
-  }
-  | INT_POINT_2D_TYPE {
-    $$ = Ast::AttributeType::Int2;
-  }
-  | INT_POINT_3D_TYPE {
-    $$ = Ast::AttributeType::Int3;
-  }
-  | INT_POINT_4D_TYPE {
-    $$ = Ast::AttributeType::Int4;
-  }
-  | FLOAT_TYPE {
-    $$ = Ast::AttributeType::Float;
-  }
-  | POINT_2D_TYPE {
-    $$ = Ast::AttributeType::Float2;
-  }
-  | POINT_3D_TYPE {
-    $$ = Ast::AttributeType::Float3;
-  }
-  | POINT_4D_TYPE {
-    $$ = Ast::AttributeType::Float4;
-  }
-  | MAT3_TYPE {
-    $$ = Ast::AttributeType::Mat3;
-  }
-  | MAT4_TYPE {
-    $$ = Ast::AttributeType::Mat4;
-  }
-  | BOOL_TYPE {
-    $$ = Ast::AttributeType::Bool;
-  }
-  | TEXT_TYPE {
-    $$ = Ast::AttributeType::Text;
-  }
+  : "int"    { $$ = DataBlock::Attribute::Type::Int; }
+  | "int2"   { $$ = DataBlock::Attribute::Type::Int2; }
+  | "int3"   { $$ = DataBlock::Attribute::Type::Int3; }
+  | "int4"   { $$ = DataBlock::Attribute::Type::Int4; }
+  | "float"  { $$ = DataBlock::Attribute::Type::Float; }
+  | "float2" { $$ = DataBlock::Attribute::Type::Float2; }
+  | "float3" { $$ = DataBlock::Attribute::Type::Float3; }
+  | "float4" { $$ = DataBlock::Attribute::Type::Float4; }
+  | "mat3"   { $$ = DataBlock::Attribute::Type::Mat3; }
+  | "mat4"   { $$ = DataBlock::Attribute::Type::Mat4; }
+  | "bool"   { $$ = DataBlock::Attribute::Type::Bool; }
+  | "text"   { $$ = DataBlock::Attribute::Type::Text; }
   ;
 
 ATTRIBUTE_VALUE
-  : TEXT_VAL[t] {
-    auto v = new Ast::TextValue; v->value = std::string($t); free($t);
-    $$ = v;
-  }
-  | FLOAT_VAL[v] {
-    auto v = new Ast::FloatValue; v->value = $v;
-    $$ = v;
-  }
-  | FLOAT_VAL[f0] "," FLOAT_VAL[f1] {
-    auto v = new Ast::Float2Value; v->value = vec2($f0, $f1);
-    $$ = v;
-  }
-  | FLOAT_VAL[f0] "," FLOAT_VAL[f1] "," FLOAT_VAL[f2] {
-    auto v = new Ast::Float3Value; v->value = vec3($f0, $f1, $f2);
-    $$ = v;
-  }
-  | FLOAT_VAL[f0] "," FLOAT_VAL[f1] "," FLOAT_VAL[f2] "," FLOAT_VAL[f3] {
-    auto v = new Ast::Float4Value; v->value = vec4($f0, $f1, $f2, $f3);
-    $$ = v;
-  }
-  | INT_VAL[v] {
-    auto v = new Ast::IntValue; v->value = $v;
-    $$ = v;
-  }
-  | INT_VAL[f0] "," INT_VAL[f1] {
-    auto v = new Ast::Int2Value; v->value = ivec2($f0, $f1);
-    $$ = v;
-  }
-  | INT_VAL[f0] "," INT_VAL[f1] "," INT_VAL[f2] {
-    auto v = new Ast::Int3Value; v->value = ivec3($f0, $f1, $f2);
-    $$ = v;
-  }
-  | INT_VAL[f0] "," INT_VAL[f1] "," INT_VAL[f2] "," INT_VAL[f3] {
-    auto v = new Ast::Int4Value; v->value = ivec4($f0, $f1, $f2, $f3);
-    $$ = v;
-  } 
-  | BOOL_VAL[b] {
-    auto v = new Ast::BoolValue; v->value = $b;
-    $$ = v;
-  }
-  | "[" ROW3[r0] "," ROW3[r1] "," ROW3[r2] "]" {
-    auto v = new Ast::Mat3Value; v->value = mat3( $r0, $r1, $r2);
-    $$ = v;
-  }
-  | "[" ROW4[r0] "," ROW4[r1] "," ROW4[r2] "," ROW4[r3] "]" {
-    auto v = new Ast::Mat4Value; v->value = mat4( $r0, $r1, $r2, $r3);
-    $$ = v;
+  : TEXT_VAL[v]      { $$ = $v; }
+  | BOOL_VAL[v]      { $$ = $v; }
+  | NUMBER_VALUE[v]  { $$ = $v; }
+  | NUMBER2_VALUE[v] { $$ = $v; }
+  | NUMBER3_VALUE[v] { $$ = $v; }
+  | NUMBER4_VALUE[v] { $$ = $v; }
+  | MAT3_VALUE[v]    { $$ = $v; }
+  | MAT4_VALUE[v]    { $$ = $v; }
+  ;
+
+MAT4_VALUE
+  : "[" NUMBER4_VALUE[v0] "]" "," "[" NUMBER4_VALUE[v1] "]" "," "[" NUMBER4_VALUE[v2] "]" "," "[" NUMBER4_VALUE[v3] "]" {
+    mat4 m;
+    m[0] = number4_to_float4($v0);
+    m[1] = number4_to_float4($v1);
+    m[2] = number4_to_float4($v2);
+    m[3] = number4_to_float4($v3);
+
+    $$ = m;
   }
   ;
 
-ROW3
-  : "[" FLOAT_VAL[v0] "," FLOAT_VAL[v1] "," FLOAT_VAL[v2] "]" {
-    $$ = vec3{ $v0, $v1, $v2 };
+MAT3_VALUE
+  : "[" NUMBER3_VALUE[v0] "]" "," "[" NUMBER3_VALUE[v1] "]" "," "[" NUMBER3_VALUE[v2] "]" {
+    mat3 m;
+    m[0] = number3_to_float3($v0);
+    m[1] = number3_to_float3($v1);
+    m[2] = number3_to_float3($v2);
+
+    $$ = m;
   }
   ;
 
-ROW4
-  : "[" FLOAT_VAL[v0] "," FLOAT_VAL[v1] "," FLOAT_VAL[v2] "," FLOAT_VAL[v3] "]" {
-    $$ = vec4{ $v0, $v1, $v2, $v3 };
+NUMBER4_VALUE
+  : NUMBER_VALUE[v0] "," NUMBER_VALUE[v1] "," NUMBER_VALUE[v2] "," NUMBER_VALUE[v3] {
+    $$ = Number4{
+      std::get<Number>($v0),
+      std::get<Number>($v1),
+      std::get<Number>($v2),
+      std::get<Number>($v3)};
   }
   ;
 
+NUMBER3_VALUE
+  : NUMBER_VALUE[v0] "," NUMBER_VALUE[v1] "," NUMBER_VALUE[v2] {
+    $$ = Number3{
+      std::get<Number>($v0),
+      std::get<Number>($v1),
+      std::get<Number>($v2)};
+  }
+  ;
+
+NUMBER2_VALUE
+  : NUMBER_VALUE[v0] "," NUMBER_VALUE[v1]{
+    $$ = Number2{
+      std::get<Number>($v0),
+      std::get<Number>($v1)};
+  }
+  ;
+
+NUMBER_VALUE
+  : FLOAT_VAL[v] { $$ = $v; }
+  | INT_VAL[v]   { $$ = $v; }
+  ;
 %%
 
 void bkerror(BlkParser& parser, const char* msg) {
-  logerror("parsing error: {} [{} {}:{}]", msg, parser.getCurrentFileName(), parser.getLineno(), parser.getColumnno());
+  logerror("parsing error: {} [{}:{}]", msg, parser.getCurrentFileName(), bklloc.first_line);
   parser.markParsingFailed();
 }

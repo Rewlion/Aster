@@ -4,16 +4,25 @@
 #include <variant>
 
 #include <engine/types.h>
-#include <engine/datablock/parser/ast.h>
+
+#include <EASTL/vector.h>
 #include <glm/glm.hpp>
 
 class DataBlock
 {
   friend class BlkParser;
 public:
-  using ValueType = Ast::AttributeType;
   struct Attribute
   {
+    enum class Type
+    {
+      Bool,
+      Int, Int2, Int3, Int4,
+      Float, Float2, Float3, Float4,
+      Mat3, Mat4,
+      Text,
+    };
+
     typedef std::variant<
       bool,
       int, int2, int3, int4,
@@ -24,17 +33,31 @@ public:
 
     string name;
     string annotation;
-    ValueType type = ValueType::None;
+    Type type = Type::Bool;
     Value as;
 
     inline const char* getTypeStr() const
     {
-      return Ast::GetAttributeTypeStr(type);
+      switch(type)
+      {
+        case Type::Int: return "int";
+        case Type::Int2: return "int2";
+        case Type::Int3: return "int3";
+        case Type::Int4: return "int4";
+        case Type::Float: return "float";
+        case Type::Float2: return "float2";
+        case Type::Float3: return "float3";
+        case Type::Float4: return "float4";
+        case Type::Text: return "text";
+        case Type::Mat4: return "mat4";
+        case Type::Mat3: return "mat3";
+        case Type::Bool: return "bool";
+      }
     }
   };
 
-  typedef std::vector<DataBlock> BlocksArray;
-  typedef std::vector<Attribute> AttributesArray;
+  typedef eastl::vector<DataBlock> BlocksArray;
+  typedef eastl::vector<Attribute> AttributesArray;
 
 public:
   inline const string& getName() const
@@ -72,6 +95,9 @@ public:
   bool   getBool(const string& name, const bool def) const;
   string getText(const string& name, const string& def) const;
 
+  auto getAttribute(const string_view name, const Attribute::Type) const -> const Attribute*;
+  auto getAttribute(const string_view name, const Attribute::Type) -> const Attribute*;
+
   inline const BlocksArray& getChildBlocks() const
   {
     return m_ChildBlocks;
@@ -83,6 +109,9 @@ public:
   }
 
   bool isEmpty() const;
+
+  void insertBlock(const DataBlock& bk) { m_ChildBlocks.push_back(std::move(bk)); }
+  void insertAttribute(const Attribute& attr) { m_Attributes.push_back(std::move(attr)); }
 
 private:
   string m_Name;

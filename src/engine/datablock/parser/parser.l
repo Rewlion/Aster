@@ -9,7 +9,8 @@
 
     void bkerror(BlkParser& parser, const char* msg);
     extern int bklex(BlkParser& parser);
-    int columno = 1;
+
+    #define YY_USER_ACTION bklloc.first_line = bklloc.last_line = yylineno;
 %}
 
 %option yylineno
@@ -67,11 +68,9 @@
 [/][/][^\n]* ; // comment
 
 [ \t]* {
-  parser.incColumnno();
 }
 
 \n {
-  parser.incLineno();
 }
 
 @ {
@@ -163,45 +162,45 @@ bool {
 }
 
 yes {
-  bklval.bval = true; return BOOL_VAL;
+  bklval = true; return BOOL_VAL;
 }
 
 true {
-  bklval.bval = true; return BOOL_VAL;
+  bklval = true; return BOOL_VAL;
 }
 
 on {
-  bklval.bval = true; return BOOL_VAL;
+  bklval = true; return BOOL_VAL;
 }
 
 no {
-  bklval.bval = false; return BOOL_VAL;
+  bklval = false; return BOOL_VAL;
 }
 
 false {
-  bklval.bval = false; return BOOL_VAL;
+  bklval = false; return BOOL_VAL;
 }
 
 off {
-  bklval.bval = false; return BOOL_VAL;
+  bklval = false; return BOOL_VAL;
 }
 
 [-+]?[0-9]+ {
-  bklval.ival = atoi(yytext); return INT_VAL; 
+  bklval = Number{atoi(yytext)}; return INT_VAL; 
 }
 
 [-+]?[0-9]+[.][0-9]* { 
-  bklval.fval = atof(yytext); return FLOAT_VAL;
+  bklval = Number{(float)atof(yytext)}; return FLOAT_VAL;
 }
 
 [a-zA-Z\-_][0-9a-zA-Z\-_.]* {
-  bklval.sval = strdup(yytext); return NAME_VAL;
+  bklval = string{yytext}; return NAME_VAL;
 }
 
 ["][^\t\r\n\"]*["] {
   char* text = yytext + 1;
   text[strlen(yytext) - 2] = '\0';
-  bklval.sval = strdup(text); return TEXT_VAL;
+  bklval = string{text}; return TEXT_VAL;
 }
 
 . { 

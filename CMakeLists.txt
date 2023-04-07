@@ -24,6 +24,7 @@ include_directories(
   "${CMAKE_SOURCE_DIR}/deps/eastl-3.17.06/include"
   "${CMAKE_SOURCE_DIR}/deps/freetype-2.12.1/include"
   "${CMAKE_SOURCE_DIR}/deps/glm-0.9.9.8/include"
+  "${CMAKE_SOURCE_DIR}/deps/gtest/include"
   "${CMAKE_SOURCE_DIR}/deps/imgui/src"
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/include"
   "${CMAKE_SOURCE_DIR}/deps/quickjs/include"
@@ -74,5 +75,7 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/deps/SPIRV-Cross-moltenvk_1.1.5/src")
 add_subdirectory("${CMAKE_SOURCE_DIR}/deps/imgui/src/imgui")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/shaders_compiler")
+
+add_subdirectory("${CMAKE_SOURCE_DIR}/src/tests")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/aster")

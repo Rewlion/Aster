@@ -24,7 +24,7 @@ namespace ecs
     DataBlock* templates = settings->getChildBlock("entity_templates");
     for(const auto& attr: templates->getAttributes())
     {
-      if (attr.type == DataBlock::ValueType::Text)
+      if (attr.type == DataBlock::Attribute::Type::Text)
       {
         const string blkWithTemplates = std::get<string>(attr.as);
         loginfo("ecs: reading templates from {}", blkWithTemplates);

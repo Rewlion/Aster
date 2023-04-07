@@ -92,7 +92,7 @@ string DataBlock::getText(const string& name) const
 int DataBlock::getInt(const string& name, const int def) const
 {
   for (const auto& a: m_Attributes)
-    if (a.name == name && a.type == ValueType::Int)
+    if (a.name == name && a.type == Attribute::Type::Int)
       return std::get<int>(a.as);
 
   return def;
@@ -101,7 +101,7 @@ int DataBlock::getInt(const string& name, const int def) const
  int2 DataBlock::getInt2(const string& name, const int2& def) const
  {
    for (const auto& a: m_Attributes)
-     if (a.name == name && a.type == ValueType::Int2)
+     if (a.name == name && a.type == Attribute::Type::Int2)
        return std::get<int2>(a.as);
 
    return def;
@@ -110,7 +110,7 @@ int DataBlock::getInt(const string& name, const int def) const
 int3 DataBlock::getInt3(const string& name, const int3& def) const
 {
  for (const auto& a: m_Attributes)
-   if (a.name == name && a.type == ValueType::Int3)
+   if (a.name == name && a.type == Attribute::Type::Int3)
      return std::get<int3>(a.as);
 
  return def;
@@ -119,7 +119,7 @@ int3 DataBlock::getInt3(const string& name, const int3& def) const
 int4 DataBlock::getInt4(const string& name, const int4& def) const
 {
   for (const auto& a: m_Attributes)
-    if (a.name == name && a.type == ValueType::Int4)
+    if (a.name == name && a.type == Attribute::Type::Int4)
       return std::get<int4>(a.as);
 
   return def;
@@ -128,7 +128,7 @@ int4 DataBlock::getInt4(const string& name, const int4& def) const
 float DataBlock::getFloat(const string& name, const float def) const
 {
   for (const auto& a: m_Attributes)
-    if (a.name == name && a.type == ValueType::Float)
+    if (a.name == name && a.type == Attribute::Type::Float)
       return std::get<float>(a.as);
 
   return def;
@@ -137,7 +137,7 @@ float DataBlock::getFloat(const string& name, const float def) const
 float2 DataBlock::getFloat2(const string& name, const float2 def) const
 {
   for (const auto& a: m_Attributes)
-    if (a.name == name && a.type == ValueType::Float2)
+    if (a.name == name && a.type == Attribute::Type::Float2)
       return std::get<float2>(a.as);
 
   return def;
@@ -146,7 +146,7 @@ float2 DataBlock::getFloat2(const string& name, const float2 def) const
 float3 DataBlock::getFloat3(const string& name, const float3 def) const
 {
   for (const auto& a: m_Attributes)
-    if (a.name == name && a.type == ValueType::Float3)
+    if (a.name == name && a.type == Attribute::Type::Float3)
       return std::get<float3>(a.as);
 
   return def;
@@ -155,7 +155,7 @@ float3 DataBlock::getFloat3(const string& name, const float3 def) const
 float4 DataBlock::getFloat4(const string& name, const float4 def) const
 {
   for (const auto& a: m_Attributes)
-    if (a.name == name && a.type == ValueType::Float4)
+    if (a.name == name && a.type == Attribute::Type::Float4)
       return std::get<float4>(a.as);
 
   return def;
@@ -164,7 +164,7 @@ float4 DataBlock::getFloat4(const string& name, const float4 def) const
 bool DataBlock::getBool(const string& name, const bool def) const
 {
   for (const auto& a: m_Attributes)
-    if (a.name == name && a.type == ValueType::Bool)
+    if (a.name == name && a.type == Attribute::Type::Bool)
       return std::get<bool>(a.as);
 
   return def;
@@ -173,10 +173,26 @@ bool DataBlock::getBool(const string& name, const bool def) const
 string DataBlock::getText(const string& name, const string& def) const
 {
   for (const auto& a: m_Attributes)
-    if (a.name == name && a.type == ValueType::Text)
+    if (a.name == name && a.type == Attribute::Type::Text)
       return std::get<string>(a.as);
 
   return def;
+}
+
+auto DataBlock::getAttribute(const string_view name, const Attribute::Type type) const
+  -> const DataBlock::Attribute*
+{
+  for (const auto& a: m_Attributes)
+    if (a.name == name && a.type == type)
+      return &a;
+  
+  return nullptr;
+}
+
+auto DataBlock::getAttribute(const string_view name, const Attribute::Type type)
+  -> const DataBlock::Attribute*
+{
+  return const_cast<const DataBlock*>(this)->getAttribute(name, type);
 }
 
 bool DataBlock::isEmpty() const

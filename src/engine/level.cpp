@@ -15,7 +15,7 @@ namespace
     ecs::EntityComponents init;
 
     #define DECL_COMP_INIT(blk_type, type)\
-      case DataBlock::ValueType::blk_type:\
+      case DataBlock::Attribute::Type::blk_type:\
       {\
         init[attr.name.c_str()] = std::get<type>(attr.as);\
         break;\
@@ -38,12 +38,6 @@ namespace
         DECL_COMP_INIT(Bool,   bool)
         DECL_COMP_INIT(Mat3,   mat3)
         DECL_COMP_INIT(Mat4,   mat4)
-       
-        case DataBlock::ValueType::None:
-        {
-          ASSERT(!"no value inside datablock");
-          break;
-        }
       }
     }
     #undef DECL_COMP_INIT

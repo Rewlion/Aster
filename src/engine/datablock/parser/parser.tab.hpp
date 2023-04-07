@@ -53,21 +53,175 @@
 extern int bkdebug;
 #endif
 /* "%code requires" blocks.  */
-#line 18 "src/engine/datablock/parser/parser.y"
+#line 21 "src/engine/datablock/parser/parser.y"
 
-  #include "ast.h"
-  #include <cstdio>
+  #include "parser.h"
 
-  using glm::vec2;
-  using glm::vec3;
-  using glm::vec4;
-  using glm::ivec2;
-  using glm::ivec3;
-  using glm::ivec4;
-  using glm::mat3;
-  using glm::mat4;
+  #include <ranges>
+  #include <variant>
 
-#line 71 "src/engine/datablock/parser/parser.tab.hpp"
+  using BlockParam = std::variant<DataBlock, DataBlock::Attribute>;
+  using BlockParams = eastl::vector<BlockParam>;
+
+  static
+  auto block_params_to_bk(BlockParams&& params) -> DataBlock
+  {
+    DataBlock bk;
+    for (auto& param: params | std::views::reverse)
+    {
+      if (auto* bkChild = std::get_if<DataBlock>(&param))
+        bk.insertBlock(*bkChild);
+      else
+       bk.insertAttribute(std::get<DataBlock::Attribute>(param));
+    }
+
+    return bk;
+  }
+
+  using Number = std::variant<int, float>;
+  struct Number2
+  {
+    Number v0, v1;
+  };
+
+  struct Number3
+  {
+    Number v0, v1, v2;
+  };
+
+  struct Number4
+  {
+    Number v0, v1, v2, v3;
+  };
+
+  #define BKSTYPE std::variant<         \
+    DataBlock::Attribute::Type,         \
+    bool, string,                       \
+    Number, Number2, Number3, Number4,  \
+    mat3, mat4,                         \
+    DataBlock, DataBlock::Attribute,    \
+    BlockParam, BlockParams>
+
+  static
+  const char* bkstype_to_string(const BKSTYPE& v)
+  {
+    if (auto* t = std::get_if<DataBlock::Attribute::Type>(&v))
+      return "attribute type";
+    if (auto* t = std::get_if<bool>(&v))
+      return "bool";
+    if (auto* t = std::get_if<string>(&v))
+      return "text";
+    if (auto* t = std::get_if<Number>(&v))
+      return "number";
+    if (auto* t = std::get_if<Number2>(&v))
+      return "number2";
+    if (auto* t = std::get_if<Number3>(&v))
+      return "number3";
+    if (auto* t = std::get_if<Number4>(&v))
+      return "number4";
+    if (auto* t = std::get_if<mat3>(&v))
+      return "mat3";
+    if (auto* t = std::get_if<mat4>(&v))
+      return "mat4";
+    if (auto* t = std::get_if<DataBlock>(&v))
+      return "block";
+    if (auto* t = std::get_if<DataBlock::Attribute>(&v))
+      return "attribute";
+    if (auto* t = std::get_if<BlockParam>(&v))
+      return "block param";
+    if (auto* t = std::get_if<BlockParams>(&v))
+      return "block params";
+    else
+      return "";
+  }
+
+  static
+  auto number_to_float(const BKSTYPE& bkstype) -> float
+  {
+    const Number& n = std::get<Number>(bkstype);
+    if (auto* fl = std::get_if<float>(&n))
+      return *fl;
+    else
+      return static_cast<float>(std::get<int>(n));
+  }
+
+  static
+  auto number_to_int(const BKSTYPE& bkstype) -> int
+  {
+    const Number& n = std::get<Number>(bkstype);
+    if (auto* v = std::get_if<int>(&n))
+      return *v;
+    else
+      return static_cast<int>(std::get<float>(n));
+  }
+
+  static
+  auto number2_to_float2(const BKSTYPE& bkstype) -> float2
+  {
+    const Number2& n = std::get<Number2>(bkstype);
+    return float2{
+      number_to_float(n.v0),
+      number_to_float(n.v1)
+    };
+  }
+
+  static
+  auto number3_to_float3(const BKSTYPE& bkstype) -> float3
+  {
+    const Number3& n = std::get<Number3>(bkstype);
+    return float3{
+      number_to_float(n.v0),
+      number_to_float(n.v1),
+      number_to_float(n.v2)
+    };
+  }
+
+  static
+  auto number4_to_float4(const BKSTYPE& bkstype) -> float4
+  {
+    const Number4& n = std::get<Number4>(bkstype);
+    return float4{
+      number_to_float(n.v0),
+      number_to_float(n.v1),
+      number_to_float(n.v2),
+      number_to_float(n.v3)
+    };
+  }
+
+  static
+  auto number2_to_int2(const BKSTYPE& bkstype) -> int2
+  {
+    const Number2& n = std::get<Number2>(bkstype);
+    return int2{
+      number_to_int(n.v0),
+      number_to_int(n.v1)
+    };
+  }
+
+  static
+  auto number3_to_int3(const BKSTYPE& bkstype) -> int3
+  {
+    const Number3& n = std::get<Number3>(bkstype);
+    return int3{
+      number_to_int(n.v0),
+      number_to_int(n.v1),
+      number_to_int(n.v2)
+    };
+  }
+
+  static
+  auto number4_to_int4(const BKSTYPE& bkstype) -> int4
+  {
+    const Number4& n = std::get<Number4>(bkstype);
+    return int4{
+      number_to_int(n.v0),
+      number_to_int(n.v1),
+      number_to_int(n.v2),
+      number_to_int(n.v3)
+    };
+  }
+
+#line 225 "src/engine/datablock/parser/parser.tab.hpp"
 
 /* Token kinds.  */
 #ifndef BKTOKENTYPE
@@ -94,55 +248,46 @@ extern int bkdebug;
     LEFT_SQUARE_BRACKET = 271,     /* "["  */
     RIGHT_SQUARE_BRACKET = 272,    /* "]"  */
     COMMA = 273,                   /* ","  */
-    INT_TYPE = 274,                /* INT_TYPE  */
-    FLOAT_TYPE = 275,              /* FLOAT_TYPE  */
-    TEXT_TYPE = 276,               /* TEXT_TYPE  */
-    POINT_2D_TYPE = 277,           /* POINT_2D_TYPE  */
-    POINT_3D_TYPE = 278,           /* POINT_3D_TYPE  */
-    POINT_4D_TYPE = 279,           /* POINT_4D_TYPE  */
-    INT_POINT_2D_TYPE = 280,       /* INT_POINT_2D_TYPE  */
-    INT_POINT_3D_TYPE = 281,       /* INT_POINT_3D_TYPE  */
-    INT_POINT_4D_TYPE = 282,       /* INT_POINT_4D_TYPE  */
-    MAT4_TYPE = 283,               /* MAT4_TYPE  */
-    MAT3_TYPE = 284,               /* MAT3_TYPE  */
-    BOOL_TYPE = 285                /* BOOL_TYPE  */
+    TEXT_TYPE = 274,               /* "text"  */
+    FLOAT_TYPE = 275,              /* "float"  */
+    POINT_2D_TYPE = 276,           /* "float2"  */
+    POINT_3D_TYPE = 277,           /* "float3"  */
+    POINT_4D_TYPE = 278,           /* "float4"  */
+    INT_TYPE = 279,                /* "int"  */
+    INT_POINT_2D_TYPE = 280,       /* "int2"  */
+    INT_POINT_3D_TYPE = 281,       /* "int3"  */
+    INT_POINT_4D_TYPE = 282,       /* "int4"  */
+    MAT3_TYPE = 283,               /* "mat3"  */
+    MAT4_TYPE = 284,               /* "mat4"  */
+    BOOL_TYPE = 285                /* "bool"  */
   };
   typedef enum bktokentype bktoken_kind_t;
 #endif
 
 /* Value type.  */
 #if ! defined BKSTYPE && ! defined BKSTYPE_IS_DECLARED
-union BKSTYPE
-{
-#line 38 "src/engine/datablock/parser/parser.y"
-
-  bool bval;
-  int ival;
-  float fval;
-  char* sval;
-  vec2 f2val;
-  vec3 f3val;
-  vec4 f4val;
-  ivec2 i2val;
-  ivec3 i3val;
-  ivec4 ival4;
-  Ast::AnnotatedParam* paramListNode;
-  Ast::Block* blockNode;
-  Ast::Attribute* attributeNode;
-  Ast::AttributeType attributeType;
-  Ast::AttributeValue* attributeValue;
-
-#line 136 "src/engine/datablock/parser/parser.tab.hpp"
-
-};
-typedef union BKSTYPE BKSTYPE;
+typedef int BKSTYPE;
 # define BKSTYPE_IS_TRIVIAL 1
 # define BKSTYPE_IS_DECLARED 1
 #endif
 
+/* Location type.  */
+#if ! defined BKLTYPE && ! defined BKLTYPE_IS_DECLARED
+typedef struct BKLTYPE BKLTYPE;
+struct BKLTYPE
+{
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+};
+# define BKLTYPE_IS_DECLARED 1
+# define BKLTYPE_IS_TRIVIAL 1
+#endif
+
 
 extern BKSTYPE bklval;
-
+extern BKLTYPE bklloc;
 int bkparse (BlkParser& parser);
 
 #endif /* !YY_BK_SRC_ENGINE_DATABLOCK_PARSER_PARSER_TAB_HPP_INCLUDED  */

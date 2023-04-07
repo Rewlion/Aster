@@ -9,14 +9,15 @@ extern int bkparse(BlkParser& parser);
 extern void bkrestart(FILE* f);
 extern FILE *bkin;
 
-DataBlock BlkParser::ParseFile(const string& path)
+DataBlock BlkParser::ParseFile(const string& path, const bool accept_fails)
 {
   FILE* f = fopen(path.c_str(), "r");
 
-  if (!f)
+  if (!f) [[unlikely]]
   {
-      fprintf(stderr, "can.t open a file %s", path.c_str());
-      exit(-1);
+    m_ParsingFailed = true;
+    logerror("can't open a datablock file {}", path);
+    return EMPTY_BLOCK;
   }
 
   bkin = f;
@@ -26,134 +27,12 @@ DataBlock BlkParser::ParseFile(const string& path)
   bkparse(*this);
   fclose(f);
 
-  if (!isParsingOk())
-    ASSERT(!"failed to parse blk file");
-
-  return TraverseAst();
-}
-
-DataBlock BlkParser::TraverseAst()
-{
-  return ConstructBlock(m_Root);
-}
-
-DataBlock BlkParser::ConstructBlock(const Ast::AnnotatedParam* paramList)
-{
-  DataBlock dbk;
-  for(const Ast::AnnotatedParam* p = paramList; p != nullptr; p = p->next)
+  if (!isParsingOk()) [[unlikely]]
   {
-    switch(p->GetType())
-    {
-      case Ast::ParamType::Attribute:
-      {
-        const Ast::Attribute* attributeNode = reinterpret_cast<const Ast::Attribute*>(p);
-        DataBlock::Attribute value = ConstructAttribute(attributeNode);
-        dbk.m_Attributes.push_back(value);
-        break;
-      }
-
-      case Ast::ParamType::Block:
-      {
-        const Ast::Block* childBlockNode = reinterpret_cast<const Ast::Block*>(p);
-        DataBlock childDbk = ConstructBlock(childBlockNode->paramList);
-        childDbk.m_Name = childBlockNode->name;
-        childDbk.m_Annotation = childBlockNode->annotation;
-        dbk.m_ChildBlocks.push_back(childDbk);
-        break;
-      }
-
-      default:
-      {
-        ASSERT(!"unsupported param in bkl");
-        break;
-      }
-    }
-  }
-  return dbk;
-}
-
-DataBlock::Attribute BlkParser::ConstructAttribute(const Ast::Attribute* attribute)
-{
-  DataBlock::Attribute value;
-  value.name = attribute->name;
-  value.annotation = attribute->annotation;
-  value.type = attribute->type;
-
-  switch(attribute->type)
-  {
-    case Ast::AttributeType::Int:
-    {
-      value.as = reinterpret_cast<const Ast::IntValue*>(attribute->valueNode)->value;
-      break;
-    }
-
-    case Ast::AttributeType::Int2:
-    {
-      value.as = reinterpret_cast<const Ast::Int2Value*>(attribute->valueNode)->value;
-      break;
-    }
-
-    case Ast::AttributeType::Int3:
-    {
-      value.as = reinterpret_cast<const Ast::Int3Value*>(attribute->valueNode)->value;
-      break;
-    }
-
-    case Ast::AttributeType::Int4:
-    {
-      value.as = reinterpret_cast<const Ast::Int4Value*>(attribute->valueNode)->value;
-      break;
-    }
-
-    case Ast::AttributeType::Float:
-    {
-      value.as = reinterpret_cast<const Ast::FloatValue*>(attribute->valueNode)->value;
-      break;
-    }
-
-    case Ast::AttributeType::Float2:
-    {
-      value.as = reinterpret_cast<const Ast::Float2Value*>(attribute->valueNode)->value;
-      break;
-    }
-
-    case Ast::AttributeType::Float3:
-    {
-      value.as = reinterpret_cast<const Ast::Float3Value*>(attribute->valueNode)->value;
-      break;
-    }
-
-    case Ast::AttributeType::Float4:
-    {
-      value.as = reinterpret_cast<const Ast::Float4Value*>(attribute->valueNode)->value;
-      break;
-    }
-
-    case Ast::AttributeType::Text:
-    {
-      value.as = reinterpret_cast<const Ast::TextValue*>(attribute->valueNode)->value;
-      break;
-    }
-
-    case Ast::AttributeType::Mat4:
-    {
-      value.as = reinterpret_cast<const Ast::Mat4Value*>(attribute->valueNode)->value;
-      break;
-    }
-
-    case Ast::AttributeType::Mat3:
-    {
-      value.as = reinterpret_cast<const Ast::Mat3Value*>(attribute->valueNode)->value;
-      break;
-    }
-
-    case Ast::AttributeType::Bool:
-    {
-      value.as = reinterpret_cast<const Ast::BoolValue*>(attribute->valueNode)->value;
-      break;
-    }
-    default: assert(!"Unknown attribute");
+    if (!accept_fails)
+      ASSERT(!"failed to parse blk file");
+    return EMPTY_BLOCK;
   }
 
-  return value;
+  return std::move(m_ParsedBk);
 }

@@ -7,5 +7,5 @@ bool load_blk_from_file(DataBlock* blk, const char* path)
 {
   BlkParser parser;
   *blk = parser.ParseFile(path);
-  return true;
+  return parser.isParsingOk();
 }
