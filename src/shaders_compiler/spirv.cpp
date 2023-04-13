@@ -9,6 +9,7 @@
 #include <SPIRV-Cross/spirv_glsl.hpp>
 
 #include <EASTL/functional.h>
+#include <EASTL/sort.h>
 
 namespace spirv
 {
@@ -32,27 +33,76 @@ namespace spirv
 
     eastl::vector<DescriptorSet> reflect(const eastl::vector<const ShadersSystem::ScopeDeclaration*> scopes, const gapi::ShaderStage stages)
     {
+      struct BindingInfo
+      {
+        int remapId;
+        string_view firstScopeDelcarer;
+        string_view firstResourceDeclarer;
+      };
+
+      using binding_id_t = int;
+      using DsetBindingsRemap = eastl::vector_map<binding_id_t, BindingInfo>;
+
       eastl::vector<DescriptorSet> dsets;
-      const auto accessDsetBinding = [&](const size_t set, const size_t binding) -> vk::DescriptorSetLayoutBinding& {
+      eastl::vector<DsetBindingsRemap> remaps;
+
+      const auto dumpRes = [] (const string_view res_name, const string_view scope_name)
+      {
+        return fmt::format("[resource:{} scope:{}]", res_name, scope_name);
+      };
+
+      const auto accessDsetBinding = [&](const size_t set, const size_t binding, const string_view res_name, const string_view scope_name)
+        -> vk::DescriptorSetLayoutBinding&
+      {
         if (dsets.size() <= set)
+        {
           dsets.resize(set+1);
+          remaps.resize(set+1);
+        }
 
-        if (dsets[set].size() <= binding)
-          dsets[set].resize(binding+1);
+        auto& remap = remaps[set];
+        auto bindingInfoIt = remap.find(binding);
+        if (bindingInfoIt != remap.end())
+        {
+          logerror("\n>>> overlapping resources in set:{} binding:{}:\n>>> {}\n>>> and\n>>> {}",
+            set, binding,
+            dumpRes(res_name, scope_name),
+            dumpRes(bindingInfoIt->second.firstResourceDeclarer, bindingInfoIt->second.firstScopeDelcarer));
 
-        return dsets[set][binding];
+          return dsets[set][bindingInfoIt->second.remapId];
+        }
+        else
+        {
+          const int bindingId = dsets[set].size();
+          remap.insert({
+            binding,
+            {
+              .remapId = bindingId,
+              .firstScopeDelcarer = scope_name,
+              .firstResourceDeclarer = res_name
+            }
+          });
+          return dsets[set].push_back();
+        }
       };
 
       for (const auto& scope: scopes)
       {
         for (const auto& [_, decl]: scope->declaredResources)
         {
-          vk::DescriptorSetLayoutBinding& binding = accessDsetBinding(decl.dset, decl.binding);
+          vk::DescriptorSetLayoutBinding& binding = accessDsetBinding(decl.dset, decl.binding, decl.name, scope->name);
           binding.binding = decl.binding;
           binding.descriptorCount = 1;
           binding.descriptorType = get_descriptor_type(decl.type);
           binding.stageFlags = gapi::vulkan::get_shader_stage(stages);
         }
+      }
+
+      for (auto& bindings: dsets)
+      {
+        eastl::sort(bindings.begin(), bindings.end(), [](auto& l, auto& r) {
+          return l.binding < r.binding;
+        });
       }
 
       return dsets;
