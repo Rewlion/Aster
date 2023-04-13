@@ -3,7 +3,7 @@ scope FrameScope {
     descriptor_set(0);
     cbuffer(0);
     register(sampler, 1-2);
-    register(texture, 0-1);
+    register(texture, 2-3);
 
   sampler modelSampler = extern(model_sampler);
   TextureCube enviMap = extern(envi_map);
