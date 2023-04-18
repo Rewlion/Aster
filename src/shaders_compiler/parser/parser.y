@@ -776,8 +776,14 @@ RESOURCE_RESERVE_EXP
   : "register" "(" "texture" "," INT_VALUE[v0] "-" INT_VALUE[v1] ")" {
     $$ = new RegistersReserveExp(RegistersReserveExp::Register::Texture, $v0, $v1);
   }
+  | "register" "(" "texture" "," INT_VALUE[v0] ")" {
+    $$ = new RegistersReserveExp(RegistersReserveExp::Register::Texture, $v0, $v0);
+  }
   | "register" "(" "sampler" "," INT_VALUE[v0] "-" INT_VALUE[v1] ")" {
     $$ = new RegistersReserveExp(RegistersReserveExp::Register::Sampler, $v0, $v1);
+  }
+  | "register" "(" "sampler" "," INT_VALUE[v0] ")" {
+    $$ = new RegistersReserveExp(RegistersReserveExp::Register::Sampler, $v0, $v0);
   }
   | "cbuffer" "(" INT_VALUE[register] ")" {
     $$ = new CBufferReserveExp($register);
