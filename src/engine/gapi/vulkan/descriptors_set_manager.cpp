@@ -112,7 +112,7 @@ namespace gapi::vulkan
     if (!m_Active)
       return;
 
-    m_Dirty = !isCompatible(bindings) || m_Dirty;
+    m_Dirty |= !isCompatible(bindings);
     m_Bindings = bindings;
   }
 
