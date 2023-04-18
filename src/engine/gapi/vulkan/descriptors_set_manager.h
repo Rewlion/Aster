@@ -18,6 +18,92 @@ namespace gapi::vulkan
 
   class DescriptorsSetManager
   {
+    class PoolManager
+    {
+      public:
+        PoolManager() = default;
+        PoolManager(Device&);
+        PoolManager(PoolManager&&) = default;
+        PoolManager& operator=(PoolManager&&) = default;
+
+        auto acquireSet(const vk::DescriptorSetLayout layout) -> vk::DescriptorSet;
+
+      private:
+        void addPool();
+
+      private:
+        Device& m_Device;
+        eastl::vector<vk::UniqueDescriptorPool> m_Pools;
+    };
+
+    struct NullInfo {};
+    struct SamplerWriteInfo
+    {
+      vk::Sampler sampler;
+      size_t set;
+      size_t binding;
+    };
+
+    struct ImageWriteInfo
+    {
+      vk::ImageView view;
+      size_t set;
+      size_t binding;
+    };
+  
+    struct UniformBufferWriteInfo
+    {
+      vk::Buffer buffer;
+      size_t constOffset;
+      size_t set;
+      size_t binding;
+    };
+
+    typedef std::variant<SamplerWriteInfo, ImageWriteInfo,
+                         UniformBufferWriteInfo, NullInfo> WriteInfo;
+
+    class SetManager
+    {
+      public:
+        SetManager(PoolManager&, const size_t set);
+        SetManager(SetManager&&) = default;
+        SetManager& operator=(SetManager&&) = default;
+
+        void setPipelineLayout(const vk::DescriptorSetLayout, const spirv::v2::DescriptorSet*);
+
+        void setImage(const vk::ImageView, const size_t binding);
+        void setSampler(const vk::Sampler, const size_t binding);
+        void setUniformBuffer(const vk::Buffer, const size_t binding, const size_t constOffset);
+
+        auto acquireSet(vk::Device) -> vk::DescriptorSet;
+
+      private:
+        struct WritePreparation
+        {
+          eastl::vector<vk::WriteDescriptorSet> writes;
+          eastl::vector<vk::DescriptorImageInfo> imgs;
+          eastl::vector<vk::DescriptorBufferInfo> bufs;
+        };
+        auto prepareWrites(const eastl::vector<WriteInfo>&) -> WritePreparation;
+        void fitWriteInfos(const size_t up_to);
+        auto isCompatible(const spirv::v2::DescriptorSet*) const -> bool;
+        auto getBindingId(const size_t binding) const -> int;
+        auto validateBindingType(const size_t binding, const vk::DescriptorType) const -> bool;
+
+      private:
+        size_t m_SetId;
+        PoolManager& m_PoolManager;
+        
+        bool m_Dirty;
+        bool m_Active;
+        vk::DescriptorSet m_CurrentVkSet;
+
+        eastl::vector<WriteInfo> m_WriteInfos;
+        
+        vk::DescriptorSetLayout m_Layout;
+        const spirv::v2::DescriptorSet* m_Bindings;
+    };
+
     public:
       DescriptorsSetManager(Device& device);
       DescriptorsSetManager(DescriptorsSetManager&& rvl);
@@ -31,44 +117,15 @@ namespace gapi::vulkan
       void setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding, const size_t constOffset);
 
       void updateDescriptorSets(vk::CommandBuffer& cmdBuf);
+
     private:
-      bool validateBinding(const size_t set, const size_t binding);
-
-      struct SamplerWriteInfo
-      {
-        const vk::Sampler sampler;
-        const size_t set;
-        const size_t binding;
-      };
-      struct ImageWriteInfo
-      {
-        const vk::ImageView view;
-        const size_t set;
-        const size_t binding;
-      };
-      struct UniformBufferWriteInfo
-      {
-        const vk::Buffer buffer;
-        const size_t constOffset;
-        const size_t set;
-        const size_t binding;
-      };
-      typedef std::variant<SamplerWriteInfo, ImageWriteInfo,
-                           UniformBufferWriteInfo> WriteInfo;
-
-      bool validateBinding(const size_t set, const size_t binding, const vk::DescriptorType type) const;
-
-      vk::DescriptorSet acquireSet(const size_t set);
-      void addPool();
-      vk::DescriptorPool& acquirePool();
-
+      void fitSetManagers(const size_t up_to);
+    
     private:
       Device& m_Device;
+      PoolManager m_PoolManager;
+
       const PipelineLayout* m_PipelineLayout;
-      eastl::vector<vk::UniqueDescriptorPool> m_Pools;
-      size_t m_PoolId = 0;
-
-      eastl::vector<WriteInfo> m_WriteInfos;
-
+      eastl::vector<SetManager> m_SetManagers;
   };
 }
