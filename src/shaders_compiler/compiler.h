@@ -34,13 +34,26 @@ namespace ShadersSystem
         return m_Bin;
       }
 
-      inline const string& getCurrentCompilationFile() const
+      void pushFile(const string& file)
       {
-        return m_CurrentCompilationFile;
+        m_FileCtxs.push_back({file, 1 });
       }
+      void popFile()
+      {
+        m_FileCtxs.pop_back();
+      }
+      void incLine() { ++m_FileCtxs.back().line; }
+      auto getLine() const -> unsigned int { return m_FileCtxs.back().line; }
+      auto getCurrentFileName() const -> const string& { return m_FileCtxs.back().fileName; }
 
     private:
-      string m_CurrentCompilationFile;
+      struct FileContext
+      {
+        string fileName;
+        unsigned int line;
+      };
+      eastl::vector<FileContext> m_FileCtxs;
+
       bool m_IsCompilationOk = true;
 
       MaterialsBin m_Bin;

@@ -47,7 +47,7 @@ namespace ShadersSystem
     }
 
     m_IsCompilationOk = true;
-    m_CurrentCompilationFile = file;
+    pushFile(file);
     m_Module = ModuleResources{};
 
     shin = f;

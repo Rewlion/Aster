@@ -516,7 +516,7 @@ namespace ShadersSystem
       m_Module.declaredScopes.insert(scopeNameHash);
 
       ScopeProcessor sp(*this);
-      sp.process(s, m_CurrentCompilationFile);
+      sp.process(s, getCurrentFileName());
       ScopeDeclaration scope = sp.takeScope();
 
       const auto declaredSc = m_DeclaredScopes.find(scopeNameHash);

@@ -56,7 +56,7 @@
   char* fileName = yytext + 1;
   fileName[strlen(yytext) - 2] = '\0';
 
-  const string currentDir = fs::path(compiler.getCurrentCompilationFile()).parent_path().string();
+  const string currentDir = fs::path(compiler.getCurrentFileName()).parent_path().string();
   const string file = fmt::format("{}/{}", currentDir, fileName);
   yyin = fopen( file.c_str(), "r" );
 
@@ -66,6 +66,8 @@
     sherror(compiler, error.c_str());
     yyterminate();
   }
+
+  compiler.pushFile(file);
 
 	yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
   BEGIN(INITIAL);
@@ -89,11 +91,16 @@
   {
     yyterminate();
   }
+  compiler.popFile();
 }
 
 [/][/][^\n]* ; // comment
 
-[ \t\n]* ;
+[ \t]* ;
+
+\n {
+  compiler.incLine();
+}
 
 @ {
   return TFX_TOKEN_AT;

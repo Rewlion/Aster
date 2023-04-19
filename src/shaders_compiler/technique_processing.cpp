@@ -304,7 +304,7 @@ namespace ShadersSystem
 
           try
           {
-            const string currentDir = fs::path(m_Compiler.getCurrentCompilationFile()).parent_path().string();
+            const string currentDir = fs::path(m_Compiler.getCurrentFileName()).parent_path().string();
             ShaderBlob blob = compile_shader_stage(m_Hlsl, compileExp.targetProfile, stage, shaderName, compileExp.entry, currentDir);
             m_Shaders.push_back(std::move(blob));
           }

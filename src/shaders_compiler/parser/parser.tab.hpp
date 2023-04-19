@@ -53,7 +53,7 @@
 extern int shdebug;
 #endif
 /* "%code requires" blocks.  */
-#line 21 "src/shaders_compiler/parser/parser.y"
+#line 24 "src/shaders_compiler/parser/parser.y"
 
   #include <shaders_compiler/compiler.h>
   #include <cstdio>
@@ -229,7 +229,7 @@ extern int shdebug;
 #if ! defined SHSTYPE && ! defined SHSTYPE_IS_DECLARED
 union SHSTYPE
 {
-#line 33 "src/shaders_compiler/parser/parser.y"
+#line 36 "src/shaders_compiler/parser/parser.y"
 
   float4 f4val;
   float3 f3val;

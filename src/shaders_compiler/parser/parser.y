@@ -1,9 +1,12 @@
 
 %{
   #include <shaders_compiler/compiler.h>
+  #include <shaders_compiler/limits.h>
+
   #include <engine/types.h>
   #include <engine/log.h>
   #include <engine/gapi/resources.h>
+  
   #include <glm/glm.hpp>
 
   using namespace ShadersSystem;
@@ -917,6 +920,6 @@ TARGET_PROFILE
 %%
 
 void sherror(Compiler& compiler, const char* msg) {
-  logerror("{}: {}", shlineno, msg);
+  logerror("parsing error: {} [{}:{}]", msg, compiler.getCurrentFileName(), compiler.getLine());
   compiler.markCompilationFailed();
 }
