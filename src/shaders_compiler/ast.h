@@ -655,7 +655,6 @@ namespace ShadersSystem
       Shader = 0,
       DescriptorSet = 1,
       Register = 2,
-      CBuffer = 3
     };
     Type reserveExpType;
     ResourceReserveExp* next = nullptr;
@@ -709,7 +708,8 @@ namespace ShadersSystem
     {
       None,
       Texture,
-      Sampler
+      Sampler,
+      Buffer
     };
     Register registerType;
     int beginRange;
@@ -719,16 +719,6 @@ namespace ShadersSystem
       , registerType(regType)
       , beginRange(beginRange)
       , endRange(endRange)
-    {
-    }
-  };
-
-  struct CBufferReserveExp: public ResourceReserveExp
-  {
-    int cbuffer;
-    CBufferReserveExp(int cbuffer)
-      : ResourceReserveExp(ResourceReserveExp::Type::CBuffer)
-      , cbuffer(cbuffer)
     {
     }
   };

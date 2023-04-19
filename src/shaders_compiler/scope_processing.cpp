@@ -53,6 +53,7 @@ namespace ShadersSystem
 
             case ScopeExp::Type::CbufferVarDeclaration:
             {
+              m_Scope.cbuffer = CBUFFER_NOT_ASSIGNED;
               const CbufferVarDeclarationExp* e = reinterpret_cast<const CbufferVarDeclarationExp*>(exp);
               addCbufferVarDeclaration(*e);
               break;
@@ -83,21 +84,6 @@ namespace ShadersSystem
               break;
             }
 
-            case ResourceReserveExp::Type::CBuffer:
-            {
-              const CBufferReserveExp* e = reinterpret_cast<const CBufferReserveExp*>(exp);
-              m_Scope.cbuffer = e->cbuffer;
-              string name = m_Scope.name + "_cbuffer";
-              m_Scope.declaredResources.insert({
-                str_hash(name.c_str()),
-                ResourceDeclaration{
-                  .type = ResourceType::Cbuffer,
-                  .name = name,
-                }
-              });
-              break;
-            }
-
             case ResourceReserveExp::Type::Register:
             {
               const RegistersReserveExp* e = reinterpret_cast<const RegistersReserveExp*>(exp);
@@ -115,6 +101,12 @@ namespace ShadersSystem
                 case RegistersReserveExp::Register::Sampler:
                 {
                   m_Scope.samplerRegisters = r;
+                  break;
+                }
+
+                case RegistersReserveExp::Register::Buffer:
+                {
+                  m_Scope.bufferRegisters= r;
                   break;
                 }
 
@@ -203,16 +195,34 @@ namespace ShadersSystem
         const size_t samplersEnd = hasSamplers ? m_Scope.samplerRegisters.value().end : 0;
         size_t currentSamplerReg = hasSamplers ? m_Scope.samplerRegisters.value().begin : 0;
 
+        const bool hasBuffers = m_Scope.bufferRegisters.has_value();
+        const size_t buffersEnd = hasBuffers ? m_Scope.bufferRegisters.value().end : 0;
+        size_t currentBufferReg = hasBuffers ? m_Scope.bufferRegisters.value().begin : 0;
+
+        if (m_Scope.cbuffer == CBUFFER_NOT_ASSIGNED)
+        {
+          if (!hasBuffers)
+            throw std::runtime_error("error: scope declared cbuffer variables but there are no buffer registers reserved");
+          
+          m_Scope.cbuffer = currentBufferReg++;
+          string name = m_Scope.name + "_cbuffer";
+          m_Scope.declaredResources.insert({
+            str_hash(name.c_str()),
+            ResourceDeclaration{
+              .type = ResourceType::Cbuffer,
+              .name = name,
+              .dset =  m_Scope.descriptorSet,
+              .binding = m_Scope.cbuffer
+            }
+          });
+        }
+
         for (auto&[_, resource]: m_Scope.declaredResources)
         {
           resource.dset = m_Scope.descriptorSet;
           switch (resource.type)
           {
-            case ResourceType::Cbuffer:
-            {
-              resource.binding = m_Scope.cbuffer;
-              break;
-            }
+            case ResourceType::Cbuffer: break;
 
             case ResourceType::Sampler:
             {
@@ -501,6 +511,7 @@ namespace ShadersSystem
 
   bool Compiler::onScopeDeclaration(ScopeDeclarationExp* exp)
   {
+    const char* scopeName = exp->name;
     try
     {
       m_GC.push_back(std::unique_ptr<Node>(exp));
@@ -542,7 +553,7 @@ namespace ShadersSystem
     catch (std::exception& e)
     {
       markCompilationFailed();
-      logerror("scope declaration error: {}", e.what());
+      logerror("scope '{}' declaration error: {}", scopeName, e.what());
       return false;
     }
   }

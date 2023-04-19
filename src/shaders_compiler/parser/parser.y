@@ -788,8 +788,11 @@ RESOURCE_RESERVE_EXP
   | "register" "(" "sampler" "," INT_VALUE[v0] ")" {
     $$ = new RegistersReserveExp(RegistersReserveExp::Register::Sampler, $v0, $v0);
   }
-  | "cbuffer" "(" INT_VALUE[register] ")" {
-    $$ = new CBufferReserveExp($register);
+  | "register" "(" "buffer" "," INT_VALUE[v0] "-" INT_VALUE[v1] ")" {
+    $$ = new RegistersReserveExp(RegistersReserveExp::Register::Buffer, $v0, $v1);
+  }
+  | "register" "(" "buffer" "," INT_VALUE[v0] ")" {
+    $$ = new RegistersReserveExp(RegistersReserveExp::Register::Buffer, $v0, $v0);
   }
   | "descriptor_set" "(" INT_VALUE[v] ")" {
     $$ = new DescriptorSetReserveExp($v);

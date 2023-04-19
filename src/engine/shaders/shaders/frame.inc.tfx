@@ -1,9 +1,9 @@
 scope FrameScope {
   reserve:
     descriptor_set(0);
-    cbuffer(0);
     register(sampler, 1-2);
     register(texture, 2-3);
+    register(buffer, 0);
 
   sampler modelSampler = extern(model_sampler);
   TextureCube enviMap = extern(envi_map);

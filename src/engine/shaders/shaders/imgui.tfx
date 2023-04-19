@@ -1,7 +1,7 @@
 scope ImGuiScope {
   reserve:
     descriptor_set(1);
-    cbuffer(0);
+    register(buffer, 0);
     register(texture, 1-2);
     register(sampler, 2-3);
     

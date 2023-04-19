@@ -3,7 +3,7 @@
 scope GuiScope {
   reserve:
     descriptor_set(2);
-    cbuffer(0);
+    register(buffer, 0);
 
   float4 pos_size = extern(guiPos_guiSize);
   float4 color = extern(guiColor);
