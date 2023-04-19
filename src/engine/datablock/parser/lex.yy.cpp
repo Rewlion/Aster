@@ -422,27 +422,8 @@ extern FILE *yyin, *yyout;
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
     
-    /* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
-     *       access to the local variable yy_act. Since yyless() is a macro, it would break
-     *       existing scanners that call yyless() from OUTSIDE yylex.
-     *       One obvious solution it to make yy_act a global. I tried that, and saw
-     *       a 5% performance hit in a non-yylineno scanner, because yy_act is
-     *       normally declared as a register variable-- so it is not worth it.
-     */
-    #define  YY_LESS_LINENO(n) \
-            do { \
-                int yyl;\
-                for ( yyl = n; yyl < yyleng; ++yyl )\
-                    if ( yytext[yyl] == '\n' )\
-                        --yylineno;\
-            }while(0)
-    #define YY_LINENO_REWIND_TO(dst) \
-            do {\
-                const char *p;\
-                for ( p = yy_cp-1; p >= (dst); --p)\
-                    if ( *p == '\n' )\
-                        --yylineno;\
-            }while(0)
+    #define YY_LESS_LINENO(n)
+    #define YY_LINENO_REWIND_TO(ptr)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
@@ -784,13 +765,6 @@ static const flex_int16_t yy_chk[207] =
        96,   96,   96,   96,   96,   96
     } ;
 
-/* Table of booleans, true if rule could match eol. */
-static const flex_int32_t yy_rule_can_match_eol[42] =
-    {   0,
-0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0,     };
-
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
 
@@ -817,12 +791,10 @@ char *yytext;
 
     void bkerror(BlkParser& parser, const char* msg);
     extern int bklex(BlkParser& parser);
-
-    #define YY_USER_ACTION bklloc.first_line = bklloc.last_line = yylineno;
-#line 822 "src/engine/datablock/parser/lex.yy.cpp"
+#line 794 "src/engine/datablock/parser/lex.yy.cpp"
 #define YY_NO_UNISTD_H 1
 
-#line 825 "src/engine/datablock/parser/lex.yy.cpp"
+#line 797 "src/engine/datablock/parser/lex.yy.cpp"
 
 #define INITIAL 0
 #define include 1
@@ -1040,10 +1012,10 @@ YY_DECL
 		}
 
 	{
-#line 24 "src/engine/datablock/parser/parser.l"
+#line 21 "src/engine/datablock/parser/parser.l"
 
 
-#line 1046 "src/engine/datablock/parser/lex.yy.cpp"
+#line 1018 "src/engine/datablock/parser/lex.yy.cpp"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1085,16 +1057,6 @@ yy_find_action:
 
 		YY_DO_BEFORE_ACTION;
 
-		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
-			{
-			int yyl;
-			for ( yyl = 0; yyl < yyleng; ++yyl )
-				if ( yytext[yyl] == '\n' )
-					
-    yylineno++;
-;
-			}
-
 do_action:	/* This label is used only to access EOF actions. */
 
 		switch ( yy_act )
@@ -1108,14 +1070,14 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 26 "src/engine/datablock/parser/parser.l"
+#line 23 "src/engine/datablock/parser/parser.l"
 {
 
 }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 30 "src/engine/datablock/parser/parser.l"
+#line 27 "src/engine/datablock/parser/parser.l"
 {
   char* fileName = yytext + 1;
   fileName[strlen(yytext) - 2] = '\0';
@@ -1137,7 +1099,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 49 "src/engine/datablock/parser/parser.l"
+#line 46 "src/engine/datablock/parser/parser.l"
 {
   const std::string error = fmt::format("unexpected string: {}", yytext);
   bkerror(parser, error.c_str());
@@ -1146,14 +1108,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 55 "src/engine/datablock/parser/parser.l"
+#line 52 "src/engine/datablock/parser/parser.l"
 {
   BEGIN(include);
 }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(include):
-#line 59 "src/engine/datablock/parser/parser.l"
+#line 56 "src/engine/datablock/parser/parser.l"
 {
   fclose(yyin);
   yypop_buffer_state();
@@ -1161,246 +1123,248 @@ case YY_STATE_EOF(include):
   {
     yyterminate();
   }
+  parser.popFile();
 }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 68 "src/engine/datablock/parser/parser.l"
+#line 66 "src/engine/datablock/parser/parser.l"
 ; // comment
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 70 "src/engine/datablock/parser/parser.l"
+#line 68 "src/engine/datablock/parser/parser.l"
 {
 }
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 73 "src/engine/datablock/parser/parser.l"
+#line 71 "src/engine/datablock/parser/parser.l"
 {
+  parser.incLine();
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 76 "src/engine/datablock/parser/parser.l"
+#line 75 "src/engine/datablock/parser/parser.l"
 {
   return AT;
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 80 "src/engine/datablock/parser/parser.l"
+#line 79 "src/engine/datablock/parser/parser.l"
 {
   return COLON;
 }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 84 "src/engine/datablock/parser/parser.l"
+#line 83 "src/engine/datablock/parser/parser.l"
 {
   return EQUAL_OP;
 }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 88 "src/engine/datablock/parser/parser.l"
+#line 87 "src/engine/datablock/parser/parser.l"
 {
   return LEFT_PARENTHESIS;
 }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 92 "src/engine/datablock/parser/parser.l"
+#line 91 "src/engine/datablock/parser/parser.l"
 {
   return RIGHT_PARENTHESIS;
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 96 "src/engine/datablock/parser/parser.l"
+#line 95 "src/engine/datablock/parser/parser.l"
 {
   return LEFT_BRACKET;
 }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 100 "src/engine/datablock/parser/parser.l"
+#line 99 "src/engine/datablock/parser/parser.l"
 {
   return RIGHT_BRACKET;
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 104 "src/engine/datablock/parser/parser.l"
+#line 103 "src/engine/datablock/parser/parser.l"
 {
   return LEFT_SQUARE_BRACKET;
 }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 108 "src/engine/datablock/parser/parser.l"
+#line 107 "src/engine/datablock/parser/parser.l"
 {
   return RIGHT_SQUARE_BRACKET;
 }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 112 "src/engine/datablock/parser/parser.l"
+#line 111 "src/engine/datablock/parser/parser.l"
 {
   return COMMA;
 }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 116 "src/engine/datablock/parser/parser.l"
+#line 115 "src/engine/datablock/parser/parser.l"
 {
   return INT_TYPE;
 }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 120 "src/engine/datablock/parser/parser.l"
+#line 119 "src/engine/datablock/parser/parser.l"
 {
   return FLOAT_TYPE;
 }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 124 "src/engine/datablock/parser/parser.l"
+#line 123 "src/engine/datablock/parser/parser.l"
 {
   return TEXT_TYPE;
 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 128 "src/engine/datablock/parser/parser.l"
+#line 127 "src/engine/datablock/parser/parser.l"
 {
   return POINT_2D_TYPE;
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 132 "src/engine/datablock/parser/parser.l"
+#line 131 "src/engine/datablock/parser/parser.l"
 {
   return POINT_3D_TYPE;
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 136 "src/engine/datablock/parser/parser.l"
+#line 135 "src/engine/datablock/parser/parser.l"
 {
   return POINT_4D_TYPE;
 }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 140 "src/engine/datablock/parser/parser.l"
+#line 139 "src/engine/datablock/parser/parser.l"
 {
   return INT_POINT_2D_TYPE;
 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 144 "src/engine/datablock/parser/parser.l"
+#line 143 "src/engine/datablock/parser/parser.l"
 {
   return INT_POINT_3D_TYPE;
 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 148 "src/engine/datablock/parser/parser.l"
+#line 147 "src/engine/datablock/parser/parser.l"
 {
   return INT_POINT_4D_TYPE;
 }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 152 "src/engine/datablock/parser/parser.l"
+#line 151 "src/engine/datablock/parser/parser.l"
 {
   return MAT3_TYPE;
 }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 156 "src/engine/datablock/parser/parser.l"
+#line 155 "src/engine/datablock/parser/parser.l"
 {
   return MAT4_TYPE;
 }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 160 "src/engine/datablock/parser/parser.l"
+#line 159 "src/engine/datablock/parser/parser.l"
 {
   return BOOL_TYPE;
 }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 164 "src/engine/datablock/parser/parser.l"
+#line 163 "src/engine/datablock/parser/parser.l"
 {
   bklval = true; return BOOL_VAL;
 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 168 "src/engine/datablock/parser/parser.l"
+#line 167 "src/engine/datablock/parser/parser.l"
 {
   bklval = true; return BOOL_VAL;
 }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 172 "src/engine/datablock/parser/parser.l"
+#line 171 "src/engine/datablock/parser/parser.l"
 {
   bklval = true; return BOOL_VAL;
 }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 176 "src/engine/datablock/parser/parser.l"
+#line 175 "src/engine/datablock/parser/parser.l"
 {
   bklval = false; return BOOL_VAL;
 }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 180 "src/engine/datablock/parser/parser.l"
+#line 179 "src/engine/datablock/parser/parser.l"
 {
   bklval = false; return BOOL_VAL;
 }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 184 "src/engine/datablock/parser/parser.l"
+#line 183 "src/engine/datablock/parser/parser.l"
 {
   bklval = false; return BOOL_VAL;
 }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 188 "src/engine/datablock/parser/parser.l"
+#line 187 "src/engine/datablock/parser/parser.l"
 {
   bklval = Number{atoi(yytext)}; return INT_VAL; 
 }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 192 "src/engine/datablock/parser/parser.l"
+#line 191 "src/engine/datablock/parser/parser.l"
 { 
   bklval = Number{(float)atof(yytext)}; return FLOAT_VAL;
 }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 196 "src/engine/datablock/parser/parser.l"
+#line 195 "src/engine/datablock/parser/parser.l"
 {
   bklval = string{yytext}; return NAME_VAL;
 }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 200 "src/engine/datablock/parser/parser.l"
+#line 199 "src/engine/datablock/parser/parser.l"
 {
   char* text = yytext + 1;
   text[strlen(yytext) - 2] = '\0';
@@ -1409,7 +1373,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 206 "src/engine/datablock/parser/parser.l"
+#line 205 "src/engine/datablock/parser/parser.l"
 { 
   const string error =  fmt::format("unexpected symbol `{}`", yytext);
   bkerror(parser, error.c_str());
@@ -1417,10 +1381,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 211 "src/engine/datablock/parser/parser.l"
+#line 210 "src/engine/datablock/parser/parser.l"
 ECHO;
 	YY_BREAK
-#line 1423 "src/engine/datablock/parser/lex.yy.cpp"
+#line 1387 "src/engine/datablock/parser/lex.yy.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1787,10 +1751,6 @@ static int yy_get_next_buffer (void)
 
 	*--yy_cp = (char) c;
 
-    if ( c == '\n' ){
-        --yylineno;
-    }
-
 	(yytext_ptr) = yy_bp;
 	(yy_hold_char) = *yy_cp;
 	(yy_c_buf_p) = yy_cp;
@@ -1867,11 +1827,6 @@ static int yy_get_next_buffer (void)
 	c = *(unsigned char *) (yy_c_buf_p);	/* cast for 8-bit char's */
 	*(yy_c_buf_p) = '\0';	/* preserve yytext */
 	(yy_hold_char) = *++(yy_c_buf_p);
-
-	if ( c == '\n' )
-		
-    yylineno++;
-;
 
 	return c;
 }
@@ -2339,9 +2294,6 @@ static int yy_init_globals (void)
      * This function is called from yylex_destroy(), so don't allocate here.
      */
 
-    /* We do not touch yylineno unless the option is enabled. */
-    yylineno =  1;
-    
     (yy_buffer_stack) = NULL;
     (yy_buffer_stack_top) = 0;
     (yy_buffer_stack_max) = 0;
@@ -2436,6 +2388,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 211 "src/engine/datablock/parser/parser.l"
+#line 210 "src/engine/datablock/parser/parser.l"
 
 

@@ -14,7 +14,6 @@
   extern int bkparse(BlkParser& parser);
   extern void bkerror(BlkParser& parser, const char* msg);
   extern FILE *bkin;
-  extern int bklineno;
   extern char* bktext;
 %}
 
@@ -411,6 +410,6 @@ NUMBER_VALUE
 %%
 
 void bkerror(BlkParser& parser, const char* msg) {
-  const string err = fmt::format("parsing error: {} [{}:{}]", msg, parser.getCurrentFileName(), bklloc.first_line);
+  const string err = fmt::format("parsing error: {} [{}:{}]", msg, parser.getCurrentFileName(), parser.getLine());
   parser.markParsingFailed(err);
 }

@@ -9,11 +9,8 @@
 
     void bkerror(BlkParser& parser, const char* msg);
     extern int bklex(BlkParser& parser);
-
-    #define YY_USER_ACTION bklloc.first_line = bklloc.last_line = yylineno;
 %}
 
-%option yylineno
 %option nounistd
 %option never-interactive
 %option noyywrap
@@ -63,6 +60,7 @@
   {
     yyterminate();
   }
+  parser.popFile();
 }
 
 [/][/][^\n]* ; // comment
@@ -71,6 +69,7 @@
 }
 
 \n {
+  parser.incLine();
 }
 
 @ {

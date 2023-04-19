@@ -11,8 +11,16 @@ public:
   DataBlock ParseFile(const string& pathToDbk, const bool accept_fails = false);
 
   void setBlock(DataBlock&& bk) { m_ParsedBk = std::move(bk); }
-  void pushFile(const string& file) { m_FileCtxs.push_back({file }); }
-  void popFile() { m_FileCtxs.pop_back(); }
+  void pushFile(const string& file)
+  {
+    m_FileCtxs.push_back({file, 1 });
+  }
+  void popFile()
+  {
+    m_FileCtxs.pop_back();
+  }
+  void incLine() { ++m_FileCtxs.back().line; }
+  auto getLine() const -> unsigned int { return m_FileCtxs.back().line; }
   auto getCurrentFileName() const -> string_view { return m_FileCtxs.back().fileName; }
 
   void markParsingFailed(const string& error);
@@ -25,6 +33,7 @@ private:
   struct FileContext
   {
     string fileName;
+    unsigned int line;
   };
 
 private:
