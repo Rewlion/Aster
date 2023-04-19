@@ -8,14 +8,14 @@
 class BlkParser
 {
 public:
-  DataBlock ParseFile(const string& pathToDbk, const bool accept_fails = true);
+  DataBlock ParseFile(const string& pathToDbk, const bool accept_fails = false);
 
   void setBlock(DataBlock&& bk) { m_ParsedBk = std::move(bk); }
   void pushFile(const string& file) { m_FileCtxs.push_back({file }); }
   void popFile() { m_FileCtxs.pop_back(); }
   auto getCurrentFileName() const -> string_view { return m_FileCtxs.back().fileName; }
 
-  void markParsingFailed() { m_ParsingFailed = true; }
+  void markParsingFailed(const string& error);
   auto isParsingOk() const -> bool { return !m_ParsingFailed; }
 
   void setBkName(DataBlock& bk, string&& name) { bk.m_Name = std::move(name); }
@@ -31,4 +31,5 @@ private:
   bool m_ParsingFailed = false;
   DataBlock m_ParsedBk;
   eastl::vector<FileContext> m_FileCtxs;
+  string m_Errors;
 };

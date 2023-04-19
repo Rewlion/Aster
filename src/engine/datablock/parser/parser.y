@@ -411,6 +411,6 @@ NUMBER_VALUE
 %%
 
 void bkerror(BlkParser& parser, const char* msg) {
-  logerror("parsing error: {} [{}:{}]", msg, parser.getCurrentFileName(), bklloc.first_line);
-  parser.markParsingFailed();
+  const string err = fmt::format("parsing error: {} [{}:{}]", msg, parser.getCurrentFileName(), bklloc.first_line);
+  parser.markParsingFailed(err);
 }

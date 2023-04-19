@@ -16,7 +16,7 @@ DataBlock BlkParser::ParseFile(const string& path, const bool accept_fails)
   if (!f) [[unlikely]]
   {
     m_ParsingFailed = true;
-    logerror("can't open a datablock file {}", path);
+    logerror("can't open a datablock file `{}`", path);
     return EMPTY_BLOCK;
   }
 
@@ -29,10 +29,16 @@ DataBlock BlkParser::ParseFile(const string& path, const bool accept_fails)
 
   if (!isParsingOk()) [[unlikely]]
   {
-    if (!accept_fails)
-      ASSERT(!"failed to parse blk file");
+    ASSERT_FMT(accept_fails, "failed to parse blk file `{}`.\nErrors:{}\n", path, m_Errors);
     return EMPTY_BLOCK;
   }
 
   return std::move(m_ParsedBk);
 }
+
+void BlkParser::markParsingFailed(const string& error)
+{
+  m_ParsingFailed = true;
+  m_Errors = fmt::format("{}\n{}", m_Errors, error);
+}
+
