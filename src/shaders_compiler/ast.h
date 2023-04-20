@@ -19,6 +19,8 @@ namespace ShadersSystem
       ResourceAcquire = 2
     };
     Type type = None;
+
+    virtual ~Node() {}
   };
 
   struct TechniqueExp: public Node
