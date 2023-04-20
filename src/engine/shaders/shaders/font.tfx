@@ -3,7 +3,7 @@
 scope FontTechniqueScope {
   reserve:
     descriptor_set(2);
-    register(texture, 1);
+    register(texture, 0);
     register(buffer, 0);
 
   float4 size_bearing = extern(glyphSize_glyphBearing);

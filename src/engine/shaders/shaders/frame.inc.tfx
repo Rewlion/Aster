@@ -1,8 +1,8 @@
 scope FrameScope {
   reserve:
     descriptor_set(0);
-    register(sampler, 1-2);
-    register(texture, 2-3);
+    register(sampler, 0);
+    register(texture, 0);
     register(buffer, 0);
 
   sampler modelSampler = extern(model_sampler);

@@ -2,7 +2,7 @@ scope StaticModelScope {
   reserve:
     descriptor_set(1);
     register(buffer, 0);
-    register(texture, 1-3);
+    register(texture, 0-2);
 
   Texture2D albedoTex = channel(albedo);
   Texture2D metalRoughnessTex = channel(metal_roughness);

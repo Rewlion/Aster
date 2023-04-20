@@ -1,4 +1,5 @@
 #include "compiler.h"
+#include "limits.h"
 
 #include <engine/log.h>
 
@@ -187,17 +188,40 @@ namespace ShadersSystem
 
       void placeScopeResources()
       {
-        const bool hasTextures = m_Scope.textureRegisters.has_value();
-        const size_t texturesEnd = hasTextures ? m_Scope.textureRegisters.value().end : 0;
-        size_t currentTexReg = hasTextures ? m_Scope.textureRegisters.value().begin : 0;
+        struct RegistersPlacing
+        {
+          bool hasRegisters;
+          size_t begin, end;
+        };
 
-        const bool hasSamplers = m_Scope.samplerRegisters.has_value();
-        const size_t samplersEnd = hasSamplers ? m_Scope.samplerRegisters.value().end : 0;
-        size_t currentSamplerReg = hasSamplers ? m_Scope.samplerRegisters.value().begin : 0;
+        const auto getRegistersInfo = [](const auto& registers, const char* registers_name, const int min_reg)
+        {
+          RegistersPlacing res;
+          if (registers.has_value())
+          {
+            res.hasRegisters = true;
+            if (registers->begin > registers->end)
+              throw std::runtime_error(fmt::format("invalid interval for registers `{}`", registers_name));
+            if ( (registers->begin > MAX_REGISTER) || (registers->end > MAX_REGISTER))
+              throw std::runtime_error(
+                fmt::format("invalid interval values for registers '{}'. valid values: [{}:{}]", registers_name, 0, MAX_REGISTER));
+            
+            res.begin = min_reg + registers->begin;
+            res.end = min_reg + registers->end;
+          }
+          else
+          {
+            res.hasRegisters = false;
+            res.begin = 0;
+            res.end = 0;
+          }
 
-        const bool hasBuffers = m_Scope.bufferRegisters.has_value();
-        const size_t buffersEnd = hasBuffers ? m_Scope.bufferRegisters.value().end : 0;
-        size_t currentBufferReg = hasBuffers ? m_Scope.bufferRegisters.value().begin : 0;
+          return res;
+        };
+
+        auto [hasTextures, currentTexReg, texturesEnd] = getRegistersInfo(m_Scope.textureRegisters, "texture", TEXTURE_REGISTERS_BEGIN);
+        auto [hasSamplers, currentSamplerReg, samplersEnd] = getRegistersInfo(m_Scope.samplerRegisters, "sampler", SAMPLER_REGISTERS_BEGIN);
+        auto [hasBuffers, currentBufferReg, buffersEnd] = getRegistersInfo(m_Scope.bufferRegisters, "buffer", BUFFER_REGISTERS_BEGIN);
 
         if (m_Scope.cbuffer == CBUFFER_NOT_ASSIGNED)
         {
