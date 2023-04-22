@@ -1,4 +1,5 @@
 #include "descriptors_set_manager.h"
+#include "compiler_to_vk.h"
 #include "pipeline_layout.h"
 #include "result.h"
 
@@ -62,9 +63,11 @@ namespace gapi::vulkan
     return res.value[0];
   }
 
-  DescriptorsSetManager::SetManager::SetManager(PoolManager& pool, 
+  DescriptorsSetManager::SetManager::SetManager(Device& device,
+                                                PoolManager& pool, 
                                                 const size_t set)
-    : m_SetId(set)
+    : m_Device(device)
+    , m_SetId(set)
     , m_PoolManager(pool)
     , m_Dirty(false)
     , m_Active(false)
@@ -90,7 +93,7 @@ namespace gapi::vulkan
   {
     const size_t total = m_Bindings->size();
     for (size_t i = 0; i < total; ++i)
-      if ((*m_Bindings)[i].binding == binding)
+      if ((*m_Bindings)[i].vk.binding == binding)
         return i;
     
     return -1;
@@ -100,7 +103,7 @@ namespace gapi::vulkan
                                                               const vk::DescriptorType type) const -> bool
   {
     const int id = getBindingId(binding);
-    return (id >= 0) && (*m_Bindings)[id].descriptorType == type;
+    return (id >= 0) && (*m_Bindings)[id].vk.descriptorType == type;
   }
 
   void DescriptorsSetManager::SetManager::setPipelineLayout(const vk::DescriptorSetLayout layout,
@@ -116,12 +119,12 @@ namespace gapi::vulkan
     m_Bindings = bindings;
   }
 
-  void DescriptorsSetManager::SetManager::setImage(const vk::ImageView view,
-                                                   const size_t binding)
+  void DescriptorsSetManager::SetManager::setTexture(const TextureHandle tex,
+                                                     const size_t binding)
   {
     fitWriteInfos(binding);
-    m_WriteInfos[binding] = ImageWriteInfo{
-      .view = view,
+    m_WriteInfos[binding] = TextureWriteInfo{
+      .texture = tex,
       .set = m_SetId,
       .binding = binding
     };
@@ -160,6 +163,22 @@ namespace gapi::vulkan
     template<class... Ts> overload(Ts...) -> overload<Ts...>;
   }
 
+  extern auto get_resource_stub(ShadersSystem::ResourceType type) -> TextureHandle;
+
+  auto DescriptorsSetManager::SetManager::getImageView(const TextureHandle handle, const size_t binding) const -> vk::ImageView
+  {
+    const ShadersSystem::ResourceType expectedResourceType = (*m_Bindings)[binding].resourceType;
+    if (handle != TextureHandle::Invalid)
+    {
+      const vk::ImageViewType viewType = m_Device.getImageViewType(handle);
+      const vk::ImageViewType expectedViewType = shaders_resource_to_img_view_type(expectedResourceType);
+      if (viewType == expectedViewType)
+        return m_Device.getImageView(handle);
+    }
+
+    return m_Device.getImageView(get_resource_stub(expectedResourceType));
+  }
+
   auto DescriptorsSetManager::SetManager::acquireSet(vk::Device device) -> vk::DescriptorSet
   {
     if (!m_Active)
@@ -173,7 +192,7 @@ namespace gapi::vulkan
       {
         std::visit(overload{
           [&](const SamplerWriteInfo& info){imgCount++;},
-          [&](const ImageWriteInfo& info){imgCount++;},
+          [&](const TextureWriteInfo& info){imgCount++;},
           [&](const UniformBufferWriteInfo& info){bufCount++;},
           [&](const NullInfo&){}
         }, wr);
@@ -217,11 +236,11 @@ namespace gapi::vulkan
               ++iImg;
             }
           },
-          [&](const ImageWriteInfo& info){
+          [&](const TextureWriteInfo& info){
             auto type = vk::DescriptorType::eSampledImage;
             if(validateBindingType(info.binding, type))
-            {
-              imgInfos[iImg].imageView = info.view;
+            {              
+              imgInfos[iImg].imageView = getImageView(info.texture, info.binding);
               imgInfos[iImg].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
               addWriteInfo(info.binding, type, nullptr, &imgInfos[iImg]);
               ++iImg;
@@ -265,10 +284,10 @@ namespace gapi::vulkan
   {
   }
 
-  void DescriptorsSetManager::setImage(const vk::ImageView view, const size_t set, const size_t binding)
+  void DescriptorsSetManager::setImage(TextureHandle tex, const size_t set, const size_t binding)
   {
     fitSetManagers(set);
-    m_SetManagers[set].setImage(view, binding);
+    m_SetManagers[set].setTexture(tex, binding);
   }
 
   void DescriptorsSetManager::setSampler(const vk::Sampler sampler, const size_t set, const size_t binding)
@@ -322,6 +341,6 @@ namespace gapi::vulkan
   void DescriptorsSetManager::fitSetManagers(const size_t up_to)
   {
     for (size_t i = m_SetManagers.size(); i <= up_to; ++i)
-      m_SetManagers.emplace_back(m_PoolManager, i);
+      m_SetManagers.emplace_back(m_Device, m_PoolManager, i);
   }
 }

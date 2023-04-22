@@ -59,9 +59,14 @@ namespace gapi::vulkan
 
     for (const auto& dset: dsets)
     {
+      eastl::vector<vk::DescriptorSetLayoutBinding> bindings;
+      bindings.reserve(dset.size());
+      for (auto& b: dset)
+        bindings.push_back(b.vk);
+
       vk::DescriptorSetLayoutCreateInfo ci;
       ci.bindingCount = dset.size();
-      ci.pBindings = dset.data();
+      ci.pBindings = bindings.data();
       auto l = m_Device->m_Device->createDescriptorSetLayoutUnique(ci);
       VK_CHECK_RES(l);
       dsetLayouts.push_back(l.value.get());

@@ -209,7 +209,7 @@ namespace ShadersSystem
           if (m_DescriptorSets[set].size() <= binding)
             m_DescriptorSets[set].resize(binding+1);
 
-          return m_DescriptorSets[set][binding];
+          return m_DescriptorSets[set][binding].vk;
         }
 
         void insureScopeNotSupportedYet(const string& name)

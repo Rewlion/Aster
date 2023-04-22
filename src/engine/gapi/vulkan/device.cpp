@@ -5,6 +5,7 @@
 #include "result.h"
 
 #include <engine/assert.h>
+#include <engine/gapi/cmd_encoder.h>
 #include <engine/log.h>
 
 #include <cstring>
@@ -118,6 +119,22 @@ namespace gapi::vulkan
 
     ASSERT(!"UNSUPPORTED");
     return vk::ImageView{};
+  }
+
+  auto Device::getImageViewType(const TextureHandle handle) const -> vk::ImageViewType
+  {
+    TextureHandlerInternal h{handle};
+    if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
+      return vk::ImageViewType::e2D;
+
+    if (h.as.typed.type == (uint64_t)TextureType::Allocated)
+    {
+      ASSERT(m_AllocatedTextures.contains(h.as.typed.id));
+      return m_AllocatedTextures.get(h.as.typed.id).viewType;
+    }
+
+    ASSERT(!"UNSUPPORTED");
+    return {};
   }
 
   vk::Image Device::getImage(const TextureHandle handler)
@@ -422,6 +439,7 @@ namespace gapi::vulkan
     auto view = m_Device->createImageViewUnique(viewCi);
     VK_CHECK_RES(view);
     resource.view = std::move(view.value);
+    resource.viewType = viewCi.viewType;
 
     size_t id = ~0;
     m_AllocatedTextures.add(std::move(resource), id);

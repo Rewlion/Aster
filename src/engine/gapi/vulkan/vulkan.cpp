@@ -129,6 +129,87 @@ namespace gapi::vulkan
     frameGc.nextFrame();
   }
 
+  TextureHandle texture_2d_srv_stub;
+  TextureHandle texture_3d_srv_stub;
+  TextureHandle texture_cube_srv_stub;
+
+  auto get_resource_stub(ShadersSystem::ResourceType type) -> TextureHandle
+  {
+    switch (type)
+    {
+      case ShadersSystem::ResourceType::Texture2D: return texture_2d_srv_stub;
+      case ShadersSystem::ResourceType::TextureCube: return texture_cube_srv_stub;
+      default: ASSERT_FMT(false, "unsupported resource type {}", (int)type); return texture_2d_srv_stub;
+    }
+  }
+
+  void allocate_srv_stubs()
+  {
+    constexpr size_t imgDepth = 16;
+    constexpr size_t rgba8 = 4;
+    constexpr size_t side = 2;
+    constexpr size_t img2dSize = rgba8 * side * side * 1;
+    constexpr size_t img3dSize = rgba8 * side * side * imgDepth;
+    constexpr size_t cubeLayers = 6;
+    constexpr size_t imgCubeSize = rgba8 * side * side * cubeLayers;
+
+    constexpr uint3 extent2d {side, side, 1};
+    constexpr uint3 extent3d {side, side, imgDepth};
+    constexpr uint3 extentCube {side, side, imgDepth};
+
+    TextureAllocationDescription allocDesc {
+      .format = TextureFormat::R8G8B8A8_UNORM,
+      .extent = extent2d,
+      .mipLevels = 1,
+      .arrayLayers = 1,
+      .samplesPerPixel = TextureSamples::s1,
+      .usage = TEX_USAGE_UNIFORM
+    };
+    texture_2d_srv_stub = device->allocateTexture(allocDesc);
+
+    allocDesc.extent = extent3d;
+    texture_3d_srv_stub = device->allocateTexture(allocDesc);
+
+    allocDesc.arrayLayers = cubeLayers;
+    allocDesc.extent = extent2d;
+    allocDesc.usage |= TEX_USAGE_CUBE_MAP;
+    texture_cube_srv_stub = device->allocateTexture(allocDesc);
+
+    int imgData[img3dSize]{0};
+
+    BufferTextureCopy copy {
+      .bufferOffset = 0,
+      .bufferRowLength = 0,
+      .bufferTextureHeight = 0,
+      .textureSubresource = TextureSubresourceLayers {
+        .aspects = ASPECT_COLOR,
+        .mipLevel = 0,
+        .baseArrayLayer = 0,
+        .layerCount = 1
+      },
+      .textureOffset = uint3{0,0,0},
+      .extent = extent2d
+    };
+
+    std::unique_ptr<gapi::CmdEncoder> encoder{allocate_cmd_encoder()};
+
+    encoder->transitTextureState(texture_2d_srv_stub, gapi::TextureState::Undefined, gapi::TextureState::TransferDst);
+    encoder->transitTextureState(texture_3d_srv_stub, gapi::TextureState::Undefined, gapi::TextureState::TransferDst);
+    encoder->transitTextureState(texture_cube_srv_stub, gapi::TextureState::Undefined, gapi::TextureState::TransferDst);
+
+    encoder->copyBufferToTexture(imgData, img2dSize, texture_2d_srv_stub, &copy, 1);
+    copy.extent = extent3d;
+    encoder->copyBufferToTexture(imgData, img3dSize, texture_3d_srv_stub, &copy, 1);
+    copy.textureSubresource.layerCount = cubeLayers;
+    copy.extent = extent2d;
+    encoder->copyBufferToTexture(imgData, imgCubeSize, texture_cube_srv_stub, &copy, 1);
+
+    encoder->transitTextureState(texture_2d_srv_stub, gapi::TextureState::TransferDst, gapi::TextureState::ShaderRead);
+    encoder->transitTextureState(texture_3d_srv_stub, gapi::TextureState::TransferDst, gapi::TextureState::ShaderRead);
+    encoder->transitTextureState(texture_cube_srv_stub, gapi::TextureState::TransferDst, gapi::TextureState::ShaderRead);
+    encoder->flush();
+  }
+
   void init()
   {
     gapi_get_backbuffer = get_backbuffer;
@@ -152,6 +233,8 @@ namespace gapi::vulkan
     frameGc.init(device.get());
     rpStorage.init(device.get());
     pipelinesStorage.init(device.get());
+
+    allocate_srv_stubs();
   }
 
 }

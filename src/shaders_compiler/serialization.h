@@ -34,14 +34,6 @@ namespace boost::serialization
   }
 
   template<class Archive>
-  void serialize(Archive& a, spirv::v2::Binding& b, const unsigned version)
-  {
-    a & b.type
-      & b.stages
-      & b.name;
-  }
-
-  template<class Archive>
   void serialize(Archive& a, vk::DescriptorSetLayoutBinding& binding, const unsigned version)
   {
     a & binding.binding
@@ -50,6 +42,13 @@ namespace boost::serialization
       & binding.stageFlags;
 
     binding.pImmutableSamplers = nullptr;
+  }
+
+  template<class Archive>
+  void serialize(Archive& a, spirv::v2::DescriptorSetBinding& binding, const unsigned version)
+  {
+    a & binding.vk
+      & binding.resourceType;
   }
 
   template<class Archive>

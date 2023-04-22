@@ -380,7 +380,7 @@ namespace gapi
   struct TextureAllocationDescription
   {
     TextureFormat  format = TextureFormat::R8G8B8A8_UNORM;
-    int3           extent = {0,0,0};
+    uint3          extent = {0,0,0};
     uint32_t       mipLevels = 0;
     uint32_t       arrayLayers = 0;
     TextureSamples samplesPerPixel = TextureSamples::s1;

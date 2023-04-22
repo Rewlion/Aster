@@ -44,9 +44,9 @@ namespace gapi::vulkan
       size_t binding;
     };
 
-    struct ImageWriteInfo
+    struct TextureWriteInfo
     {
-      vk::ImageView view;
+      TextureHandle texture;
       size_t set;
       size_t binding;
     };
@@ -59,19 +59,19 @@ namespace gapi::vulkan
       size_t binding;
     };
 
-    typedef std::variant<SamplerWriteInfo, ImageWriteInfo,
+    typedef std::variant<SamplerWriteInfo, TextureWriteInfo,
                          UniformBufferWriteInfo, NullInfo> WriteInfo;
 
     class SetManager
     {
       public:
-        SetManager(PoolManager&, const size_t set);
+        SetManager(Device&, PoolManager&, const size_t set);
         SetManager(SetManager&&) = default;
         SetManager& operator=(SetManager&&) = default;
 
         void setPipelineLayout(const vk::DescriptorSetLayout, const spirv::v2::DescriptorSet*);
 
-        void setImage(const vk::ImageView, const size_t binding);
+        void setTexture(const TextureHandle, const size_t binding);
         void setSampler(const vk::Sampler, const size_t binding);
         void setUniformBuffer(const vk::Buffer, const size_t binding, const size_t constOffset);
 
@@ -89,8 +89,11 @@ namespace gapi::vulkan
         auto isCompatible(const spirv::v2::DescriptorSet*) const -> bool;
         auto getBindingId(const size_t binding) const -> int;
         auto validateBindingType(const size_t binding, const vk::DescriptorType) const -> bool;
+        auto getImageView(const TextureHandle, const size_t binding) const -> vk::ImageView;
 
       private:
+        Device& m_Device;
+
         size_t m_SetId;
         PoolManager& m_PoolManager;
         
@@ -112,7 +115,7 @@ namespace gapi::vulkan
 
       void setPipelineLayout(const PipelineLayout* layout);
 
-      void setImage(const vk::ImageView imgView, const size_t set, const size_t binding);
+      void setImage(TextureHandle, const size_t set, const size_t binding);
       void setSampler(const vk::Sampler sampler, const size_t set, const size_t binding);
       void setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding, const size_t constOffset);
 

@@ -52,7 +52,7 @@ namespace spirv
       };
 
       const auto accessDsetBinding = [&](const size_t set, const size_t binding, const string_view res_name, const string_view scope_name)
-        -> vk::DescriptorSetLayoutBinding&
+        -> DescriptorSetBinding&
       {
         if (dsets.size() <= set)
         {
@@ -90,18 +90,19 @@ namespace spirv
       {
         for (const auto& [_, decl]: scope->declaredResources)
         {
-          vk::DescriptorSetLayoutBinding& binding = accessDsetBinding(decl.dset, decl.binding, decl.name, scope->name);
-          binding.binding = decl.binding;
-          binding.descriptorCount = 1;
-          binding.descriptorType = get_descriptor_type(decl.type);
-          binding.stageFlags = gapi::vulkan::get_shader_stage(stages);
+          DescriptorSetBinding& binding = accessDsetBinding(decl.dset, decl.binding, decl.name, scope->name);
+          binding.vk.binding = decl.binding;
+          binding.vk.descriptorCount = 1;
+          binding.vk.descriptorType = get_descriptor_type(decl.type);
+          binding.vk.stageFlags = gapi::vulkan::get_shader_stage(stages);
+          binding.resourceType = decl.type;
         }
       }
 
       for (auto& bindings: dsets)
       {
         eastl::sort(bindings.begin(), bindings.end(), [](auto& l, auto& r) {
-          return l.binding < r.binding;
+          return l.vk.binding < r.vk.binding;
         });
       }
 

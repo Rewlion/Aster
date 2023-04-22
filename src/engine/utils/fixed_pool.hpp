@@ -40,7 +40,7 @@ namespace Utils
       return true;
     }
 
-    inline bool contains(const size_t id)
+    inline bool contains(const size_t id) const
     {
        return m_BitCapacity.isSet(id);
     }

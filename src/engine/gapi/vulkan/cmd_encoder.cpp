@@ -315,11 +315,7 @@ namespace gapi::vulkan
 
   void CmdEncoder::bindTexture(const TextureHandle texture, const size_t set, const size_t binding)
   {
-    if (texture != TextureHandle::Invalid)
-    {
-      vk::ImageView imgView = m_Device.getImageView(texture);
-      m_DsetManager.setImage(imgView, set, binding);
-    }
+    m_DsetManager.setImage(texture, set, binding);
   }
 
   void CmdEncoder::bindSampler(const SamplerHandler h, const size_t set, const size_t binding)

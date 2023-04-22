@@ -10,6 +10,11 @@
 #include <EASTL/vector.h>
 #include <vector>
 
+namespace gapi
+{
+  class CmdEncoder;
+}
+
 namespace gapi::vulkan
 {
   class FrameGarbageCollector;
@@ -64,6 +69,8 @@ namespace gapi::vulkan
 
       vk::ImageView getImageView(const TextureHandle handler);
 
+      auto getImageViewType(const TextureHandle) const -> vk::ImageViewType;
+      
       vk::Image getImage(const TextureHandle handler);
 
       vk::Extent3D getImageDim(const TextureHandle handler);
@@ -118,6 +125,8 @@ namespace gapi::vulkan
       vk::UniqueCommandPool allocateCmdPool();
 
       VulkanFence* allocateFence();
+
+      void prepareSrvStubs(gapi::CmdEncoder&);
     private:
       void copyBuffersSync(const vk::Buffer src, const size_t srcOffset, const vk::Buffer dst, const size_t dstOffset, const size_t size);
       void writeToStagingBuffer(const Buffer& buffer, const void* src, const size_t offset, const size_t size);

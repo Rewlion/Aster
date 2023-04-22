@@ -179,7 +179,7 @@ namespace gapi::vulkan
 
   inline vk::ImageType get_image_type(const int3 extent)
   {
-    return extent.y <= 1 && extent.z <= 1 ?
+    return extent.y == 1 && extent.z <= 1 ?
             vk::ImageType::e1D :
             extent.z <= 1 ?
               vk::ImageType::e2D :

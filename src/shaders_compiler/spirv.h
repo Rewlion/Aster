@@ -35,20 +35,18 @@ namespace spirv
 
   namespace v2
   {
-    struct Binding
+    struct DescriptorSetBinding
     {
-      BindingType          type = BindingType::None;
-      vk::ShaderStageFlags stages;
-      string               name;
+      vk::DescriptorSetLayoutBinding vk;
+      ShadersSystem::ResourceType resourceType;
 
-      bool operator==(const Binding& rvl) const
+      bool operator==(const DescriptorSetBinding& rvl) const
       {
-        return std::tie(type, stages, name) ==
-               std::tie(rvl.type, rvl.stages, rvl.name);
+        return std::memcmp(this, &rvl, sizeof(*this));
       }
     };
 
-    typedef eastl::vector<vk::DescriptorSetLayoutBinding> DescriptorSet;
+    typedef eastl::vector<DescriptorSetBinding> DescriptorSet;
     struct Reflection
     {
       eastl::vector<DescriptorSet> descriptorSets;
