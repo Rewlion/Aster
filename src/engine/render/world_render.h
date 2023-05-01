@@ -47,8 +47,8 @@ namespace Engine::Render
       };
       FrameData m_FrameData;
 
-      void beforeRender(const CameraData& camera);
-      void renderWorld();
+      void initFrameGraph();
+
       void renderOpaque(gapi::CmdEncoder& encoder);
       void renderScene(gapi::CmdEncoder& encoder);
       void resolveGbuffer(gapi::CmdEncoder& encoder,

@@ -95,12 +95,6 @@ namespace gapi::vulkan
     vk::UniqueSampler sampler;
   };
 
-  struct VulkanSemaphore: public gapi::Semaphore
-  {
-    virtual ~VulkanSemaphore() override {}
-    vk::UniqueSemaphore semaphore;
-  };
-
   struct VulkanFence: public gapi::Fence
   {
     virtual ~VulkanFence() override {}

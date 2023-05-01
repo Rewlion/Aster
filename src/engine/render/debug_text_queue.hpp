@@ -45,7 +45,7 @@ namespace Engine::Render::dbg
         if (text.size() > MAX_TEXT_LEN)
           text = string(text.c_str(), MAX_TEXT_LEN);
 
-        const uint64_t secToLive = 4;
+        const uint64_t secToLive = 20;
         m_Queue.push_back();
         m_Queue.back() = QueuedText{
           std::move(text),

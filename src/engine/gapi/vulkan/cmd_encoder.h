@@ -48,9 +48,6 @@ namespace gapi::vulkan
       virtual void bindIndexBuffer(const BufferHandler buffer) override;
       virtual void bindGraphicsPipeline(const GraphicsPipelineDescription& desc) override;
       virtual void flush(Fence* signalFence = nullptr) override;
-      virtual void present(Semaphore* wait_semaphore) override;
-      virtual Semaphore* signalSemaphore() override;
-      virtual void insertSemaphore(Semaphore* s) override;
       virtual void bindConstBuffer(const BufferHandler buffer, const size_t set, const size_t binding) override;
       virtual void bindTexture(const TextureHandle texture, const size_t set, const size_t binding) override;
       virtual void bindSampler(const SamplerHandler sampler, const size_t set, const size_t binding) override;
@@ -82,9 +79,6 @@ namespace gapi::vulkan
       PipelinesStorage& m_PipelinesStorage;
       DescriptorsSetManager m_DsetManager;
       vk::UniqueCommandPool m_CmdPool;
-
-      eastl::vector<vk::Semaphore> m_QueuedWaitSemaphores;
-      eastl::vector<vk::Semaphore> m_QueuedSignalSemaphores;
 
       vk::CommandBuffer m_CmdBuf;
       RenderPassState m_RenderPassState;

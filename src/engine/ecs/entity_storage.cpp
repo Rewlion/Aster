@@ -98,7 +98,7 @@ namespace ecs
     RemovementResult res;
 
     Chunk& chunk = m_Chunks[chunk_id];
-    const chunk_eid_t lastEid = chunk_eid_t{chunk.usedBlocks-1};
+    const chunk_eid_t lastEid = chunk_eid_t{(uint16_t)(chunk.usedBlocks-1)};
       
     if (chunk_eid != lastEid)
     {

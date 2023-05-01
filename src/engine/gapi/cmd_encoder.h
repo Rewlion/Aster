@@ -44,12 +44,6 @@ namespace gapi
 
       virtual void flush(Fence* signalFence = nullptr) = 0;
 
-      virtual void present(Semaphore* wait_semaphore) = 0;
-
-      virtual Semaphore* signalSemaphore() = 0;
-
-      virtual void insertSemaphore(Semaphore* s) = 0;
-
       virtual void transitTextureState(const TextureHandle texture,
                                        const TextureState oldState, const TextureState newState,
                                        const uint32_t firstMipLevel = 0, const uint32_t mipLevelsCount = ~(0),

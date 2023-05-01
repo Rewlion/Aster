@@ -102,6 +102,11 @@ namespace Utils
         return const_cast<FixedStack*>(this)->getFirst();
       }
 
+      bool empty() const
+      {
+        return m_Size > 0;
+      }
+
       bool push(T&& v)
       {
         if (m_Size < N)

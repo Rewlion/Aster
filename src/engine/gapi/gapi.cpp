@@ -11,17 +11,18 @@ namespace gapi
   BufferHandler            (*gapi_allocate_buffer)(const size_t size, const int usage);
   void                     (*gapi_free_buffer)(const BufferHandler buffer);
   void                     (*gapi_free_texture)(const TextureHandle texture);
+  void                     (*gapi_free_sampler)(const SamplerHandler sampler);
   void*                    (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size, const int flags);
   void                     (*gapi_unmap_buffer)(const BufferHandler buffer);
   TextureHandle           (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
   void                     (*gapi_bind_texture)(const TextureHandle texture, const size_t set, const size_t binding);
   SamplerHandler           (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
-  Semaphore*               (*gapi_ackquire_backbuffer)();
+  void                     (*gapi_acquire_backbuffer)();
   ShaderModuleHandler      (*gapi_add_module)(void* blob);
   PipelineLayoutHandler    (*gapi_add_pipeline_layout)(void* dsets);
   CmdEncoder*              (*gapi_allocate_cmd_encoder)();
   Fence*                   (*gapi_allocate_fence)();
-  void                     (*gapi_next_frame)();
+  void                     (*gapi_present_backbuffer_and_finalize_frame)();
   void                     (*gapi_wait_fence)(Fence* fence);
 
   void init()
@@ -83,9 +84,14 @@ namespace gapi
     gapi_free_texture(texture);
   }
 
-  Semaphore* ackquire_backbuffer()
+  void free_resource(const SamplerHandler sampler)
   {
-    return gapi_ackquire_backbuffer();
+    gapi_free_sampler(sampler);
+  }
+
+  void acquire_backbuffer()
+  {
+    gapi_acquire_backbuffer();
   }
 
   ShaderModuleHandler add_module(void* blob)
@@ -108,9 +114,9 @@ namespace gapi
     return gapi_allocate_fence();
   }
 
-  void next_frame()
+  void present_backbuffer_and_finalize_frame()
   {
-    gapi_next_frame();
+    gapi_present_backbuffer_and_finalize_frame();
   }
 
   void wait_fence(Fence* fence)

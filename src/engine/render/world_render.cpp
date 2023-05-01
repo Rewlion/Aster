@@ -18,12 +18,171 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 
+#include <engine/render/frame_graph/v2/frame_graph.h>
+
 namespace Engine::Render
 {
   WorldRender world_render;
 
+  void WorldRender::initFrameGraph()
+  {
+    fg2::register_node("backbuffer_acquiring", FG_FILE_DECL, [this](fg2::Registry& reg)
+    {
+      return [](gapi::CmdEncoder& encoder)
+      {
+        gapi::acquire_backbuffer();
+      };
+    });
+
+    fg2::register_node("frame_preparing", FG_FILE_DECL, [this](fg2::Registry& reg)
+    {
+      reg.orderMeAfter("backbuffer_acquiring");
+      auto cameraData = reg.createBlob<Engine::CameraData>("camera_data");
+      auto wndSize = reg.createBlob<int2>("window_size");
+
+      reg.importTextureProducer("backbuffer", []()
+      {
+        return fg2::TextureImport{gapi::get_backbuffer(), gapi::TextureState::Present};
+      });
+
+      return [cameraData, wndSize, this](gapi::CmdEncoder& encoder)
+      {
+        cameraData.get() = this->m_FrameData.camera;
+        wndSize.get() = this->m_WindowSize;
+
+        this->m_DbgTextQueue.tick();
+
+        tfx::set_extern("view_proj", cameraData->viewProj);
+        tfx::set_extern("camera_pos", cameraData->pos);
+        tfx::set_extern("sec_since_start", Time::get_sec_since_start());
+        tfx::set_extern("model_sampler", this->m_ModelSampler);
+        tfx::set_extern("viewport_size", float2(wndSize->x, wndSize->y));
+        tfx::activate_scope("FrameScope", encoder);
+
+        this->m_ImGuiRender->beforeRender(encoder);
+      };
+    });
+
+    fg2::register_node("gbuffer_main_pass", FG_FILE_DECL, [this](fg2::Registry& reg)
+    {
+      reg.orderMeAfter("frame_preparing");
+
+      gapi::TextureAllocationDescription allocDesc;
+      allocDesc.format = gapi::TextureFormat::D24_UNORM_S8_UINT;
+      allocDesc.extent = int3{m_WindowSize.x, m_WindowSize.y, 1};
+      allocDesc.mipLevels = 1;
+      allocDesc.arrayLayers = 1;
+      allocDesc.usage = gapi::TEX_USAGE_DEPTH_STENCIL;
+
+      auto gbufDepth = reg.createTexture("gbuffer_depth", allocDesc, gapi::TextureState::DepthWriteStencilRead);
+
+      allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
+      allocDesc.usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_UNIFORM;
+      auto gbuf0 = reg.createTexture("gbuf0", allocDesc, gapi::TextureState::RenderTarget);
+
+      allocDesc.format = gapi::TextureFormat::R16G16B16A16_UNORM;
+      auto gbuf1 = reg.createTexture("gbuf1", allocDesc, gapi::TextureState::RenderTarget);
+      auto gbuf2 = reg.createTexture("gbuf2", allocDesc, gapi::TextureState::RenderTarget);
+
+      allocDesc.format = gapi::TextureFormat::R32G32B32A32_S;
+      auto gbuf3 = reg.createTexture("gbuf3", allocDesc, gapi::TextureState::RenderTarget);
+
+      reg.requestRenderPass()
+         .addTarget(gbuf0,  gapi::LoadOp::Clear, gapi::StoreOp::Store)
+         .addTarget(gbuf1,  gapi::LoadOp::Clear, gapi::StoreOp::Store)
+         .addTarget(gbuf2,  gapi::LoadOp::Clear, gapi::StoreOp::Store)
+         .addTarget(gbuf3,  gapi::LoadOp::Clear, gapi::StoreOp::Store)
+         .addDepth(gbufDepth, gapi::LoadOp::Clear, gapi::StoreOp::Store,
+                              gapi::LoadOp::DontCare, gapi::StoreOp::DontCare);
+      return [this](gapi::CmdEncoder& encoder)
+      {
+        renderOpaque(encoder);
+      };
+    });
+
+    fg2::register_node("gbuffer_resolve", FG_FILE_DECL, [this](fg2::Registry& reg)
+    {
+      gapi::TextureAllocationDescription allocDesc;
+      allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
+      allocDesc.extent = int3{m_WindowSize.x, m_WindowSize.y, 1};
+      allocDesc.mipLevels = 1;
+      allocDesc.arrayLayers = 1;
+      allocDesc.usage = gapi::TEX_USAGE_RT|gapi::TEX_USAGE_TRANSFER_SRC;
+
+      auto finalFrame = reg.createTexture("final_frame", allocDesc, gapi::TextureState::RenderTarget);
+      auto gbuf0 = reg.readTexture("gbuf0", gapi::TextureState::ShaderRead);
+      auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead);
+      auto gbuf2 = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead);
+      auto gbuf3 = reg.readTexture("gbuf3", gapi::TextureState::ShaderRead);
+
+      reg.requestRenderPass()
+         .addTarget(finalFrame, gapi::LoadOp::Load, gapi::StoreOp::Store);
+
+      return [this,gbuf0,gbuf1,gbuf2,gbuf3](gapi::CmdEncoder& encoder)
+      {
+        resolveGbuffer(encoder, gbuf0.get(), gbuf1.get(), gbuf2.get(), gbuf3.get());
+      };
+    });
+
+    fg2::register_node("ui", FG_FILE_DECL, [this](fg2::Registry& reg)
+    {
+      auto finalFrame = reg.modifyTexture("final_frame", gapi::TextureState::RenderTarget);
+      reg.requestRenderPass()
+         .addTarget(finalFrame, gapi::LoadOp::Load, gapi::StoreOp::Store);
+      return [this](gapi::CmdEncoder& encoder)
+      {
+        m_GuiRender->render(encoder);
+        m_ImGuiRender->render(encoder);
+      };
+    });
+
+    fg2::register_node("dbg_text", FG_FILE_DECL, [this](fg2::Registry& reg)
+    {
+      reg.orderMeAfter("ui");
+      auto finalFrame = reg.modifyTexture("final_frame", gapi::TextureState::RenderTarget);
+      reg.requestRenderPass()
+         .addTarget(finalFrame, gapi::LoadOp::Load, gapi::StoreOp::Store);
+      return [this](gapi::CmdEncoder& encoder)
+      {
+        renderDbgText(encoder);
+      };
+    });
+
+    fg2::register_node("present", FG_FILE_DECL, [this](fg2::Registry& reg)
+    {
+      auto finalFrame = reg.readTexture("final_frame", gapi::TextureState::TransferSrc);
+      auto backbuffer = reg.modifyTexture("backbuffer", gapi::TextureState::TransferDst);
+      return [finalFrame, backbuffer](gapi::CmdEncoder& encoder)
+      {
+        const auto region = gapi::TextureSubresourceLayers{
+          .aspects = gapi::ASPECT_COLOR,
+          .mipLevel = 0,
+          .baseArrayLayer = 0,
+          .layerCount = 1
+        };
+
+        const uint3 finalFrameExtent = finalFrame.describe().extent;
+
+        const auto blit = gapi::TextureBlit{
+          .srcSubresource = region,
+          .srcOffsets = {int3{0,0,0}, finalFrameExtent},
+          .dstSubresource = region,
+          .dstOffsets = {int3{0,0,0}, finalFrameExtent},
+        };
+
+        encoder.blitTexture(finalFrame.get(), backbuffer.get(), 1, &blit, gapi::ImageFilter::Nearest);
+        encoder.transitTextureState(backbuffer.get(), gapi::TextureState::TransferDst, gapi::TextureState::Present);
+      };
+    });
+
+    fg2::set_closing_node("present");
+  }
+
   void WorldRender::init()
   {
+    fg2::init();
+    initFrameGraph();
+
     m_WindowSize = Window::get_window_size();
     m_Aspect = (float)m_WindowSize.x / (float)m_WindowSize.y;
 
@@ -44,174 +203,13 @@ namespace Engine::Render
     }
     else
       logerror("world_render: missing font folder inside settings");
-
-    
   }
 
   void WorldRender::render(const CameraData& cameraVP)
   {
-    beforeRender(cameraVP);
-    renderWorld();
-  }
-
-  void WorldRender::beforeRender(const CameraData& camera)
-  {
-    m_DbgTextQueue.tick();
-
-    m_FrameId = (m_FrameId+1) % FRAMES_COUNT;
-    m_FrameGraphs[m_FrameId] = fg::FrameGraph{};
-    m_FrameData.fg = &m_FrameGraphs[m_FrameId];
-
-    m_FrameData.cmdEncoder.reset(gapi::allocate_cmd_encoder());
-    m_FrameData.camera = camera;
-
-    gapi::Semaphore* sem = gapi::ackquire_backbuffer();
-    m_FrameData.cmdEncoder->insertSemaphore(sem);
-
-    m_FrameData.fg->importTexture("backbuffer", gapi::get_backbuffer(), gapi::TextureState::Present);
-
-    tfx::set_extern("view_proj", m_FrameData.camera.viewProj);
-    tfx::set_extern("camera_pos", m_FrameData.camera.pos);
-    tfx::set_extern("sec_since_start", Time::get_sec_since_start());
-    tfx::set_extern("model_sampler", m_ModelSampler);
-    tfx::set_extern("viewport_size", float2(m_WindowSize.x, m_WindowSize.y));
-    tfx::activate_scope("FrameScope", *m_FrameData.cmdEncoder);
-
-    m_ImGuiRender->beforeRender(*m_FrameData.cmdEncoder);
-  }
-
-  void WorldRender::renderWorld()
-  {
-    m_FrameData.fg->addCallbackPass(
-      "gbuffer_main_pass",
-      [&](fg::RenderPassBuilder& builder){
-        gapi::TextureAllocationDescription allocDesc;
-        allocDesc.format = gapi::TextureFormat::D24_UNORM_S8_UINT;
-        allocDesc.extent = int3{m_WindowSize.x, m_WindowSize.y, 1};
-        allocDesc.mipLevels = 1;
-        allocDesc.arrayLayers = 1;
-        allocDesc.usage = gapi::TEX_USAGE_DEPTH_STENCIL;
-
-        builder.createTexture("gbuffer_depth", allocDesc);
-        builder.write("gbuffer_depth", gapi::TextureState::DepthWriteStencilRead);
-
-        allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
-        allocDesc.usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_UNIFORM;
-        builder.createTexture("gbuffer_albedo", allocDesc);
-        builder.write("gbuffer_albedo", gapi::TextureState::RenderTarget);
-
-        allocDesc.format = gapi::TextureFormat::R16G16B16A16_UNORM;
-        builder.createTexture("gbuffer_normal", allocDesc);
-        builder.write("gbuffer_normal", gapi::TextureState::RenderTarget);
-
-        builder.createTexture("gbuffer_metal_roughness", allocDesc);
-        builder.write("gbuffer_metal_roughness", gapi::TextureState::RenderTarget);
-
-        allocDesc.format = gapi::TextureFormat::R32G32B32A32_S;
-        builder.createTexture("gbuffer_world_pos", allocDesc);
-        builder.write("gbuffer_world_pos", gapi::TextureState::RenderTarget);
-
-        builder.addRenderTarget("gbuffer_albedo", gapi::LoadOp::Clear, gapi::StoreOp::Store);
-        builder.addRenderTarget("gbuffer_normal", gapi::LoadOp::Clear, gapi::StoreOp::Store);
-        builder.addRenderTarget("gbuffer_world_pos", gapi::LoadOp::Clear, gapi::StoreOp::Store);
-        builder.addRenderTarget("gbuffer_metal_roughness", gapi::LoadOp::Clear, gapi::StoreOp::Store);
-        builder.setDepthStencil("gbuffer_depth", gapi::LoadOp::Clear, gapi::StoreOp::Store,
-                                                 gapi::LoadOp::DontCare, gapi::StoreOp::DontCare);
-      },
-      [this](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
-        renderOpaque(encoder);
-      }
-    );
-
-    m_FrameData.fg->addCallbackPass(
-      "gbuffer_resolve",
-      [&](fg::RenderPassBuilder& builder){
-        gapi::TextureAllocationDescription allocDesc;
-        allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
-        allocDesc.extent = int3{m_WindowSize.x, m_WindowSize.y, 1};
-        allocDesc.mipLevels = 1;
-        allocDesc.arrayLayers = 1;
-        allocDesc.usage = gapi::TEX_USAGE_RT|gapi::TEX_USAGE_TRANSFER_SRC;
-        
-        builder.createTexture("final_frame", allocDesc);
-        builder.write("final_frame", gapi::TextureState::RenderTarget);
-
-        builder.read("gbuffer_albedo", gapi::TextureState::ShaderRead);
-        builder.read("gbuffer_normal",  gapi::TextureState::ShaderRead);
-        builder.read("gbuffer_metal_roughness", gapi::TextureState::ShaderRead);
-        builder.read("gbuffer_world_pos", gapi::TextureState::ShaderRead);
-
-        builder.addRenderTarget("final_frame", gapi::LoadOp::Load, gapi::StoreOp::Store);
-      },
-      [this](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
-        const auto albedo = resources.getTexture("gbuffer_albedo");
-        const auto normal = resources.getTexture("gbuffer_normal");
-        const auto worldPos = resources.getTexture("gbuffer_world_pos");
-        const auto metalRoughness = resources.getTexture("gbuffer_metal_roughness");
-
-        resolveGbuffer(encoder, albedo, normal, worldPos, metalRoughness);
-      }
-    );
-
-    m_FrameData.fg->addCallbackPass(
-      "ui",
-      [&](fg::RenderPassBuilder& builder) {
-        builder.write("final_frame", gapi::TextureState::RenderTarget);
-        builder.addRenderTarget("final_frame", gapi::LoadOp::Load, gapi::StoreOp::Store);
-      },
-      [&](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
-        m_GuiRender->render(encoder);
-        m_ImGuiRender->render(encoder);
-      }
-    );
-
-    m_FrameData.fg->addCallbackPass(
-      "dbg_text",
-      [&](fg::RenderPassBuilder& builder) {
-        builder.write("final_frame", gapi::TextureState::RenderTarget);
-        builder.addRenderTarget("final_frame", gapi::LoadOp::Load, gapi::StoreOp::Store);
-      },
-      [&](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
-        renderDbgText(encoder);
-      }
-    );
-
-    m_FrameData.fg->addCallbackPass(
-      "present",
-      [&](fg::RenderPassBuilder& builder) {
-        builder.read("final_frame", gapi::TextureState::TransferSrc);
-        builder.write("backbuffer", gapi::TextureState::TransferDst);
-      },
-      [&](const fg::RenderPassResources& resources, gapi::CmdEncoder& encoder) {
-        const auto rt = resources.getTexture("final_frame");
-        const auto bb = resources.getTexture("backbuffer");
-
-        const auto region = gapi::TextureSubresourceLayers{
-          .aspects = gapi::ASPECT_COLOR,
-          .mipLevel = 0,
-          .baseArrayLayer = 0,
-          .layerCount = 1
-        };
-
-        const auto blit = gapi::TextureBlit{
-          .srcSubresource = region,
-          .srcOffsets = {int3{0,0,0}, rt.desc.extent},
-          .dstSubresource = region,
-          .dstOffsets = {int3{0,0,0}, rt.desc.extent},
-        };
-
-        encoder.blitTexture(rt, bb, 1, &blit, gapi::ImageFilter::Nearest);
-        encoder.transitTextureState(bb, gapi::TextureState::TransferDst, gapi::TextureState::Present);
-      }
-    );
-
-    m_FrameData.fg->compile();
-    m_FrameData.fg->execute(*m_FrameData.cmdEncoder);
-
-    gapi::Semaphore* sem = m_FrameData.cmdEncoder->signalSemaphore();
-    m_FrameData.cmdEncoder->flush();
-    m_FrameData.cmdEncoder->present(sem);
-    gapi::next_frame();
+    m_FrameData.camera = cameraVP;
+    fg2::exec_new_frame();
+    gapi::present_backbuffer_and_finalize_frame();
   }
 
   void WorldRender::renderOpaque(gapi::CmdEncoder& encoder)

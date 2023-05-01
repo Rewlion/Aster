@@ -148,7 +148,7 @@ namespace gapi::vulkan
     frameId = res.value;
   }
 
-  void Swapchain::present(vk::Semaphore wait_semaphore)
+  void Swapchain::present(vk::Semaphore* wait_semaphore, size_t wait_count)
   {
     vk::SwapchainKHR swapchains[] {m_Swapchain.get()};
     const auto presentInfo = vk::PresentInfoKHR()
@@ -156,8 +156,8 @@ namespace gapi::vulkan
       .setPSwapchains(swapchains)
       .setPImageIndices(&frameId)
       .setPResults(nullptr)
-      .setWaitSemaphoreCount(1)
-      .setPWaitSemaphores(&wait_semaphore);
+      .setWaitSemaphoreCount(wait_count)
+      .setPWaitSemaphores(wait_semaphore);
 
     VK_CHECK(m_PresentQueue.presentKHR(presentInfo));
   }

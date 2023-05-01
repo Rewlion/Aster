@@ -56,7 +56,7 @@ namespace gapi::vulkan
     VK_CHECK_RES(fence);
     VK_CHECK(m_Device->resetFences(1, &fence.value.get()));
 
-    submitGraphicsCmds(&swapchainInitCmdBuf, 1 , nullptr, 0, nullptr, 0, fence.value.get());
+    submitGraphicsCmd(swapchainInitCmdBuf, fence.value.get());
     VK_CHECK(m_Device->waitForFences(1, &fence.value.get(), true, ~0));
   }
 
@@ -170,27 +170,30 @@ namespace gapi::vulkan
     return {0,0,0};
   }
 
-  void Device::submitGraphicsCmds(vk::CommandBuffer* cmdBuf, const size_t count,
-                                             const vk::Semaphore* waitSemaphores, const size_t waitSemaphoresCount,
-                                             const vk::Semaphore* signalSemaphores, const size_t signalSemaphoresCount,
-                                             const vk::Fence signalFence)
+  void Device::submitGraphicsCmd(vk::CommandBuffer cmd_buf, const vk::Fence signal_fence)
   {
     const vk::PipelineStageFlags waitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
+    auto signalSemaphore = createSemaphore();
+    m_SemaphoresToWaitBeforePresent.push_back(signalSemaphore.get());
+
     vk::SubmitInfo submit;
-    submit.pCommandBuffers = cmdBuf;
-    submit.commandBufferCount = count;
-    submit.pWaitSemaphores = waitSemaphores;
-    submit.waitSemaphoreCount = waitSemaphoresCount;
+    submit.pCommandBuffers = &cmd_buf;
+    submit.commandBufferCount = 1;
+    submit.pWaitSemaphores = &m_BackbufferAcquireSemaphore;
+    submit.waitSemaphoreCount = m_BackbufferAcquireSemaphore ? 1 : 0;
     submit.pWaitDstStageMask = &waitStage;
-    submit.signalSemaphoreCount = signalSemaphoresCount;
-    submit.pSignalSemaphores = signalSemaphores;
-    VK_CHECK(m_GraphicsQueue.submit(submit, signalFence));
+    submit.pSignalSemaphores = &signalSemaphore.get();
+    submit.signalSemaphoreCount = 1;
+    VK_CHECK(m_GraphicsQueue.submit(submit, signal_fence));
+
+    m_FrameGc->addSemaphores(std::move(signalSemaphore));
   }
 
-  void Device::presentSurfaceImage(vk::Semaphore wait_semaphore)
+  void Device::presentSurfaceImage()
   {
-    m_Swapchain.present(wait_semaphore);
+    m_Swapchain.present(m_SemaphoresToWaitBeforePresent.data(), m_SemaphoresToWaitBeforePresent.size());
+    m_SemaphoresToWaitBeforePresent.clear();
   }
 
   BufferHandler Device::allocateBuffer(const size_t size, const int usage)
@@ -308,6 +311,15 @@ namespace gapi::vulkan
     }
 
     return &m_AllocatedBuffers.get(id);
+  }
+
+  void Device::acquireBackbuffer(vk::Fence signal_fence)
+  {
+    auto sem = createSemaphore();
+    m_BackbufferAcquireSemaphore = sem.get();
+    m_FrameGc->addSemaphores(std::move(sem));
+
+    m_Swapchain.acquireSurfaceImage(m_BackbufferAcquireSemaphore, signal_fence);
   }
 
   void Device::discardBuffer(Buffer& buffer)
@@ -493,6 +505,11 @@ namespace gapi::vulkan
     ASSERT(allocated);
 
     return SamplerHandler(id);
+  }
+
+  void Device::freeSampler(const SamplerHandler sampler)
+  {
+    m_AllocatedSamplers.remove((size_t)sampler);
   }
 
   vk::Sampler Device::getSampler(const SamplerHandler sampler)

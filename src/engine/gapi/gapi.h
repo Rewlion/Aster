@@ -16,11 +16,12 @@ namespace gapi
   SamplerHandler           allocate_sampler(const SamplerAllocationDescription& allocDesc);
   void                     free_resource(const BufferHandler buffer);
   void                     free_resource(const TextureHandle texture);
-  Semaphore*               ackquire_backbuffer();
+  void                     free_resource(const SamplerHandler sampler);
+  void                     acquire_backbuffer();
   ShaderModuleHandler      add_module(void* blob);
   PipelineLayoutHandler    add_pipeline_layout(void* dsets);
   CmdEncoder*              allocate_cmd_encoder();
   Fence*                   allocate_fence();
-  void                     next_frame();
+  void                     present_backbuffer_and_finalize_frame();
   void                     wait_fence(Fence* fence);
 }

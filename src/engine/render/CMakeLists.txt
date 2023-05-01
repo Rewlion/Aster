@@ -18,7 +18,14 @@ set(FRAMEGRAPH_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/render_pass_builder.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/render_pass_resources.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/resources.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/topological_sorter.cpp")
+  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/topological_sorter.cpp"
+  
+  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/frame_graph.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/manager.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/registry.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/resource_request.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/resource_storage.cpp"
+  )
 
 set(FONT_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/font/font_render.cpp")

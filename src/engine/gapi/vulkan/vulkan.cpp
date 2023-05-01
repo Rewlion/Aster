@@ -17,17 +17,18 @@ namespace gapi
   extern BufferHandler         (*gapi_allocate_buffer)(const size_t size, const int usage);
   extern void                  (*gapi_free_buffer)(const BufferHandler buffer);
   extern void                  (*gapi_free_texture)(const TextureHandle texture);
+  extern void                  (*gapi_free_sampler)(const SamplerHandler sampler);
   extern void*                 (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size, const int flags);
   extern void                  (*gapi_unmap_buffer)(const BufferHandler buffer);
   extern TextureHandle        (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
   extern SamplerHandler        (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
-  extern Semaphore*            (*gapi_ackquire_backbuffer)();
+  extern void                  (*gapi_acquire_backbuffer)();
   extern ShaderModuleHandler   (*gapi_add_module)(void* blob);
   extern PipelineLayoutHandler (*gapi_add_pipeline_layout)(void* dsets);
   extern gapi::CmdEncoder*     (*gapi_allocate_cmd_encoder)();
   extern Fence*                (*gapi_allocate_fence)();
   extern void                  (*gapi_wait_fence)(Fence* fence);
-  extern void                  (*gapi_next_frame)();
+  extern void                  (*gapi_present_backbuffer_and_finalize_frame)();
 }
 
 namespace gapi::vulkan
@@ -63,6 +64,11 @@ namespace gapi::vulkan
     device->freeTexture(texture);
   }
 
+  void free_sampler(const SamplerHandler sampler)
+  {
+    device->freeSampler(sampler);
+  }
+
   void* map_buffer(const BufferHandler buffer, const size_t offset, const size_t size, const int flags)
   {
     return device->mapBuffer(buffer, offset, size, flags);
@@ -83,14 +89,14 @@ namespace gapi::vulkan
     return device->allocateSampler(allocDesc);
   }
 
-  Semaphore* ackquire_backbuffer()
+  void acquire_backbuffer()
   {
     auto res = device->getDevice().createFenceUnique({});
     VK_CHECK_RES(res);
     VK_CHECK(device->getDevice().resetFences(1, &res.value.get()));
     vk::Fence f = res.value.get();
     frameGc.addWaitFence(std::move(res.value));
-    return device->acquireBackbuffer(f);
+    device->acquireBackbuffer(f);
   }
 
   ShaderModuleHandler add_module(void* blob)
@@ -124,8 +130,9 @@ namespace gapi::vulkan
     delete f;
   }
 
-  void next_frame()
+  void present_backbuffer_and_finalize_frame()
   {
+    device->presentSurfaceImage();
     frameGc.nextFrame();
   }
 
@@ -220,13 +227,13 @@ namespace gapi::vulkan
     gapi_allocate_sampler = allocate_sampler;
     gapi_map_buffer = map_buffer;
     gapi_unmap_buffer = unmap_buffer;
-    gapi_ackquire_backbuffer = ackquire_backbuffer;
+    gapi_acquire_backbuffer = acquire_backbuffer;
     gapi_add_module = add_module;
     gapi_add_pipeline_layout = add_pipeline_layout;
     gapi_allocate_cmd_encoder = allocate_cmd_encoder;
     gapi_allocate_fence = allocate_fence;
     gapi_wait_fence = wait_fence;
-    gapi_next_frame = next_frame;
+    gapi_present_backbuffer_and_finalize_frame = present_backbuffer_and_finalize_frame;
 
     backend.init();
     device.reset(backend.createDevice(&frameGc));

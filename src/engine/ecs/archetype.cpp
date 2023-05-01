@@ -43,7 +43,7 @@ namespace ecs
     const entity_size_t entitySize = getEntitySize(arch_id);
     const auto& nameToCompMap = getNameToComponentsMap(arch_id);
 
-    const chunk_id_t chunksCount{chunks.size()};
+    const chunk_id_t chunksCount{(uint16_t)chunks.size()};
     for (chunk_id_t chunkId{0}; chunkId < chunksCount; ++chunkId)
     {
       auto& chunk = chunks[chunkId];

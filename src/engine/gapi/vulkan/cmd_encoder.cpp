@@ -269,39 +269,9 @@ namespace gapi::vulkan
     else
       fence = reinterpret_cast<VulkanFence*>(signalFence)->fence.get();
 
-    m_Device.submitGraphicsCmds(&m_CmdBuf, 1,
-      m_QueuedWaitSemaphores.data(), m_QueuedWaitSemaphores.size(),
-      m_QueuedSignalSemaphores.data(), m_QueuedSignalSemaphores.size(),
-      fence);
+    m_Device.submitGraphicsCmd(m_CmdBuf, fence);
 
-    m_QueuedWaitSemaphores.clear();
-    m_QueuedSignalSemaphores.clear();
     m_CmdBuf = vk::CommandBuffer{};
-  }
-
-  void CmdEncoder::present(Semaphore* wait_semaphore)
-  {
-    VulkanSemaphore* s = reinterpret_cast<VulkanSemaphore*>(wait_semaphore);
-    vk::Semaphore h = s->semaphore.get();
-    m_FrameGc.addSemaphores(std::move(s->semaphore));
-    m_Device.presentSurfaceImage(h);
-    delete s;
-  }
-
-  Semaphore* CmdEncoder::signalSemaphore()
-  {
-    VulkanSemaphore* s = new VulkanSemaphore();
-    s->semaphore = m_Device.createSemaphore();
-    m_QueuedSignalSemaphores.push_back(s->semaphore.get());
-    return s;
-  }
-
-  void CmdEncoder::insertSemaphore(Semaphore* s)
-  {
-    VulkanSemaphore* sem = reinterpret_cast<VulkanSemaphore*>(s);
-    m_QueuedWaitSemaphores.push_back(sem->semaphore.get());
-    m_FrameGc.addSemaphores(std::move(sem->semaphore));
-    delete (s);
   }
 
   void CmdEncoder::bindConstBuffer(const BufferHandler h, const size_t set, const size_t binding)

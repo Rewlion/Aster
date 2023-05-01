@@ -75,12 +75,9 @@ namespace gapi::vulkan
 
       vk::Extent3D getImageDim(const TextureHandle handler);
 
-      void submitGraphicsCmds(vk::CommandBuffer* cmdBuf, const size_t count,
-                              const vk::Semaphore* waitSemaphores, const size_t waitSemaphoresCount,
-                              const vk::Semaphore* signalSemaphores, const size_t signalSemaphoresCount,
-                              const vk::Fence signalFence);
+      void submitGraphicsCmd(vk::CommandBuffer, const vk::Fence signal_fence);
 
-      void presentSurfaceImage(vk::Semaphore wait_semaphore);
+      void presentSurfaceImage();
 
       BufferHandler allocateBuffer(const size_t size, const int usage);
       void freeBuffer(const BufferHandler buffer);
@@ -97,6 +94,7 @@ namespace gapi::vulkan
       void freeTexture(const TextureHandle texture);
 
       SamplerHandler allocateSampler(const SamplerAllocationDescription& allocDesc);
+      void freeSampler(const SamplerHandler sampler);
 
       vk::Sampler getSampler(const SamplerHandler sampler);
 
@@ -107,13 +105,7 @@ namespace gapi::vulkan
 
       vk::UniqueSemaphore createSemaphore();
 
-      inline VulkanSemaphore* acquireBackbuffer(vk::Fence signal_fence)
-      {
-        VulkanSemaphore* s = new VulkanSemaphore();
-        s->semaphore = createSemaphore();
-        m_Swapchain.acquireSurfaceImage(s->semaphore.get(), signal_fence);
-        return s;
-      }
+      void acquireBackbuffer(vk::Fence signal_fence);
 
       void discardBuffer(Buffer& buffer);
       Buffer* getAllocatedBuffer(const BufferHandler handler);
@@ -143,6 +135,8 @@ namespace gapi::vulkan
       vk::PhysicalDeviceProperties m_DeviceProperties;
 
       Swapchain m_Swapchain;
+      eastl::vector<vk::Semaphore> m_SemaphoresToWaitBeforePresent;
+      vk::Semaphore m_BackbufferAcquireSemaphore;
 
       QueueIndices m_QueueIndices;
       MemoryIndices m_MemoryIndices;

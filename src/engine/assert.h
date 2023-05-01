@@ -12,6 +12,7 @@
 #define ASSERT(cond) ASSERT_COMMON(cond, #cond, false)
 
 #define ASSERT_FMT(cond, f, ...) ASSERT_COMMON(cond, fmt::format(f, __VA_ARGS__), false)
+#define ASSERT_FMT_RETURN(cond, ret_val, f, ...)  ASSERT_FMT(cond, f, __VA_ARGS__); if (!(cond)) return ret_val
 
 #define IASSERT(cond) ASSERT_COMMON(cond, #cond, true)
 

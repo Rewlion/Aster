@@ -2,7 +2,7 @@
 class NEW_TYPE\
 {\
   public:\
-    constexpr explicit NEW_TYPE(const BASE_TYPE& v)\
+    constexpr explicit NEW_TYPE(const BASE_TYPE v)\
      : m_Value(v)\
     {\
     }\
@@ -18,11 +18,11 @@ class NEW_TYPE\
       return *this;\
     }\
     \
-    operator const BASE_TYPE&() const\
+    constexpr operator const BASE_TYPE&() const\
     {\
       return m_Value;\
     }\
-    operator BASE_TYPE&()\
+    constexpr operator BASE_TYPE&()\
     {\
       return m_Value;\
     }\

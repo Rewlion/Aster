@@ -29,7 +29,7 @@ namespace gapi::vulkan
       const Swapchain& operator=(const Swapchain& rvl) = delete;
       Swapchain& operator=(Swapchain&& rvl);
 
-      void present(vk::Semaphore wait_semaphore);
+      void present(vk::Semaphore* wait_semaphore, size_t wait_count);
 
       inline uint8_t getBackbufferId() const
       {

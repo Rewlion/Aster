@@ -20,9 +20,9 @@ namespace ecs
   STRONG_SCALAR_TYPEDEF(uint32_t, components_set_hash_t);
   STRONG_SCALAR_TYPEDEF(uint32_t, name_hash_t);
 
-  constexpr query_id_t INVALID_QUERY_ID = query_id_t{-1};
-  constexpr registered_component_id_t INVALID_REG_COMPONENT_ID = registered_component_id_t{-1};
-  constexpr component_type_id_t INVALID_COMPONENT_TYPE_ID = component_type_id_t{-1};
-  constexpr template_id_t INVALID_TEMPLATE_ID = template_id_t{-1};
-  constexpr chunk_eid_t INVALID_CHUNK_EID = chunk_eid_t{-1};
+  constexpr query_id_t INVALID_QUERY_ID = query_id_t{(uint16_t)~0};
+  constexpr registered_component_id_t INVALID_REG_COMPONENT_ID = registered_component_id_t{(uint16_t)~0};
+  constexpr component_type_id_t INVALID_COMPONENT_TYPE_ID = component_type_id_t{(uint16_t)~0};
+  constexpr template_id_t INVALID_TEMPLATE_ID = template_id_t{(uint16_t)~0};
+  constexpr chunk_eid_t INVALID_CHUNK_EID = chunk_eid_t{(uint16_t)~0};
 }

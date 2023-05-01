@@ -561,11 +561,6 @@ namespace gapi
     uint2 size;
   };
 
-  struct Semaphore
-  {
-    virtual ~Semaphore(){}
-  };
-
   struct Fence
   {
     virtual ~Fence(){}
