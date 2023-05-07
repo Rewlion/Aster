@@ -13,7 +13,7 @@
 
 #define FG_FILE_DECL __FILE__
 
-namespace fg2
+namespace fg
 {
   class Registry;
 

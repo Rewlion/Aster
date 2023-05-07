@@ -5,7 +5,7 @@
 
 #include <EASTL/vector.h>
 
-namespace fg2
+namespace fg
 {
   static Manager* manager = nullptr;
   auto get_manager() -> Manager*

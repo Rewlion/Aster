@@ -3,7 +3,7 @@
 #include <engine/utils/string_map.h>
 #include <engine/utils/strong_typedef.h>
 
-namespace fg2
+namespace fg
 {
   STRONG_SCALAR_TYPEDEF(uint16_t, node_id_t);
   STRONG_SCALAR_TYPEDEF(uint16_t, virt_res_id_t);

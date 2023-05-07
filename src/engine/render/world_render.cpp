@@ -8,7 +8,7 @@
 #include <engine/math.h>
 #include <engine/render/font/font_render.h>
 #include <engine/render/imgui/imgui_render.h>
-#include <engine/render/frame_graph/v2/frame_graph.h>
+#include <engine/render/frame_graph/frame_graph.h>
 #include <engine/scene/scene.h>
 #include <engine/settings.h>
 #include <engine/time.h>
@@ -24,7 +24,7 @@ namespace Engine::Render
 
   void WorldRender::initFrameGraph()
   {
-    fg2::register_node("backbuffer_acquiring", FG_FILE_DECL, [this](fg2::Registry& reg)
+    fg::register_node("backbuffer_acquiring", FG_FILE_DECL, [this](fg::Registry& reg)
     {
       return [](gapi::CmdEncoder& encoder)
       {
@@ -32,7 +32,7 @@ namespace Engine::Render
       };
     });
 
-    fg2::register_node("frame_preparing", FG_FILE_DECL, [this](fg2::Registry& reg)
+    fg::register_node("frame_preparing", FG_FILE_DECL, [this](fg::Registry& reg)
     {
       reg.orderMeAfter("backbuffer_acquiring");
       auto cameraData = reg.createBlob<Engine::CameraData>("camera_data");
@@ -40,7 +40,7 @@ namespace Engine::Render
 
       reg.importTextureProducer("backbuffer", []()
       {
-        return fg2::TextureImport{gapi::get_backbuffer(), gapi::TextureState::Present};
+        return fg::TextureImport{gapi::get_backbuffer(), gapi::TextureState::Present};
       });
 
       return [cameraData, wndSize, this](gapi::CmdEncoder& encoder)
@@ -61,7 +61,7 @@ namespace Engine::Render
       };
     });
 
-    fg2::register_node("gbuffer_main_pass", FG_FILE_DECL, [this](fg2::Registry& reg)
+    fg::register_node("gbuffer_main_pass", FG_FILE_DECL, [this](fg::Registry& reg)
     {
       reg.orderMeAfter("frame_preparing");
 
@@ -98,7 +98,7 @@ namespace Engine::Render
       };
     });
 
-    fg2::register_node("gbuffer_resolve", FG_FILE_DECL, [this](fg2::Registry& reg)
+    fg::register_node("gbuffer_resolve", FG_FILE_DECL, [this](fg::Registry& reg)
     {
       gapi::TextureAllocationDescription allocDesc;
       allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
@@ -122,7 +122,7 @@ namespace Engine::Render
       };
     });
 
-    fg2::register_node("ui", FG_FILE_DECL, [this](fg2::Registry& reg)
+    fg::register_node("ui", FG_FILE_DECL, [this](fg::Registry& reg)
     {
       auto finalFrame = reg.modifyTexture("final_frame", gapi::TextureState::RenderTarget);
       reg.requestRenderPass()
@@ -134,7 +134,7 @@ namespace Engine::Render
       };
     });
 
-    fg2::register_node("dbg_text", FG_FILE_DECL, [this](fg2::Registry& reg)
+    fg::register_node("dbg_text", FG_FILE_DECL, [this](fg::Registry& reg)
     {
       reg.orderMeAfter("ui");
       auto finalFrame = reg.modifyTexture("final_frame", gapi::TextureState::RenderTarget);
@@ -146,7 +146,7 @@ namespace Engine::Render
       };
     });
 
-    fg2::register_node("present", FG_FILE_DECL, [this](fg2::Registry& reg)
+    fg::register_node("present", FG_FILE_DECL, [this](fg::Registry& reg)
     {
       auto finalFrame = reg.readTexture("final_frame", gapi::TextureState::TransferSrc);
       auto backbuffer = reg.modifyTexture("backbuffer", gapi::TextureState::TransferDst);
@@ -173,12 +173,12 @@ namespace Engine::Render
       };
     });
 
-    fg2::set_closing_node("present");
+    fg::set_closing_node("present");
   }
 
   void WorldRender::init()
   {
-    fg2::init();
+    fg::init();
     initFrameGraph();
 
     m_WindowSize = Window::get_window_size();
@@ -206,7 +206,7 @@ namespace Engine::Render
   void WorldRender::render(const CameraData& cameraVP)
   {
     m_FrameData.camera = cameraVP;
-    fg2::exec_new_frame();
+    fg::exec_new_frame();
     gapi::present_backbuffer_and_finalize_frame();
   }
 

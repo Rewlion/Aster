@@ -9,7 +9,7 @@
 
 #include <variant>
 
-namespace fg2
+namespace fg
 {
   class ResourceStorage
   {

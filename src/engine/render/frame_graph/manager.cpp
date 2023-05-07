@@ -8,7 +8,7 @@
 #include <EASTL/vector_set.h>
 #include <EASTL/bitvector.h>
 
-namespace fg2
+namespace fg
 {
   auto Manager::registerNode(const char* name, const char* file, BuildFunction build_cb) -> NodeHandle
   {

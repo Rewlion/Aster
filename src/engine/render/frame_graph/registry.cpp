@@ -3,7 +3,7 @@
 #include <engine/assert.h>
 #include <engine/log.h>
 
-namespace fg2
+namespace fg
 {
   blob_id_t Registry::BlobCompileTypeId::m_LastId{0};
 

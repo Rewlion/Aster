@@ -4,7 +4,7 @@
 
 #include <engine/gapi/resources.h>
 
-namespace fg2
+namespace fg
 {
   template<class Accessor>
   class ResourceRequest

@@ -1,7 +1,7 @@
 #include "resource_request.hpp"
 #include "manager.h"
 
-namespace fg2
+namespace fg
 {
   extern
   auto get_manager() -> Manager*;

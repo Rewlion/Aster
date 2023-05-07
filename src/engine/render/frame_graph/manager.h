@@ -5,7 +5,7 @@
 
 #include <engine/render/consts.h>
 
-namespace fg2
+namespace fg
 {
   class Manager
   {

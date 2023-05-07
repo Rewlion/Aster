@@ -12,11 +12,11 @@ set(IMGUI_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/imgui/imgui_render.cpp")
 
 set(FRAMEGRAPH_SRC
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/frame_graph.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/manager.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/registry.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/resource_request.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/resource_storage.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/frame_graph.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/manager.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/registry.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/resource_request.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/resource_storage.cpp"
   )
 
 set(FONT_SRC

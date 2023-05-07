@@ -2,7 +2,7 @@
 
 #include "registry.h"
 
-namespace fg2
+namespace fg
 {
   void init();
   void destroy();

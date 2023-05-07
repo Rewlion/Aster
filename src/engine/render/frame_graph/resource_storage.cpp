@@ -4,7 +4,7 @@
 #include <engine/gapi/gapi.h>
 #include <engine/gapi/cmd_encoder.h>
 
-namespace fg2
+namespace fg
 {
   void ResourceStorage::create(const res_id_t res_id, const Registry::Resource& res_info)
   {
