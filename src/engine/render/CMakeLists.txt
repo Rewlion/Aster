@@ -12,14 +12,6 @@ set(IMGUI_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/imgui/imgui_render.cpp")
 
 set(FRAMEGRAPH_SRC
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/blackboard.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/frame_graph.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/render_pass.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/render_pass_builder.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/render_pass_resources.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/resources.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/topological_sorter.cpp"
-  
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/frame_graph.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/manager.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/v2/registry.cpp"

@@ -7,9 +7,8 @@
 #include <engine/log.h>
 #include <engine/math.h>
 #include <engine/render/font/font_render.h>
-#include <engine/render/frame_graph/blackboard.hpp>
-#include <engine/render/frame_graph/frame_graph.h>
 #include <engine/render/imgui/imgui_render.h>
+#include <engine/render/frame_graph/v2/frame_graph.h>
 #include <engine/scene/scene.h>
 #include <engine/settings.h>
 #include <engine/time.h>
@@ -18,7 +17,6 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 
-#include <engine/render/frame_graph/v2/frame_graph.h>
 
 namespace Engine::Render
 {

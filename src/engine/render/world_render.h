@@ -5,8 +5,6 @@
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/gapi/resources.h>
 #include <engine/render/debug_text_queue.hpp>
-#include <engine/render/frame_graph/blackboard.hpp>
-#include <engine/render/frame_graph/frame_graph.h>
 #include <engine/work_cycle/camera.h>
 
 #include <memory>
@@ -43,7 +41,6 @@ namespace Engine::Render
       {
         std::unique_ptr<gapi::CmdEncoder> cmdEncoder;
         CameraData camera;
-        fg::FrameGraph* fg;
       };
       FrameData m_FrameData;
 
@@ -57,7 +54,6 @@ namespace Engine::Render
       void renderDbgText(gapi::CmdEncoder& encoder);
     private:
       size_t m_FrameId = 0;
-      fg::FrameGraph m_FrameGraphs[FRAMES_COUNT];
 
       gapi::SamplerHandler m_ModelSampler;
 
