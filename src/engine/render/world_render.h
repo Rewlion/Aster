@@ -6,6 +6,7 @@
 #include <engine/gapi/resources.h>
 #include <engine/render/debug_text_queue.hpp>
 #include <engine/work_cycle/camera.h>
+#include <engine/render/frame_graph/node_id.h>
 
 #include <memory>
 
@@ -20,10 +21,16 @@ namespace Engine::Render
   class GuiRender;
   class ImGuiRender;
 
+
   class WorldRender
   {
+    friend fg::NodeHandle mk_frame_preparing_node();
+    friend fg::NodeHandle mk_ui_node();
+    friend fg::NodeHandle mk_dbg_text_node();
+
     public:
       void init();
+      void setupEcs() {};
       void render(const CameraData& camera);
 
       inline float getWndAspect() const
@@ -36,6 +43,7 @@ namespace Engine::Render
         m_DbgTextQueue.push(std::move(text), color);
       }
 
+
     private:
       struct FrameData
       {
@@ -44,13 +52,8 @@ namespace Engine::Render
       };
       FrameData m_FrameData;
 
-      void initFrameGraph();
+      void createFrameGraph();
 
-      void renderOpaque(gapi::CmdEncoder& encoder);
-      void renderScene(gapi::CmdEncoder& encoder);
-      void resolveGbuffer(gapi::CmdEncoder& encoder,
-                          const gapi::TextureHandle albedo, const gapi::TextureHandle normal,
-                          const gapi::TextureHandle worldPos, const gapi::TextureHandle metalRoughness);
       void renderDbgText(gapi::CmdEncoder& encoder);
     private:
       size_t m_FrameId = 0;
@@ -66,6 +69,8 @@ namespace Engine::Render
       std::unique_ptr<GuiRender> m_GuiRender;
       std::unique_ptr<ImGuiRender> m_ImGuiRender;
       dbg::TextDbgQueue<10, 128> m_DbgTextQueue;
+
+      eastl::vector<fg::NodeHandle> m_FgNodes;
   };
 
   extern WorldRender world_render;

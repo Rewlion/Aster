@@ -4,6 +4,10 @@ set(WORLD_RENDER_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/debug_text.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/render/gui_render.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/render/world_render.cpp"
+
+  "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/frame_preparing.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/opaque.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/post_transparent.cpp"
 )
 
 set(IMGUI_SRC
