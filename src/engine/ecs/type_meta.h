@@ -36,11 +36,11 @@ namespace ecs
       virtual
       void destructor(void* component) {}
 
-      virtual
-      void copy(void* __restrict__ to, const void* __restrict__ from) {}
+      // virtual
+      // void copy(void* __restrict__ to, const void* __restrict__ from) {}
 
-      virtual
-      void move(void* __restrict__ to, void* __restrict__ from) {}
+      // virtual
+      // void move(void* __restrict__ to, void* __restrict__ from) {}
   };
 
   template<class T>
@@ -61,15 +61,58 @@ namespace ecs
       {
       }
 
-      void copy(void* __restrict__ to, const void* __restrict__ from) override
-      {
-        std::memcpy(to, from, sizeof(T));
-      }
+      // void copy(void* __restrict__ to, const void* __restrict__ from) override
+      // {
+      //   std::memcpy(to, from, sizeof(T));
+      // }
 
-      void move(void* __restrict__ to, void* __restrict__ from) override
+      // void move(void* __restrict__ to, void* __restrict__ from) override
+      // {
+      //   std::memcpy(to, from, sizeof(T));
+      // }
+  };
+
+  constexpr bool INITABLE_TYPE = true;
+
+  template<class T, bool has_init = false>
+  class NonTrivialTypeManager : public TypeManager
+  {
+    public:
+      virtual
+      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) override
       {
-        std::memcpy(to, from, sizeof(T));
+        const T& init = *reinterpret_cast<const T*>(init_comp);
+        new (component) T(init);
+
+        if constexpr (has_init)
+          reinterpret_cast<T*>(component)->init();
       }
+      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) override
+      {
+        T& init = *reinterpret_cast<T*>(init_comp);
+        new (component) T(std::move(init));
+      }
+      virtual
+      void destructor(void* component) override
+      {
+        T* s =  reinterpret_cast<T*>(component);
+        s->~T();
+      }
+      // virtual
+      // void copy(void* __restrict__ to, const void* __restrict__ from) override
+      // {
+      //   T& _to = *reinterpret_cast<T*>(to);
+      //   const T& _from = *reinterpret_cast<const T*>(from);
+      //   _to = _from;
+      // }
+
+      // virtual
+      // void move(void* __restrict__ to, void* __restrict__ from) override
+      // {
+      //   T& _to = *reinterpret_cast<string*>(to);
+      //   T& _from = *reinterpret_cast<string*>(from);
+      //   _to = std::move(_from);
+      // }
   };
 
   struct TypeMeta
@@ -108,16 +151,19 @@ namespace ecs
   };
 
   #define DECLARE_ECS_COMPONENT(type, type_manager, is_trivial, is_trivial_relocatable) \
-    TypeMetaRegistration type ## _reg{ TypeMeta{ \
+    ecs::TypeMetaRegistration type ## _reg{ ecs::TypeMeta{ \
       .size = sizeof(type), \
-      .typeId = CompileTypeId::from<type>(), \
+      .typeId = ecs::CompileTypeId::from<type>(), \
       .typeName = #type, \
       .manager = new type_manager, \
       .isTrivial = is_trivial, \
       .isTrivialRelocatable = is_trivial_relocatable }}
 
   #define DECLARE_TRIVIAL_ECS_COMPONENT(type) \
-          DECLARE_ECS_COMPONENT(type, TrivialTypeManager<type>, true, true)
+          DECLARE_ECS_COMPONENT(type, ecs::TrivialTypeManager<type>, true, true)
+  
+  #define DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT(type) \
+          DECLARE_ECS_COMPONENT(type, ecs::NonTrivialTypeManager<type>, false, true)
 
   class TypeMetaStorage
   {

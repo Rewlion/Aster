@@ -18,6 +18,10 @@ namespace fg
       else
         createTexture(res_id, texRes->allocDesc);
     }
+    else if (auto* samplerRes = std::get_if<Registry::SamplerResource>(&res_info))
+    {
+      createSampler(res_id, samplerRes->allocDesc);
+    }
     else if (auto* blobRes = std::get_if<Registry::BlobResource>(&res_info))
     {
       std::byte* storage = m_Blobs.data() + blobRes->bufferStart;

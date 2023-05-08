@@ -25,4 +25,9 @@ namespace fg
   {
     return get_manager()->getSampler(id);
   }
+
+  auto SamplerAccessor::getAllocDescription(const virt_res_id_t id) -> alloc_desc_return_type
+  {
+    return get_manager()->getSamplerAllocDescription(id);
+  }
 }

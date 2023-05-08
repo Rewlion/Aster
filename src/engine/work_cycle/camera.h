@@ -10,5 +10,5 @@ namespace Engine
     mat4 viewProj;
   };
 
-  CameraData get_camera();
+  CameraData get_camera(const float aspect);
 }

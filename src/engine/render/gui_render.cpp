@@ -1,20 +1,17 @@
 #include "gui_render.h"
 #include "font/font_render.h"
 
+#include <engine/ecs/type_meta.h>
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/gapi/resource_wrappers.h>
 #include <engine/gui/constants.h>
 #include <engine/gui/gui.h>
+#include <engine/render/ecs_utils.h>
+#include <engine/render/font/font_render.h>
 #include <engine/tfx/tfx.h>
 
 namespace Engine::Render
 {
-  GuiRender::GuiRender(FontRender& font_render)
-    : m_FontRender(font_render)
-  {
-    
-  }
-
   void GuiRender::renderElement(const gui::Element& elem, gapi::CmdEncoder& encoder)
   {
     switch (elem.params.render)
@@ -66,12 +63,16 @@ namespace Engine::Render
 
   void GuiRender::renderText(const gui::Element& elem, gapi::CmdEncoder& encoder)
   {
+    FontRender* fontRender = get_font_render();
+    if (!fontRender)
+      return;
+
     gapi::Scissor sc;
     sc.offset = elem.sceneParams.pos;
     sc.size = elem.sceneParams.size;
     gapi::ScopedScissor scopedSc{sc, encoder};
 
-    const float2 textBbox = m_FontRender.getBbox(elem.sceneParams.fontSize, elem.params.text);
+    const float2 textBbox = fontRender->getBbox(elem.sceneParams.fontSize, elem.params.text);
 
     const auto alignX = [](gui::HorAlignType align, float parent_width, float width){
       switch (align)
@@ -100,7 +101,7 @@ namespace Engine::Render
 
     const float2 textOrigin = elem.sceneParams.pos + textOffset;
 
-    m_FontRender.render(elem.params.text, textOrigin,
+    fontRender->render(elem.params.text, textOrigin,
       elem.sceneParams.fontSize, elem.params.color.getRenderColor(), encoder);
   }
 
@@ -109,4 +110,6 @@ namespace Engine::Render
     for (auto* elem: gui::Gui::getElemsToRender())
       renderElement(*elem, encoder);
   }
+  
+  DECLARE_TRIVIAL_ECS_COMPONENT(GuiRender);
 }

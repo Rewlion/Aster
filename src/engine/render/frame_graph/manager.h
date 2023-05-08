@@ -10,14 +10,17 @@ namespace fg
   class Manager
   {
     public:
-      auto registerNode(const char* name, const char* file, BuildFunction build_cb) -> NodeHandle;
+      auto registerNode(const char* name, const char* file, BuildFunction build_cb) -> node_id_t;
 
       void execNewFrame();
       void setClosingNode(const char* node) { m_ClosingNode = node; }
 
       auto getTexture(const virt_res_id_t) -> gapi::TextureHandle;
       auto getTextureAllocDescription(const virt_res_id_t) -> const gapi::TextureAllocationDescription&;
+
       auto getSampler(const virt_res_id_t) -> gapi::SamplerHandler;
+      auto getSamplerAllocDescription(const virt_res_id_t) -> const gapi::SamplerAllocationDescription&;
+
       auto getBlob(const virt_res_id_t) -> std::byte*;
 
     private:
@@ -47,5 +50,6 @@ namespace fg
       size_t m_BlobsSize = 0;
 
       gapi::TextureAllocationDescription m_DefaultTexAllocDesc;
+      gapi::SamplerAllocationDescription m_DefaultSamplerAllocDesc;
   };
 }

@@ -1,7 +1,9 @@
 #include "font_render.h"
 
+#include <engine/ecs/type_meta.h>
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/log.h>
+#include <engine/settings.h>
 #include <engine/tfx/tfx.h>
 
 #include <ft2build.h>
@@ -9,14 +11,40 @@
 
 namespace Engine::Render
 {
+  FontRender::FontRender(const FontRender& tmpl)
+  {
+    //std::memcpy(this, &tmpl, sizeof(*this));
+  }
+
+  const FontRender& FontRender::operator=(const FontRender& tmpl)
+  {
+    //std::memcpy(this, &tmpl, sizeof(*this));
+    return *this;
+  }
+
   FontRender::~FontRender()
   {
     destroy();
   }
 
+  void FontRender::init()
+  {
+    const DataBlock* settings = Engine::get_app_settings();
+    const string fontFolder = settings->getText("fonts_folder");
+    if (fontFolder != "")
+    {
+      const string font = fontFolder + "/arial.ttf";
+      init(font);
+    }
+    else
+      logerror("world_render: missing font folder inside settings");
+  }
+
   void FontRender::init(std::string_view font_file)
   {
     loginfo("font_mgr: initializing library");
+
+    m_Glyphs.resize(MAX_GLYPHS);
 
     if (m_Lib)
       destroy();
@@ -166,4 +194,6 @@ namespace Engine::Render
 
     return bbox;
   }
+  
+  DECLARE_ECS_COMPONENT(FontRender, (ecs::NonTrivialTypeManager<FontRender, ecs::INITABLE_TYPE>), false, true);
 }

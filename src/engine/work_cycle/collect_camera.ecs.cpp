@@ -18,7 +18,7 @@ static void query_camera(eastl::function<void(
 
 namespace Engine
 {
-  CameraData get_camera()
+  CameraData get_camera(const float aspect)
   {
     float3 pos;
     float3 forward;
@@ -35,7 +35,7 @@ namespace Engine
     });
 
     mat4 vp = mat4{1};
-    vp = math::perspective(fov, Engine::Render::world_render.getWndAspect(), zNear, zFar) *
+    vp = math::perspective(fov, aspect, zNear, zFar) *
          math::look_at(pos + forward * 2.0f, pos);
 
     return {

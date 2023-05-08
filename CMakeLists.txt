@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_definitions(-DPLATFORM_WIN64)
-add_definitions(-Wno-defaulted-function-deleted
+add_definitions(#-Wno-defaulted-function-deleted
 -Wno-deprecated-volatile
 -Wno-deprecated-declarations)
 

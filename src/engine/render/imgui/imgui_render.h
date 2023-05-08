@@ -10,8 +10,12 @@ namespace Engine::Render
   class ImGuiRender
   {
     public:
-      void init();
+      ImGuiRender() = default;
+      ImGuiRender(const ImGuiRender& ecs_tmpl) {};
+      const ImGuiRender& operator=(const ImGuiRender& ecs_tmpl) { return *this; }
       ~ImGuiRender();
+
+      void init();
 
       void beforeRender(gapi::CmdEncoder&);
       void render(gapi::CmdEncoder&);

@@ -12,11 +12,9 @@ target_link_libraries(engine
   engine_datablock
   engine_ecs
   engine_editor
-  engine_font_render
   engine_framegraph
   engine_gapi
   engine_gui
-  engine_imgui
   engine_input
   engine_input_drivers
   engine_qjs
@@ -24,7 +22,6 @@ target_link_libraries(engine
   engine_tfx
   engine_utils
   engine_work_cycle
-  engine_world_render
   "EASTL"
   "dbgeng"
   "freetype"
@@ -35,6 +32,11 @@ target_link_libraries(engine
   )
 
 SET(ENGINE_SELF_REG_LIB
+  engine_dbg_text
+  engine_font_render
   engine_gui_modules
+  engine_imgui
+  engine_render_ecs_utils
+  engine_world_render
   PARENT_SCOPE)
 

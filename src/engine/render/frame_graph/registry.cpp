@@ -130,6 +130,11 @@ namespace fg
     return {INVALID_VIRT_RES_ID};
   }
 
+  auto Registry::createSampler(const char* name, const gapi::SamplerAllocationDescription& alloc_desc) -> SamplerRequest
+  {
+    return createResourceInternal(name, SamplerResource{alloc_desc}, [](auto,auto){});
+  }
+
   auto Registry::requestRenderPass() -> RpBuilder
   {
     m_Nodes[m_CurrentExecNodeId].execState.renderPass = {};

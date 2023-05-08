@@ -223,6 +223,7 @@ namespace gapi::vulkan
     gapi_allocate_buffer = allocate_buffer;
     gapi_free_buffer = free_buffer;
     gapi_free_texture = free_texture;
+    gapi_free_sampler = free_sampler;
     gapi_allocate_texture = allocate_texture;
     gapi_allocate_sampler = allocate_sampler;
     gapi_map_buffer = map_buffer;

@@ -10,11 +10,11 @@
 
 namespace fg
 {
-  auto Manager::registerNode(const char* name, const char* file, BuildFunction build_cb) -> NodeHandle
+  auto Manager::registerNode(const char* name, const char* file, BuildFunction build_cb) -> node_id_t
   {
     const node_id_t id = m_Registry.registerNode(name, file, build_cb);
     m_State = State::Compile;
-    return NodeHandle{id};
+    return id;
   }
 
   void Manager::execNewFrame()
@@ -353,6 +353,17 @@ namespace fg
       return m_ResourceStorages[m_iFrame].getSampler(vRes.resourceId);
     
     return gapi::SamplerHandler::Invalid;
+  }
+
+  auto Manager::getSamplerAllocDescription(const virt_res_id_t virt_res_id)
+    -> const gapi::SamplerAllocationDescription&
+  {
+    const auto& vRes = m_Registry.m_VirtResources[virt_res_id];
+    if (vRes.resourceId != INVALID_RES_ID)
+      return std::get<Registry::SamplerResource>(
+        m_Registry.m_Resources[vRes.resourceId]).allocDesc;
+    
+    return m_DefaultSamplerAllocDesc;
   }
 
   auto Manager::getBlob(const virt_res_id_t virt_res_id) -> std::byte*

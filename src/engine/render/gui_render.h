@@ -12,12 +12,9 @@ namespace Engine::gui
 
 namespace Engine::Render
 {
-  class FontRender;
-
   class GuiRender
   {
     public:
-      GuiRender(FontRender&);
       void render(gapi::CmdEncoder& encoder);
 
     private:
@@ -26,6 +23,6 @@ namespace Engine::Render
       void renderText(const gui::Element& elem, gapi::CmdEncoder& encoder);
 
     private:
-      FontRender& m_FontRender;
+      char __pod = 0; //ecs doesn't support 0size component|entity yet
   };
 }

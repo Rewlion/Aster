@@ -52,10 +52,14 @@ namespace fg
   class SamplerAccessor
   {
     public:
+      using alloc_desc_return_type = const gapi::SamplerAllocationDescription&;
       using return_type = const gapi::SamplerHandler;
 
       static
       auto access(const virt_res_id_t id) -> return_type;
+
+      static
+      auto getAllocDescription(const virt_res_id_t id) -> alloc_desc_return_type;
   };
 
   class BlobAccessorInternal

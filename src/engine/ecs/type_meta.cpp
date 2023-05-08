@@ -52,46 +52,6 @@ namespace ecs
     m_Id = m_Next ? m_Next->m_Id + 1 : 0;
     m_Meta = meta;
   }
-  
-  class StringTypeManager : public TypeManager
-  {
-    public:
-      virtual
-      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) override
-      {
-        const string& init = *reinterpret_cast<const string*>(init_comp);
-        new (component) string(init);
-      }
-
-      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) override
-      {
-        string& init = *reinterpret_cast<string*>(init_comp);
-        new (component) string(std::move(init));
-      }
-
-      virtual
-      void destructor(void* component) override
-      {
-        string* s =  reinterpret_cast<string*>(component);
-        s->~string();
-      }
-
-      virtual
-      void copy(void* __restrict__ to, const void* __restrict__ from) override
-      {
-        string& _to = *reinterpret_cast<string*>(to);
-        const string& _from = *reinterpret_cast<const string*>(from);
-        _to = _from;
-      }
-      
-      virtual
-      void move(void* __restrict__ to, void* __restrict__ from) override
-      {
-        string& _to = *reinterpret_cast<string*>(to);
-        string& _from = *reinterpret_cast<string*>(from);
-        _to = std::move(_from);
-      }
-  };
 
   DECLARE_TRIVIAL_ECS_COMPONENT(bool);
   DECLARE_TRIVIAL_ECS_COMPONENT(int);
@@ -104,5 +64,5 @@ namespace ecs
   DECLARE_TRIVIAL_ECS_COMPONENT(float4);
   DECLARE_TRIVIAL_ECS_COMPONENT(EntityId);
 
-  DECLARE_ECS_COMPONENT(string, StringTypeManager, false, true);
+  DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT(string);
 }

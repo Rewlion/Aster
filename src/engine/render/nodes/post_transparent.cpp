@@ -1,13 +1,16 @@
 #include "nodes.h"
 
+#include <engine/render/debug_text_queue.h>
+#include <engine/render/ecs_utils.h>
+#include <engine/render/font/font_render.h>
 #include <engine/render/frame_graph/frame_graph.h>
-#include <engine/render/world_render.h>
-#include <engine/render/imgui/imgui_render.h>
 #include <engine/render/gui_render.h>
+#include <engine/render/imgui/imgui_render.h>
+#include <engine/window.h>
 
 namespace Engine::Render
 {
-  fg::NodeHandle mk_ui_node()
+  fg::node_id_t mk_ui_node()
   {
     return fg::register_node("ui", FG_FILE_DECL, [](fg::Registry& reg)
     {
@@ -18,28 +21,46 @@ namespace Engine::Render
 
       return [](gapi::CmdEncoder& encoder)
       {
-        world_render.m_GuiRender->render(encoder);
-        world_render.m_ImGuiRender->render(encoder);
+        if (auto* guiRender = get_gui_render())
+          guiRender->render(encoder);
+
+        if (auto* imguiRender = get_imgui_render())
+          imguiRender->render(encoder);
       };
     });
   }
 
-  fg::NodeHandle mk_dbg_text_node()
+  fg::node_id_t mk_dbg_text_node()
   {
     return fg::register_node("dbg_text", FG_FILE_DECL, [](fg::Registry& reg)
     {
       reg.orderMeAfter("ui");
       auto finalFrame = reg.modifyTexture("final_frame", gapi::TextureState::RenderTarget);
+
       reg.requestRenderPass()
          .addTarget(finalFrame, gapi::LoadOp::Load, gapi::StoreOp::Store);
+
       return [](gapi::CmdEncoder& encoder)
       {
-        world_render.renderDbgText(encoder);
+        auto* fontRender = get_font_render();
+        auto* dbgTextQueue = dbg::get_dbg_text_queue();
+
+        if (fontRender && dbgTextQueue)
+        {
+          const float textSize = Window::get_window_size().y * 0.03;
+          float i = 0;
+          for (const auto& e: *dbgTextQueue)
+          {
+            const float2 pos = {5.0f, textSize * i};
+            fontRender->render(e.text, pos, textSize, e.color, encoder);
+            ++i;
+          }
+        }
       };
     });
   }
 
-  fg::NodeHandle mk_present_node()
+  fg::node_id_t mk_present_node()
   {
     return fg::register_node("present", FG_FILE_DECL, [](fg::Registry& reg)
     {

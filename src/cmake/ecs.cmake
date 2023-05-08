@@ -1,15 +1,15 @@
 #add_ecs_library
 #it's basicly the same as add_library
-#but also it generates final ecs sources
+#but also it generates final ecs sources for every ecs file
 #usage:
-# add_ecs_library(name ECS <file1.ecs.cpp> <file2.ecs.cpp>)
+# add_ecs_library(name FILES <file3.cpp> ECS_FILES <file1.ecs.cpp> <file2.ecs.cpp>)
 
 function(add_ecs_library name)
   set(options "__no_options")
   set(oneValueArgs "__no_one_val_args")
-  set(multiValueArgs ECS_FILES)
+  set(multiValueArgs ECS_FILES FILES)
   
-  cmake_parse_arguments(PARSE_ARGV 1 ARG ${options} ${oneValueArgs} ${multiValueArgs})
+  cmake_parse_arguments(PARSE_ARGV 1 ARG ${options} ${oneValueArgs} "${multiValueArgs}")
   if (NOT ARG_ECS_FILES)
     message(FATAL_ERROR "ECS_FILES is not passed")
   endif()
@@ -61,5 +61,5 @@ function(add_ecs_library name)
     )
   endforeach()
 
-  add_library(${name} OBJECT ${ecs_gen_list})
+  add_library(${name} OBJECT ${ecs_gen_list} ${ARG_FILES})
 endfunction()

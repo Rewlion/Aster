@@ -73,6 +73,8 @@ namespace fg
       template<class BlobType>
       auto readBlob(const char* name) -> BlobReadRequest<BlobType>;
 
+      auto createSampler(const char* name, const gapi::SamplerAllocationDescription&) -> SamplerRequest;
+
       auto requestRenderPass() -> RpBuilder;
 
     private:

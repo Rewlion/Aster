@@ -2,7 +2,6 @@
 
 #include <engine/assets/assets_manager.h>
 #include <engine/render/frame_graph/frame_graph.h>
-#include <engine/render/world_render.h>
 #include <engine/scene/scene.h>
 #include <engine/tfx/tfx.h>
 #include <engine/window.h>
@@ -11,7 +10,7 @@
 
 namespace Engine::Render
 {
-  fg::NodeHandle mk_gbuffer_main_pass_node()
+  fg::node_id_t mk_gbuffer_main_pass_node()
   {
     return fg::register_node("gbuffer_main_pass", FG_FILE_DECL, [](fg::Registry& reg)
     {
@@ -87,7 +86,7 @@ namespace Engine::Render
     });
   }
 
-  fg::NodeHandle mk_gbuffer_resolve_node()
+  fg::node_id_t mk_gbuffer_resolve_node()
   {
     return fg::register_node("gbuffer_resolve", FG_FILE_DECL, [](fg::Registry& reg)
     {

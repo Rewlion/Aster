@@ -2,6 +2,8 @@
 
 #include <engine/gapi/resource_wrappers.h>
 
+#include <EASTL/vector.h>
+
 #include <array>
 #include <string_view>
 
@@ -21,7 +23,13 @@ namespace Engine::Render
   class FontRender
   {
     public:
+      FontRender() = default;
+      FontRender(const FontRender& tmpl);
+
+      const FontRender& operator=(const FontRender&);
+
       ~FontRender();
+      void init();
       void init(std::string_view font_file);
       void render(std::string_view text, const float2& pos, 
         const float& size, const float4& color, gapi::CmdEncoder& encoder);
@@ -45,6 +53,6 @@ namespace Engine::Render
         float2 bearing = {0,0};
         float advance = 0; 
       };
-      std::array<GlyphInfo, MAX_GLYPHS> m_Glyphs;
+      eastl::vector<GlyphInfo> m_Glyphs;
   };
 }

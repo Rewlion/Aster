@@ -1,6 +1,7 @@
 #include "imgui_render.h"
 #include "imgui.h"
 
+#include <engine/ecs/type_meta.h>
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/tfx/tfx.h>
 #include <engine/window.h>
@@ -145,4 +146,6 @@ namespace Engine::Render
       vertexOffset += cmdList->VtxBuffer.size();
     }
   }
+
+  DECLARE_ECS_COMPONENT(ImGuiRender, (ecs::NonTrivialTypeManager<ImGuiRender, ecs::INITABLE_TYPE>), false, true);
 }

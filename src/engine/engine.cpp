@@ -18,7 +18,6 @@
 #include <engine/time.h>
 #include <engine/types.h>
 #include <engine/window.h>
-#include <engine/work_cycle/camera.h>
 
 namespace Engine
 {
@@ -75,9 +74,8 @@ namespace Engine
       ecs::get_registry().tick();
       gui::Gui::tick();
 
-      const CameraData camera = get_camera();
       imgui::Manager::tick();
-      Render::world_render.render(camera);
+      Render::world_render.render();
     }
   }
 }
