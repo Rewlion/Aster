@@ -1,6 +1,7 @@
 #include "manager.h"
 
 #include <engine/assert.h>
+#include <engine/debug_marks.h>
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gapi/utils.h>
@@ -232,7 +233,6 @@ namespace fg
   void Manager::execNodes()
   {
     std::unique_ptr<gapi::CmdEncoder> encoder{gapi::allocate_cmd_encoder()};
-
     const auto beginRp = [&encoder, &registry = m_Registry, &storage = m_ResourceStorages[m_iFrame]]
       (const Registry::NodeInfo& node)
     {
@@ -295,32 +295,38 @@ namespace fg
       encoder->beginRenderpass(mrts, depthStencil);
     };
 
-    for (const node_id_t nodeId: m_NodesOrder)
     {
-      auto& node = m_Registry.m_Nodes[nodeId];
+      GAPI_MARK("framegraph", *encoder);
 
-      for (auto vResId: node.creates)
+      for (const node_id_t nodeId: m_NodesOrder)
       {
-        auto& vRes = m_Registry.m_VirtResources[vResId];
-        auto& res = m_Registry.m_Resources[vRes.resourceId];
-        m_ResourceStorages[m_iFrame].create(vRes.resourceId, res);
+        GAPI_MARK(m_Registry.m_NodesNames.getString(to_name_id(nodeId)), *encoder);
+
+        auto& node = m_Registry.m_Nodes[nodeId];
+
+        for (auto vResId: node.creates)
+        {
+          auto& vRes = m_Registry.m_VirtResources[vResId];
+          auto& res = m_Registry.m_Resources[vRes.resourceId];
+          m_ResourceStorages[m_iFrame].create(vRes.resourceId, res);
+        }
+
+        for (auto texState: node.execState.textureBeginStates)
+        {
+          auto& vRes = m_Registry.m_VirtResources[texState.virtResId];
+          m_ResourceStorages[m_iFrame].transitTextureState(vRes.resourceId, texState.state, *encoder);
+        }
+
+        const bool declaredRp = (node.execState.renderPass.depth.vResId != INVALID_VIRT_RES_ID)
+                               || node.execState.renderPass.mrt.empty();
+        if (declaredRp)
+          beginRp(node);
+
+        node.exec(*encoder);
+
+        if (declaredRp)
+          encoder->endRenderpass();
       }
-
-      for (auto texState: node.execState.textureBeginStates)
-      {
-        auto& vRes = m_Registry.m_VirtResources[texState.virtResId];
-        m_ResourceStorages[m_iFrame].transitTextureState(vRes.resourceId, texState.state, *encoder);
-      }
-
-      const bool declaredRp = (node.execState.renderPass.depth.vResId != INVALID_VIRT_RES_ID)
-                             || node.execState.renderPass.mrt.empty();
-      if (declaredRp)
-        beginRp(node);
-
-      node.exec(*encoder);
-
-      if (declaredRp)
-        encoder->endRenderpass();
     }
 
     encoder->flush();
