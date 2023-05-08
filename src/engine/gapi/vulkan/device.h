@@ -29,6 +29,13 @@ namespace gapi::vulkan
     friend class DescriptorsSetManager;
 
     public:
+      enum class CapabilitiesBits
+      {
+        DebugMarks = 0,
+        Count
+      };
+      using Capabilities = Utils::BitCapacity<(size_t)CapabilitiesBits::Count>;
+
       struct CreateInfo
       {
         vk::Instance instance;
@@ -43,6 +50,8 @@ namespace gapi::vulkan
         std::vector<vk::PresentModeKHR> surfacePresentModes;
 
         vk::Extent2D swapchainImageExtent = vk::Extent2D{1920, 1024};
+
+        Capabilities capabilities;
       };
 
     public:
@@ -50,6 +59,8 @@ namespace gapi::vulkan
       Device(CreateInfo&&, FrameGarbageCollector*);
 
       const Device& operator=(const Device& rvl) = delete;
+
+      auto checkCapability(const CapabilitiesBits) const -> bool;
 
       inline uint8_t getBackbufferId() const { return m_Swapchain.getBackbufferId(); }
       inline TextureHandle getBackbuffer() const
@@ -130,6 +141,8 @@ namespace gapi::vulkan
       vk::CommandBuffer allocateTransferCmdBuffer();
 
     private:
+      Capabilities m_Capabilities;
+
       FrameGarbageCollector* m_FrameGc;
       vk::UniqueDevice m_Device;
       vk::PhysicalDeviceProperties m_DeviceProperties;

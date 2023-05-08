@@ -1,5 +1,4 @@
 #ifdef PLATFORM_WIN64
-  #define VK_USE_PLATFORM_WIN32_KHR
   #include <engine/window.h>
 #endif
 #include <engine/gapi/vulkan/vulkan.h>

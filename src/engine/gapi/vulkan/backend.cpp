@@ -10,6 +10,8 @@
 #include <EASTL/vector.h>
 #include <EASTL/vector_set.h>
 
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+
 namespace gapi::vulkan
 {
   static VKAPI_ATTR VkBool32 VKAPI_CALL VkDebugCallback(
@@ -43,7 +45,7 @@ namespace gapi::vulkan
     ci.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
     ci.pfnUserCallback = VkDebugCallback;
 
-    auto res = m_Instance->createDebugUtilsMessengerEXTUnique(ci, nullptr, m_Loader);
+    auto res = m_Instance->createDebugUtilsMessengerEXTUnique(ci);
     VK_CHECK_RES(res);
 
     return std::move(res.value);
@@ -51,6 +53,17 @@ namespace gapi::vulkan
 
   vk::UniqueInstance Backend::createInstance()
   {
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = m_Loader.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
+
+    loginfo("vulkan: instance supported extensions:");
+    for (const auto& ext: vk::enumerateInstanceExtensionProperties().value)
+    {
+      loginfo(">> {} [v:{}]", ext.extensionName.data(), ext.specVersion);
+      if (!std::strcmp(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, ext.extensionName.data()))
+        m_SupportedInstanceExts.set((size_t)InstanceExtensionsBits::DebugUtils);
+    }
+
     eastl::vector<const char*> validationLayers = getValidationLayers();
     const auto appName = Engine::get_app_settings()->getText("app_name");
 
@@ -61,30 +74,38 @@ namespace gapi::vulkan
       .setEngineVersion(VK_MAKE_VERSION(-1, 0, 0))
       .setApiVersion(VK_API_VERSION_1_1);
 
-    const char* instanceExtensions[] = {
+    eastl::vector<const char*> instanceExtensions = {
       "VK_KHR_surface",
       "VK_KHR_win32_surface",
-      "VK_EXT_debug_utils",
       "VK_KHR_get_physical_device_properties2"
     };
 
+#ifdef DEBUG
+    if (m_SupportedInstanceExts.isSet((size_t)InstanceExtensionsBits::DebugUtils))
+      instanceExtensions.push_back("VK_EXT_debug_utils");
+#endif
+    
+    loginfo("vulkan: enabled instance extensions:");
+    for (const char* ext: instanceExtensions)
+      loginfo(">> {}", ext);
+
     const auto instanceCreateInfo = vk::InstanceCreateInfo()
       .setPApplicationInfo(&appInfo)
-      .setEnabledExtensionCount(std::size(instanceExtensions))
-      .setPpEnabledExtensionNames(instanceExtensions)
+      .setEnabledExtensionCount(instanceExtensions.size())
+      .setPpEnabledExtensionNames(instanceExtensions.data())
       .setEnabledLayerCount((uint32_t)validationLayers.size())
       .setPpEnabledLayerNames(validationLayers.data());
 
     auto res = vk::createInstanceUnique(instanceCreateInfo);
     VK_CHECK_RES(res);
 
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(res.value.get());
     return std::move(res.value);
   }
 
   void Backend::init()
   {
     m_Instance = createInstance();
-    m_Loader = vk::DispatchLoaderDynamic(m_Instance.get(), vkGetInstanceProcAddr);
     m_DebugMessenger = createDebugMessenger();
     m_PhysicalDevice = getSuitablePhysicalDevice();
     m_Surface = createPlatformSurface(*m_Instance);
@@ -92,7 +113,7 @@ namespace gapi::vulkan
     m_MemoryIndices = getMemoryIndices();
   }
 
-  vk::PhysicalDevice Backend::getSuitablePhysicalDevice() const
+  vk::PhysicalDevice Backend::getSuitablePhysicalDevice()
   {
     vk::PhysicalDevice physicalDevice = nullptr;
     const auto devices = m_Instance->enumeratePhysicalDevices();
@@ -109,6 +130,12 @@ namespace gapi::vulkan
     }
 
     ASSERT(physicalDevice != vk::PhysicalDevice{});
+
+    loginfo("vulkan: device supported extensions:");
+    for (const auto& ext: physicalDevice.enumerateDeviceExtensionProperties().value)
+    {
+      loginfo(">> {} [v:{}]", ext.extensionName.data(), ext.specVersion);
+    }
 
     return physicalDevice;
   }
@@ -187,18 +214,25 @@ namespace gapi::vulkan
       queueCreateInfos.push_back(queueCreateInfo);
     }
 
-    const char* deviceExtensions[] = {
+    eastl::vector<const char*> deviceExtensions = {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-      "VK_KHR_timeline_semaphore"};
+      "VK_KHR_timeline_semaphore",
+    };
+
+    loginfo("vulkan: enabled device extensions:");
+    for (const char* enabledExt: deviceExtensions)
+      loginfo("  {}", enabledExt);
 
     const auto deviceCreateInfo = vk::DeviceCreateInfo()
         .setQueueCreateInfoCount(queueCreateInfos.size())
         .setPQueueCreateInfos(queueCreateInfos.data())
-        .setPpEnabledExtensionNames(deviceExtensions)
-        .setEnabledExtensionCount(std::size(deviceExtensions));
+        .setPpEnabledExtensionNames(deviceExtensions.data())
+        .setEnabledExtensionCount(deviceExtensions.size());
 
     auto device =  m_PhysicalDevice.createDeviceUnique(deviceCreateInfo);
     VK_CHECK_RES(device);
+
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(device.value.get());
 
     const int2 wndSize = Engine::Window::get_window_size();
 
@@ -208,6 +242,13 @@ namespace gapi::vulkan
     VK_CHECK_RES(surfaceFormats);
     auto surfacePresentModes = m_PhysicalDevice.getSurfacePresentModesKHR(*m_Surface);
     VK_CHECK_RES(surfacePresentModes);
+
+    Device::Capabilities caps;
+    if (m_SupportedInstanceExts.isSet((size_t)InstanceExtensionsBits::DebugUtils) &&
+      Engine::get_app_settings()->getChildBlock("graphics")->getBool("debug_marks", false))
+    {
+      caps.set((size_t)Device::CapabilitiesBits::DebugMarks);
+    }
 
     Device::CreateInfo deviceCi{
       .instance = *m_Instance,
@@ -221,7 +262,8 @@ namespace gapi::vulkan
       .surfaceFormats = std::move(surfaceFormats.value),
       .surfacePresentModes = std::move(surfacePresentModes.value),
 
-      .swapchainImageExtent = vk::Extent2D{(uint32_t)wndSize.x, (uint32_t)wndSize.y}
+      .swapchainImageExtent = vk::Extent2D{(uint32_t)wndSize.x, (uint32_t)wndSize.y},
+      .capabilities = caps
     };
     return new Device(std::move(deviceCi), frameGc);
   }

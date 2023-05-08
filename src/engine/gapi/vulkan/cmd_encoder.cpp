@@ -443,4 +443,24 @@ namespace gapi::vulkan
 
     m_CmdBuf.blitImage(srcImg, vk::ImageLayout::eTransferSrcOptimal, dstImg, vk::ImageLayout::eTransferDstOptimal, regions_count, blits.data(), get_filter(filter));
   }
+
+  void CmdEncoder::beginMarkerRegion(const char* name)
+  {
+    if (m_Device.checkCapability(Device::CapabilitiesBits::DebugMarks))
+    {
+      insureActiveCmd();
+      vk::DebugUtilsLabelEXT label;
+      label.pLabelName = name;
+      m_CmdBuf.beginDebugUtilsLabelEXT(label);
+    }
+  }
+
+  void CmdEncoder::endMarkerRegion()
+  {
+    if (m_Device.checkCapability(Device::CapabilitiesBits::DebugMarks))
+    {
+      insureActiveCmd();
+      m_CmdBuf.endDebugUtilsLabelEXT();
+    }
+  }
 }

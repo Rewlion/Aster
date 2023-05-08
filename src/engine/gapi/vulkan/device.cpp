@@ -13,7 +13,8 @@
 namespace gapi::vulkan
 {
   Device::Device(CreateInfo&& ci, FrameGarbageCollector* frameGc)
-    : m_FrameGc(frameGc)
+    : m_Capabilities(ci.capabilities)
+    , m_FrameGc(frameGc)
     , m_Device(std::move(ci.device))
     , m_DeviceProperties(ci.deviceProperties)
     , m_QueueIndices(ci.queueIndices)
@@ -58,6 +59,11 @@ namespace gapi::vulkan
 
     submitGraphicsCmd(swapchainInitCmdBuf, fence.value.get());
     VK_CHECK(m_Device->waitForFences(1, &fence.value.get(), true, ~0));
+  }
+
+  auto Device::checkCapability(const CapabilitiesBits c) const -> bool
+  {
+    return m_Capabilities.isSet((size_t)c);
   }
 
   vk::CommandBuffer Device::allocateCmdBuffer(vk::CommandPool pool)

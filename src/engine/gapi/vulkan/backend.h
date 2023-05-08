@@ -3,6 +3,8 @@
 #include "indices.h"
 #include "device.h"
 
+#include <engine/utils/bit_capacity.hpp>
+
 using UniqueDynamicDbgUtilsMessenger = vk::UniqueHandle<vk::DebugUtilsMessengerEXT,vk::DispatchLoaderDynamic>;
 
 namespace gapi::vulkan
@@ -19,13 +21,20 @@ namespace gapi::vulkan
       eastl::vector<const char*> getValidationLayers();
       vk::UniqueInstance createInstance();
       UniqueDynamicDbgUtilsMessenger createDebugMessenger();
-      vk::PhysicalDevice getSuitablePhysicalDevice() const;
+      vk::PhysicalDevice getSuitablePhysicalDevice();
       QueueIndices getQueueIndices();
       MemoryIndices getMemoryIndices();
 
     private:
+      enum class InstanceExtensionsBits
+      {
+        DebugUtils = 0,
+        Count
+      };
+      Utils::BitCapacity<(int)InstanceExtensionsBits::Count> m_SupportedInstanceExts;
+
       vk::UniqueInstance m_Instance;
-      vk::DispatchLoaderDynamic m_Loader;
+      vk::DynamicLoader m_Loader;
       UniqueDynamicDbgUtilsMessenger m_DebugMessenger;
       vk::PhysicalDevice m_PhysicalDevice;
       vk::UniqueSurfaceKHR m_Surface;

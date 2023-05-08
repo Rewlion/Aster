@@ -17,6 +17,7 @@ text input_mappings = "game_data/input_mappings.blk"
 graphics
 {
   text gapi = "vulkan"
+  bool debug_marks = yes
   text resolution = "1980x1024"
   text materials_bin = "bin/shaders_spirv.bin"
 }
