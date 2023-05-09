@@ -27,6 +27,7 @@ include_directories(
   "${CMAKE_SOURCE_DIR}/deps/glm-0.9.9.8/include"
   "${CMAKE_SOURCE_DIR}/deps/gtest/include"
   "${CMAKE_SOURCE_DIR}/deps/imgui/src"
+  "${CMAKE_SOURCE_DIR}/deps/imgui-node-editor/src"
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/include"
   "${CMAKE_SOURCE_DIR}/deps/quickjs/include"
   "${CMAKE_SOURCE_DIR}/deps/spdlog-1.9.2/include"
@@ -74,6 +75,7 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/work_cycle")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/deps/SPIRV-Cross-moltenvk_1.1.5/src")
 add_subdirectory("${CMAKE_SOURCE_DIR}/deps/imgui/src/imgui")
+add_subdirectory("${CMAKE_SOURCE_DIR}/deps/imgui-node-editor/src/imgui-node-editor")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/shaders_compiler")
 
