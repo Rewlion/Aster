@@ -15,6 +15,7 @@ namespace console
 {
   constexpr size_t LOGS_LIMIT = 20;
   bool enabled = false;
+  bool firstShow = true;
 
   class Manager
   {
@@ -115,6 +116,8 @@ namespace console
   void enable(const bool e)
   {
     enabled = e;
+    if (e)
+      firstShow = true;
   }
 
   void imgui_console_wnd()
@@ -143,8 +146,11 @@ namespace console
     if (ImGui::InputText("buf", buf, bufSize, ImGuiInputTextFlags_EnterReturnsTrue))
       manager.executeCommand(string_view{buf});
     
-    if (ImGui::IsItemHovered() || !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
+    if (firstShow && (ImGui::IsItemHovered() || !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)))
+    {
       ImGui::SetKeyboardFocusHere(-1);
+      firstShow = false;
+    }
 
     ImGui::End();
   }
