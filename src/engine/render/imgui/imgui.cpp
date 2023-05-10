@@ -3,23 +3,23 @@
 #include <engine/assert.h>
 #include <engine/time.h>
 
+#include <imgui-node-editor/imgui_node_editor.h>
+
 #include <Windows.h>
+
+namespace ed = ax::NodeEditor;
 
 namespace Engine::imgui
 {
   Manager* Manager::m_This = nullptr;
 
   ImGuiGlobalWindowRegistration* ImGuiGlobalWindowRegistration::m_List = nullptr;
-  ImGuiGlobalWindowRegistration::ImGuiGlobalWindowRegistration(const char* name,
-                                                               DrawCb cb,
-                                                               ImGuiWindowFlags flags)
+  ImGuiGlobalWindowRegistration::ImGuiGlobalWindowRegistration(DrawCb cb)
   {
     m_Next = m_List;
     m_List = this;
 
-    m_Name = name;
     m_Cb = cb;
-    m_Flags = flags;
   }
 
   void ImGuiGlobalWindowRegistration::drawAllWindows()
@@ -27,10 +27,7 @@ namespace Engine::imgui
     const ImGuiGlobalWindowRegistration* p = m_List;
     while(p)
     {
-      ImGui::Begin(p->m_Name, nullptr, p->m_Flags);
       p->m_Cb();
-      ImGui::End();
-
       p = p->m_Next;
     }
   }
@@ -65,11 +62,15 @@ namespace Engine::imgui
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
 
     m_State = State::Disabled;
+
+    m_NodeEditorContext = ed::CreateEditor(nullptr);
   }
 
   Manager::~Manager()
   {
     Input::Router::unregisterListener(this);
+
+    ed::DestroyEditor(m_NodeEditorContext);
 
     ImGuiIO& io = ImGui::GetIO();
     io.BackendPlatformName = nullptr;
@@ -88,6 +89,7 @@ namespace Engine::imgui
     io.DeltaTime = Time::get_dt();
 
     ImGui::NewFrame();
+    ed::SetCurrentEditor(m_This->m_NodeEditorContext);
     ImGuiGlobalWindowRegistration::drawAllWindows();
     ImGui::Render();
   }

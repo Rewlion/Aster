@@ -18,6 +18,7 @@ set(IMGUI_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/imgui/imgui_render.cpp")
 
 set(FRAMEGRAPH_SRC
+  "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/dbg_visualization.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/frame_graph.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/manager.cpp"
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/registry.cpp"
@@ -42,5 +43,5 @@ set(FONT_SRC
 
 add_library(engine_dbg_text OBJECT ${DBG_TEXT_SRC})
 add_library(engine_font_render OBJECT ${FONT_SRC})
-add_library(engine_framegraph ${FRAMEGRAPH_SRC})
+add_library(engine_framegraph OBJECT ${FRAMEGRAPH_SRC})
 add_library(engine_imgui OBJECT ${IMGUI_SRC})

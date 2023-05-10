@@ -1,9 +1,14 @@
 #pragma once
 
-#include <imgui/imgui.h>
-
 #include <engine/window.h>
 #include <engine/input/input_router.h>
+
+#include <imgui/imgui.h>
+
+namespace ax::NodeEditor
+{
+  struct EditorContext;
+}
 
 namespace Engine::imgui
 {
@@ -12,9 +17,7 @@ namespace Engine::imgui
     friend class Registry;
     public:
       using DrawCb = void(*)();
-      ImGuiGlobalWindowRegistration(const char* name,
-                                    DrawCb cb,
-                                    ImGuiWindowFlags flags);
+      ImGuiGlobalWindowRegistration(DrawCb cb);
 
       static
       void drawAllWindows();
@@ -23,9 +26,7 @@ namespace Engine::imgui
       static ImGuiGlobalWindowRegistration* m_List;
       ImGuiGlobalWindowRegistration* m_Next;
 
-      const char* m_Name;
       DrawCb m_Cb;
-      ImGuiWindowFlags m_Flags;
   };
 
   class Manager: public Input::IInputRouterListener
@@ -83,8 +84,9 @@ namespace Engine::imgui
       static Manager* m_This;
 
       State m_State;
+      ax::NodeEditor::EditorContext* m_NodeEditorContext;
   };
 
 }
 
-#define IMGUI_REG_WND(name, cb, flags) static const Engine::imgui::ImGuiGlobalWindowRegistration imgui_wnd ## __LINE__{name, cb, flags}
+#define IMGUI_REG_WND(cb) static const Engine::imgui::ImGuiGlobalWindowRegistration imgui_wnd ## __LINE__{cb}

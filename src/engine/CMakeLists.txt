@@ -13,7 +13,6 @@ target_link_libraries(engine
   engine_datablock
   engine_ecs
   engine_editor
-  engine_framegraph
   engine_gapi
   engine_gui
   engine_input
@@ -36,6 +35,7 @@ SET(ENGINE_SELF_REG_LIB
   engine_dbg_text
   engine_font_render
   engine_gui_modules
+  engine_framegraph
   engine_imgui
   engine_render_ecs_utils
   engine_world_render

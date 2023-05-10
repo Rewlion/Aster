@@ -122,6 +122,8 @@ namespace console
     if (!enabled)
       return;
 
+    ImGui::Begin("console", nullptr, 0);
+
     const auto& logs = manager.getLogs();
     const size_t logsCount = logs.size();
 
@@ -143,10 +145,12 @@ namespace console
     
     if (ImGui::IsItemHovered() || !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
       ImGui::SetKeyboardFocusHere(-1);
+
+    ImGui::End();
   }
 }
 
-IMGUI_REG_WND("console", console::imgui_console_wnd, 0);
+IMGUI_REG_WND(console::imgui_console_wnd);
 
 void hello_cmd(eastl::span<string_view> argv)
 {
