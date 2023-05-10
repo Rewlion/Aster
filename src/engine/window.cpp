@@ -76,6 +76,7 @@ namespace Engine::Window
       case WM_MBUTTONDOWN: engineMsg = WND_MSG_BMOUSE_DOWN;  wParam = KEY_MBMOUSE; break;
       case WM_MBUTTONUP:   engineMsg = WND_MSG_BMOUSE_UP;    wParam = KEY_MBMOUSE; break;
       case WM_MOUSEMOVE:   engineMsg = WND_MSG_MOUSE_MOVE;                         break;
+      case WM_MOUSEWHEEL:  engineMsg = WND_MSG_MOUSEHWHEEL;                        break;
       default: return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 

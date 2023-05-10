@@ -42,6 +42,17 @@ namespace Engine::imgui
     return Input::InputRouterProcessStatus::ProcessFurther;
   }
 
+  auto Manager::onMouseWheelScroll(const Input::IPointer& device, const float delta)
+    -> Input::InputRouterProcessStatus
+  {
+    if (m_State == State::ShowAndConsumeInput)
+    {
+       ImGuiIO& io = ImGui::GetIO();
+       io.AddMouseWheelEvent(0.0f, delta);
+    }
+    return Input::InputRouterProcessStatus::ProcessFurther;
+  }
+
   auto Manager::onKeyStateChanged(const Input::IKeyboard& device,
                                        const int key,
                                        const bool pressed) -> Input::InputRouterProcessStatus

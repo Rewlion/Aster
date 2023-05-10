@@ -33,6 +33,10 @@ namespace Engine::Input
                        const int2 delta) -> InputRouterProcessStatus { return InputRouterProcessStatus::ProcessFurther; }
 
       virtual
+      auto onMouseWheelScroll(const IPointer& device, const float delta)
+        -> InputRouterProcessStatus { return InputRouterProcessStatus::ProcessFurther; }
+
+      virtual
       auto onKeyStateChanged(const IKeyboard& device,
                              const int key,
                              const bool pressed) -> InputRouterProcessStatus { return InputRouterProcessStatus::ProcessFurther; }
@@ -51,6 +55,8 @@ namespace Engine::Input
       void onMouseMove(const IPointer& device,
                        const int2 new_pos,
                        const int2 delta) override;
+
+      void onMouseWheelScroll(const IPointer& device, const float delta) override;
 
       void onKeyStateChanged(const IKeyboard& device,
                              const int key,

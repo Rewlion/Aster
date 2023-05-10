@@ -57,6 +57,9 @@ namespace Engine::imgui
                        const int2 new_pos,
                        const int2 delta) -> Input::InputRouterProcessStatus override;
 
+      auto onMouseWheelScroll(const Input::IPointer& device, const float delta)
+        -> Input::InputRouterProcessStatus override;
+
       auto onKeyStateChanged(const Input::IKeyboard& device,
                              const int key,
                              const bool pressed) -> Input::InputRouterProcessStatus override;

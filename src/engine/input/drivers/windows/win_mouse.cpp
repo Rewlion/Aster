@@ -81,6 +81,12 @@ namespace Engine::Input
       if (m_Listener && stateChanged)
         m_Listener->onMouseMove(m_Ms, newPos, newPos - oldPos);
     }
+    else if (msg & Window::WND_MSG_MOUSEHWHEEL)
+    {
+      const int delta = (float)GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA;
+      if (m_Listener)
+        m_Listener->onMouseWheelScroll(m_Ms, delta);
+    }
     
   }
 }

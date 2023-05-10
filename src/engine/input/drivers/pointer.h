@@ -27,6 +27,9 @@ namespace Engine::Input
 
       virtual
       void onMouseMove(const IPointer& device, const int2 new_pos, const int2 delta) = 0;
+
+      virtual
+      void onMouseWheelScroll(const IPointer& device, const float delta) = 0;
   };
 
   class IPointerDriver

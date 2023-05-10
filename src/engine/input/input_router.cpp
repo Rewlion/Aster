@@ -55,6 +55,16 @@ namespace Engine::Input
     }
   }
 
+  void Router::onMouseWheelScroll(const IPointer& device, const float delta)
+  {
+    for (auto* l: m_Listeners)
+    {
+      const auto st = l->onMouseWheelScroll(device, delta);
+      if (st == InputRouterProcessStatus::StopProcessing)
+        break;
+    }
+  }
+
   void Router::onKeyStateChanged(const IKeyboard& device,
                                       const int key,
                                       const bool pressed)

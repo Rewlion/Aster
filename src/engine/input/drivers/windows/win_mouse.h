@@ -10,17 +10,10 @@ namespace Engine::Input
   class WinMouse: public IPointer
   {
     public:
-      virtual
-      auto setButtonState(const int key, const bool pressed) -> bool;
-
-      virtual
-      auto isButtonPressed(const int key) const -> bool;
-
-      virtual
-      auto setPointerPos(const int2 pos) -> bool;
-
-      virtual
-      auto getPointerPos() const -> int2 { return m_PointerPos; }
+      auto setButtonState(const int key, const bool pressed) -> bool override;
+      auto isButtonPressed(const int key) const -> bool override;
+      auto setPointerPos(const int2 pos) -> bool override;
+      auto getPointerPos() const -> int2 override { return m_PointerPos; }
 
     private:
       Utils::BitCapacity<BKEY_MOUSE_COUNT> m_Buttons;
