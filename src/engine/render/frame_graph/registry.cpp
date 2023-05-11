@@ -36,8 +36,9 @@ namespace fg
 
   auto Registry::createTexture(const char* name, const gapi::TextureAllocationDescription& desc, const gapi::TextureState init_state) -> TextureRequest
   {
-    return createResourceInternal(name, TextureResource{.allocDesc = desc}, [init_state](const virt_res_id_t virt_res_id, NodeInfo& node)
+    return createResourceInternal(name, TextureResource{.allocDesc = desc}, [this, init_state](const virt_res_id_t virt_res_id, NodeInfo& node)
     {
+      m_VirtResources[virt_res_id].modificationChain.insert(0, m_CurrentExecNodeId);
       node.execState.textureBeginStates.push_back({virt_res_id, init_state});
     });
   }
@@ -97,6 +98,7 @@ namespace fg
     auto& vRes = m_VirtResources[vResId];
     vRes.resourceId = resId;
     vRes.createdBy = m_CurrentExecNodeId;
+    vRes.modificationChain.insert(0, m_CurrentExecNodeId);
     
     auto& res = m_Resources[resId];
     res = TextureResource{

@@ -175,9 +175,6 @@ namespace fg
         for (const auto& vResId: node.reads)
         {
           const auto& vRes =  m_Registry.m_VirtResources[vResId];
-          
-          if (processed[vRes.createdBy] == 0)
-            dfs_impl(vRes.createdBy, dfs_impl);
 
           for (const auto prevNode: vRes.modificationChain)
             if (processed[prevNode] == 0)
