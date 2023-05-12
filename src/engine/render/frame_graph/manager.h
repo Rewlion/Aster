@@ -23,6 +23,8 @@ namespace fg
 
       auto getBlob(const virt_res_id_t) -> std::byte*;
 
+      void imGuiDrawFramegraph();
+
     private:
       void compile();
       void validateResources();
