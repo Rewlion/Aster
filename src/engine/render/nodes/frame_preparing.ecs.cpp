@@ -21,6 +21,11 @@ namespace Engine::Render
   {
     return fg::register_node("backbuffer_acquiring", FG_FILE_DECL, [](fg::Registry& reg)
     {
+      reg.importTextureProducer("backbuffer", []()
+      {
+        return fg::TextureImport{gapi::get_backbuffer(), gapi::TextureState::Present};
+      });
+      
       return [](gapi::CmdEncoder& encoder)
       {
         gapi::acquire_backbuffer();
@@ -37,10 +42,6 @@ namespace Engine::Render
       auto cameraData = reg.createBlob<Engine::CameraData>("camera_data");
       auto wndSize = reg.createBlob<int2>("window_size");
       auto modelSampler = reg.createSampler("model_sampler", {});
-      reg.importTextureProducer("backbuffer", []()
-      {
-        return fg::TextureImport{gapi::get_backbuffer(), gapi::TextureState::Present};
-      });
 
       return [modelSampler, cameraData, wndSize](gapi::CmdEncoder& encoder)
       {
