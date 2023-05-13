@@ -231,10 +231,11 @@ namespace fg
           ImGui::SameLine();
           ImGui::SetCursorScreenPos(c);
 
-          ed::PushStyleVar(ed::StyleVar_SourceDirection, ImVec2(0.0f,  1.0f));
+          ed::PushStyleVar(ed::StyleVar_SourceDirection, ImVec2(1.0f,  0.6f));
           ed::PushStyleVar(ed::StyleVar_TargetDirection, ImVec2(0.0f,  1.0f));
           ed::PushStyleVar(ed::StyleVar_LinkStrength, 300.0f);
           ed::BeginPin(pins.reroute, kind);
+            ImGui::Text("%s", "o");
           ed::EndPin();
           ed::PopStyleVar(3);
         };
