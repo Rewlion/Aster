@@ -37,9 +37,20 @@ namespace fg
     constexpr bool PREV = false;
     constexpr bool NEXT = true;
 
+    struct Pins
+    {
+      ed::PinId def, reroute;
+
+      operator bool() const
+      {
+        return def && reroute;
+      }
+    };
+
     struct Edge
     {
-      ed::PinId from, to;
+      Pins from, to;
+      node_id_t fromNodeId, toNodeId;
     };
     eastl::vector<Edge> edges;
 
@@ -49,60 +60,56 @@ namespace fg
       int column = 0;
       int row = 0;
 
+      float2 pos = {0.0f, 0.0f};
+
       struct ResourcePins
       {
-        ed::PinId input, output;
+        Pins input, output;
 
         ResourcePins() = default;
-        ResourcePins(const bool is_input, ed::PinId reserve_id)
-        {
-          getId(is_input) = reserve_id;
-        }
         
-        ed::PinId getPin(const bool is_input, size_t* reserve_id)
+        Pins getPin(const bool is_input, size_t* reserve_id)
         {
-          ed::PinId& id = getId(is_input);
-          if (!id)
+          Pins& pins = get(is_input);
+          if (!pins)
           {
-            id = (*reserve_id)++;
-            return id;
+            pins.def = (*reserve_id)++;
+            pins.reroute = (*reserve_id)++;
           }
-          return id;
+
+          return pins;
         }
 
       private:
-        ed::PinId& getId(const bool is_input)
+        Pins& get(const bool is_input)
         {
           return is_input ? input : output;
         }
       };
 
-      ed::PinId getResourcePin(const virt_res_id_t virt_res_id, const bool is_input, size_t* reserve_id)
+      Pins getResourcePin(const virt_res_id_t virt_res_id, const bool is_input, size_t* reserve_id)
       {
         auto it = resources.find(virt_res_id);
         ResourcePins* resPins = nullptr;
         if (it != resources.end())
           return it->second.getPin(is_input, reserve_id);
         else
-        {
-          ed::PinId id = (*reserve_id)++;
-          resources.insert({
-            virt_res_id,
-            ResourcePins{is_input, id}
-          });
-          return id;
-        }
+          return resources.insert({ virt_res_id, {} }).first->second.getPin(is_input, reserve_id);
       }
 
-      ed::PinId getNodePin(const bool is_input, size_t* reserve_id)
+      Pins getNodePin(const bool is_input, size_t* reserve_id)
       {
-        ed::PinId& id = is_input ? inputPin : outputPin;
-        if (!id)
-          id = (*reserve_id)++;
-        return id;
+        Pins& pins = is_input ? input : output;
+        if (!pins)
+        {
+          pins.def = (*reserve_id)++;
+          pins.reroute = (*reserve_id)++;
+        }
+          
+        return pins;
       }
 
-      ed::PinId inputPin, outputPin;
+      Pins input, output;
       eastl::vector_set<node_id_t> followingNodes;
       eastl::vector_map<virt_res_id_t, ResourcePins> resources;
     };
@@ -141,9 +148,9 @@ namespace fg
       for (const node_id_t prevNodeId: node.prevNodes)
       {
         nodesTree[(size_t)prevNodeId].followingNodes.insert(nodeId);
-        const ed::PinId inputPin = nodesTree[(size_t)nodeId].getNodePin(INPUT, &pinReserveId);
-        const ed::PinId outputPin = nodesTree[(size_t)prevNodeId].getNodePin(OUTPUT, &pinReserveId);
-        edges.push_back({.from = outputPin, .to = inputPin});
+        const Pins inputPins = nodesTree[(size_t)nodeId].getNodePin(INPUT, &pinReserveId);
+        const Pins outputPins = nodesTree[(size_t)prevNodeId].getNodePin(OUTPUT, &pinReserveId);
+        edges.push_back({outputPins,inputPins, prevNodeId, nodeId});
       }
 
       for (const virt_res_id_t vResId: node.reads)
@@ -151,9 +158,9 @@ namespace fg
         const node_id_t prevNodeId = m_Registry.m_VirtResources[vResId].modificationChain.back();
         nodesTree[(size_t)prevNodeId].followingNodes.insert(nodeId);
 
-        const ed::PinId inputPin = nodesTree[(size_t)nodeId].getResourcePin(vResId, INPUT, &pinReserveId);
-        const ed::PinId outputPin = nodesTree[(size_t)prevNodeId].getResourcePin(vResId, OUTPUT, &pinReserveId);
-        edges.push_back({.from = outputPin, .to = inputPin});
+        const Pins inputPins = nodesTree[(size_t)nodeId].getResourcePin(vResId, INPUT, &pinReserveId);
+        const Pins outputPins = nodesTree[(size_t)prevNodeId].getResourcePin(vResId, OUTPUT, &pinReserveId);
+        edges.push_back({outputPins, inputPins, prevNodeId, nodeId});
       }
 
       for (const virt_res_id_t vResId: node.creates)
@@ -171,46 +178,13 @@ namespace fg
         
         node_id_t prevNodeId = getModifier(PREV, nodeId, m_Registry.m_VirtResources[vResId].modificationChain);
 
-        const ed::PinId inputPin = nodesTree[(size_t)nodeId].getResourcePin(vResId, INPUT, &pinReserveId);
-        const ed::PinId outputPin = nodesTree[(size_t)prevNodeId].getResourcePin(vResId, OUTPUT, &pinReserveId);
-        edges.push_back({.from = outputPin, .to = inputPin});
+        const Pins inputPins = nodesTree[(size_t)nodeId].getResourcePin(vResId, INPUT, &pinReserveId);
+        const Pins outputPins = nodesTree[(size_t)prevNodeId].getResourcePin(vResId, OUTPUT, &pinReserveId);
+        edges.push_back({outputPins, inputPins, prevNodeId, nodeId});
       }
 
       for (const virt_res_id_t vResId: node.creates)
         nodesTree[(size_t)nodeId].getResourcePin(vResId, OUTPUT, &pinReserveId);
-    }
-
-    for (node_id_t nodeId: m_NodesOrder)
-    {
-      const auto createPins = [](const ed::PinId input, const ed::PinId output, const char* name){
-        if (input)
-        {
-          ed::BeginPin(input, ed::PinKind::Input);
-            ImGui::Text("%s", "o");
-          ed::EndPin();
-          ImGui::SameLine(); 
-        }      
-        ImGui::Dummy(ImVec2(20, 0)); ImGui::SameLine();
-        ImGui::Text("%s", name); ImGui::SameLine(); ImGui::Dummy(ImVec2(20, 0));
-        if (output)
-        {
-          ImGui::SameLine();
-          ed::BeginPin(output, ed::PinKind::Output);
-            ImGui::Text("o");
-          ed::EndPin();
-        }
-      };
-
-      const char* nodeName = m_Registry.m_NodesNames.getString(to_name_id(nodeId));
-      ed::BeginNode(ed::NodeId{nodeId});
-        const auto& node = nodesTree[(size_t)nodeId];
-        createPins(node.inputPin, node.outputPin, nodeName);
-
-        ImGui::Dummy(ImVec2(0, 20)); 
-
-        for (const auto& [vResId, resPins]: node.resources)
-          createPins(resPins.input, resPins.output, m_Registry.m_ResourcesNames.getString(to_name_id(vResId)));
-      ed::EndNode();
     }
 
     eastl::vector<size_t> nodeIdToColumn;
@@ -235,7 +209,7 @@ namespace fg
 
       float xOffset = pins.column * nodeOffset.x;
       float yOffset = -pins.row * nodeOffset.y;
-      ed::SetNodePosition(ed::NodeId{nodeId}, {xOffset, yOffset} );
+      pins.pos = {xOffset, yOffset};
 
       for (const node_id_t follower: pins.followingNodes)
         if (!visitedNodes[(size_t)follower])
@@ -246,9 +220,65 @@ namespace fg
         currentExecColumn = pins.column;
     }
 
+    for (node_id_t nodeId: m_NodesOrder)
+    {
+      const auto createPins = [](const Pins& input, const Pins& output, const char* name){
+        const auto createPin = [](const Pins& pins, const ed::PinKind kind) {
+          const ImVec2 c = ImGui::GetCursorScreenPos();
+          ed::BeginPin(pins.def, kind);
+            ImGui::Text("%s", "o");
+          ed::EndPin();
+          ImGui::SameLine();
+          ImGui::SetCursorScreenPos(c);
+
+          ed::PushStyleVar(ed::StyleVar_SourceDirection, ImVec2(0.0f,  1.0f));
+          ed::PushStyleVar(ed::StyleVar_TargetDirection, ImVec2(0.0f,  1.0f));
+          ed::PushStyleVar(ed::StyleVar_LinkStrength, 300.0f);
+          ed::BeginPin(pins.reroute, kind);
+          ed::EndPin();
+          ed::PopStyleVar(3);
+        };
+
+        if (input)
+        {
+          createPin(input, ed::PinKind::Input);
+          ImGui::SameLine();
+        }
+
+        ImGui::Dummy(ImVec2(20, 0)); ImGui::SameLine();
+        ImGui::Text("%s", name); ImGui::SameLine(); ImGui::Dummy(ImVec2(20, 0));
+
+        if (output)
+        {
+          ImGui::SameLine();
+          createPin(output, ed::PinKind::Output);
+        }
+      };
+
+      const auto& node = nodesTree[(size_t)nodeId];
+      ed::BeginNode(ed::NodeId{nodeId});
+        createPins(node.input, node.output, node.name);
+
+        ImGui::Dummy(ImVec2(0, 20)); 
+
+        for (const auto& [vResId, resPins]: node.resources)
+          createPins(resPins.input, resPins.output, m_Registry.m_ResourcesNames.getString(to_name_id(vResId)));
+      ed::EndNode();
+
+      ed::SetNodePosition(ed::NodeId{nodeId}, {node.pos.x, node.pos.y} );
+    }
+
     size_t linkId = 1;
     for (const auto& edge: edges)
-      ed::Link(linkId++, edge.from, edge.to);
+    {
+      const auto& fromNode = nodesTree[edge.fromNodeId];
+      const auto& toNode = nodesTree[edge.toNodeId];
+
+      if (fromNode.row == toNode.row && ((toNode.column - fromNode.column) > 1))
+        ed::Link(linkId++, edge.from.reroute, edge.to.reroute);
+      else
+        ed::Link(linkId++, edge.from.def, edge.to.def);
+    }
 
     ed::End();
   }
