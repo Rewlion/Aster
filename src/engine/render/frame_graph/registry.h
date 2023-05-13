@@ -64,7 +64,7 @@ namespace fg
       auto importTextureProducer(const char* name, TextureProduceFunction) -> TextureRequest;
       auto modifyTexture(const char* name, const gapi::TextureState state) -> TextureRequest;
       auto readTexture(const char* name, const gapi::TextureState state) -> TextureRequest;
-      auto renameTexture(const char* from, const char* to) -> TextureRequest;
+      auto renameTexture(const char* from, const char* to, const gapi::TextureState state) -> TextureRequest;
 
       template<class BlobType>
       auto createBlob(const char* name) -> BlobReadWriteRequest<BlobType>;
@@ -173,6 +173,8 @@ namespace fg
       struct VirtualResourceInfo
       {
         res_id_t resourceId = INVALID_RES_ID;
+
+        virt_res_id_t clonnedVResId = INVALID_VIRT_RES_ID;
 
         node_id_t createdBy = INVALID_NODE_ID;
         node_id_t consumedBy = INVALID_NODE_ID;

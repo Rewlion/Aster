@@ -127,9 +127,39 @@ namespace fg
     });
   }
 
-  auto Registry::renameTexture(const char* from, const char* to) -> TextureRequest
+  auto Registry::renameTexture(const char* from, const char* to, const gapi::TextureState state) -> TextureRequest
   {
-    return {INVALID_VIRT_RES_ID};
+    const name_id_t nameIdFrom = m_ResourcesNames.storeString(from);
+    const name_id_t nameIdTo = m_ResourcesNames.storeString(to);
+
+    const virt_res_id_t vResIdFrom = to_virt_res_id(nameIdFrom);
+    const virt_res_id_t vResIdTo = to_virt_res_id(nameIdTo);
+    const res_id_t resId = to_res_id(vResIdFrom);
+
+    auto& vResFrom = m_VirtResources[vResIdFrom];
+    if (vResFrom.consumedBy != INVALID_NODE_ID)
+    {
+      logerror("FG: node `{}` tries to consume resource `{}` that was already created by node `{}`.",
+        m_NodesNames.getString(to_name_id(m_CurrentExecNodeId)), 
+        m_ResourcesNames.getString(to_name_id(vResIdFrom)),
+        m_NodesNames.getString(to_name_id(vResFrom.createdBy)));
+      return {INVALID_VIRT_RES_ID};
+    }
+    vResFrom.consumedBy = m_CurrentExecNodeId;
+    vResFrom.modificationChain.push_back(m_CurrentExecNodeId);
+    
+    auto& vResTo = m_VirtResources[vResIdTo];
+    vResTo.clonnedVResId = vResIdFrom;
+    vResTo.createdBy = m_CurrentExecNodeId;
+    vResTo.modificationChain.insert(0, m_CurrentExecNodeId);
+    vResTo.resourceId = vResFrom.resourceId;
+
+    auto& node = m_Nodes[m_CurrentExecNodeId];
+    node.modifies.push_back(vResIdFrom);
+    node.creates.push_back(vResIdTo);
+    node.execState.textureBeginStates.push_back({vResIdFrom, state});
+
+    return {vResIdTo};
   }
 
   auto Registry::createSampler(const char* name, const gapi::SamplerAllocationDescription& alloc_desc) -> SamplerRequest

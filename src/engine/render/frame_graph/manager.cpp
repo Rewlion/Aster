@@ -174,7 +174,15 @@ namespace fg
 
         for (const auto& vResId: node.reads)
         {
-          const auto& vRes =  m_Registry.m_VirtResources[vResId];
+          const auto& vRes = m_Registry.m_VirtResources[vResId];
+
+          if (vRes.clonnedVResId != INVALID_VIRT_RES_ID)
+          {
+            const auto& clonnedVRes = m_Registry.m_VirtResources[vRes.clonnedVResId];
+            for (const auto prevNode: clonnedVRes.modificationChain)
+              if (processed[prevNode] == 0)
+                dfs_impl(prevNode, dfs_impl);
+          }
 
           for (const auto prevNode: vRes.modificationChain)
             if (processed[prevNode] == 0)
@@ -304,8 +312,11 @@ namespace fg
         for (auto vResId: node.creates)
         {
           auto& vRes = m_Registry.m_VirtResources[vResId];
-          auto& res = m_Registry.m_Resources[vRes.resourceId];
-          m_ResourceStorages[m_iFrame].create(vRes.resourceId, res);
+          if (vRes.clonnedVResId == INVALID_VIRT_RES_ID)
+          {
+            auto& res = m_Registry.m_Resources[vRes.resourceId];
+            m_ResourceStorages[m_iFrame].create(vRes.resourceId, res);
+          }
         }
 
         for (auto texState: node.execState.textureBeginStates)
