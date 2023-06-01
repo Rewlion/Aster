@@ -33,6 +33,12 @@ namespace ecs
       return nullptr;
   }
 
+  auto TypeMetaStorage::getMeta(const string_view type_name) const -> const TypeMeta*
+  {
+    const auto it = m_NameToTypeId.find(ecs_name_hash(type_name));
+    return it != m_NameToTypeId.end() ? &m_Metas[it->second] : nullptr;
+  }
+
   void init_meta_storage()
   {
     meta_storage.init();

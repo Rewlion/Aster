@@ -155,7 +155,10 @@ namespace ecs
         const void* tmplInitData = hasInitData ?
                                     initIt->second->getData() :
                                     tmpl.regCompToTmplComp.find(compIds[i])->second->getData();
-        typeMgr->constructor(compDataForInit, tmplInitData);
+        if (tmplInitData)
+          typeMgr->constructor(compDataForInit, tmplInitData);
+        else
+          typeMgr->constructor(compDataForInit);
       }
     }
 

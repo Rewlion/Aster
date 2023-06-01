@@ -40,22 +40,22 @@ namespace Engine::Render
     auto& ecs = ecs::get_registry();
 
     ecs::TemplateComponentsMap dbgTextQueueComps;
-    dbgTextQueueComps["dbg_text_queue"] = dbg::TextDbgQueue{};
+    dbgTextQueueComps["dbg_text_queue"] = ecs::TemplateTypeWrapper{"TextDbgQueue"};
     ecs.addTemplate("TextDbgQueue", {}, std::move(dbgTextQueueComps));
     ecs.createEntity("TextDbgQueue");
 
     ecs::TemplateComponentsMap fontRenderComps;
-    fontRenderComps["font_render"] = FontRender{};
+    fontRenderComps["font_render"] = ecs::TemplateTypeWrapper{"FontRender"};
     ecs.addTemplate("FontRender", {}, std::move(fontRenderComps));
     ecs.createEntity("FontRender");
 
     ecs::TemplateComponentsMap guiRenderComps;
-    guiRenderComps["gui_render"] = GuiRender{};
+    guiRenderComps["gui_render"] = ecs::TemplateTypeWrapper{"GuiRender"};
     ecs.addTemplate("GuiRender", {}, std::move(guiRenderComps));
     ecs.createEntity("GuiRender");
 
     ecs::TemplateComponentsMap imguiRenderComps;
-    imguiRenderComps["imgui_render"] = ImGuiRender{};
+    imguiRenderComps["imgui_render"] = ecs::TemplateTypeWrapper{"ImGuiRender"};
     ecs.addTemplate("ImGuiRender", {}, std::move(imguiRenderComps));
     ecs.createEntity("ImGuiRender");
 

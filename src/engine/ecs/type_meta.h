@@ -28,13 +28,16 @@ namespace ecs
   {
     public:
       virtual
-      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) {}
-      
-      virtual
-      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) {}
+      void constructor(void* component) = 0;
 
       virtual
-      void destructor(void* component) {}
+      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) = 0;
+      
+      virtual
+      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) = 0;
+
+      virtual
+      void destructor(void* component) = 0;
 
       // virtual
       // void copy(void* __restrict__ to, const void* __restrict__ from) {}
@@ -47,6 +50,11 @@ namespace ecs
   class TrivialTypeManager : public TypeManager
   {
     public:
+      void constructor(void* component) override
+      {
+        *reinterpret_cast<T*>(component) = T{};
+      }
+
       void constructor(void* __restrict__ component, const void* __restrict__ init_comp) override
       {
         std::memcpy(component, init_comp, sizeof(T));
@@ -78,7 +86,14 @@ namespace ecs
   class NonTrivialTypeManager : public TypeManager
   {
     public:
-      virtual
+      void constructor(void* component) override
+      {
+        new (component) T{};
+
+        if constexpr (has_init)
+          reinterpret_cast<T*>(component)->init();
+      }
+
       void constructor(void* __restrict__ component, const void* __restrict__ init_comp) override
       {
         const T& init = *reinterpret_cast<const T*>(init_comp);
@@ -171,6 +186,7 @@ namespace ecs
       void init();
 
       auto getMeta(const component_type_id_t type_id) const -> const TypeMeta* ;
+      auto getMeta(const string_view type_name) const -> const TypeMeta* ;
 
     private:
       eastl::vector<TypeMeta> m_Metas;

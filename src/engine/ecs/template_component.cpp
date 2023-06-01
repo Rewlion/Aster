@@ -76,7 +76,17 @@ namespace ecs
 
   auto TemplateComponent::getData() const -> const void*
   {
+    if (m_Flags & COMPONENT_TYPE_WRAPPER)
+      return nullptr;
+
     return isBoxedType(getMeta()->size) ? as.ptr : &as.rawValue;
+  }
+
+  void TemplateComponent::initTypeIdFromName(const string& type_name)
+  {
+    const TypeMeta* meta = get_meta_storage().getMeta(type_name);
+    ASSERT_FMT(meta != nullptr, "ecs: failed to init component with type `{}`. Type is not registered", type_name);
+    m_TypeId = meta->typeId;
   }
 
   auto TemplateComponentsMap::operator[] (const string_view name) -> TemplateComponent&
