@@ -11,9 +11,13 @@ public:
   DataBlock ParseFile(const string& pathToDbk, const bool accept_fails = false);
 
   void setBlock(DataBlock&& bk) { m_ParsedBk = std::move(bk); }
-  void pushFile(const string& file)
+  void pushFile(const string& file, eastl::vector<char>&& buffer)
   {
-    m_FileCtxs.push_back({file, 1 });
+    m_FileCtxs.push_back({file, 1, std::move(buffer) });
+  }
+  auto getCurrentBuffer() -> eastl::vector<char>&
+  {
+    return m_FileCtxs.back().buffer;
   }
   void popFile()
   {
@@ -34,6 +38,7 @@ private:
   {
     string fileName;
     unsigned int line;
+    eastl::vector<char> buffer;
   };
 
 private:

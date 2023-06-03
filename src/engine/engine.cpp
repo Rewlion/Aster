@@ -17,6 +17,7 @@
 #include <engine/tfx/tfx.h>
 #include <engine/time.h>
 #include <engine/types.h>
+#include <engine/vfs/vfs.h>
 #include <engine/window.h>
 
 namespace Engine
@@ -39,6 +40,8 @@ namespace Engine
     Time::init_clock();
 
     load_app_settings("game_data/settings.blk");
+    vfs::init();
+
     Window::init_window();
 
     gapi::init();

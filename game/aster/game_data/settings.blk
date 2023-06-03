@@ -9,6 +9,14 @@ entity_templates
   text template = "game_data/templates/templates.blk"
 }
 
+vfs
+{
+  "@engine_res"
+  {
+    text source = "../../src/engine/resources"
+  }
+}
+
 text init_level = "game_data/levels/test_level.blk"
 
 text input_settings = "game_data/input.blk"

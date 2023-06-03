@@ -681,18 +681,18 @@ static const YY_CHAR yy_meta[44] =
 
 static const flex_int16_t yy_base[102] =
     {   0,
-        0,    0,   42,   47,  162,  163,   49,  163,  155,  129,
-      163,  163,   40,  163,   44,  145,   50,  163,  163,  163,
-        0,  163,  163,  123,   39,  123,  131,  120,   39,   41,
-      125,  163,  163,  163,   70,  163,    0,   74,  147,  163,
-      118,   65,    0,   71,    0,   75,  116,  118,  114,  110,
-      109,    0,  116,    0,  105,  105,  106,   92,  136,  114,
-       83,    0,   87,  108,  102,  113,   90,   78,    0,   99,
-      107,    0,  127,   97,   94,    0,   99,   89,    0,    0,
-        0,    0,    0,    0,    0,   84,    0,   97,   94,    0,
-        0,    0,   56,   69,  163,  163,  115,  120,   41,  125,
+        0,    0,   42,   47,  164,  165,   52,  165,  157,  131,
+      165,  165,   43,  165,   47,  147,   53,  165,  165,  165,
+        0,  165,  165,  125,   42,  125,  133,  122,   21,   43,
+      127,  165,  165,  165,   71,  165,    0,   73,  149,  165,
+      120,   67,    0,   73,    0,   77,  118,  120,  116,  112,
+      111,    0,  118,    0,  107,  107,  108,   94,  138,  116,
+       85,    0,   89,  110,  104,  115,   92,   80,    0,  101,
+      109,    0,  129,   99,   96,    0,  101,   91,    0,    0,
+        0,    0,    0,    0,    0,   86,    0,   99,   96,    0,
+        0,    0,   58,   76,  165,  165,  117,  122,   41,  127,
 
-      130
+      132
     } ;
 
 static const flex_int16_t yy_def[102] =
@@ -711,58 +711,58 @@ static const flex_int16_t yy_def[102] =
        96
     } ;
 
-static const flex_int16_t yy_nxt[207] =
+static const flex_int16_t yy_nxt[209] =
     {   0,
-        6,    7,    8,    6,    7,    9,   10,   11,   12,   13,
+        6,    7,    8,    7,    7,    9,   10,   11,   12,   13,
        14,   15,    6,   16,   17,   17,   17,   17,   18,   19,
        20,   21,   22,   23,   21,   24,   21,   21,   21,   25,
        26,   21,   27,   28,   29,   21,   21,   30,   21,   21,
        31,   32,   33,   35,   36,   43,   35,   37,   35,   36,
-       38,   35,   37,   38,   42,   42,   42,   42,   44,   44,
-       44,   44,   46,   48,   42,   42,   42,   42,   53,   55,
-       49,   58,   54,   95,   58,   38,   56,   46,   38,   42,
-       42,   42,   42,   61,   94,   44,   44,   44,   44,   63,
-       63,   63,   63,   58,   82,   83,   58,   75,   75,   75,
+       53,   35,   37,   38,   54,   38,   38,   42,   42,   42,
+       42,   44,   44,   44,   44,   46,   48,   42,   42,   42,
+       42,   55,   58,   49,   38,   58,   38,   38,   56,   46,
+       95,   42,   42,   42,   42,   61,   94,   44,   44,   44,
+       44,   63,   63,   63,   63,   58,   82,   83,   58,   75,
 
-       75,   63,   63,   63,   63,   79,   80,   81,   75,   75,
-       75,   75,   90,   91,   92,   34,   34,   34,   34,   34,
-       39,   93,   89,   39,   39,   59,   88,   87,   86,   59,
-       62,   62,   73,   62,   62,   85,   84,   78,   77,   76,
-       74,   73,   72,   71,   70,   69,   68,   67,   66,   65,
-       64,   60,   40,   57,   52,   51,   50,   47,   45,   41,
-       40,   96,    5,   96,   96,   96,   96,   96,   96,   96,
+       75,   75,   75,   63,   63,   63,   63,   79,   80,   81,
+       75,   75,   75,   75,   90,   91,   92,   34,   34,   34,
+       34,   34,   39,   93,   89,   39,   39,   59,   88,   87,
+       86,   59,   62,   62,   73,   62,   62,   85,   84,   78,
+       77,   76,   74,   73,   72,   71,   70,   69,   68,   67,
+       66,   65,   64,   60,   40,   57,   52,   51,   50,   47,
+       45,   41,   40,   96,    5,   96,   96,   96,   96,   96,
        96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
        96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
        96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
 
-       96,   96,   96,   96,   96,   96
+       96,   96,   96,   96,   96,   96,   96,   96
     } ;
 
-static const flex_int16_t yy_chk[207] =
+static const flex_int16_t yy_chk[209] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    3,    3,   99,    3,    3,    4,    4,
-        7,    4,    4,    7,   13,   13,   13,   13,   15,   15,
-       15,   15,   17,   25,   17,   17,   17,   17,   29,   30,
-       25,   35,   29,   94,   35,   38,   30,   42,   38,   42,
-       42,   42,   42,   44,   93,   44,   44,   44,   44,   46,
-       46,   46,   46,   58,   68,   68,   58,   61,   61,   61,
+       29,    4,    4,    7,   29,    7,    7,   13,   13,   13,
+       13,   15,   15,   15,   15,   17,   25,   17,   17,   17,
+       17,   30,   35,   25,   38,   35,   38,   38,   30,   42,
+       94,   42,   42,   42,   42,   44,   93,   44,   44,   44,
+       44,   46,   46,   46,   46,   58,   68,   68,   58,   61,
 
-       61,   63,   63,   63,   63,   67,   67,   67,   75,   75,
-       75,   75,   88,   88,   88,   97,   97,   97,   97,   97,
-       98,   89,   86,   98,   98,  100,   78,   77,   74,  100,
-      101,  101,   73,  101,  101,   71,   70,   66,   65,   64,
-       60,   59,   57,   56,   55,   53,   51,   50,   49,   48,
-       47,   41,   39,   31,   28,   27,   26,   24,   16,   10,
-        9,    5,   96,   96,   96,   96,   96,   96,   96,   96,
+       61,   61,   61,   63,   63,   63,   63,   67,   67,   67,
+       75,   75,   75,   75,   88,   88,   88,   97,   97,   97,
+       97,   97,   98,   89,   86,   98,   98,  100,   78,   77,
+       74,  100,  101,  101,   73,  101,  101,   71,   70,   66,
+       65,   64,   60,   59,   57,   56,   55,   53,   51,   50,
+       49,   48,   47,   41,   39,   31,   28,   27,   26,   24,
+       16,   10,    9,    5,   96,   96,   96,   96,   96,   96,
        96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
        96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
        96,   96,   96,   96,   96,   96,   96,   96,   96,   96,
 
-       96,   96,   96,   96,   96,   96
+       96,   96,   96,   96,   96,   96,   96,   96
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -785,16 +785,17 @@ char *yytext;
 
     #include "parser.h"
     #include <engine/log.h>
+    #include <engine/vfs/vfs.h>
 
     #include <stdio.h>
     #include "parser.tab.hpp"
 
     void bkerror(BlkParser& parser, const char* msg);
     extern int bklex(BlkParser& parser);
-#line 794 "src/engine/datablock/parser/lex.yy.cpp"
+#line 795 "src/engine/datablock/parser/lex.yy.cpp"
 #define YY_NO_UNISTD_H 1
 
-#line 797 "src/engine/datablock/parser/lex.yy.cpp"
+#line 798 "src/engine/datablock/parser/lex.yy.cpp"
 
 #define INITIAL 0
 #define include 1
@@ -1012,10 +1013,10 @@ YY_DECL
 		}
 
 	{
-#line 21 "src/engine/datablock/parser/parser.l"
+#line 22 "src/engine/datablock/parser/parser.l"
 
 
-#line 1018 "src/engine/datablock/parser/lex.yy.cpp"
+#line 1019 "src/engine/datablock/parser/lex.yy.cpp"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1070,36 +1071,41 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 23 "src/engine/datablock/parser/parser.l"
+#line 24 "src/engine/datablock/parser/parser.l"
 {
 
 }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 27 "src/engine/datablock/parser/parser.l"
+#line 28 "src/engine/datablock/parser/parser.l"
 {
   char* fileName = yytext + 1;
   fileName[strlen(yytext) - 2] = '\0';
 
-  yyin = fopen( fileName, "r" );
-
-  if (!yyin)
+  eastl::vector<char> stagingBuffer = vfs::read_file(fileName);
+  if (stagingBuffer.empty())
   {
     const string error = fmt::format("can't include file `{}`: File not found", fileName);
     bkerror(parser, error.c_str());
     yyterminate();
   }
 
-  parser.pushFile(string{fileName});
+  stagingBuffer.push_back('\0');
+  stagingBuffer.push_back('\0');
 
-	yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
+  parser.pushFile(string{fileName}, std::move(stagingBuffer));
+  auto& buffer = parser.getCurrentBuffer();
+
+	yypush_buffer_state(YY_CURRENT_BUFFER);
+  bk_scan_buffer(buffer.data(), buffer.size());
+
   BEGIN(INITIAL);
 }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 46 "src/engine/datablock/parser/parser.l"
+#line 52 "src/engine/datablock/parser/parser.l"
 {
   const std::string error = fmt::format("unexpected string: {}", yytext);
   bkerror(parser, error.c_str());
@@ -1108,263 +1114,262 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 52 "src/engine/datablock/parser/parser.l"
+#line 58 "src/engine/datablock/parser/parser.l"
 {
   BEGIN(include);
 }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(include):
-#line 56 "src/engine/datablock/parser/parser.l"
+#line 62 "src/engine/datablock/parser/parser.l"
 {
-  fclose(yyin);
   yypop_buffer_state();
+  parser.popFile();
   if ( !YY_CURRENT_BUFFER )
   {
     yyterminate();
   }
-  parser.popFile();
 }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 66 "src/engine/datablock/parser/parser.l"
+#line 71 "src/engine/datablock/parser/parser.l"
 ; // comment
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 68 "src/engine/datablock/parser/parser.l"
+#line 73 "src/engine/datablock/parser/parser.l"
 {
 }
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 71 "src/engine/datablock/parser/parser.l"
+#line 76 "src/engine/datablock/parser/parser.l"
 {
   parser.incLine();
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 75 "src/engine/datablock/parser/parser.l"
+#line 80 "src/engine/datablock/parser/parser.l"
 {
   return AT;
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 79 "src/engine/datablock/parser/parser.l"
+#line 84 "src/engine/datablock/parser/parser.l"
 {
   return COLON;
 }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 83 "src/engine/datablock/parser/parser.l"
+#line 88 "src/engine/datablock/parser/parser.l"
 {
   return EQUAL_OP;
 }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 87 "src/engine/datablock/parser/parser.l"
+#line 92 "src/engine/datablock/parser/parser.l"
 {
   return LEFT_PARENTHESIS;
 }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 91 "src/engine/datablock/parser/parser.l"
+#line 96 "src/engine/datablock/parser/parser.l"
 {
   return RIGHT_PARENTHESIS;
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 95 "src/engine/datablock/parser/parser.l"
+#line 100 "src/engine/datablock/parser/parser.l"
 {
   return LEFT_BRACKET;
 }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 99 "src/engine/datablock/parser/parser.l"
+#line 104 "src/engine/datablock/parser/parser.l"
 {
   return RIGHT_BRACKET;
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 103 "src/engine/datablock/parser/parser.l"
+#line 108 "src/engine/datablock/parser/parser.l"
 {
   return LEFT_SQUARE_BRACKET;
 }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 107 "src/engine/datablock/parser/parser.l"
+#line 112 "src/engine/datablock/parser/parser.l"
 {
   return RIGHT_SQUARE_BRACKET;
 }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 111 "src/engine/datablock/parser/parser.l"
+#line 116 "src/engine/datablock/parser/parser.l"
 {
   return COMMA;
 }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 115 "src/engine/datablock/parser/parser.l"
+#line 120 "src/engine/datablock/parser/parser.l"
 {
   return INT_TYPE;
 }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 119 "src/engine/datablock/parser/parser.l"
+#line 124 "src/engine/datablock/parser/parser.l"
 {
   return FLOAT_TYPE;
 }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 123 "src/engine/datablock/parser/parser.l"
+#line 128 "src/engine/datablock/parser/parser.l"
 {
   return TEXT_TYPE;
 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 127 "src/engine/datablock/parser/parser.l"
+#line 132 "src/engine/datablock/parser/parser.l"
 {
   return POINT_2D_TYPE;
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 131 "src/engine/datablock/parser/parser.l"
+#line 136 "src/engine/datablock/parser/parser.l"
 {
   return POINT_3D_TYPE;
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 135 "src/engine/datablock/parser/parser.l"
+#line 140 "src/engine/datablock/parser/parser.l"
 {
   return POINT_4D_TYPE;
 }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 139 "src/engine/datablock/parser/parser.l"
+#line 144 "src/engine/datablock/parser/parser.l"
 {
   return INT_POINT_2D_TYPE;
 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 143 "src/engine/datablock/parser/parser.l"
+#line 148 "src/engine/datablock/parser/parser.l"
 {
   return INT_POINT_3D_TYPE;
 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 147 "src/engine/datablock/parser/parser.l"
+#line 152 "src/engine/datablock/parser/parser.l"
 {
   return INT_POINT_4D_TYPE;
 }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 151 "src/engine/datablock/parser/parser.l"
+#line 156 "src/engine/datablock/parser/parser.l"
 {
   return MAT3_TYPE;
 }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 155 "src/engine/datablock/parser/parser.l"
+#line 160 "src/engine/datablock/parser/parser.l"
 {
   return MAT4_TYPE;
 }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 159 "src/engine/datablock/parser/parser.l"
+#line 164 "src/engine/datablock/parser/parser.l"
 {
   return BOOL_TYPE;
 }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 163 "src/engine/datablock/parser/parser.l"
+#line 168 "src/engine/datablock/parser/parser.l"
 {
   bklval = true; return BOOL_VAL;
 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 167 "src/engine/datablock/parser/parser.l"
+#line 172 "src/engine/datablock/parser/parser.l"
 {
   bklval = true; return BOOL_VAL;
 }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 171 "src/engine/datablock/parser/parser.l"
+#line 176 "src/engine/datablock/parser/parser.l"
 {
   bklval = true; return BOOL_VAL;
 }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 175 "src/engine/datablock/parser/parser.l"
+#line 180 "src/engine/datablock/parser/parser.l"
 {
   bklval = false; return BOOL_VAL;
 }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 179 "src/engine/datablock/parser/parser.l"
+#line 184 "src/engine/datablock/parser/parser.l"
 {
   bklval = false; return BOOL_VAL;
 }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 183 "src/engine/datablock/parser/parser.l"
+#line 188 "src/engine/datablock/parser/parser.l"
 {
   bklval = false; return BOOL_VAL;
 }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 187 "src/engine/datablock/parser/parser.l"
+#line 192 "src/engine/datablock/parser/parser.l"
 {
   bklval = Number{atoi(yytext)}; return INT_VAL; 
 }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 191 "src/engine/datablock/parser/parser.l"
+#line 196 "src/engine/datablock/parser/parser.l"
 { 
   bklval = Number{(float)atof(yytext)}; return FLOAT_VAL;
 }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 195 "src/engine/datablock/parser/parser.l"
+#line 200 "src/engine/datablock/parser/parser.l"
 {
   bklval = string{yytext}; return NAME_VAL;
 }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 199 "src/engine/datablock/parser/parser.l"
+#line 204 "src/engine/datablock/parser/parser.l"
 {
   char* text = yytext + 1;
   text[strlen(yytext) - 2] = '\0';
@@ -1373,18 +1378,19 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 205 "src/engine/datablock/parser/parser.l"
+#line 210 "src/engine/datablock/parser/parser.l"
 { 
   const string error =  fmt::format("unexpected symbol `{}`", yytext);
   bkerror(parser, error.c_str());
+  yyterminate();
 }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 210 "src/engine/datablock/parser/parser.l"
+#line 216 "src/engine/datablock/parser/parser.l"
 ECHO;
 	YY_BREAK
-#line 1387 "src/engine/datablock/parser/lex.yy.cpp"
+#line 1393 "src/engine/datablock/parser/lex.yy.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2388,6 +2394,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 210 "src/engine/datablock/parser/parser.l"
+#line 216 "src/engine/datablock/parser/parser.l"
 
 

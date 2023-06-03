@@ -8,7 +8,7 @@
 
 namespace Utils
 {
-  eastl::vector<char> read_file(const string& file)
+  eastl::vector<char> read_file(const string_view file)
   {
     std::error_code ec;
     const auto fileSize = std::filesystem::file_size(file, ec);

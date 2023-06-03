@@ -3,6 +3,7 @@
 
     #include "parser.h"
     #include <engine/log.h>
+    #include <engine/vfs/vfs.h>
 
     #include <stdio.h>
     #include "parser.tab.hpp"
@@ -28,18 +29,23 @@
   char* fileName = yytext + 1;
   fileName[strlen(yytext) - 2] = '\0';
 
-  yyin = fopen( fileName, "r" );
-
-  if (!yyin)
+  eastl::vector<char> stagingBuffer = vfs::read_file(fileName);
+  if (stagingBuffer.empty())
   {
     const string error = fmt::format("can't include file `{}`: File not found", fileName);
     bkerror(parser, error.c_str());
     yyterminate();
   }
 
-  parser.pushFile(string{fileName});
+  stagingBuffer.push_back('\0');
+  stagingBuffer.push_back('\0');
 
-	yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
+  parser.pushFile(string{fileName}, std::move(stagingBuffer));
+  auto& buffer = parser.getCurrentBuffer();
+
+	yypush_buffer_state(YY_CURRENT_BUFFER);
+  bk_scan_buffer(buffer.data(), buffer.size());
+
   BEGIN(INITIAL);
 }
 
@@ -54,18 +60,17 @@
 }
 
 <<EOF>> {
-  fclose(yyin);
   yypop_buffer_state();
+  parser.popFile();
   if ( !YY_CURRENT_BUFFER )
   {
     yyterminate();
   }
-  parser.popFile();
 }
 
 [/][/][^\n]* ; // comment
 
-[ \t]* {
+[ \t\r]* {
 }
 
 \n {
@@ -205,6 +210,7 @@ off {
 . { 
   const string error =  fmt::format("unexpected symbol `{}`", yytext);
   bkerror(parser, error.c_str());
+  yyterminate();
 }
 
 %%

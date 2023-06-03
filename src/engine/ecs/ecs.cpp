@@ -2,6 +2,7 @@
 
 #include <engine/ecs/fs/load_templates.h>
 #include <engine/settings.h>
+#include <engine/vfs/vfs.h>
 
 namespace ecs
 {
@@ -31,6 +32,13 @@ namespace ecs
 
         add_templates_from_blk(registry, blkWithTemplates);
       }
+    }
+
+    for (const char* p: {
+      "@engine_res/templates/render.bk"})
+    {
+      loginfo("ecs: reading templates from {}", p);
+      add_templates_from_blk(registry, p);
     }
   }
 }
