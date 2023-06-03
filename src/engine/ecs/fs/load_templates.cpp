@@ -5,6 +5,7 @@
 #include <engine/ecs/registry.h>
 #include <engine/log.h>
 #include <engine/types.h>
+#include <engine/utils/string.h>
 
 #include <boost/algorithm/string.hpp>
 
@@ -60,6 +61,16 @@ namespace ecs
       if (type == "entity_id")
       {
         comps[name] = EntityId{};
+      }
+      else if (type == "component")
+      {
+        const auto names = Utils::split_view(name, ' ');
+        if (names.size() != 2)
+        {
+          logerror("ecs: invalid obj component `{}` expected format: `[type] [name]`", name);
+          continue;
+        }
+        comps[names[1]] = ecs::TemplateTypeWrapper{string{names[0]}};
       }
     }
 
@@ -137,6 +148,12 @@ namespace ecs
       }
 
       auto components = get_template_components(tmpl);
+      if (components.empty())
+      {
+        logerror("ecs: template {} doesn't have a components", annotations.name);
+        continue;
+      }
+
       dump_template(annotations, components);
       registry.addTemplate(annotations.name, std::move(annotations.extendsTemplates), std::move(components));
     }

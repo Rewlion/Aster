@@ -1,3 +1,11 @@
-template @("name: FontRender2") {
-  FontRender @("font_render") {}
+template @("name: CoreRender") {
+  component @("FontRender font_render") {}
+  component @("GuiRender gui_render") {}
+  component @("ImGuiRender imgui_render") {}
+
+  int2 render_window_size = 0, 0
+}
+
+template @("name: CoreRenderDebug; extends: CoreRender") {
+  component @("TextDbgQueue dbg_text_queue") {}
 }

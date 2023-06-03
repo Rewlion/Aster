@@ -39,30 +39,10 @@ namespace Engine::Render
   {
     auto& ecs = ecs::get_registry();
 
-    ecs::TemplateComponentsMap dbgTextQueueComps;
-    dbgTextQueueComps["dbg_text_queue"] = ecs::TemplateTypeWrapper{"TextDbgQueue"};
-    ecs.addTemplate("TextDbgQueue", {}, std::move(dbgTextQueueComps));
-    ecs.createEntity("TextDbgQueue");
+    auto init = ecs::EntityComponents{};
+    init["render_window_size"] = Window::get_window_size();
 
-    ecs::TemplateComponentsMap fontRenderComps;
-    fontRenderComps["font_render"] = ecs::TemplateTypeWrapper{"FontRender"};
-    ecs.addTemplate("FontRender", {}, std::move(fontRenderComps));
-    ecs.createEntity("FontRender");
-
-    ecs::TemplateComponentsMap guiRenderComps;
-    guiRenderComps["gui_render"] = ecs::TemplateTypeWrapper{"GuiRender"};
-    ecs.addTemplate("GuiRender", {}, std::move(guiRenderComps));
-    ecs.createEntity("GuiRender");
-
-    ecs::TemplateComponentsMap imguiRenderComps;
-    imguiRenderComps["imgui_render"] = ecs::TemplateTypeWrapper{"ImGuiRender"};
-    ecs.addTemplate("ImGuiRender", {}, std::move(imguiRenderComps));
-    ecs.createEntity("ImGuiRender");
-
-    ecs::TemplateComponentsMap renderSettingsComps;
-    renderSettingsComps["render_window_size"] = Window::get_window_size();
-    ecs.addTemplate("RenderSettings", {}, std::move(renderSettingsComps));
-    ecs.createEntity("RenderSettings");
+    ecs.createEntity("CoreRenderDebug", std::move(init));
   }
 
   void WorldRender::init()

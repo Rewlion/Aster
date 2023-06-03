@@ -102,6 +102,8 @@ namespace ecs
 
       auto getComponentName(const name_hash_t name) const -> string_view;
 
+      auto empty() const -> bool { return m_Names.empty(); }
+
     private:
       eastl::vector_map<name_hash_t, TemplateComponent> m_Components;
       eastl::vector_map<name_hash_t, string> m_Names;
