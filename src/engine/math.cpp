@@ -14,8 +14,6 @@ namespace math
 
   mat4 perspective(float fov, float aspect, float zNear, float zFar)
   {
-    std::swap(zNear, zFar);
-
     const float tanA = std::tanf(radians(fov) / 2.0);
 
     glm::mat4 m(0);

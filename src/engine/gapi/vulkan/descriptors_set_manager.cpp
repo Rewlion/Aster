@@ -173,10 +173,10 @@ namespace gapi::vulkan
       const vk::ImageViewType viewType = m_Device.getImageViewType(handle);
       const vk::ImageViewType expectedViewType = shaders_resource_to_img_view_type(expectedResourceType);
       if (viewType == expectedViewType)
-        return m_Device.getImageView(handle);
+        return m_Device.getImageView(handle, true);
     }
 
-    return m_Device.getImageView(get_resource_stub(expectedResourceType));
+    return m_Device.getImageView(get_resource_stub(expectedResourceType), true);
   }
 
   auto DescriptorsSetManager::SetManager::acquireSet(vk::Device device) -> vk::DescriptorSet

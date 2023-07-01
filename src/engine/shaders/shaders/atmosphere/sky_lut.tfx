@@ -1,0 +1,146 @@
+#include "ebruneton.inc.tfx"
+#include "common.inc.tfx"
+#include "../frame.inc.tfx"
+
+scope SkyLUTScope {
+  reserve:
+    descriptor_set(2);
+    register(texture, 0-1);
+
+  Texture2D trLUT = extern(trLUT);
+  Texture2D msLUT = extern(msLUT);
+};
+
+technique SkyLUT {
+  support scope FrameScope;
+  support scope AtmosphereScope;
+  support scope SkyLUTScope;
+
+  render_state:
+    primitive_topology = triangle_strip;
+    depth:
+     test = no;
+     write = no;
+
+  USE_EBRUNETON_HELPERS();
+  USE_ATMOSPHERE_COMMON();
+
+  #hlsl
+    #include "consts.hlsl"
+
+    struct VsOutput
+    {
+      float4 pos: SV_Position;
+    };
+
+    float4 vs_main(uint id: SV_VertexID) : SV_Position
+    {
+      float2 vertices[4] = {
+        float2(1.0f, -1.0f),
+        float2(-1.0f, -1.0f),
+        float2(1.0f, 1.0f),
+        float2(-1.0f, 1.0f)
+      };
+
+      return float4(vertices[id], 0, 1.0);
+    }
+
+    float3 sampleTransmittance(float r_mm, float mu, float atm_bot_radius, float atm_top_radius)
+    {
+     float2 uv = GetTransmittanceTextureUvFromRMu(TR_LUT_SIZE, r_mm, mu, atm_bot_radius, atm_top_radius);
+     return trLUT.Sample(linearClampSampler, uv).rgb;
+    }
+
+    float3 samplePsi(AtmosphereParams atm_params, float r_mm, float sun_zenith)
+    {
+      float2 uv = {
+        0.5 + 0.5 * sun_zenith,
+        (r_mm - atm_params.rBotMM) / (atm_params.rTopMM - atm_params.rBotMM)
+      };
+      return msLUT.Sample(linearClampSampler, uv).rgb;
+    }
+
+    float3 raymarchScattering(float3 p0_mm, float scatteringDist_mm, float3 view_dir, float3 sun_dir, AtmosphereParams atm_params)
+    { 
+      float VoL = dot(view_dir, sun_dir);
+
+      float rayPhase = phaseR(VoL);
+      float miePhase = phaseM_HG(VoL, 0.76);
+
+      float3 L = float3(0,0,0);
+      float3 Tr = float3(1,1,1);
+
+      float t = 0.0;
+      for (float i = 0.0; i < SCATTERING_STEPS; i += 1.0)
+      {
+        float newT = (i+0.3)/SCATTERING_STEPS * scatteringDist_mm;
+        float dt = newT - t;
+        t = newT;
+
+        float3 Ri_mm = p0_mm + view_dir * t;
+        float3 RiDir = normalize(Ri_mm);
+        float Ri_len_mm = length(Ri_mm);
+        float RioSDir = dot(RiDir, sun_dir);
+
+        float3 rayScattering, extintion;
+        float3 mieScattering;
+        calcScatteringValues(atm_params, Ri_mm, rayScattering, mieScattering, extintion);
+
+        float3 Tri = exp(-extintion * dt);
+        float3 TrSun = sampleTransmittance(Ri_len_mm, RioSDir, atm_params.rBotMM, atm_params.rTopMM);
+        float3 psi = samplePsi(atm_params, Ri_len_mm, RioSDir);
+
+        float3 Si = rayScattering*(rayPhase*TrSun+psi) + mieScattering * (miePhase *TrSun+psi);
+        float3 Li = Si*(1.0 -  Tri) / extintion;
+
+        L += Li * Tr;
+        Tr *= Tri;
+      }
+
+      return L;
+    }
+
+    float3 altitudeAzimuthToDecartian(float altitude, float azimuth)
+    {
+      //actually it's not true because for VK it should be -1 * sin for Y
+      //but originally i've wrote all code for the opposite basis
+      //so one would need to take this into account later on
+      //anyway dx12 would be happy about this
+      return normalize(float3(cos(altitude)*sin(azimuth),
+                    sin(altitude),
+                    cos(altitude)*cos(azimuth)));
+    }
+
+    float3 ps_main(VsOutput input) : SV_Target0
+    {
+      float2 uv = input.pos.xy / SKY_LUT_SIZE;
+
+      float azimuth = uv.x*2.0*PI;
+      float altitude = 0.0;
+      if (uv.y >= 0.5) //too much space is wasted for terrain
+        altitude = pow(2*uv.y - 1.0, 2.0) * PI/2.0;
+      else
+        altitude = pow(1.0 - 2*uv.y, 2.0) * (-PI/2.0);
+
+      AtmosphereParams atmParams = getAtmosphereParams();
+      float3 p0_mm = float3(0.0, atmParams.rBotMM + 0.0002, 0.0);
+
+      float3 viewDir = altitudeAzimuthToDecartian(altitude, azimuth);
+      float3 sunDir = altitudeAzimuthToDecartian(AtmosphereScope.sunAzimuth_Altitude.y, AtmosphereScope.sunAzimuth_Altitude.x);
+
+      float3 RTop_mm;
+      float topAtmDist_mm = raySphereIntersection(p0_mm, viewDir, float3(0,0,0), atmParams.rTopMM, RTop_mm);
+    
+      float3 RBot_mm;
+      float botAtmDist_mm = raySphereIntersection(p0_mm, viewDir, float3(0,0,0), atmParams.rBotMM, RBot_mm);
+    
+      float scatteringDist_mm = botAtmDist_mm > 0.0 ? botAtmDist_mm : topAtmDist_mm;
+      float3 L = raymarchScattering(p0_mm, scatteringDist_mm, viewDir, sunDir, atmParams);
+
+      return L;
+    }
+  #end
+
+  compile(vs_6_1, vs_main);
+  compile(ps_6_1, ps_main);
+};

@@ -75,8 +75,7 @@ technique_macro USE_GBUFFER {
     {
       float3 albedo         : SV_Target0;
       float3 normal         : SV_Target1;
-      float3 worldPos       : SV_Target2;
-      float3 metalRoughness : SV_Target3;
+      float3 metalRoughness : SV_Target2;
     };
 
     GbufferOutput encode_gbuffer(Gbuffer g)
@@ -84,7 +83,6 @@ technique_macro USE_GBUFFER {
       GbufferOutput output = (GbufferOutput)0;
       output.albedo = g.albedo.rgb;
       output.normal = (g.normal + 1.0) * 0.5;
-      output.worldPos = g.worldPos;
       output.metalRoughness = float3(g.metal, g.roughness, 0.0f);
       return output;
     }

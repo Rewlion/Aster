@@ -3,6 +3,7 @@
 #include "vulkan.h"
 #include "indices.h"
 
+#include <engine/assert.h>
 #include <engine/gapi/resources.h>
 #include <engine/platform/memory.h>
 
@@ -219,7 +220,27 @@ namespace gapi::vulkan
       case TextureFormat::R16G16B16A16_UNORM:  return vk::Format::eR16G16B16A16Unorm;
       case TextureFormat::R32G32B32A32_S:      return vk::Format::eR32G32B32A32Sfloat;
       case TextureFormat::D24_UNORM_S8_UINT:   return vk::Format::eD24UnormS8Uint;
-      default: return vk::Format::eUndefined;
+      default: ASSERT_FMT_RETURN(false, vk::Format::eUndefined, "get_image_format doesn't support the format {}", (int)(format));
+    }
+  }
+
+  inline
+  auto is_depth_format(const TextureFormat format) -> bool
+  {
+    switch (format)
+    {
+      case TextureFormat::D24_UNORM_S8_UINT: return true;
+      default:                               return false;
+    }
+  }
+
+  inline
+  auto is_depth_format(const vk::Format format) -> bool
+  {
+    switch (format)
+    {
+      case vk::Format::eD24UnormS8Uint: return true;
+      default:                          return false;
     }
   }
 
@@ -267,11 +288,11 @@ namespace gapi::vulkan
     if (usg & TEX_USAGE_RT)
       bits |= vk::ImageUsageFlagBits::eColorAttachment;
 
-    if (usg & TEX_USAGE_UNIFORM)
-    {
-      bits |= vk::ImageUsageFlagBits::eStorage;
+    if (usg & TEX_USAGE_SRV)
       bits |= vk::ImageUsageFlagBits::eSampled;
-    }
+
+    if (usg & TEX_USAGE_UAV)
+      bits |= vk::ImageUsageFlagBits::eStorage;
 
     return bits;
   }

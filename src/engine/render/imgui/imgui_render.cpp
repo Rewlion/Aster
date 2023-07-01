@@ -25,7 +25,7 @@ namespace Engine::Render
         .mipLevels = 1,
         .arrayLayers = 1,
         .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage = gapi::TextureUsage::TEX_USAGE_UNIFORM
+        .usage = gapi::TextureUsage::TEX_USAGE_SRV
       }
     );
 

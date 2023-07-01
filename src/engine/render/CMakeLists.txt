@@ -5,6 +5,8 @@ set(DBG_TEXT_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/debug_text_queue.cpp"
 )
 
+set(DBG_TEXT_STUB_SRC "${CMAKE_SOURCE_DIR}/src/engine/render/debug_text_stub.cpp")
+
 include("${CMAKE_SOURCE_DIR}/src/cmake/ecs.cmake")
 add_ecs_library(
   engine_render_ecs_utils
@@ -34,14 +36,17 @@ add_ecs_library(
 
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/opaque.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/post_transparent.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/post_process.cpp"
   ECS_FILES
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/frame_preparing.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes_ecs/atmosphere.ecs.cpp"
 )
 
 set(FONT_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/font/font_render.cpp")
 
 add_library(engine_dbg_text OBJECT ${DBG_TEXT_SRC})
+add_library(engine_dbg_text_stub OBJECT ${DBG_TEXT_STUB_SRC})
 add_library(engine_font_render OBJECT ${FONT_SRC})
 add_library(engine_framegraph OBJECT ${FRAMEGRAPH_SRC})
 add_library(engine_imgui OBJECT ${IMGUI_SRC})

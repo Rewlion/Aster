@@ -14,7 +14,7 @@ namespace Engine::Render
   {
     return fg::register_node("ui", FG_FILE_DECL, [](fg::Registry& reg)
     {
-      auto finalFrame = reg.modifyTexture("final_frame", gapi::TextureState::RenderTarget);
+      auto finalFrame = reg.modifyTexture("final_target", gapi::TextureState::RenderTarget);
 
       reg.requestRenderPass()
          .addTarget(finalFrame, gapi::LoadOp::Load, gapi::StoreOp::Store);
@@ -35,10 +35,10 @@ namespace Engine::Render
     return fg::register_node("dbg_text", FG_FILE_DECL, [](fg::Registry& reg)
     {
       reg.orderMeAfter("ui");
-      auto finalFrame = reg.modifyTexture("final_frame", gapi::TextureState::RenderTarget);
+      auto rt = reg.modifyTexture("final_target", gapi::TextureState::RenderTarget);
 
       reg.requestRenderPass()
-         .addTarget(finalFrame, gapi::LoadOp::Load, gapi::StoreOp::Store);
+         .addTarget(rt, gapi::LoadOp::Load, gapi::StoreOp::Store);
 
       return [](gapi::CmdEncoder& encoder)
       {
@@ -64,9 +64,9 @@ namespace Engine::Render
   {
     return fg::register_node("present", FG_FILE_DECL, [](fg::Registry& reg)
     {
-      auto finalFrame = reg.readTexture("final_frame", gapi::TextureState::TransferSrc);
+      auto rt = reg.readTexture("final_target", gapi::TextureState::TransferSrc);
       auto backbuffer = reg.modifyTexture("backbuffer", gapi::TextureState::TransferDst);
-      return [finalFrame, backbuffer](gapi::CmdEncoder& encoder)
+      return [rt, backbuffer](gapi::CmdEncoder& encoder)
       {
         const auto region = gapi::TextureSubresourceLayers{
           .aspects = gapi::ASPECT_COLOR,
@@ -75,16 +75,16 @@ namespace Engine::Render
           .layerCount = 1
         };
 
-        const uint3 finalFrameExtent = finalFrame.describe().extent;
+        const uint3 rtFrameExtent = rt.describe().extent;
 
         const auto blit = gapi::TextureBlit{
           .srcSubresource = region,
-          .srcOffsets = {int3{0,0,0}, finalFrameExtent},
+          .srcOffsets = {int3{0,0,0}, rtFrameExtent},
           .dstSubresource = region,
-          .dstOffsets = {int3{0,0,0}, finalFrameExtent},
+          .dstOffsets = {int3{0,0,0}, rtFrameExtent},
         };
 
-        encoder.blitTexture(finalFrame.get(), backbuffer.get(), 1, &blit, gapi::ImageFilter::Nearest);
+        encoder.blitTexture(rt.get(), backbuffer.get(), 1, &blit, gapi::ImageFilter::Nearest);
         encoder.transitTextureState(backbuffer.get(), gapi::TextureState::TransferDst, gapi::TextureState::Present);
       };
     });

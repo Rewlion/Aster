@@ -18,7 +18,7 @@ namespace Utils
   {
     STRONG_SCALAR_TYPEDEF(uint32_t, alloc_id_t);
 
-    constexpr static size_t MIN_PAGE_BITS = 8;
+    constexpr static size_t MIN_PAGE_BITS = 7;
     constexpr static size_t MAX_PAGE_BITS = 12;
 
     constexpr static size_t PAGE_ID_MASK = 0xffff;

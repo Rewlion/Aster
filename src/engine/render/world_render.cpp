@@ -27,6 +27,9 @@ namespace Engine::Render
       mk_frame_preparing_node,
       mk_gbuffer_main_pass_node,
       mk_gbuffer_resolve_node,
+      mk_early_transparent_sync_node,
+      mk_transparent_sync_node,
+      mk_post_process_node,
       mk_ui_node,
       mk_dbg_text_node,
       mk_present_node
@@ -43,7 +46,6 @@ namespace Engine::Render
     init["render_window_size"] = Window::get_window_size();
 
     ecs.createEntity("CoreRenderDebug", std::move(init));
-    ecs.createEntity("Atmosphere", {});
   }
 
   void WorldRender::init()

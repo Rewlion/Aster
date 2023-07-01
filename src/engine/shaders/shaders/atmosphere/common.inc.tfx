@@ -1,0 +1,129 @@
+scope AtmosphereScope {
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0);
+
+  float2 sunAzimuth_Altitude = channel(sunAzimuth_Altitude);
+  float2 atmRTopMM_atmRBotMM = channel(atmRTopMM_atmRBotMM);
+};
+
+technique_macro USE_ATMOSPHERE_COMMON {
+#hlsl
+
+#define MM2KM 1e3
+
+#define TRANSMITTANCE_STEPS (float)100.0
+#define SCATTERING_STEPS (float)32.0
+#define MSCATTERING_STEPS (float)20.0
+
+#define PI (float)3.14159265359
+
+struct AtmosphereParams
+{
+  float rTopMM;
+  float rBotMM;
+  float3 rayleighScatteringBase;
+  float3 rayleighAbsorbtionBase;
+  float3 mieScatteringBase;
+  float3 mieAbsorbtionBase;
+  float3 ozoneAbsorbtionBase;
+};
+
+AtmosphereParams getAtmosphereParams()
+{
+  AtmosphereParams p;
+  p.rTopMM = AtmosphereScope.atmRTopMM_atmRBotMM.x;
+  p.rBotMM = AtmosphereScope.atmRTopMM_atmRBotMM.y;
+  p.rayleighScatteringBase = float3(5.802, 13.558, 33.1);
+  p.rayleighAbsorbtionBase = 0.0;
+  p.mieScatteringBase = 3.996;
+  p.mieAbsorbtionBase = 4.4;
+  p.ozoneAbsorbtionBase = float3(0.650, 1.881, .085);
+  return p;
+}
+
+float phaseR(float VoL)
+{
+    const float k = 3.0/(16.0*PI);
+    return k*(1.0+VoL*VoL);
+}
+
+float phaseM_HG(float VoL, float G)
+{
+    float A = max(0.0, 1.0 + G * (G - 2.0 * VoL));
+    float D = 1.0 / sqrt(max(0.0,(A * A * A)));
+    return (1.0 - G * G) * (1.0 / (4.0 * PI)) * D;
+}
+
+float phaseM_CS(float VoL, float G)
+{
+    return 1.5 * (1.0 + VoL * VoL) * phaseM_HG(VoL, G) / (2.0 + G * G);
+}
+
+float calcRayDensityProfile(float H_mm)
+{
+  return exp(-H_mm * MM2KM / 8.0);
+}
+
+float calcMieDensityProfile(float H_mm)
+{
+  return exp(-H_mm * MM2KM / 1.2);
+}
+
+
+float calcOzonDensityProfile(float H_mm)
+{
+  //https://www.shadertoy.com/view/MllBR2#
+
+  // Piecewise linear approximation of the ozone profile from (Page 10) :
+  // ftp://es-ee.tor.ec.gc.ca/pub/ftpcm/!%20for%20Jacob/Introduction%20to%20atmospheric%20chemistry.pdf
+  // Density linearly increases from 0 at 15Km to 1.0 at 25Km and decreases back to 0.0 at 40.0Km
+  return max(0.0, 1.0 - abs(H_mm * MM2KM-25.0)/15.0);
+}
+
+float3 calcRayMieOzonDensities(float3 r_mm, AtmosphereParams atmosphere)
+{
+  float Hi_mm = length(r_mm) - atmosphere.rBotMM;
+  return float3(
+      calcRayDensityProfile(Hi_mm),
+      calcMieDensityProfile(Hi_mm),
+      calcOzonDensityProfile(Hi_mm));
+}
+
+void calcScatteringValues(AtmosphereParams atmosphere, float3 r_mm, out float3 rayScattering, out float3 mieScattering, out float3 extinction)
+{
+  float3 rayMieOzonDensities = calcRayMieOzonDensities(r_mm, atmosphere);
+  float rayDensity = rayMieOzonDensities.x;
+  float mieDensity = rayMieOzonDensities.y;
+  float ozonDensity = rayMieOzonDensities.z;
+  
+  rayScattering = atmosphere.rayleighScatteringBase * rayDensity;
+  mieScattering = float3(atmosphere.mieScatteringBase * mieDensity);
+  float3 mieAbsorbtion = float3(atmosphere.mieAbsorbtionBase * mieDensity);
+  float3 ozonAbsorbtion = atmosphere.ozoneAbsorbtionBase * ozonDensity;
+  
+  extinction = rayScattering + mieScattering + mieAbsorbtion + ozonAbsorbtion;
+}
+
+
+float raySphereIntersection(float3 r0, float3 dir, float3 s, float radius, out float3 intersection)
+{
+  float3 dr = r0 - s;
+  float k = dot(dr, dir);
+  float c = pow(length(dr), 2.0) - pow(radius, 2.0);
+  float D = k*k - c;
+  if (D<0.0)
+      return -1e6;
+  
+  bool isInsideSphere = k*k < D;
+  float sqrtD = sqrt(D);
+  float t = isInsideSphere ?
+              -k + sqrtD :
+              -k - sqrtD;
+  
+  intersection = r0 + dir * t;
+  return t;
+}
+
+#end
+};

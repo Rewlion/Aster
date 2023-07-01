@@ -2247,7 +2247,7 @@ yyreduce:
   case 60: /* COMPARE_OP: "equal"  */
 #line 500 "src/shaders_compiler/parser/parser.y"
             {
-   (yyval.compareOp) = gapi::CompareOp::Never;
+   (yyval.compareOp) = gapi::CompareOp::Equal;
   }
 #line 2253 "src/shaders_compiler/parser/parser.tab.cpp"
     break;

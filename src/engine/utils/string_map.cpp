@@ -96,7 +96,7 @@ namespace Utils
 
     m_LastPageBits = std::min(MAX_PAGE_BITS, m_LastPageBits+1);
     const size_t id = m_Pages.size();
-    m_Pages.emplace_back(m_LastPageBits << 1);
+    m_Pages.emplace_back(1 << m_LastPageBits);
 
     return id;
   }

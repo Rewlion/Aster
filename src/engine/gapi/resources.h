@@ -295,11 +295,12 @@ namespace gapi
   enum TextureUsage
   {
     TEX_USAGE_NONE          = 0,
-    TEX_USAGE_UNIFORM       = 1,
+    TEX_USAGE_SRV           = 1,
     TEX_USAGE_DEPTH_STENCIL = 1 << 2,
     TEX_USAGE_RT            = 1 << 3,
     TEX_USAGE_TRANSFER_SRC  = 1 << 4,
     TEX_USAGE_CUBE_MAP      = 1 << 5,
+    TEX_USAGE_UAV           = 1 << 6
   };
 
   enum class TextureFormat: uint32_t

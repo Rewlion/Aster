@@ -100,3 +100,12 @@ entity @("camera")
   float2 camera_rotations = 0.0, 0.0
   float3 forward = 0.0, 0.0, 1.0
 }
+
+entity @("Atmosphere")
+{
+}
+
+entity @("Sun")
+{
+  float sun_altitude = 35
+}

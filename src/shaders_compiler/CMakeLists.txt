@@ -13,6 +13,7 @@ endif ()
 
 target_link_libraries(shaders_compiler
   engine
+  engine_dbg_text_stub
   spirv_cross
   "dxcompiler"
 )

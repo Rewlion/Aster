@@ -110,7 +110,7 @@ namespace Engine::Render
         .mipLevels = 1,
         .arrayLayers = 1,
         .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage = gapi::TEX_USAGE_UNIFORM
+        .usage = gapi::TEX_USAGE_SRV
       };
 
       glyph.texture = gapi::allocate_texture(allocDesc);

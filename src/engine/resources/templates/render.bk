@@ -9,3 +9,20 @@ template @("name: CoreRender") {
 template @("name: CoreRenderDebug; extends: CoreRender") {
   component @("TextDbgQueue dbg_text_queue") {}
 }
+
+template @("name: Atmosphere") {
+  float atm_radius_top_km = 6420
+  float atm_radius_bot_km = 6360
+}
+
+template @("name: AtmosphereRender") {
+  component @("texture atm_tr_lut") {}
+  component @("texture atm_ms_lut") {}
+  component @("texture atm_sky_lut") {}
+  int atm_lut_state = 0
+}
+
+template @("name: Sun") {
+  float sun_azimuth = 40
+  float sun_altitude = 35
+}

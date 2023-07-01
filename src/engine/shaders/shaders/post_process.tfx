@@ -1,0 +1,61 @@
+#include "frame.inc.tfx"
+
+scope PostProcessScope {
+  reserve:
+    descriptor_set(2);
+    register(texture, 0);
+
+  Texture2D postProcessInput = extern(post_process_input);
+};
+
+technique PostProcess {
+  support scope FrameScope;
+  support scope PostProcessScope;
+
+   render_state:
+    primitive_topology = triangle_strip;
+    depth:
+     test = no;
+     write = no;
+
+  #hlsl
+    float4 vs_main(uint id: SV_VertexID) : SV_Position
+    {
+      float2 vertices[4] = {
+        float2(1.0f, -1.0f),
+        float2(-1.0f, -1.0f),
+        float2(1.0f, 1.0f),
+        float2(-1.0f, 1.0f)
+      };
+
+      return float4(vertices[id], 0.0, 1.0);
+    }
+
+    float3 jodieReinhardTonemap(float3 c)
+    {
+      // From: https://www.shadertoy.com/view/tdSXzD
+      float l = dot(c, float3(0.2126, 0.7152, 0.0722));
+      float3 tc = c / (c + 1.0);
+      return lerp(c / (l + 1.0), tc, tc);
+    }
+
+
+    float3 ps_main(float4 input: SV_Position) : SV_Target0
+    {
+      float2 uv = input.xy / FrameScope.viewPortSize;
+      float3 L = postProcessInput.Sample(linearClampSampler, uv).rgb;
+      float exposure = exp2(4.0);
+    
+      L *= 20.0;
+      L = pow(L, float3(1.3, 1.3, 1.3));
+      L = jodieReinhardTonemap(L);
+      float g = 1.0/2.2;
+      L = pow(L, float3(g,g,g));
+
+      return L;
+    }
+  #end
+
+  compile(vs_6_1, vs_main);
+  compile(ps_6_1, ps_main);
+};

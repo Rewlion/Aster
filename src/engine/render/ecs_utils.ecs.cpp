@@ -19,6 +19,10 @@ ECS_QUERY()
 static
 void query_imgui_render(eastl::function<void(Engine::Render::ImGuiRender& imgui_render)>);
 
+ECS_QUERY()
+static
+void query_render_settings(eastl::function<void(const int2 render_window_size)>);
+
 namespace Engine::Render
 {
   auto get_font_render() -> FontRender*
@@ -52,6 +56,13 @@ namespace Engine::Render
       });
 
       return guiRender;
+  }
+
+  auto get_render_size() -> int2
+  {
+    int2 size{0,0};
+    query_render_settings([&](const int2 render_window_size){ size = render_window_size; });
+    return size;
   }
 
   namespace dbg

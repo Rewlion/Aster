@@ -31,7 +31,7 @@ namespace Engine
         .mipLevels = 1,
         .arrayLayers = 1,
         .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage = gapi::TextureUsage::TEX_USAGE_UNIFORM
+        .usage = gapi::TextureUsage::TEX_USAGE_SRV
       }
     );
 
@@ -71,7 +71,7 @@ namespace Engine
         .mipLevels = 1,
         .arrayLayers = 6,
         .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage = gapi::TextureUsage::TEX_USAGE_UNIFORM | gapi::TextureUsage::TEX_USAGE_CUBE_MAP
+        .usage = gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_CUBE_MAP
       }
     );
 

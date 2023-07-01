@@ -23,26 +23,24 @@ namespace Engine::Render
       allocDesc.extent = int3{wndSize.x, wndSize.y, 1};
       allocDesc.mipLevels = 1;
       allocDesc.arrayLayers = 1;
-      allocDesc.usage = gapi::TEX_USAGE_DEPTH_STENCIL;
+      allocDesc.usage = gapi::TEX_USAGE_DEPTH_STENCIL | gapi::TEX_USAGE_SRV;
 
-      auto gbufDepth = reg.createTexture("gbuffer_depth", allocDesc, gapi::TextureState::DepthWriteStencilRead);
+      auto gbufDepth = reg.createTexture("gbuffer_depth", allocDesc, gapi::TextureState::DepthWriteStencilWrite);
 
       allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
-      allocDesc.usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_UNIFORM;
+      allocDesc.usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV;
       auto gbuf0 = reg.createTexture("gbuf0", allocDesc, gapi::TextureState::RenderTarget);
 
       allocDesc.format = gapi::TextureFormat::R16G16B16A16_UNORM;
       auto gbuf1 = reg.createTexture("gbuf1", allocDesc, gapi::TextureState::RenderTarget);
-      auto gbuf2 = reg.createTexture("gbuf2", allocDesc, gapi::TextureState::RenderTarget);
 
       allocDesc.format = gapi::TextureFormat::R32G32B32A32_S;
-      auto gbuf3 = reg.createTexture("gbuf3", allocDesc, gapi::TextureState::RenderTarget);
+      auto gbuf2 = reg.createTexture("gbuf2", allocDesc, gapi::TextureState::RenderTarget);
 
       reg.requestRenderPass()
          .addTarget(gbuf0,  gapi::LoadOp::Clear, gapi::StoreOp::Store)
          .addTarget(gbuf1,  gapi::LoadOp::Clear, gapi::StoreOp::Store)
          .addTarget(gbuf2,  gapi::LoadOp::Clear, gapi::StoreOp::Store)
-         .addTarget(gbuf3,  gapi::LoadOp::Clear, gapi::StoreOp::Store)
          .addDepth(gbufDepth, gapi::LoadOp::Clear, gapi::StoreOp::Store,
                               gapi::LoadOp::DontCare, gapi::StoreOp::DontCare);
       return [](gapi::CmdEncoder& encoder)
@@ -93,27 +91,27 @@ namespace Engine::Render
       const int2 wndSize = Window::get_window_size();
 
       gapi::TextureAllocationDescription allocDesc;
-      allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
+      allocDesc.format = gapi::TextureFormat::R32G32B32A32_S;
       allocDesc.extent = int3{wndSize.x, wndSize.y, 1};
       allocDesc.mipLevels = 1;
       allocDesc.arrayLayers = 1;
-      allocDesc.usage = gapi::TEX_USAGE_RT|gapi::TEX_USAGE_TRANSFER_SRC;
+      allocDesc.usage = gapi::TEX_USAGE_RT|gapi::TEX_USAGE_SRV;
 
-      auto finalFrame = reg.createTexture("final_frame", allocDesc, gapi::TextureState::RenderTarget);
+      auto resolveTarget = reg.createTexture("resolve_target", allocDesc, gapi::TextureState::RenderTarget);
       auto gbuf0 = reg.readTexture("gbuf0", gapi::TextureState::ShaderRead);
       auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead);
       auto gbuf2 = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead);
-      auto gbuf3 = reg.readTexture("gbuf3", gapi::TextureState::ShaderRead);
+      auto gbufDepth = reg.readTexture("gbuffer_depth", gapi::TextureState::ShaderRead);
 
       reg.requestRenderPass()
-         .addTarget(finalFrame, gapi::LoadOp::Load, gapi::StoreOp::Store);
+         .addTarget(resolveTarget, gapi::LoadOp::Load, gapi::StoreOp::Store);
 
-      return [gbuf0,gbuf1,gbuf2,gbuf3](gapi::CmdEncoder& encoder)
+      return [gbuf0,gbuf1,gbuf2, gbufDepth](gapi::CmdEncoder& encoder)
       {
         tfx::set_extern("gbuffer_albedo", gbuf0.get());
         tfx::set_extern("gbuffer_normal", gbuf1.get());
-        tfx::set_extern("gbuffer_world_pos", gbuf2.get());
-        tfx::set_extern("gbuffer_metal_roughness", gbuf3.get());
+        tfx::set_extern("gbuffer_metal_roughness", gbuf2.get());
+        tfx::set_extern("gbuffer_depth", gbufDepth.get());
 
         tfx::activate_technique("ResolveGbuffer", encoder);
         encoder.updateResources();
@@ -122,5 +120,23 @@ namespace Engine::Render
     });
   }
 
+  fg::node_id_t mk_early_transparent_sync_node()
+  {
+    return fg::register_node("early_transparent_sync", FG_FILE_DECL, [](fg::Registry& reg)
+    {
+      reg.renameTexture("resolve_target", "early_transparent_target", gapi::TextureState::RenderTarget);
+      reg.orderMeAfter("gbuffer_resolve"); // otherwise fails to order correctly and nodes after get pruned. bugs, bugs never changes
+      return [](gapi::CmdEncoder& encoder) {};
+    });
+  }
+
+  fg::node_id_t mk_transparent_sync_node()
+  {
+    return fg::register_node("transparent_sync", FG_FILE_DECL, [](fg::Registry& reg)
+    {
+      reg.renameTexture("early_transparent_target", "transparent_target", gapi::TextureState::RenderTarget);
+      return [](gapi::CmdEncoder& encoder) {};
+    });
+  }
   
 }

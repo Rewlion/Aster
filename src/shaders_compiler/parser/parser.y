@@ -498,7 +498,7 @@ COMPARE_OP
    $$ = gapi::CompareOp::Less;
   }
   | "equal" {
-   $$ = gapi::CompareOp::Never;
+   $$ = gapi::CompareOp::Equal;
   }
   | "less_or_equal" {
    $$ = gapi::CompareOp::LessOrEqual;

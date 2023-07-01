@@ -6,4 +6,9 @@ shaders_list
   "shaders/gbuffer_resolve.tfx" {}
   "shaders/font.tfx" {}
   "shaders/gui.tfx" {}
+  "shaders/atmosphere/transmittance_lut.tfx" {}
+  "shaders/atmosphere/sky_lut.tfx" {}
+  "shaders/atmosphere/multiple_scattering_lut.tfx" {}
+  "shaders/atmosphere/sky_apply.tfx" {}
+  "shaders/post_process.tfx" {}
 }

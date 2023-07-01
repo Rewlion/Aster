@@ -67,7 +67,7 @@ namespace fg
     const name_id_t nameId = m_ResourcesNames.storeString(name);
     const virt_res_id_t vResId = to_virt_res_id(nameId);
 
-    m_VirtResources[vResId].modificationChain.push_back(m_CurrentExecNodeId);
+    m_VirtResources[vResId].modificationChain.push_back(m_CurrentExecNodeId); //todo: should be pushed at the begining because of the consumer at the end
 
     auto& node = m_Nodes[m_CurrentExecNodeId];
     node.modifies.push_back(vResId);

@@ -1,0 +1,124 @@
+technique_macro USE_EBRUNETON_HELPERS {
+#hlsl
+/**
+ * Copyright (c) 2017 Eric Bruneton
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Precomputed Atmospheric Scattering
+ * Copyright (c) 2008 INRIA
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+float ClampCosine(float mu) {
+  return clamp(mu, -1.0, 1.0);
+}
+
+float ClampDistance(float d) {
+  return max(d, 0.0);
+}
+
+float SafeSqrt(float a) {
+  return sqrt(max(a, 0.0));
+}
+
+float GetTextureCoordFromUnitRange(float x, int texture_size) {
+  return 0.5 / float(texture_size) + x * (1.0 - 1.0 / float(texture_size));
+}
+
+float GetUnitRangeFromTextureCoord(float u, int texture_size) {
+  return (u - 0.5 / float(texture_size)) / (1.0 - 1.0 / float(texture_size));
+}
+
+float DistanceToTopAtmosphereBoundary(float r, float mu, float atm_top_radius) {
+  float discriminant = r * r * (mu * mu - 1.0) +
+      atm_top_radius * atm_top_radius;
+  return ClampDistance(-r * mu + SafeSqrt(discriminant));
+}
+
+float2 GetTransmittanceTextureUvFromRMu(int2 tex_size, float r, float mu, float atm_bot_radius, float atm_top_radius) {
+  // Distance to top atmosphere boundary for a horizontal ray at ground level.
+  float H = sqrt(atm_top_radius * atm_top_radius -
+      atm_bot_radius * atm_bot_radius);
+  // Distance to the horizon.
+  float rho =
+      SafeSqrt(r * r - atm_bot_radius * atm_bot_radius);
+  // Distance to the top atmosphere boundary for the ray (r,mu), and its minimum
+  // and maximum values over all mu - obtained for (r,1) and (r,mu_horizon).
+  float d = DistanceToTopAtmosphereBoundary(r, mu, atm_top_radius);
+  float d_min = atm_top_radius - r;
+  float d_max = rho + H;
+  float x_mu = (d - d_min) / (d_max - d_min);
+  float x_r = rho / H;
+  return float2(GetTextureCoordFromUnitRange(x_mu, tex_size.x),
+              GetTextureCoordFromUnitRange(x_r, tex_size.y));
+}
+
+void GetRMuFromTransmittanceTextureUv(int2 tex_size, float2 uv, out float r, out float mu, float atm_bot_radius, float atm_top_radius) {
+  float x_mu = GetUnitRangeFromTextureCoord(uv.x, tex_size.x);
+  float x_r = GetUnitRangeFromTextureCoord(uv.y, tex_size.y);
+  // Distance to top atmosphere boundary for a horizontal ray at ground level.
+  float H = sqrt(atm_top_radius * atm_top_radius -
+      atm_bot_radius * atm_bot_radius);
+  // Distance to the horizon, from which we can compute r:
+  float rho = H * x_r;
+  r = sqrt(rho * rho + atm_bot_radius * atm_bot_radius);
+  // Distance to the top atmosphere boundary for the ray (r,mu), and its minimum
+  // and maximum values over all mu - obtained for (r,1) and (r,mu_horizon) -
+  // from which we can recover mu:
+  float d_min = atm_top_radius - r;
+  float d_max = rho + H;
+  float d = d_min + x_mu * (d_max - d_min);
+  mu = d == 0.0 ? float(1.0) : (H * H - rho * rho - d * d) / (2.0 * r * d);
+  mu = ClampCosine(mu);
+}
+
+#end
+};

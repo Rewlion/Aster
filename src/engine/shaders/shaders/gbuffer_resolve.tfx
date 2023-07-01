@@ -1,15 +1,16 @@
 #include "gbuffer.inc.tfx"
 #include "frame.inc.tfx"
+#include "depth.inc.tfx"
 
 scope ResolveGbufferScope {
   reserve:
     descriptor_set(3);
-    register(texture, 0-3);
+    register(texture, 0-4);
 
   Texture2D gbufferAlbedo = extern(gbuffer_albedo);
   Texture2D gbufferNormal = extern(gbuffer_normal);
-  Texture2D gbufferWorldPos = extern(gbuffer_world_pos);
   Texture2D gbufferMetalRoughness = extern(gbuffer_metal_roughness);
+  Texture2D gbufferDepth = extern(gbuffer_depth);
 };
 
 technique ResolveGbuffer {
@@ -24,14 +25,15 @@ technique ResolveGbuffer {
 
   USE_FRAME_HELPERS();
   USE_GBUFFER();
+  USE_DEPTH_UTILS();
 
   #hlsl
     struct VsOutput{
       float4 pos: SV_Position;
-      float2 uv: TEXTURE0;
+      float3 viewDir: POSITION0;
     };
 
-    float4 vs_main(uint id: SV_VertexID) : SV_Position
+    VsOutput vs_main(uint id: SV_VertexID)
     {
       float2 vertices[4] = {
         float2(1.0f, -1.0f),
@@ -40,17 +42,30 @@ technique ResolveGbuffer {
         float2(-1.0f, 1.0f)
       };
 
-      return float4(vertices[id], 0, 1.0);
+      float3 frustumViews[4] = {
+        FrameScope.rtView,
+        FrameScope.ltView,
+        FrameScope.rbView,
+        FrameScope.lbView
+      };
+
+      VsOutput output;
+      output.viewDir = frustumViews[id];
+      output.pos = float4(vertices[id], 0, 1.0);
+
+      return output;
     }
 
-    float4 ps_main(float4 input: SV_Position): SV_Target0
+    float4 ps_main(VsOutput input) : SV_Target0
     {
-      float2 tc = get_screen_space_coords(input.xy);
+      float2 tc = get_screen_space_coords(input.pos.xy);
 
       float4 albedo = float4(gbufferAlbedo.Sample(modelSampler, tc).rgb, 1.0);
       float3 normal = gbufferNormal.Sample(modelSampler, tc).rgb / 0.5f - 1.0f;
-      float3 worldPos = gbufferWorldPos.Sample(modelSampler, tc).rgb;
       float2 metalRoughness = gbufferMetalRoughness.Sample(modelSampler, tc).rg;
+
+      float depth = gbufferDepth.Sample(linearClampSampler, tc).r;
+      float3 worldPos = FrameScope.cameraPos + input.viewDir * linearize_z(depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
 
       Gbuffer g = (Gbuffer)0;
       init_albedo(g, albedo);

@@ -172,16 +172,33 @@ namespace fg
 
         auto& node = m_Registry.m_Nodes[node_id];
 
+        auto dfsCreation = [&](auto virt_res_id) {
+          const auto& vRes = m_Registry.m_VirtResources[virt_res_id];
+          const auto& createdBy = vRes.createdBy;
+          if (createdBy != INVALID_NODE_ID && createdBy != node_id && processed[createdBy] == 0)
+            dfs_impl(createdBy, dfs_impl);
+        };
+
+        for (const auto& vResId: node.modifies)
+          dfsCreation(vResId);
+
         for (const auto& vResId: node.reads)
         {
-          const auto& vRes = m_Registry.m_VirtResources[vResId];
+          dfsCreation(vResId);
 
+          const auto& vRes = m_Registry.m_VirtResources[vResId];
           if (vRes.clonnedVResId != INVALID_VIRT_RES_ID)
           {
-            const auto& clonnedVRes = m_Registry.m_VirtResources[vRes.clonnedVResId];
-            for (const auto prevNode: clonnedVRes.modificationChain)
+            fg::virt_res_id_t clonnedFrom = vRes.clonnedVResId;
+            while (clonnedFrom != INVALID_VIRT_RES_ID)
+            {
+              const auto& clonnedVRes = m_Registry.m_VirtResources[clonnedFrom];
+              for (const auto prevNode: clonnedVRes.modificationChain)
               if (processed[prevNode] == 0)
                 dfs_impl(prevNode, dfs_impl);
+              
+              clonnedFrom = clonnedVRes.clonnedVResId;
+            }
           }
 
           for (const auto prevNode: vRes.modificationChain)

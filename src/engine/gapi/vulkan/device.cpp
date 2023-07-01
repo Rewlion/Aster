@@ -111,7 +111,7 @@ namespace gapi::vulkan
     return vk::Format::eUndefined;
   }
 
-  vk::ImageView Device::getImageView(const TextureHandle handler)
+  vk::ImageView Device::getImageView(const TextureHandle handler, const bool srv)
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
@@ -120,7 +120,10 @@ namespace gapi::vulkan
     if (h.as.typed.type == (uint64_t)TextureType::Allocated)
     {
       ASSERT(m_AllocatedTextures.contains(h.as.typed.id));
-      return m_AllocatedTextures.get(h.as.typed.id).view.get();
+      auto& tex = m_AllocatedTextures.get(h.as.typed.id);
+      if (srv && is_depth_format(tex.format))
+        return tex.depthView.get();
+      return tex.view.get();
     }
 
     ASSERT(!"UNSUPPORTED");
@@ -447,6 +450,7 @@ namespace gapi::vulkan
     subresRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
     subresRange.baseMipLevel = 0;
     subresRange.levelCount = VK_REMAINING_MIP_LEVELS;
+    
     vk::ImageViewCreateInfo viewCi;
     viewCi.image = resource.img.get();
     viewCi.viewType = get_image_view_type(ci.imageType, allocDesc.usage);
@@ -456,6 +460,14 @@ namespace gapi::vulkan
 
     auto view = m_Device->createImageViewUnique(viewCi);
     VK_CHECK_RES(view);
+
+    if (is_depth_format(allocDesc.format))
+    {
+      viewCi.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+      auto depthView = m_Device->createImageViewUnique(viewCi);
+      VK_CHECK_RES(depthView);
+      resource.depthView = std::move(depthView.value);
+    }
     resource.view = std::move(view.value);
     resource.viewType = viewCi.viewType;
 

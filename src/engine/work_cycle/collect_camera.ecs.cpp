@@ -34,13 +34,14 @@ namespace Engine
       zFar = _zFar;
     });
 
-    mat4 vp = mat4{1};
-    vp = math::perspective(fov, aspect, zNear, zFar) *
-         math::look_at(pos + forward * 2.0f, pos);
+    std::swap(zNear, zFar);
 
     return {
       .pos = pos,
-      .viewProj = vp
+      .view = math::look_at(pos + forward * 2.0f, pos),
+      .proj = math::perspective(fov, aspect, zNear, zFar),
+      .zNear = zNear,
+      .zFar = zFar
     };
   }
 }

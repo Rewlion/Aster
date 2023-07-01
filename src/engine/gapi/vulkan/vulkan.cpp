@@ -170,7 +170,7 @@ namespace gapi::vulkan
       .mipLevels = 1,
       .arrayLayers = 1,
       .samplesPerPixel = TextureSamples::s1,
-      .usage = TEX_USAGE_UNIFORM
+      .usage = TEX_USAGE_SRV
     };
     texture_2d_srv_stub = device->allocateTexture(allocDesc);
 

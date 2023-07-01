@@ -1,0 +1,80 @@
+#include "ebruneton.inc.tfx"
+#include "common.inc.tfx"
+
+technique TransmittanceLUT {
+  support scope AtmosphereScope;
+
+  render_state:
+    primitive_topology = triangle_strip;
+    depth:
+     test = no;
+     write = no;
+
+  USE_EBRUNETON_HELPERS();
+  USE_ATMOSPHERE_COMMON();
+
+  #hlsl
+    #include "consts.hlsl"
+
+    struct VsOutput
+    {
+      float4 pos: SV_Position;
+    };
+
+    float4 vs_main(uint id: SV_VertexID) : SV_Position
+    {
+      float2 vertices[4] = {
+        float2(1.0f, -1.0f),
+        float2(-1.0f, -1.0f),
+        float2(1.0f, 1.0f),
+        float2(-1.0f, 1.0f)
+      };
+
+      return float4(vertices[id], 0, 1.0);
+    }
+
+    float3 calcTransmittanceToTopAtmosphere(AtmosphereParams atmosphere, float r, float mu)
+    {
+      float3 p0_mm = float3(0,r,0);
+      float sinu = sqrt(1.0-mu*mu);
+      float3 viewDir = normalize(float3(0, mu,-sinu));
+
+      float3 RTop_mm;
+      float t;
+      raySphereIntersection(p0_mm, viewDir, float3(0,0,0), atmosphere.rTopMM, RTop_mm);
+
+      float dist_mm = length(RTop_mm - p0_mm);
+      float dl_mm = dist_mm / float(TRANSMITTANCE_STEPS);
+
+      float3 rayMieOzonOptLengths = calcRayMieOzonDensities(p0_mm, atmosphere)
+                                  + calcRayMieOzonDensities(RTop_mm, atmosphere);
+      rayMieOzonOptLengths /= 2.0;
+
+      for (float i = 0.0 ; i < TRANSMITTANCE_STEPS; i+=1.0)
+        rayMieOzonOptLengths += calcRayMieOzonDensities(p0_mm + viewDir * dl_mm * i, atmosphere);
+
+      rayMieOzonOptLengths *= dl_mm;
+
+      float3 rayScattering = atmosphere.rayleighScatteringBase * rayMieOzonOptLengths.x;
+      float3 mieScattering = float3(atmosphere.mieScatteringBase * rayMieOzonOptLengths.y);
+      float3 mieAbsorbtion = float3(atmosphere.mieAbsorbtionBase * rayMieOzonOptLengths.y);
+      float3 ozonAbsorbtion = atmosphere.ozoneAbsorbtionBase * rayMieOzonOptLengths.z;
+
+      return exp(-(rayScattering+mieScattering+mieAbsorbtion+ozonAbsorbtion));
+    }
+
+    float3 ps_main(VsOutput input) : SV_Target0
+    {
+      float2 uv = input.pos.xy / TR_LUT_SIZE;
+
+      AtmosphereParams atmosphere = getAtmosphereParams();
+      float r;
+      float mu;
+      GetRMuFromTransmittanceTextureUv(TR_LUT_SIZE, uv, r, mu, atmosphere.rBotMM, atmosphere.rTopMM);
+      return calcTransmittanceToTopAtmosphere(atmosphere, r,mu);
+    }
+  #end
+
+  compile(vs_6_1, vs_main);
+  compile(ps_6_1, ps_main);
+};

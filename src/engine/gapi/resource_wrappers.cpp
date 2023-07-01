@@ -1,6 +1,7 @@
 #include "resource_wrappers.h"
-
 #include "cmd_encoder.h"
+
+#include <engine/ecs/type_meta.h>
 
 namespace gapi
 {
@@ -17,7 +18,6 @@ namespace gapi
   TextureWrapper::TextureWrapper(TextureWrapper&& rvl)
     : m_Handle(rvl.m_Handle)
   {
-    this->~TextureWrapper();
     rvl.m_Handle = TextureHandle::Invalid;
   }
 
@@ -50,7 +50,6 @@ namespace gapi
   BufferWrapper::BufferWrapper(BufferWrapper&& rvl)
     : m_Handle(rvl.m_Handle)
   {
-    this->~BufferWrapper();
     rvl.m_Handle = BufferHandler::Invalid;
   }
 
@@ -82,4 +81,6 @@ namespace gapi
   {
     m_Encoder.setScissor(m_Scissor);
   }
+
+  DECLARE_ECS_COMPONENT(TextureWrapper, "texture", (ecs::HandlerTypeManager<TextureWrapper>), false, true);
 }
