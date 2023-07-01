@@ -42,6 +42,7 @@ namespace ecs
       auto isBoxedType(const size_t size) -> bool;
 
       auto getData() const -> const void*;
+      auto getData() -> void*;
 
       void initTypeIdFromName(const string&);
 
@@ -80,7 +81,7 @@ namespace ecs
         *(PtrType*)as.ptr = std::move(v);
       }
       else
-        std::memcpy(&as.rawValue, &v, sizeof(v));
+        new (&as.rawValue) Type{std::forward<T>(v)};
       m_TypeId = CompileTypeId::from<T>();
     }
   }

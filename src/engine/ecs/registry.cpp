@@ -89,8 +89,8 @@ namespace ecs
     const auto& compIds = m_Archetypes.getComponentIds(archId);
     const components_count_t compsCount = m_Archetypes.getComponentsCount(archId);
 
-    eastl::vector_map<registered_component_id_t, const TemplateComponent*> compIdToInit;
-    for (const EntityComponentInit& init: inits.getInits())
+    eastl::vector_map<registered_component_id_t, TemplateComponent*> compIdToInit;
+    for (EntityComponentInit& init: inits.getInits())
     {
       const registered_component_id_t compId = m_RegisteredComponents.getComponentId(init.name.hash);
       if (compId == INVALID_REG_COMPONENT_ID) [[unlikely]]
@@ -144,7 +144,8 @@ namespace ecs
       const int srcCompId = isRecreating ? compToSrcCompRemap[i] : -1;
       const bool moveFromSrc = !hasInitData && isRecreating && (srcCompId != -1);
 
-      auto& typeMgr = get_meta_storage().getMeta(types[i])->manager;
+      const auto* typeMeta = get_meta_storage().getMeta(types[i]);
+      const auto& typeMgr = typeMeta->manager;
       if (moveFromSrc)
       {
         void* tmplInitData = srcCompsAccessor[srcCompId];
@@ -152,11 +153,25 @@ namespace ecs
       }
       else
       {
-        const void* tmplInitData = hasInitData ?
-                                    initIt->second->getData() :
-                                    tmpl.regCompToTmplComp.find(compIds[i])->second->getData();
-        if (tmplInitData)
-          typeMgr->constructor(compDataForInit, tmplInitData);
+        void* initData = hasInitData ? initIt->second->getData() : nullptr;
+        const void* tmplInitData = tmpl.regCompToTmplComp.find(compIds[i])->second->getData();
+
+        if (initData || tmplInitData)
+        {
+          if (typeMeta->isTrivial)
+          {
+            const void* src = initData ? initData : tmplInitData;
+            std::memcpy(compDataForInit, src, typeMeta->size);
+          }
+          else
+          {
+            typeMgr->constructor(compDataForInit);
+            if (initData)
+              typeMgr->moveConstructor(compDataForInit, initData);
+            else
+              typeMgr->constructor(compDataForInit, tmplInitData);
+          }
+        }
         else
           typeMgr->constructor(compDataForInit);
       }
@@ -357,7 +372,8 @@ namespace ecs
 
   void Registry::processEvents()
   {
-    while (Event* event = m_EventsQueue.popEvent())
+    auto eventQueue = std::move(m_EventsQueue);
+    while (Event* event = eventQueue.popEvent())
     {
       if (event->receiver.isValid())
         processDirectEvent(event);

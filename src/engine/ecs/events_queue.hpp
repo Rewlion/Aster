@@ -14,6 +14,9 @@ namespace ecs
     constexpr static size_t EVENTS_QUEUE_BUFFER_SIZE = 1024;
 
     public:
+      EventsQueue() = default;
+      EventsQueue(EventsQueue&&);
+
       template<BasedFromEcsEvent T>
       void pushEvent(T&& event);
 
@@ -23,7 +26,7 @@ namespace ecs
       size_t m_NextEventOffset = 0;
       size_t m_LastEventStart = 0;
       size_t m_EventsCount = 0;
-      uint8_t m_Buffer[EVENTS_QUEUE_BUFFER_SIZE];
+      std::unique_ptr<uint8_t> m_Buffer{new uint8_t[EVENTS_QUEUE_BUFFER_SIZE]};
   };
 }
 

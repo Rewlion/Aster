@@ -10,7 +10,7 @@ namespace ecs
     return m_Inits.back().component;
   }
 
-  auto EntityComponents::getInits() const -> const eastl::vector<EntityComponentInit>&
+  auto EntityComponents::getInits() -> eastl::vector<EntityComponentInit>&
   {
     return m_Inits;
   }

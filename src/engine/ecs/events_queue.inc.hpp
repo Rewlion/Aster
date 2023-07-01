@@ -11,7 +11,7 @@ namespace ecs
 
     ASSERT(storageEnd < EVENTS_QUEUE_BUFFER_SIZE);
 
-    uint8_t* rawStorage = &m_Buffer[storageBegin];
+    uint8_t* rawStorage = &m_Buffer.get()[storageBegin];
     typedef typename std::remove_reference<T>::type unrefT;
     unrefT* storage = new(rawStorage) unrefT;
 

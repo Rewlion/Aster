@@ -74,12 +74,17 @@ namespace ecs
     return size > sizeof(as.rawValue);
   }
 
-  auto TemplateComponent::getData() const -> const void*
+  auto TemplateComponent::getData() -> void*
   {
     if (m_Flags & COMPONENT_TYPE_WRAPPER)
       return nullptr;
 
     return isBoxedType(getMeta()->size) ? as.ptr : &as.rawValue;
+  }
+
+  auto TemplateComponent::getData() const -> const void*
+  {
+    return const_cast<TemplateComponent*>(this)->getData();
   }
 
   void TemplateComponent::initTypeIdFromName(const string& type_name)

@@ -195,5 +195,5 @@ namespace Engine::Render
     return bbox;
   }
   
-  DECLARE_ECS_COMPONENT(FontRender, (ecs::NonTrivialTypeManager<FontRender, ecs::INITABLE_TYPE>), false, true);
+  DECLARE_ECS_COMPONENT(FontRender, "FontRender", (ecs::NonTrivialTypeManager<FontRender, ecs::INITABLE_TYPE>), false, true);
 }

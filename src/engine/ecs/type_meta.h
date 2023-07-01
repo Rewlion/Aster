@@ -130,6 +130,32 @@ namespace ecs
       // }
   };
 
+  template<class T>
+  class HandlerTypeManager : public TypeManager
+  {
+    public:
+      void constructor(void* component) override
+      {
+        new (component) T{};
+      }
+
+      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) override
+      {
+        ASSERT(!"Handlers type must be used with move semantics only");
+      }
+      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) override
+      {
+        T& init = *reinterpret_cast<T*>(init_comp);
+        new (component) T(std::move(init));
+      }
+      virtual
+      void destructor(void* component) override
+      {
+        T* s =  reinterpret_cast<T*>(component);
+        s->~T();
+      }
+  };
+
   struct TypeMeta
   {
     size_t size;
@@ -165,20 +191,20 @@ namespace ecs
       size_t m_Id;
   };
 
-  #define DECLARE_ECS_COMPONENT(type, type_manager, is_trivial, is_trivial_relocatable) \
+  #define DECLARE_ECS_COMPONENT(type, type_name, type_manager, is_trivial, is_trivial_relocatable) \
     ecs::TypeMetaRegistration type ## _reg{ ecs::TypeMeta{ \
       .size = sizeof(type), \
       .typeId = ecs::CompileTypeId::from<type>(), \
-      .typeName = #type, \
+      .typeName = type_name, \
       .manager = new type_manager, \
       .isTrivial = is_trivial, \
       .isTrivialRelocatable = is_trivial_relocatable }}
 
   #define DECLARE_TRIVIAL_ECS_COMPONENT(type) \
-          DECLARE_ECS_COMPONENT(type, ecs::TrivialTypeManager<type>, true, true)
+          DECLARE_ECS_COMPONENT(type, #type, ecs::TrivialTypeManager<type>, true, true)
   
   #define DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT(type) \
-          DECLARE_ECS_COMPONENT(type, ecs::NonTrivialTypeManager<type>, false, true)
+          DECLARE_ECS_COMPONENT(type, #type, ecs::NonTrivialTypeManager<type>, false, true)
 
   class TypeMetaStorage
   {

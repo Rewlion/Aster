@@ -18,7 +18,7 @@ namespace ecs
       auto operator[](const char* name) -> TemplateComponent&;
 
     private:
-      auto getInits() const -> const eastl::vector<EntityComponentInit>&;
+      auto getInits() -> eastl::vector<EntityComponentInit>&;
 
     private:
       eastl::vector<EntityComponentInit> m_Inits;

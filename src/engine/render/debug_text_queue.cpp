@@ -45,5 +45,5 @@ namespace Engine::Render::dbg
     return m_Queue.end();
   }
 
-  DECLARE_ECS_COMPONENT(TextDbgQueue, (ecs::NonTrivialTypeManager<TextDbgQueue, ecs::INITABLE_TYPE>), false, true);
+  DECLARE_ECS_COMPONENT(TextDbgQueue, "TextDbgQueue", (ecs::NonTrivialTypeManager<TextDbgQueue, ecs::INITABLE_TYPE>), false, true);
 }

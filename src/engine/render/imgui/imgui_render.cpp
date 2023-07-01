@@ -147,5 +147,5 @@ namespace Engine::Render
     }
   }
 
-  DECLARE_ECS_COMPONENT(ImGuiRender, (ecs::NonTrivialTypeManager<ImGuiRender, ecs::INITABLE_TYPE>), false, true);
+  DECLARE_ECS_COMPONENT(ImGuiRender, "ImGuiRender", (ecs::NonTrivialTypeManager<ImGuiRender, ecs::INITABLE_TYPE>), false, true);
 }
