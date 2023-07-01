@@ -205,5 +205,8 @@ namespace fg
     m_Resources.clear();
     m_ResourcesNames.clear();
     m_VirtResources.clear();
+
+    for (auto& nodeInfo: m_Nodes)
+      nodeInfo.resetResourcesAccess();
   }
 }

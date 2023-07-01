@@ -149,6 +149,13 @@ namespace fg
         ExecFunction exec;
 
         ExecState execState;
+
+        void resetResourcesAccess()
+        {
+          modifies.clear();
+          reads.clear();
+          creates.clear();
+        }
       };
 
       struct TextureResource

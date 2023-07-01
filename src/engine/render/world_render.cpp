@@ -43,13 +43,14 @@ namespace Engine::Render
     init["render_window_size"] = Window::get_window_size();
 
     ecs.createEntity("CoreRenderDebug", std::move(init));
+    ecs.createEntity("Atmosphere", {});
   }
 
   void WorldRender::init()
   {
-    setupEcs();
     fg::init();
     createFrameGraph();
+    setupEcs();
   }
 
   void WorldRender::render()
