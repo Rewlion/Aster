@@ -1,12 +1,14 @@
+#include <engine/console/cmd.h>
+#include <engine/ecs/ecs.h>
 #include <engine/ecs/ecs_events.h>
 #include <engine/ecs/macros.h>
-#include <engine/ecs/ecs.h>
-#include <engine/render/frame_graph/frame_graph.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gapi/resource_wrappers.h>
-#include <engine/tfx/tfx.h>
 #include <engine/log.h>
 #include <engine/math.h>
+#include <engine/render/frame_graph/frame_graph.h>
+#include <engine/render/imgui/imgui.h>
+#include <engine/tfx/tfx.h>
 
 #include <engine/shaders/shaders/atmosphere/consts.hlsl>
 
@@ -71,7 +73,7 @@ static void atmosphere_render_creation_handler(
   const gapi::TextureWrapper& atm_sky_lut,
   const gapi::TextureWrapper& atm_ms_lut)
 {
-  fg::register_node("atmosphere_transmittance_lut_builder", FG_FILE_DECL, [&atm_tr_lut](fg::Registry& reg)
+  fg::register_node("atm_tr_lut_render", FG_FILE_DECL, [&atm_tr_lut](fg::Registry& reg)
   {
     reg.orderMeAfter("frame_preparing");
 
@@ -215,3 +217,40 @@ static void atmosphere_render_creation_handler(
     return [](gapi::CmdEncoder& encoder) {};
   });
 }
+
+ECS_QUERY()
+static
+void query_sun(eastl::function<void(float& sun_azimuth, float& sun_altitude)>);
+
+static bool show_wnd = false;
+void imgui_draw_sun_params()
+{
+  if (!show_wnd)
+    return;
+
+  float altitude = 0.0;
+  float azimuth = 0.0;
+  query_sun([&](float& _azimuth, float& _altitude){
+    azimuth = _azimuth;
+    altitude = _altitude;
+  });
+
+  ImGui::Begin("sun", nullptr, 0);
+  ImGui::SliderFloat("altitude", &altitude, -90.0, 90.0);
+  ImGui::SliderFloat("azimuth", &azimuth, 0.0, 360.0);
+  ImGui::End();
+
+  query_sun([&](float& _azimuth, float& _altitude){
+    _azimuth = azimuth;
+    _altitude = altitude;
+  });
+}
+
+static
+void fg_show(eastl::span<string_view>)
+{
+  show_wnd = !show_wnd;
+}
+
+CONSOLE_CMD("sun.edit", 0, 0, fg_show);
+IMGUI_REG_WND(imgui_draw_sun_params);

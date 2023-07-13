@@ -134,3 +134,26 @@ static EventSystemRegistration atmosphere_render_creation_handler_registration(
   },
   "atmosphere_render_creation_handler"
 );
+
+
+const static DirectQueryRegistration query_sun_queryReg{
+  {
+    DESCRIBE_QUERY_COMPONENT("sun_azimuth", float),
+    DESCRIBE_QUERY_COMPONENT("sun_altitude", float)
+  },
+  "query_sun"};
+const static query_id_t query_sun_queryId = query_sun_queryReg.getId();
+
+
+void query_sun (eastl::function<
+  void(
+    float& sun_azimuth,
+    float& sun_altitude)> cb)
+{
+  ecs::get_registry().query(query_sun_queryId, [&](ComponentsAccessor& accessor)
+  {
+    float& sun_azimuth = accessor.get<float>(compile_ecs_name_hash("sun_azimuth"));
+    float& sun_altitude = accessor.get<float>(compile_ecs_name_hash("sun_altitude"));
+    cb(sun_azimuth,sun_altitude);
+  });
+}
