@@ -88,7 +88,7 @@ technique SkyLUT {
 
         float3 Tri = exp(-extintion * dt);
         float3 TrSun = sampleTransmittance(Ri_len_mm, RioSDir, atm_params.rBotMM, atm_params.rTopMM);
-        float3 psi = samplePsi(atm_params, Ri_len_mm, RioSDir);
+        float3 psi = samplePsi(atm_params, Ri_len_mm, -sun_dir.y);
 
         float3 Si = rayScattering*(rayPhase*TrSun+psi) + mieScattering * (miePhase *TrSun+psi);
         float3 Li = Si*(1.0 -  Tri) / extintion;
