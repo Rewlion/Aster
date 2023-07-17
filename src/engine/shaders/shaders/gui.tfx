@@ -42,10 +42,10 @@ technique Gui {
     float2 elemSize = GuiScope.pos_size.zw;
 
     float2 vertices[4] = {
-      float2(1.0f, 0.0f),
+      float2(0.0f, 1.0f),
       float2(0.0f, 0.0f),
       float2(1.0f, 1.0f),
-      float2(0.0f, 1.0f)
+      float2(1.0f, 0.0f)
     };
 
     float2 pos = vertices[id];

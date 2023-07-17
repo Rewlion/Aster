@@ -43,10 +43,10 @@ technique ResolveGbuffer {
       };
 
       float3 frustumViews[4] = {
-        FrameScope.rtView,
-        FrameScope.ltView,
         FrameScope.rbView,
-        FrameScope.lbView
+        FrameScope.lbView,
+        FrameScope.rtView,
+        FrameScope.ltView
       };
 
       VsOutput output;

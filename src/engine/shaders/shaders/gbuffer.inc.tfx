@@ -90,7 +90,7 @@ technique_macro USE_GBUFFER {
     float4 process_gbuffer(Gbuffer g)
     {
       float t = FrameScope.secSinceStart;
-      float3 sunPos = float3( 10.0 * sin(t), -4.0, 10.0 * cos(t) );
+      float3 sunPos = float3( 10.0 * sin(t), 4.0, 10.0 * cos(t) );
 
       float3 N = g.normal;
       float3 L = normalize(sunPos - g.worldPos);

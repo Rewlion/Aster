@@ -57,10 +57,10 @@ namespace Engine::Render
         viewRot[3] = float4(0,0,0,1);
 
         auto invViewRotProj = glm::inverse(cameraData->proj * viewRot);
-        auto leftTopView =  float4(invViewRotProj * glm::vec4(-1,-1,0,1));
-        auto rightTopView = float4(invViewRotProj * glm::vec4(1,-1,0,1));
-        auto leftBotView =  float4(invViewRotProj * glm::vec4(-1,1,0,1));
-        auto rightBotView = float4(invViewRotProj * glm::vec4(1,1,0,1));
+        auto leftTopView =  float4(invViewRotProj * glm::vec4(-1,1,0,1));
+        auto rightTopView = float4(invViewRotProj * glm::vec4(1,1,0,1));
+        auto leftBotView =  float4(invViewRotProj * glm::vec4(-1,-1,0,1));
+        auto rightBotView = float4(invViewRotProj * glm::vec4(1,-1,0,1));
         leftTopView  /= leftTopView.w;
         rightTopView /= rightTopView.w;
         leftBotView  /= leftBotView.w;

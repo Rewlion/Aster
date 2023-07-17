@@ -45,10 +45,10 @@ technique SkyApply {
       };
 
       float3 frustumViews[4] = {
-        FrameScope.rtView,
-        FrameScope.ltView,
         FrameScope.rbView,
-        FrameScope.lbView
+        FrameScope.lbView,
+        FrameScope.rtView,
+        FrameScope.ltView
       };
 
       VsOutput output;
@@ -68,9 +68,6 @@ technique SkyApply {
 
     float3 calcSunDisk(AtmosphereParams atm_params, float3 viewDir, float3 sunDir)
     {
-      viewDir.y = -viewDir.y;
-      sunDir.y = -sunDir.y;
-
       float3 pos = float3(0.0, atm_params.rBotMM + 0.0002, 0.0);
       float3 RBot_mm;
       float botAtmDist_mm = raySphereIntersection(pos, viewDir, float3(0,0,0), atm_params.rBotMM, RBot_mm);
@@ -103,7 +100,7 @@ technique SkyApply {
     float3 altitudeAzimuthToDecartian(float altitude, float azimuth)
     {
       return normalize(float3(cos(altitude)*sin(azimuth),
-                    -sin(altitude),
+                    sin(altitude),
                     cos(altitude)*cos(azimuth)));
     }
 
@@ -111,12 +108,13 @@ technique SkyApply {
     {
       float3 viewDir = normalize(input.viewDir);
 
-      float altitude = PI/2.0 - acos(-viewDir.y);
+      float altitude = PI/2.0 - acos(viewDir.y);
       float2 xzDir = normalize(float2(viewDir.x, viewDir.z));
       float azimuth = fmod(atan2(xzDir.x, xzDir.y) + 2*PI, 2*PI);
 
       float v = altitude >= 0.0 ? 0.5 + 0.5 * sqrt(altitude / (PI/2.0))
                                 : 0.5 - 0.5 * sqrt(abs(altitude) / (PI/2.0));
+    
       float u = azimuth / (2.0 * PI);
       float2 uv = float2(u,v);
 

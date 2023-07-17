@@ -239,9 +239,9 @@ namespace gapi::vulkan
 
     vk::Viewport vp;
     vp.x = 0;
-    vp.y = 0;
+    vp.y = (float)m_GraphicsPipelineState.viewport.height;
     vp.width =  (float)m_GraphicsPipelineState.viewport.width;
-    vp.height = (float)m_GraphicsPipelineState.viewport.height;
+    vp.height = -(float)m_GraphicsPipelineState.viewport.height;
     vp.minDepth = 0;
     vp.maxDepth = 1;
 

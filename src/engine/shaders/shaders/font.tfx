@@ -49,10 +49,10 @@ technique Font {
       float2 origin = FontTechniqueScope.advance_originPos.yz;
 
       float2 vertices[4] = {
-        float2(1.0f, 0.0f),
+        float2(0.0f, 1.0f),
         float2(0.0f, 0.0f),
         float2(1.0f, 1.0f),
-        float2(0.0f, 1.0f)
+        float2(1.0f, 0.0f)
       };
 
       float2 uv = vertices[id];

@@ -39,7 +39,7 @@ static void camera_movement(
   if (has_input("MoveBackward"))
     dr.z -= 1.0;
 
-  const float3 up = {0.0, -1.0, 0.0};
+  const float3 up = {0.0, 1.0, 0.0};
   const float3 right = math::get_right(math::radians(camera_rotations.x));
 
   const float dt = Engine::Time::get_dt();
@@ -64,7 +64,7 @@ static void camera_rotation(
     camera_rotations.x = 0;
 
   const glm::quat rotation = glm::angleAxis(math::radians(camera_rotations.x), float3{0, 1, 0}) *
-                             glm::angleAxis(math::radians(camera_rotations.y), float3{1, 0, 0});
+                             glm::angleAxis(math::radians(camera_rotations.y), float3{-1, 0, 0});
   const mat4 tm = glm::mat4_cast(rotation);
   forward = tm * float4(0.0, 0.0, 1.0, 0.0f);
 }

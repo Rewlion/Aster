@@ -65,12 +65,12 @@ namespace Engine::Render
 
     const float2 scale{
       2.0f / drawData->DisplaySize.x,
-      2.0f / drawData->DisplaySize.y
+      2.0f / -drawData->DisplaySize.y
     };
 
     const float2 translate{
       -1.0f - drawData->DisplayPos.x * scale.x,
-      -1.0f - drawData->DisplayPos.y * scale.y
+      1.0f + drawData->DisplayPos.y * scale.y
     };
 
     m_DrawData = GatherDrawData(encoder, drawData);

@@ -30,7 +30,8 @@ technique_macro USE_FRAME_HELPERS {
 
     float2 get_viewport_coords_from_window(float2 window_coords)
     {
-      return (window_coords / FrameScope.viewPortSize) * 2.0 - 1.0;
+      return float2(window_coords.x, FrameScope.viewPortSize.y - window_coords.y)
+              / FrameScope.viewPortSize * 2.0 - 1.0;
     }
   #end
 };

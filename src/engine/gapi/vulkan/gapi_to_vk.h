@@ -21,7 +21,7 @@ namespace gapi::vulkan
 
   inline vk::CullModeFlags get_cull_mode(const CullMode mode)
   {
-    return mode != CullMode::None ? vk::CullModeFlagBits::eFront : vk::CullModeFlagBits::eNone;
+    return mode != CullMode::None ? vk::CullModeFlagBits::eBack : vk::CullModeFlagBits::eNone;
   }
 
   inline vk::FrontFace get_front_face(const CullMode mode)
