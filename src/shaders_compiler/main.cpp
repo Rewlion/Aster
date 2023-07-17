@@ -50,20 +50,12 @@ int main(int argc, char** argv)
 
   const string outFile = outputDir + "/shaders_spirv.bin";
   loginfo("compiling shaders to {}", outFile);
-  fs::remove(outFile);
 
   std::error_code ec;
   fs::create_directories(outputDir, ec);
   if (ec)
   {
     loginfo("failed to create output directory `{}`:{}", outputDir, ec.message());
-    return -1;
-  }
-
-  std::ofstream out(outFile, std::ios::binary);
-  if (!out.is_open())
-  {
-    logerror("failed to open {}", outFile);
     return -1;
   }
 
@@ -76,6 +68,14 @@ int main(int argc, char** argv)
     const bool isOk = compiler.compileModuleFromFile(shFile);
     if (!isOk)
       return -1;
+  }
+
+  fs::remove(outFile);
+  std::ofstream out(outFile, std::ios::binary);
+  if (!out.is_open())
+  {
+    logerror("failed to open {}", outFile);
+    return -1;
   }
 
   const ShadersSystem::MaterialsBin& mBin = compiler.getMaterialsBins();
