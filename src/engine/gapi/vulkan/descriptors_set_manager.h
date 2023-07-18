@@ -21,10 +21,11 @@ namespace gapi::vulkan
     class PoolManager
     {
       public:
-        PoolManager() = default;
         PoolManager(Device&);
         PoolManager(PoolManager&&) = default;
-        PoolManager& operator=(PoolManager&&) = default;
+        
+        PoolManager& operator=(PoolManager&&) = delete;
+        PoolManager& operator=(const PoolManager&) = delete;
 
         auto acquireSet(const vk::DescriptorSetLayout layout) -> vk::DescriptorSet;
 
@@ -67,7 +68,9 @@ namespace gapi::vulkan
       public:
         SetManager(Device&, PoolManager&, const size_t set);
         SetManager(SetManager&&) = default;
-        SetManager& operator=(SetManager&&) = default;
+        
+        SetManager& operator=(SetManager&&) = delete;
+        SetManager& operator=(const SetManager&) = delete;
 
         void setPipelineLayout(const vk::DescriptorSetLayout, const spirv::v2::DescriptorSet*, const bool acc_toggled = false);
 
