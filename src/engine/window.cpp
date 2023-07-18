@@ -10,6 +10,7 @@
 namespace Engine::Window
 {
   static eastl::vector<IWndProcHandler*> wnd_proc_handlers;
+  static bool pending_exit = false;
 
   HWND CURRENT_WINDOW_HANDLER = 0;
   int2 window_size = {0,0};
@@ -77,6 +78,7 @@ namespace Engine::Window
       case WM_MBUTTONUP:   engineMsg = WND_MSG_BMOUSE_UP;    wParam = KEY_MBMOUSE; break;
       case WM_MOUSEMOVE:   engineMsg = WND_MSG_MOUSE_MOVE;                         break;
       case WM_MOUSEWHEEL:  engineMsg = WND_MSG_MOUSEHWHEEL;                        break;
+      case WM_CLOSE:       pending_exit = true;                                    return 0;
       default: return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
@@ -165,5 +167,10 @@ namespace Engine::Window
       while(ShowCursor(TRUE) <= 0);
     else
       while(ShowCursor(FALSE) >= 0);
+  }
+
+  auto has_pending_exit() -> bool
+  {
+    return pending_exit;
   }
 }

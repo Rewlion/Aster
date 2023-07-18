@@ -7,6 +7,8 @@ namespace gapi
   class CmdEncoder;
 
   void                     init();
+  void                     wait_gpu_idle();
+  void                     shutdown();
   TextureHandle            get_backbuffer();
   DepthStencilStateHandler create_depth_stencil_state(const DepthStencilStateDescription& desc);
   BufferHandler            allocate_buffer(const size_t size, const int usage);

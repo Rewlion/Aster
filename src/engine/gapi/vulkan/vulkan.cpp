@@ -13,14 +13,16 @@
 
 namespace gapi
 {
-  extern TextureHandle        (*gapi_get_backbuffer)();
+  extern void                  (*gapi_wait_gpu_idle)();
+  extern void                  (*gapi_shutdown)();
+  extern TextureHandle         (*gapi_get_backbuffer)();
   extern BufferHandler         (*gapi_allocate_buffer)(const size_t size, const int usage);
   extern void                  (*gapi_free_buffer)(const BufferHandler buffer);
   extern void                  (*gapi_free_texture)(const TextureHandle texture);
   extern void                  (*gapi_free_sampler)(const SamplerHandler sampler);
   extern void*                 (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size, const int flags);
   extern void                  (*gapi_unmap_buffer)(const BufferHandler buffer);
-  extern TextureHandle        (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
+  extern TextureHandle         (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
   extern SamplerHandler        (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
   extern void                  (*gapi_acquire_backbuffer)();
   extern ShaderModuleHandler   (*gapi_add_module)(void* blob);
@@ -38,6 +40,17 @@ namespace gapi::vulkan
   static FrameGarbageCollector frameGc;
   static PipelinesStorage pipelinesStorage;
   static RenderPassStorage rpStorage;
+
+  void wait_gpu_idle()
+  {
+    VK_CHECK(device->getDevice().waitIdle());
+  }
+
+  void shutdown()
+  {
+    wait_gpu_idle();
+    frameGc.clearAllFrames();
+  }
 
   vk::Device& get_device()
   {
@@ -219,6 +232,8 @@ namespace gapi::vulkan
 
   void init()
   {
+    gapi_wait_gpu_idle = wait_gpu_idle;
+    gapi_shutdown = shutdown;
     gapi_get_backbuffer = get_backbuffer;
     gapi_allocate_buffer = allocate_buffer;
     gapi_free_buffer = free_buffer;

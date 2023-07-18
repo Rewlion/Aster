@@ -1,21 +1,26 @@
 #include "ecs.h"
 
+#include <engine/assert.h>
 #include <engine/ecs/fs/load_templates.h>
 #include <engine/settings.h>
 #include <engine/vfs/vfs.h>
 
 namespace ecs
 {
-  Registry registry;
+  std::unique_ptr<Registry> registry;
 
   auto get_registry() -> Registry&
   {
-    return registry;
+    return *registry.get();
   }
 
   void init_from_settings()
   {
     loginfo("ecs: initialization of ECS");
+    ASSERT_FMT_RETURN(registry.get() == nullptr, , "ecs: registry has been initialized already");
+
+    registry.reset(new Registry);
+
     DataBlock* settings = Engine::get_app_settings();
 
     loginfo("ecs: initializing components meta");
@@ -30,7 +35,7 @@ namespace ecs
         const string blkWithTemplates = std::get<string>(attr.as);
         loginfo("ecs: reading templates from {}", blkWithTemplates);
 
-        add_templates_from_blk(registry, blkWithTemplates);
+        add_templates_from_blk(*registry, blkWithTemplates);
       }
     }
 
@@ -38,7 +43,12 @@ namespace ecs
       "@engine_res/templates/render.bk"})
     {
       loginfo("ecs: reading templates from {}", p);
-      add_templates_from_blk(registry, p);
+      add_templates_from_blk(*registry, p);
     }
+  }
+
+  void shutdown()
+  {
+    registry.reset();
   }
 }

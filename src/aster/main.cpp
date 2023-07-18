@@ -14,4 +14,5 @@ int main()
   register_aster_events();
 
   Engine::start_tick();
+  Engine::shutdown();
 }

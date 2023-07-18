@@ -33,8 +33,8 @@ namespace gapi::vulkan
       };
       Utils::BitCapacity<(int)InstanceExtensionsBits::Count> m_SupportedInstanceExts;
 
-      vk::UniqueInstance m_Instance;
       vk::DynamicLoader m_Loader;
+      vk::UniqueInstance m_Instance;
       UniqueDynamicDbgUtilsMessenger m_DebugMessenger;
       vk::PhysicalDevice m_PhysicalDevice;
       vk::UniqueSurfaceKHR m_Surface;

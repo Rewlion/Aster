@@ -43,4 +43,5 @@ namespace Engine::Window
   int2     get_window_size();
   bool     is_active_window();
   void     show_cursor(const bool);
+  auto     has_pending_exit() -> bool;
 }

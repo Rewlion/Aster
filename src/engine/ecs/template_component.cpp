@@ -37,10 +37,12 @@ namespace ecs
     as.rawValue = 0;
     m_TypeId = INVALID_COMPONENT_TYPE_ID;
     m_NameHash = 0;
+    m_Flags = 0;
 
     std::swap(as.rawValue, rvl.as.rawValue);
     std::swap(m_TypeId, rvl.m_TypeId);
     std::swap(m_NameHash, rvl.m_NameHash);
+    std::swap(m_Flags, rvl.m_Flags);
   }
 
   TemplateComponent::~TemplateComponent()
@@ -48,7 +50,7 @@ namespace ecs
     if (m_TypeId != INVALID_COMPONENT_TYPE_ID)
     {
       const TypeMeta* meta = getMeta();
-      if (isBoxedType(meta->size))
+      if (isBoxedType(meta->size) && !(m_Flags & COMPONENT_TYPE_WRAPPER))
       {
         meta->manager->destructor(as.ptr);
       }
@@ -65,6 +67,7 @@ namespace ecs
     std::swap(as.rawValue, rvl.as.rawValue);
     std::swap(m_TypeId, rvl.m_TypeId);
     std::swap(m_NameHash, rvl.m_NameHash);
+    std::swap(m_Flags, rvl.m_Flags);
 
     return *this;
   }

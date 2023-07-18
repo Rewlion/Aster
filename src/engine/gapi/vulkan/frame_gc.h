@@ -95,6 +95,13 @@ namespace gapi::vulkan
         frameResources[frameId].cmdPools.clear();
       }
 
+      inline
+      void clearAllFrames()
+      {
+        for (int i = 0; i < GC_FRAMES; ++i)
+          nextFrame();
+      }
+
     private:
       struct Resources
       {

@@ -67,7 +67,7 @@ namespace Engine
 
   void start_tick()
   {
-    for(;;)
+    while(!Window::has_pending_exit())
     {
       Time::tick();
 
@@ -80,5 +80,11 @@ namespace Engine
       imgui::Manager::tick();
       Render::world_render.render();
     }
+  }
+
+  void shutdown()
+  {
+    ecs::shutdown();
+    gapi::shutdown();
   }
 }

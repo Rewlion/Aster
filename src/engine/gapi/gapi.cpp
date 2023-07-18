@@ -6,7 +6,9 @@
 
 namespace gapi
 {
-  TextureHandle           (*gapi_get_backbuffer)();
+  void                     (*gapi_wait_gpu_idle)();
+  void                     (*gapi_shutdown)();
+  TextureHandle            (*gapi_get_backbuffer)();
   DepthStencilStateHandler (*gapi_create_depth_stencil_state)(const DepthStencilStateDescription& desc);
   BufferHandler            (*gapi_allocate_buffer)(const size_t size, const int usage);
   void                     (*gapi_free_buffer)(const BufferHandler buffer);
@@ -14,7 +16,7 @@ namespace gapi
   void                     (*gapi_free_sampler)(const SamplerHandler sampler);
   void*                    (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size, const int flags);
   void                     (*gapi_unmap_buffer)(const BufferHandler buffer);
-  TextureHandle           (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
+  TextureHandle            (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
   void                     (*gapi_bind_texture)(const TextureHandle texture, const size_t set, const size_t binding);
   SamplerHandler           (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
   void                     (*gapi_acquire_backbuffer)();
@@ -32,6 +34,16 @@ namespace gapi
       vulkan::init();
     else
       ASSERT(!"unknown graphics api");
+  }
+
+  void wait_gpu_idle()
+  {
+    gapi_wait_gpu_idle();
+  }
+
+  void shutdown()
+  {
+    gapi_shutdown();
   }
 
   TextureHandle get_backbuffer()

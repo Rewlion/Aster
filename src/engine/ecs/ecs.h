@@ -6,4 +6,5 @@ namespace ecs
 {
   auto get_registry() -> Registry&;
   void init_from_settings();
+  void shutdown();
 }
