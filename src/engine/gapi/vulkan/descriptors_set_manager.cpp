@@ -69,6 +69,7 @@ namespace gapi::vulkan
     : m_Device(device)
     , m_SetId(set)
     , m_PoolManager(pool)
+    , m_Toggled(false)
     , m_Dirty(false)
     , m_Active(false)
     , m_Bindings(nullptr)
@@ -111,11 +112,14 @@ namespace gapi::vulkan
   {
     m_Layout = layout;
 
+    const bool oldActive = m_Active;
     m_Active = bindings && !bindings->empty();
     if (!m_Active)
       return;
 
+    m_Toggled = !oldActive && m_Active;
     m_Dirty |= !isCompatible(bindings);
+
     m_Bindings = bindings;
   }
 
@@ -263,6 +267,12 @@ namespace gapi::vulkan
 
       device.updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
       m_Dirty = false;
+      return m_CurrentVkSet;
+    }
+
+    if (m_Toggled)
+    {
+      m_Toggled = false;
       return m_CurrentVkSet;
     }
 

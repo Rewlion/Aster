@@ -97,6 +97,7 @@ namespace gapi::vulkan
         size_t m_SetId;
         PoolManager& m_PoolManager;
         
+        bool m_Toggled;
         bool m_Dirty;
         bool m_Active;
         vk::DescriptorSet m_CurrentVkSet;
