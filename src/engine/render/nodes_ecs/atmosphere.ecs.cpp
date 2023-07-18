@@ -136,7 +136,6 @@ static void atmosphere_render_creation_handler(
     return [trLUTtex](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("trLUT", trLUTtex.get());
-      tfx::activate_scope("FrameScope", encoder);
       tfx::activate_scope("MsLUTScope", encoder);
       tfx::activate_scope("AtmosphereScope", encoder);
       tfx::activate_technique("MultipleScatteringLUT", encoder);
@@ -172,7 +171,6 @@ static void atmosphere_render_creation_handler(
     {
       tfx::set_extern("trLUT", trLUTtex.get());
       tfx::set_extern("msLUT", msLUTtex.get());
-      tfx::activate_scope("FrameScope", encoder);
       tfx::activate_scope("SkyLUTScope", encoder);
       tfx::activate_scope("AtmosphereScope", encoder);
       tfx::activate_technique("SkyLUT", encoder);
@@ -197,7 +195,6 @@ static void atmosphere_render_creation_handler(
     return [skyLUTtex](gapi::CmdEncoder& encoder)
     {
        tfx::set_extern("skyLUT", skyLUTtex.get());
-       tfx::activate_scope("FrameScope", encoder);
        tfx::activate_scope("SkyApplyScope", encoder);
        tfx::activate_technique("SkyApply", encoder);
 
