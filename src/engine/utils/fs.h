@@ -11,4 +11,5 @@ namespace Utils
   string get_file_ext(const string& fileName);
   bool check_file_ext(const string& fileName, const string requiredExt);
   string get_dir_name(const string& filePath);
+  string_view get_dir_name(string_view filePath);
 }

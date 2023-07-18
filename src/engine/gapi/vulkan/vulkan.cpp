@@ -20,6 +20,7 @@ namespace gapi
   extern void                  (*gapi_free_buffer)(const BufferHandler buffer);
   extern void                  (*gapi_free_texture)(const TextureHandle texture);
   extern void                  (*gapi_free_sampler)(const SamplerHandler sampler);
+  extern void                  (*gapi_free_pipeline_resources)();
   extern void*                 (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size, const int flags);
   extern void                  (*gapi_unmap_buffer)(const BufferHandler buffer);
   extern TextureHandle         (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
@@ -43,6 +44,7 @@ namespace gapi::vulkan
 
   void wait_gpu_idle()
   {
+    loginfo("vulkan: wait gpu idle");
     VK_CHECK(device->getDevice().waitIdle());
   }
 
@@ -80,6 +82,12 @@ namespace gapi::vulkan
   void free_sampler(const SamplerHandler sampler)
   {
     device->freeSampler(sampler);
+  }
+
+  void free_pipeline_resources()
+  {
+    loginfo("vulkan: clearing pipeline resources");
+    pipelinesStorage.clear();
   }
 
   void* map_buffer(const BufferHandler buffer, const size_t offset, const size_t size, const int flags)
@@ -239,6 +247,7 @@ namespace gapi::vulkan
     gapi_free_buffer = free_buffer;
     gapi_free_texture = free_texture;
     gapi_free_sampler = free_sampler;
+    gapi_free_pipeline_resources = free_pipeline_resources;
     gapi_allocate_texture = allocate_texture;
     gapi_allocate_sampler = allocate_sampler;
     gapi_map_buffer = map_buffer;

@@ -44,7 +44,9 @@ namespace tfx
     eastl::vector<ParamDescription> params;
   };
 
-  void load_materials_bin(const string& file);
+  void load_materials_bin(string_view file);
+
+  void reload_materials_bin(string_view file);
 
   void set_extern(const string& name, const Param& p);
 

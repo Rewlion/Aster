@@ -85,11 +85,22 @@ namespace Utils
     return get_file_ext(fileName) == requiredExt;
   }
 
-  string get_dir_name(const string& filePath)
+  template<class T>
+  auto get_dir_name_impl(T filePath)
   {
     const size_t i = filePath.find_last_of("/\\");
     return i != string::npos ?
             filePath.substr(0, i) :
             "";
+  }
+
+  auto get_dir_name(const string& filePath) -> string
+  {
+    return get_dir_name_impl(filePath);
+  }
+
+  auto get_dir_name(string_view filePath) -> string_view
+  {
+    return get_dir_name_impl(filePath);
   }
 }

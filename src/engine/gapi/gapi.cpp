@@ -14,6 +14,7 @@ namespace gapi
   void                     (*gapi_free_buffer)(const BufferHandler buffer);
   void                     (*gapi_free_texture)(const TextureHandle texture);
   void                     (*gapi_free_sampler)(const SamplerHandler sampler);
+  void                     (*gapi_free_pipeline_resources)();
   void*                    (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size, const int flags);
   void                     (*gapi_unmap_buffer)(const BufferHandler buffer);
   TextureHandle            (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
@@ -94,6 +95,11 @@ namespace gapi
   void free_resource(const TextureHandle texture)
   {
     gapi_free_texture(texture);
+  }
+
+  void free_pipeline_resources()
+  {
+    gapi_free_pipeline_resources();
   }
 
   void free_resource(const SamplerHandler sampler)

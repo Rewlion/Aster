@@ -2,7 +2,7 @@
 
 #include <EASTL/vector.h>
 
-namespace fg
+namespace Utils
 {
   template<class T, class IdType>
   class ResizableVector : public eastl::vector<T>

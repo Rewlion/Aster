@@ -168,4 +168,9 @@ namespace gapi::vulkan
     return m_ShadersStorage.getPipelineLayout(h);
   }
 
+  void PipelinesStorage::clear()
+  {
+    m_Pipelines.clear();
+    m_ShadersStorage.clear();
+  }
 }

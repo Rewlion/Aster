@@ -35,6 +35,8 @@ namespace gapi::vulkan
       const PipelineLayout& getPipelineLayout(const PipelineLayoutHandler h);
       eastl::vector<vk::PipelineShaderStageCreateInfo> getShaderStagesCreateInfos(const eastl::vector<ShaderModuleHandler>& modules) const;
 
+      void clear();
+
     private:
       const ShaderModule* getModule(const ShaderModuleHandler h) const;
 

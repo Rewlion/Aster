@@ -17,6 +17,7 @@
 #include <engine/tfx/tfx.h>
 #include <engine/time.h>
 #include <engine/types.h>
+#include <engine/vfs/file_watch.h>
 #include <engine/vfs/vfs.h>
 #include <engine/window.h>
 
@@ -51,7 +52,8 @@ namespace Engine
     editor::Manager::init();
 
     const DataBlock* settings = Engine::get_app_settings();
-    tfx::load_materials_bin(settings->getChildBlock("graphics")->getText("materials_bin"));
+    const string matBinPath = settings->getChildBlock("graphics")->getText("materials_bin");
+    tfx::load_materials_bin(matBinPath);
 
     ecs::init_from_settings();
     register_engine_events();
@@ -63,12 +65,16 @@ namespace Engine
     gui::Gui::init();
 
     console::init();
+    
+    fs::FilesWatcher::init();
+    fs::FilesWatcher::watchFileWrites(matBinPath, tfx::reload_materials_bin);
   }
 
   void start_tick()
   {
     while(!Window::has_pending_exit())
     {
+      fs::FilesWatcher::readNotifies();
       Time::tick();
 
       Window::poll_wnd_messages();
@@ -85,6 +91,7 @@ namespace Engine
   void shutdown()
   {
     ecs::shutdown();
+    fs::FilesWatcher::shutdown();
     gapi::shutdown();
   }
 }

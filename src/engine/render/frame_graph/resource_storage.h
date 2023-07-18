@@ -1,8 +1,9 @@
 #pragma once
 
 #include "id.h"
-#include "resizable_vector.hpp"
 #include "registry.h"
+
+#include <engine/utils/resizable_vector.hpp>
 
 #include <EASTL/vector.h>
 #include <EASTL/utility.h>
@@ -36,7 +37,7 @@ namespace fg
       void createSampler(const res_id_t, const gapi::SamplerAllocationDescription&);
 
     private:
-      ResizableVector<Resource, res_id_t> m_Resources;
+      Utils::ResizableVector<Resource, res_id_t> m_Resources;
       eastl::vector<std::byte> m_Blobs;
 
     private:

@@ -141,4 +141,10 @@ namespace gapi::vulkan
     }
     return cis;
   }
+
+  void ShadersStorage::clear()
+  {
+    m_PipelineLayouts.clear();
+    m_ShaderModules.clear();
+  }
 }

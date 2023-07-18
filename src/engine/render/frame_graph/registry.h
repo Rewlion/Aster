@@ -2,11 +2,11 @@
 
 #include "id.h"
 #include "resource_request.hpp"
-#include "resizable_vector.hpp"
 
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/gapi/resources.h>
 #include <engine/utils/fixed_stack.hpp>
+#include <engine/utils/resizable_vector.hpp>
 
 #include <EASTL/vector.h>
 #include <function2/function2.hpp>
@@ -95,9 +95,9 @@ namespace fg
       Utils::StringMap m_NodesNames;
       Utils::StringMap m_ResourcesNames;
 
-      ResizableVector<NodeInfo, node_id_t> m_Nodes;
-      ResizableVector<VirtualResourceInfo, virt_res_id_t> m_VirtResources;
-      ResizableVector<Resource, res_id_t> m_Resources;
+      Utils::ResizableVector<NodeInfo, node_id_t> m_Nodes;
+      Utils::ResizableVector<VirtualResourceInfo, virt_res_id_t> m_VirtResources;
+      Utils::ResizableVector<Resource, res_id_t> m_Resources;
 
     private:
       struct ExecState

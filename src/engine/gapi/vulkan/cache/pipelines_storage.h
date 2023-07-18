@@ -22,7 +22,7 @@ namespace gapi::vulkan
       PipelineLayoutHandler addPipelineLayout(const eastl::vector<spirv::v2::DescriptorSet>& dsets);
       const PipelineLayout& getPipelineLayout(const PipelineLayoutHandler h);
       ShaderModuleHandler addModule(const ShadersSystem::ShaderBlob& blob);
-
+      void clear();
     private:
       Device* m_Device = nullptr;
       ShadersStorage m_ShadersStorage;

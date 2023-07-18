@@ -19,6 +19,7 @@ namespace gapi
   void                     free_resource(const BufferHandler buffer);
   void                     free_resource(const TextureHandle texture);
   void                     free_resource(const SamplerHandler sampler);
+  void                     free_pipeline_resources();
   void                     acquire_backbuffer();
   ShaderModuleHandler      add_module(void* blob);
   PipelineLayoutHandler    add_pipeline_layout(void* dsets);

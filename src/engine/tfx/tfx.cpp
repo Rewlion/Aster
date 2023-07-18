@@ -237,7 +237,7 @@ namespace tfx
         std::move(s)
       });
 
-      loginfo("loaded scope `{}`:{}", matScope.name, h);
+      loginfo("tfx: loaded scope `{}`:{}", matScope.name, h);
     }
   }
 
@@ -275,14 +275,14 @@ namespace tfx
         }
       });
 
-      loginfo("loaded technique `{}`", t.name);
+      loginfo("tfx: loaded technique `{}`", t.name);
     }
   }
 
-  void load_materials_bin(const string& file)
+  void load_materials_bin(string_view file)
   {
-    loginfo("loading materials bin {}", file);
-    std::ifstream from(file, std::ios::binary);
+    loginfo("tfx: loading materials bin {}", file);
+    std::ifstream from(file.data(), std::ios::binary);
     if (!from.is_open())
     {
       ASSERT(!"failed to load materials binary");
@@ -290,16 +290,26 @@ namespace tfx
     }
 
     mat_bin = ShadersSystem::MaterialsBin{};
+    scopes_storage.clear();
+    techniques_storage.clear();
+
     boost::archive::binary_iarchive archive(from);
     archive & mat_bin;
 
-    loginfo("loading tfx scopes");
+    loginfo("tfx: loading tfx scopes");
     load_scopes(mat_bin.scopes);
-    loginfo("loading tfx techniques");
+    loginfo("tfx: loading tfx techniques");
     load_techniques(mat_bin.techniques);
-    loginfo("successfuly loaded materials bin");
+    loginfo("tfx: successfuly loaded materials bin");
   }
 
+  void reload_materials_bin(string_view file)
+  {
+    loginfo("tfx: reloading of materials bin trigerred");
+    gapi::wait_gpu_idle();
+    gapi::free_pipeline_resources();
+    load_materials_bin(file);
+  }
 
   static void set_param(eastl::hash_map<string_hash, Param>& storage, const string& name, const Param& p)
   {
