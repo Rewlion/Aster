@@ -108,7 +108,8 @@ namespace gapi::vulkan
   }
 
   void DescriptorsSetManager::SetManager::setPipelineLayout(const vk::DescriptorSetLayout layout,
-                                                            const spirv::v2::DescriptorSet* bindings)
+                                                            const spirv::v2::DescriptorSet* bindings,
+                                                            const bool acc_toggled)
   {
     m_Layout = layout;
 
@@ -117,7 +118,7 @@ namespace gapi::vulkan
     if (!m_Active)
       return;
 
-    m_Toggled = !oldActive && m_Active;
+    m_Toggled = acc_toggled || (!oldActive && m_Active);
     m_Dirty |= !isCompatible(bindings);
 
     m_Bindings = bindings;
@@ -266,13 +267,12 @@ namespace gapi::vulkan
       }
 
       device.updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
-      m_Dirty = false;
-      return m_CurrentVkSet;
     }
 
-    if (m_Toggled)
+    if (m_Toggled || m_Dirty)
     {
       m_Toggled = false;
+      m_Dirty = false;
       return m_CurrentVkSet;
     }
 
@@ -341,8 +341,12 @@ namespace gapi::vulkan
     
     fitSetManagers(activeSetsCount-1);
 
+    bool accumulatedToggling;
     for (size_t i = 0; i < activeSetsCount; ++i)
-      m_SetManagers[i].setPipelineLayout(layout->descriptorSetLayouts[i].get(), &layout->dsets[i]);
+    {
+      m_SetManagers[i].setPipelineLayout(layout->descriptorSetLayouts[i].get(), &layout->dsets[i], accumulatedToggling);
+      accumulatedToggling |= m_SetManagers[i].isToggled();
+    }
 
     for (size_t i = activeSetsCount; i < restSets; ++i)
       m_SetManagers.back().setPipelineLayout({}, nullptr);

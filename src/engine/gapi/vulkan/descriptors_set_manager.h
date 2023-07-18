@@ -69,13 +69,14 @@ namespace gapi::vulkan
         SetManager(SetManager&&) = default;
         SetManager& operator=(SetManager&&) = default;
 
-        void setPipelineLayout(const vk::DescriptorSetLayout, const spirv::v2::DescriptorSet*);
+        void setPipelineLayout(const vk::DescriptorSetLayout, const spirv::v2::DescriptorSet*, const bool acc_toggled = false);
 
         void setTexture(const TextureHandle, const size_t binding);
         void setSampler(const vk::Sampler, const size_t binding);
         void setUniformBuffer(const vk::Buffer, const size_t binding, const size_t constOffset);
 
         auto acquireSet(vk::Device) -> vk::DescriptorSet;
+        auto isToggled() const -> bool { return m_Toggled; }
 
       private:
         struct WritePreparation
