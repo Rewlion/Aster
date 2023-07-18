@@ -1,7 +1,7 @@
 #include "parser.h"
 
 #include <engine/assert.h>
-#include <engine/vfs/vfs.h>
+#include <engine/fs/vfs.h>
 
 #include <cstdio>
 #include <cstdlib>

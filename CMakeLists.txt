@@ -71,7 +71,7 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/render")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/scene")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/tfx")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/utils")
-add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/vfs")
+add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/fs")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/work_cycle")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/deps/SPIRV-Cross-moltenvk_1.1.5/src")

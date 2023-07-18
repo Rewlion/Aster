@@ -3,7 +3,7 @@
 #include <engine/assert.h>
 #include <engine/ecs/fs/load_templates.h>
 #include <engine/settings.h>
-#include <engine/vfs/vfs.h>
+#include <engine/fs/vfs.h>
 
 namespace ecs
 {

@@ -17,8 +17,8 @@
 #include <engine/tfx/tfx.h>
 #include <engine/time.h>
 #include <engine/types.h>
-#include <engine/vfs/file_watch.h>
-#include <engine/vfs/vfs.h>
+#include <engine/fs/file_watch.h>
+#include <engine/fs/vfs.h>
 #include <engine/window.h>
 
 namespace Engine

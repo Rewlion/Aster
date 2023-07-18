@@ -6,4 +6,4 @@ set(VFS_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/vfs/file_watch.cpp"
 )
 
-add_library(engine_vfs ${VFS_SRC})
+add_library(engine_fs ${VFS_SRC})

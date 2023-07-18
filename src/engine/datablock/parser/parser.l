@@ -3,7 +3,7 @@
 
     #include "parser.h"
     #include <engine/log.h>
-    #include <engine/vfs/vfs.h>
+    #include <engine/fs/vfs.h>
 
     #include <stdio.h>
     #include "parser.tab.hpp"

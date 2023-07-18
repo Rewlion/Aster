@@ -21,7 +21,7 @@ target_link_libraries(engine
   engine_scene
   engine_tfx
   engine_utils
-  engine_vfs
+  engine_fs
   engine_work_cycle
   "EASTL"
   "dbgeng"
