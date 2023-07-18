@@ -137,7 +137,6 @@ static void atmosphere_render_creation_handler(
     {
       tfx::set_extern("trLUT", trLUTtex.get());
       tfx::activate_scope("MsLUTScope", encoder);
-      tfx::activate_scope("AtmosphereScope", encoder);
       tfx::activate_technique("MultipleScatteringLUT", encoder);
 
       encoder.updateResources();
@@ -172,7 +171,6 @@ static void atmosphere_render_creation_handler(
       tfx::set_extern("trLUT", trLUTtex.get());
       tfx::set_extern("msLUT", msLUTtex.get());
       tfx::activate_scope("SkyLUTScope", encoder);
-      tfx::activate_scope("AtmosphereScope", encoder);
       tfx::activate_technique("SkyLUT", encoder);
 
       encoder.updateResources();
