@@ -9,7 +9,11 @@
   #define VULKAN_HPP_ASSERT_ON_RESULT(b)
 #endif
 #define VULKAN_HPP_NO_EXCEPTIONS 1
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdefaulted-function-deleted"
 #include <vulkan/vulkan.hpp>
+#pragma clang diagnostic pop
 
 namespace vk
 {
