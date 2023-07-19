@@ -73,7 +73,7 @@ static void atmosphere_render_creation_handler(
   const gapi::TextureWrapper& atm_sky_lut,
   const gapi::TextureWrapper& atm_ms_lut)
 {
-  fg::register_node("atm_tr_lut_render", FG_FILE_DECL, [&atm_tr_lut](fg::Registry& reg)
+  fg::register_node("atm_res_import", FG_FILE_DECL, [&atm_tr_lut, &atm_ms_lut, &atm_sky_lut](fg::Registry& reg)
   {
     reg.orderMeAfter("frame_preparing");
 
@@ -90,6 +90,43 @@ static void atmosphere_render_creation_handler(
                     gapi::TextureState::ShaderRead
       };
     });
+
+    auto msLutTex = reg.importTextureProducer("atm_ms_lut", [&atm_ms_lut](){
+      AtmosphereLutState lutState;
+      query_atm_lut_state([&](const int& atm_lut_state){
+        lutState = (AtmosphereLutState)atm_lut_state;
+      });
+
+      return fg::TextureImport{
+        .tex = atm_ms_lut,
+        .initState = lutState == AtmosphereLutState::Preparing ?
+                    gapi::TextureState::RenderTarget :
+                    gapi::TextureState::ShaderRead
+      };
+    });
+
+    auto skyLutTex = reg.importTextureProducer("atm_sky_lut", [&atm_sky_lut](){
+      AtmosphereLutState lutState;
+      query_atm_lut_state([&](const int& atm_lut_state){
+        lutState = (AtmosphereLutState)atm_lut_state;
+      });
+
+      return fg::TextureImport{
+        .tex = atm_sky_lut,
+        .initState = lutState == AtmosphereLutState::Preparing ?
+                    gapi::TextureState::RenderTarget :
+                    gapi::TextureState::ShaderRead
+      };
+    });
+
+    return [](gapi::CmdEncoder&){};
+  });
+
+  fg::register_node("atm_tr_lut_render", FG_FILE_DECL, [&atm_tr_lut](fg::Registry& reg)
+  {
+    reg.orderMeAfter("frame_preparing");
+
+    auto trLutTex = reg.modifyTexture("atm_tr_lut", gapi::TextureState::RenderTarget);
 
     reg.requestRenderPass()
        .addTarget(trLutTex, gapi::LoadOp::DontCare, gapi::StoreOp::Store);
@@ -114,24 +151,11 @@ static void atmosphere_render_creation_handler(
 
   fg::register_node("atm_ms_lut_render", FG_FILE_DECL, [&atm_ms_lut](fg::Registry& reg)
   {
-    auto msLutTex = reg.importTextureProducer("atm_ms_lut", [&atm_ms_lut](){
-      AtmosphereLutState lutState;
-      query_atm_lut_state([&](const int& atm_lut_state){
-        lutState = (AtmosphereLutState)atm_lut_state;
-      });
-
-      return fg::TextureImport{
-        .tex = atm_ms_lut,
-        .initState = lutState == AtmosphereLutState::Preparing ?
-                    gapi::TextureState::RenderTarget :
-                    gapi::TextureState::ShaderRead
-      };
-    });
+    auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
+    auto msLutTex = reg.modifyTexture("atm_ms_lut", gapi::TextureState::RenderTarget);
 
     reg.requestRenderPass()
        .addTarget(msLutTex, gapi::LoadOp::DontCare, gapi::StoreOp::Store);
-
-    auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
 
     return [trLUTtex](gapi::CmdEncoder& encoder)
     {
@@ -145,25 +169,12 @@ static void atmosphere_render_creation_handler(
 
   fg::register_node("atm_sky_lut_render", FG_FILE_DECL, [&atm_sky_lut](fg::Registry& reg)
   {
-    auto skyLutTex = reg.importTextureProducer("atm_sky_lut", [&atm_sky_lut](){
-      AtmosphereLutState lutState;
-      query_atm_lut_state([&](const int& atm_lut_state){
-        lutState = (AtmosphereLutState)atm_lut_state;
-      });
-
-      return fg::TextureImport{
-        .tex = atm_sky_lut,
-        .initState = lutState == AtmosphereLutState::Preparing ?
-                    gapi::TextureState::RenderTarget :
-                    gapi::TextureState::ShaderRead
-      };
-    });
+    auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
+    auto msLUTtex = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead);
+    auto skyLutTex = reg.modifyTexture("atm_sky_lut", gapi::TextureState::RenderTarget);
 
     reg.requestRenderPass()
        .addTarget(skyLutTex, gapi::LoadOp::DontCare, gapi::StoreOp::Store);
-
-    auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
-    auto msLUTtex = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead);
 
     return [trLUTtex, msLUTtex](gapi::CmdEncoder& encoder)
     {
