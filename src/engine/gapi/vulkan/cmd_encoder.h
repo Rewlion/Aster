@@ -57,6 +57,8 @@ namespace gapi::vulkan
 
       void bindGraphicsPipeline(const GraphicsPipelineDescription& desc) override;
 
+      void bindComputePipeline(const ComputePipelineDescription& desc) override;
+
       void flush(Fence* signalFence = nullptr) override;
 
       void bindConstBuffer(const BufferHandler buffer, const size_t set, const size_t binding) override;
@@ -89,6 +91,8 @@ namespace gapi::vulkan
       void beginMarkerRegion(const char* name) override;
 
       void endMarkerRegion() override;
+
+      void dispatch(const uint32_t group_count_x, const uint32_t group_count_y, const uint32_t group_count_z) override;
     private:
       vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) const;
       vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil);

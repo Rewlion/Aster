@@ -39,6 +39,15 @@ namespace ShadersSystem
         case TargetProfile::PS_6_6:
         case TargetProfile::PS_6_7: return gapi::ShaderStage::Fragment;
 
+        case TargetProfile::CS_6_0:
+        case TargetProfile::CS_6_1:
+        case TargetProfile::CS_6_2:
+        case TargetProfile::CS_6_3:
+        case TargetProfile::CS_6_4:
+        case TargetProfile::CS_6_5:
+        case TargetProfile::CS_6_6:
+        case TargetProfile::CS_6_7: return gapi::ShaderStage::Compute;
+
         default:
         {
           ASSERT(!"unknown stage");
@@ -58,6 +67,7 @@ namespace ShadersSystem
         case TargetProfile::VS_6_5: return L"vs_6_5";
         case TargetProfile::VS_6_6: return L"vs_6_6";
         case TargetProfile::VS_6_7: return L"vs_6_7";
+
         case TargetProfile::PS_6_0: return L"ps_6_0";
         case TargetProfile::PS_6_1: return L"ps_6_1";
         case TargetProfile::PS_6_2: return L"ps_6_2";
@@ -66,6 +76,15 @@ namespace ShadersSystem
         case TargetProfile::PS_6_5: return L"ps_6_5";
         case TargetProfile::PS_6_6: return L"ps_6_6";
         case TargetProfile::PS_6_7: return L"ps_6_7";
+
+        case TargetProfile::CS_6_0: return L"cs_6_0";
+        case TargetProfile::CS_6_1: return L"cs_6_1";
+        case TargetProfile::CS_6_2: return L"cs_6_2";
+        case TargetProfile::CS_6_3: return L"cs_6_3";
+        case TargetProfile::CS_6_4: return L"cs_6_4";
+        case TargetProfile::CS_6_5: return L"cs_6_5";
+        case TargetProfile::CS_6_6: return L"cs_6_6";
+        case TargetProfile::CS_6_7: return L"cs_6_7";
 
         default:
         {
@@ -167,7 +186,8 @@ namespace ShadersSystem
         TechniqueDeclaration getTechniqueDecription() const
         {
           return TechniqueDeclaration
-          {
+          { 
+            .type = m_PipelineType,
             .name = std::move(m_TechniqueName),
             .byteCode = std::move(m_ByteCode),
             .renderState = std::move(m_RenderState),
@@ -188,7 +208,14 @@ namespace ShadersSystem
 
           if ((m_Stages & all) == all)
             throw std::runtime_error("there are conflicting stages");
-          if ((m_Stages & graphics) != graphics)
+
+          const auto graphicsStages = m_Stages & graphics;
+          const auto computeStage = m_Stages & compute;
+
+          if (graphicsStages && computeStage)
+            throw std::runtime_error("technique can't have compute and graphics stages in the same time");
+
+          if (graphicsStages && ((graphicsStages & graphics) != graphics))
             throw std::runtime_error("graphics stages are not complete");
         }
 
@@ -301,6 +328,9 @@ namespace ShadersSystem
             throw std::runtime_error(fmt::format("failed to compile technique: `{}`, this stage is already compiled", shaderName));
 
           m_Stages = gapi::ShaderStage(m_Stages | stage);
+          m_PipelineType = stage == gapi::ShaderStage::Compute ?
+                            gapi::PipelineType::Compute :
+                            gapi::PipelineType::Graphics;
 
           try
           {
@@ -504,6 +534,7 @@ namespace ShadersSystem
 
         tfx::RenderState m_RenderState;
         gapi::VertexInputDescription m_Input;
+        gapi::PipelineType m_PipelineType;
         gapi::ShaderStage m_Stages = gapi::ShaderStage(0);
         eastl::vector<ShaderBlob> m_Shaders;
         eastl::vector<spirv::v2::DescriptorSet> m_DescriptorSets;

@@ -70,7 +70,8 @@ namespace boost::serialization
   template<class Archive>
   void serialize(Archive& a, ShadersSystem::TechniqueDeclaration& t, const unsigned version)
   {
-    a & t.name
+    a & t.type
+      & t.name
       & t.byteCode
       & t.renderState
       & t.blobs

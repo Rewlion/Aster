@@ -126,19 +126,22 @@ namespace gapi::vulkan
     }
   }
 
+  auto ShadersStorage::getShaderStageCreateInfo(const ShaderModuleHandler& shHandler) const -> vk::PipelineShaderStageCreateInfo
+  {
+    const ShaderModule* m = getModule(shHandler);
+    return vk::PipelineShaderStageCreateInfo{}
+            .setModule(m->module.get())
+            .setPName(m->entry.c_str())
+            .setStage(m->stage);
+  }
+
   eastl::vector<vk::PipelineShaderStageCreateInfo> ShadersStorage::getShaderStagesCreateInfos(const eastl::vector<ShaderModuleHandler>& modules) const
   {
     eastl::vector<vk::PipelineShaderStageCreateInfo> cis;
     cis.reserve(modules.size());
     for (const auto& shHandler: modules)
-    {
-      const ShaderModule* m = getModule(shHandler);
-      cis.push_back(vk::PipelineShaderStageCreateInfo{}
-        .setModule(m->module.get())
-        .setPName(m->entry.c_str())
-        .setStage(m->stage)
-      );
-    }
+      cis.push_back(getShaderStageCreateInfo(shHandler));
+
     return cis;
   }
 

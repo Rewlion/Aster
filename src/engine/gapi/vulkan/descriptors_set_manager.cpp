@@ -339,7 +339,8 @@ namespace gapi::vulkan
     const size_t managersCount = m_SetManagers.size();
     const size_t restSets = managersCount > activeSetsCount ? managersCount - activeSetsCount : 0; 
     
-    fitSetManagers(activeSetsCount-1);
+    if (activeSetsCount > 0)
+      fitSetManagers(activeSetsCount-1);
 
     bool accumulatedToggling;
     for (size_t i = 0; i < activeSetsCount; ++i)

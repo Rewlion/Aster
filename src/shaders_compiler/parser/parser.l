@@ -717,6 +717,38 @@ ps_6_7 {
   return TFX_TOKEN_TARGET_PS_6_7;
 }
 
+cs_6_0 {
+  return TFX_TOKEN_TARGET_CS_6_0;
+}
+
+cs_6_1 {
+  return TFX_TOKEN_TARGET_CS_6_1;
+}
+
+cs_6_2 {
+  return TFX_TOKEN_TARGET_CS_6_2;
+}
+
+cs_6_3 {
+  return TFX_TOKEN_TARGET_CS_6_3;
+}
+
+cs_6_4 {
+  return TFX_TOKEN_TARGET_CS_6_4;
+}
+
+cs_6_5 {
+  return TFX_TOKEN_TARGET_CS_6_5;
+}
+
+cs_6_6 {
+  return TFX_TOKEN_TARGET_CS_6_6;
+}
+
+cs_6_7 {
+  return TFX_TOKEN_TARGET_CS_6_7;
+}
+
 [a-zA-Z\_][0-9a-zA-Z\-_.]* {
   const size_t len = strlen(yytext);
   if (len >= RESOURCE_MAX_NAME_LEN)

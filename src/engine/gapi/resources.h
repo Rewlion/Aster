@@ -21,6 +21,12 @@ namespace gapi
 
   using index_type = uint32_t;
 
+  enum class PipelineType : uint8_t
+  {
+    Graphics = 0,
+    Compute  = 1
+  };
+
   enum ShaderStage
   {
     Vertex                 = 0x00000001,
@@ -552,6 +558,14 @@ namespace gapi
     PrimitiveTopology                  topology;
     DepthStencilStateDescription       depthStencilState;
     BlendState                         blendState;
+
+    size_t hash() const;
+  };
+
+  struct ComputePipelineDescription
+  {
+    PipelineLayoutHandler layout;
+    ShaderModuleHandler   shader;
 
     size_t hash() const;
   };

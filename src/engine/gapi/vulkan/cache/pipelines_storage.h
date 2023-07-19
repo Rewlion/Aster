@@ -7,6 +7,7 @@
 namespace gapi
 {
   struct GraphicsPipelineDescription;
+  struct ComputePipelineDescription;
 }
 
 namespace gapi::vulkan
@@ -19,6 +20,7 @@ namespace gapi::vulkan
 
       void init(Device* device);
       vk::Pipeline getPipeline(const GraphicsPipelineDescription& description, const vk::RenderPass rp, const size_t subpass);
+      vk::Pipeline getComputePipeline(const ComputePipelineDescription&);
       PipelineLayoutHandler addPipelineLayout(const eastl::vector<spirv::v2::DescriptorSet>& dsets);
       const PipelineLayout& getPipelineLayout(const PipelineLayoutHandler h);
       ShaderModuleHandler addModule(const ShadersSystem::ShaderBlob& blob);
@@ -28,5 +30,6 @@ namespace gapi::vulkan
       ShadersStorage m_ShadersStorage;
 
       eastl::hash_map<string_hash, vk::UniquePipeline> m_Pipelines;
+      eastl::hash_map<string_hash, vk::UniquePipeline> m_ComputePipelines;
   };
 }

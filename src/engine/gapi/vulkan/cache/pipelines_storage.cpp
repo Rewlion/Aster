@@ -153,6 +153,34 @@ namespace gapi::vulkan
     return pipeline;
   }
 
+  vk::Pipeline PipelinesStorage::getComputePipeline(const ComputePipelineDescription& description)
+  {
+    size_t pipelineHash = description.hash();
+    const auto it = m_ComputePipelines.find(pipelineHash);
+    if (it != m_ComputePipelines.end())
+      return it->second.get();
+
+    const PipelineLayout& layout = m_ShadersStorage.getPipelineLayout(description.layout);
+    vk::PipelineShaderStageCreateInfo cis = m_ShadersStorage.getShaderStageCreateInfo(description.shader);
+
+    vk::ComputePipelineCreateInfo ci;
+    ci.stage = cis;
+    ci.layout = layout.pipelineLayout.get();
+
+    auto result = m_Device->m_Device->createComputePipelineUnique({}, ci);
+    if (result.result != vk::Result::eSuccess)
+      logerror("failed to create compute pipeline");
+
+    vk::Pipeline pipeline = result.value.get();
+
+    m_ComputePipelines.insert({
+      pipelineHash,
+      std::move(result.value)
+    });
+
+    return pipeline;
+  }
+
   ShaderModuleHandler PipelinesStorage::addModule(const ShadersSystem::ShaderBlob& blob)
   {
     return m_ShadersStorage.addModule(blob);

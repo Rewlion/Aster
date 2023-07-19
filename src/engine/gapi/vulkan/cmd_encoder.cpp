@@ -249,6 +249,17 @@ namespace gapi::vulkan
     m_CmdBuf.setScissor(0, 1, &m_GraphicsPipelineState.scissor);
   }
 
+  void CmdEncoder::bindComputePipeline(const ComputePipelineDescription& desc)
+  {
+    insureActiveCmd();
+
+    vk::Pipeline pipeline = m_PipelinesStorage.getComputePipeline(desc);
+    const PipelineLayout& layout = m_PipelinesStorage.getPipelineLayout(desc.layout);
+
+    m_DsetManager.setPipelineLayout(&layout);
+    m_CmdBuf.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline);
+  }
+
   void CmdEncoder::flush(Fence* signalFence)
   {
     insureActiveCmd();
@@ -462,5 +473,11 @@ namespace gapi::vulkan
       insureActiveCmd();
       m_CmdBuf.endDebugUtilsLabelEXT();
     }
+  }
+
+  void CmdEncoder::dispatch(const uint32_t group_count_x, const uint32_t group_count_y, const uint32_t group_count_z)
+  {
+    insureActiveCmd();
+    m_CmdBuf.dispatch(group_count_x, group_count_y, group_count_z);
   }
 }

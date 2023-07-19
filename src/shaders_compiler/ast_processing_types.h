@@ -95,6 +95,7 @@ namespace ShadersSystem
 
   struct TechniqueDeclaration
   {
+    gapi::PipelineType type;
     string name;
     ByteCodes byteCode;
     tfx::RenderState renderState;
@@ -103,7 +104,8 @@ namespace ShadersSystem
 
     bool operator==(const TechniqueDeclaration& rvl) const
     {
-      return name == rvl.name &&
+      return type == rvl.type &&
+        name == rvl.name &&
         is_same_byte_code(byteCode, rvl.byteCode) &&
         renderState == rvl.renderState &&
         blobs == rvl.blobs &&

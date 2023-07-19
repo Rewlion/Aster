@@ -212,6 +212,14 @@
 %token TFX_TOKEN_TARGET_PS_6_5 "ps_6_5"
 %token TFX_TOKEN_TARGET_PS_6_6 "ps_6_6"
 %token TFX_TOKEN_TARGET_PS_6_7 "ps_6_7"
+%token TFX_TOKEN_TARGET_CS_6_0 "cs_6_0"
+%token TFX_TOKEN_TARGET_CS_6_1 "cs_6_1"
+%token TFX_TOKEN_TARGET_CS_6_2 "cs_6_2"
+%token TFX_TOKEN_TARGET_CS_6_3 "cs_6_3"
+%token TFX_TOKEN_TARGET_CS_6_4 "cs_6_4"
+%token TFX_TOKEN_TARGET_CS_6_5 "cs_6_5"
+%token TFX_TOKEN_TARGET_CS_6_6 "cs_6_6"
+%token TFX_TOKEN_TARGET_CS_6_7 "cs_6_7"
 
 %token TFX_TOKEN_FLOAT "float"
 %token TFX_TOKEN_FLOAT2 "float2"
@@ -918,6 +926,30 @@ TARGET_PROFILE
   }
   | "ps_6_7" {
     $$ = TargetProfile::PS_6_7;
+  }
+  | "cs_6_0" {
+    $$ = TargetProfile::CS_6_0;
+  }
+  | "cs_6_1" {
+    $$ = TargetProfile::CS_6_1;
+  }
+  | "cs_6_2" {
+    $$ = TargetProfile::CS_6_2;
+  }
+  | "cs_6_3" {
+    $$ = TargetProfile::CS_6_3;
+  }
+  | "cs_6_4" {
+    $$ = TargetProfile::CS_6_4;
+  }
+  | "cs_6_5" {
+    $$ = TargetProfile::CS_6_5;
+  }
+  | "cs_6_6" {
+    $$ = TargetProfile::CS_6_6;
+  }
+  | "cs_6_7" {
+    $$ = TargetProfile::CS_6_7;
   }
 
 %%

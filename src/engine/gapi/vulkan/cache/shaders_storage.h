@@ -33,6 +33,7 @@ namespace gapi::vulkan
       ShaderModuleHandler addModule(const ShadersSystem::ShaderBlob& blob);
       PipelineLayoutHandler addPipelineLayout(const eastl::vector<spirv::v2::DescriptorSet>& dsets);
       const PipelineLayout& getPipelineLayout(const PipelineLayoutHandler h);
+      auto getShaderStageCreateInfo(const ShaderModuleHandler&) const -> vk::PipelineShaderStageCreateInfo;
       eastl::vector<vk::PipelineShaderStageCreateInfo> getShaderStagesCreateInfos(const eastl::vector<ShaderModuleHandler>& modules) const;
 
       void clear();

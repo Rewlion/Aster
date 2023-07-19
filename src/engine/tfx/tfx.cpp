@@ -1,9 +1,10 @@
 #include "tfx.h"
 
 #include <engine/algorithm/hash.h>
-#include <engine/log.h>
-#include <engine/gapi/gapi.h>
 #include <engine/gapi/cmd_encoder.h>
+#include <engine/gapi/gapi.h>
+#include <engine/gapi/utils.h>
+#include <engine/log.h>
 #include <shaders_compiler/bin.h>
 #include <shaders_compiler/serialization.h>
 
@@ -27,9 +28,11 @@ namespace tfx
 
     struct Technique
     {
+      gapi::PipelineType type;
       string name;
       const ShadersSystem::ByteCodes& byteCode;
       gapi::GraphicsPipelineDescription graphicsPipelineDesc;
+      gapi::ComputePipelineDescription computePipelineDesc;
     };
 
     template<class T>
@@ -61,7 +64,11 @@ namespace tfx
         {
           m_CmdEncoder = cmd_encoder;
           processByteCodes(technique.byteCode);
-          m_CmdEncoder->bindGraphicsPipeline(technique.graphicsPipelineDesc);
+
+          if (technique.type == gapi::PipelineType::Graphics)
+            m_CmdEncoder->bindGraphicsPipeline(technique.graphicsPipelineDesc);
+          else
+            m_CmdEncoder->bindComputePipeline(technique.computePipelineDesc);
         }
 
       private:
@@ -248,6 +255,14 @@ namespace tfx
       const string_hash h = str_hash(t.name.c_str());
       ASSERT_FMT(techniques_storage.find(h) == techniques_storage.end(), "technique {} already exist", t.name);
 
+      gapi::PipelineLayoutHandler layout = gapi::add_pipeline_layout((void*)&t.dsets);
+
+      auto technique = Technique{
+        .type = t.type,
+        .name = t.name,
+        .byteCode = t.byteCode
+      };
+
       eastl::vector<gapi::ShaderModuleHandler> modules;
       modules.reserve(t.blobs.size());
       for (size_t i = 0; i < t.blobs.size(); ++i)
@@ -256,26 +271,32 @@ namespace tfx
         modules.push_back(mh);
       }
 
-      gapi::PipelineLayoutHandler layout = gapi::add_pipeline_layout((void*)&t.dsets);
+      if (t.type == gapi::PipelineType::Graphics)
+      {
+        technique.graphicsPipelineDesc = {
+          .layout = layout,
+          .shaders = std::move(modules),
+          .ia = t.renderState.ia,
+          .cullMode = t.renderState.cullMode,
+          .topology = t.renderState.topology,
+          .depthStencilState = t.renderState.depthStencil,
+          .blendState = t.renderState.blending
+        };
+      }
+      else
+      {
+        technique.computePipelineDesc = {
+          .layout = layout,
+          .shader = modules[0]
+        };
+      }
 
       techniques_storage.insert({
         h,
-        Technique{
-          .name = t.name,
-          .byteCode = t.byteCode,
-          .graphicsPipelineDesc = {
-            .layout = layout,
-            .shaders = std::move(modules),
-            .ia = t.renderState.ia,
-            .cullMode = t.renderState.cullMode,
-            .topology = t.renderState.topology,
-            .depthStencilState = t.renderState.depthStencil,
-            .blendState = t.renderState.blending
-          }
-        }
+        std::move(technique)
       });
 
-      loginfo("tfx: loaded technique `{}`", t.name);
+      loginfo("tfx: loaded {} technique `{}`", gapi::to_string(t.type), t.name);
     }
   }
 

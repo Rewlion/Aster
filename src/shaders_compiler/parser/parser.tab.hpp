@@ -209,18 +209,26 @@ extern int shdebug;
     TFX_TOKEN_TARGET_PS_6_5 = 394, /* "ps_6_5"  */
     TFX_TOKEN_TARGET_PS_6_6 = 395, /* "ps_6_6"  */
     TFX_TOKEN_TARGET_PS_6_7 = 396, /* "ps_6_7"  */
-    TFX_TOKEN_FLOAT = 397,         /* "float"  */
-    TFX_TOKEN_FLOAT2 = 398,        /* "float2"  */
-    TFX_TOKEN_FLOAT3 = 399,        /* "float3"  */
-    TFX_TOKEN_FLOAT4 = 400,        /* "float4"  */
-    TFX_TOKEN_FLOAT4_u8 = 401,     /* "float4_u8"  */
-    TFX_TOKEN_FLOAT4X4 = 402,      /* "float4x4"  */
-    TFX_TOKEN_INT = 403,           /* "int"  */
-    TFX_TOKEN_INT2 = 404,          /* "int2"  */
-    TFX_TOKEN_INT3 = 405,          /* "int3"  */
-    TFX_TOKEN_INT4 = 406,          /* "int4"  */
-    TFX_TOKEN_TEXTURE2D = 407,     /* "Texture2D"  */
-    TFX_TOKEN_TEXTURE_CUBE = 408   /* "TextureCube"  */
+    TFX_TOKEN_TARGET_CS_6_0 = 397, /* "cs_6_0"  */
+    TFX_TOKEN_TARGET_CS_6_1 = 398, /* "cs_6_1"  */
+    TFX_TOKEN_TARGET_CS_6_2 = 399, /* "cs_6_2"  */
+    TFX_TOKEN_TARGET_CS_6_3 = 400, /* "cs_6_3"  */
+    TFX_TOKEN_TARGET_CS_6_4 = 401, /* "cs_6_4"  */
+    TFX_TOKEN_TARGET_CS_6_5 = 402, /* "cs_6_5"  */
+    TFX_TOKEN_TARGET_CS_6_6 = 403, /* "cs_6_6"  */
+    TFX_TOKEN_TARGET_CS_6_7 = 404, /* "cs_6_7"  */
+    TFX_TOKEN_FLOAT = 405,         /* "float"  */
+    TFX_TOKEN_FLOAT2 = 406,        /* "float2"  */
+    TFX_TOKEN_FLOAT3 = 407,        /* "float3"  */
+    TFX_TOKEN_FLOAT4 = 408,        /* "float4"  */
+    TFX_TOKEN_FLOAT4_u8 = 409,     /* "float4_u8"  */
+    TFX_TOKEN_FLOAT4X4 = 410,      /* "float4x4"  */
+    TFX_TOKEN_INT = 411,           /* "int"  */
+    TFX_TOKEN_INT2 = 412,          /* "int2"  */
+    TFX_TOKEN_INT3 = 413,          /* "int3"  */
+    TFX_TOKEN_INT4 = 414,          /* "int4"  */
+    TFX_TOKEN_TEXTURE2D = 415,     /* "Texture2D"  */
+    TFX_TOKEN_TEXTURE_CUBE = 416   /* "TextureCube"  */
   };
   typedef enum shtokentype shtoken_kind_t;
 #endif
@@ -268,7 +276,7 @@ union SHSTYPE
   TechniqueExp* techniqueExp;
   TargetProfile targetProfile;
 
-#line 272 "src/shaders_compiler/parser/parser.tab.hpp"
+#line 280 "src/shaders_compiler/parser/parser.tab.hpp"
 
 };
 typedef union SHSTYPE SHSTYPE;

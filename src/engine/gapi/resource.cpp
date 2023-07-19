@@ -52,6 +52,7 @@ namespace gapi
     using boost::hash_combine;
     size_t hash = 0;
 
+    hash_combine(hash, layout);
     for(const auto handler: shaders)
       hash_combine(hash, handler);
     hash_combine(hash, ia.hash());
@@ -59,6 +60,17 @@ namespace gapi
     hash_combine(hash, topology);
     hash_combine(hash, depthStencilState.hash());
     hash_combine(hash, blendState.hash());
+
+    return hash;
+  }
+
+  size_t ComputePipelineDescription::hash() const
+  {
+    using boost::hash_combine;
+    size_t hash = 0;
+
+    hash_combine(hash, layout);
+    hash_combine(hash, shader);
 
     return hash;
   }

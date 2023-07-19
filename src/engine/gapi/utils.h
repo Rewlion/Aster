@@ -5,6 +5,17 @@
 namespace gapi
 {
   inline
+  auto to_string(const PipelineType type) -> const char*
+  {
+    switch (type)
+    {
+      case PipelineType::Graphics: return "Graphics";
+      case PipelineType::Compute: return "Compute";
+      default: return "<unknown pipeline type>";
+    }
+  }
+
+  inline
   auto to_string(const TextureState state) -> const char*
   {
     switch (state)

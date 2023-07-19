@@ -42,6 +42,9 @@ namespace gapi
       virtual
       void bindGraphicsPipeline(const GraphicsPipelineDescription& desc) = 0;
 
+      virtual
+      void bindComputePipeline(const ComputePipelineDescription& desc) = 0;
+
       //virtual void present() = 0;
 
       //virtual void pushConstants(const void* data, const size_t size, const ShaderStage stage) = 0;
@@ -89,5 +92,8 @@ namespace gapi
 
       virtual
       void endMarkerRegion() = 0;
+
+      virtual
+      void dispatch(const uint32_t group_count_x, const uint32_t group_count_y, const uint32_t group_count_z) = 0;
   };
 }
