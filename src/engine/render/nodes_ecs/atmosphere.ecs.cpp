@@ -152,10 +152,9 @@ static void atmosphere_render_creation_handler(
   fg::register_node("atm_ms_lut_render", FG_FILE_DECL, [&atm_ms_lut](fg::Registry& reg)
   {
     auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
-    auto msLutTex = reg.modifyTexture("atm_ms_lut", gapi::TextureState::RenderTarget);
 
     reg.requestRenderPass()
-       .addTarget(msLutTex, gapi::LoadOp::DontCare, gapi::StoreOp::Store);
+       .addTarget("atm_ms_lut", gapi::LoadOp::DontCare);
 
     return [trLUTtex](gapi::CmdEncoder& encoder)
     {
@@ -171,10 +170,9 @@ static void atmosphere_render_creation_handler(
   {
     auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
     auto msLUTtex = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead);
-    auto skyLutTex = reg.modifyTexture("atm_sky_lut", gapi::TextureState::RenderTarget);
 
     reg.requestRenderPass()
-       .addTarget(skyLutTex, gapi::LoadOp::DontCare, gapi::StoreOp::Store);
+       .addTarget("atm_sky_lut", gapi::LoadOp::DontCare);
 
     return [trLUTtex, msLUTtex](gapi::CmdEncoder& encoder)
     {
@@ -189,13 +187,9 @@ static void atmosphere_render_creation_handler(
 
   fg::register_node("atm_sky_apply", FG_FILE_DECL, [](fg::Registry& reg)
   {
-    auto depth = reg.readTexture("gbuffer_depth", gapi::TextureState::DepthReadStencilRead);
-    auto rt = reg.modifyTexture("resolve_target", gapi::TextureState::RenderTarget);
-
     reg.requestRenderPass()
-      .addTarget(rt, gapi::LoadOp::Load, gapi::StoreOp::Store)
-      .addDepth(depth, gapi::LoadOp::Load, gapi::StoreOp::Store,
-                       gapi::LoadOp::Load, gapi::StoreOp::Store);
+      .addTarget("resolve_target")
+      .addRODepth("gbuffer_depth");
 
     auto skyLUTtex = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead);
 

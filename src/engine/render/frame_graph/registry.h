@@ -47,10 +47,13 @@ namespace fg
     public:
       class RpBuilder
       {
+        Registry& m_Registry;
         ExecState& m_State;
         public:
-          RpBuilder(ExecState& state) : m_State(state) {}
+          RpBuilder(Registry& reg, ExecState& state) : m_Registry(reg), m_State(state) {}
           auto addTarget(const TextureRequest, const gapi::LoadOp, const gapi::StoreOp) && -> RpBuilder&&;
+          auto addTarget(const char*, const gapi::LoadOp = gapi::LoadOp::Load) && -> RpBuilder&&;
+          auto addRODepth(const char*, const gapi::LoadOp = gapi::LoadOp::Load) && -> RpBuilder&&;
           auto addDepth(const TextureRequest, 
                         const gapi::LoadOp depth_load, const gapi::StoreOp depth_store,
                         const gapi::LoadOp stencil_load, const gapi::StoreOp stencil_store) && -> RpBuilder&&;

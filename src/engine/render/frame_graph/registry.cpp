@@ -170,7 +170,7 @@ namespace fg
   auto Registry::requestRenderPass() -> RpBuilder
   {
     m_Nodes[m_CurrentExecNodeId].execState.renderPass = {};
-    return {m_Nodes[m_CurrentExecNodeId].execState};
+    return {*this, m_Nodes[m_CurrentExecNodeId].execState};
   }
 
   auto Registry::RpBuilder::addTarget(const TextureRequest tex_req, const gapi::LoadOp load, const gapi::StoreOp store) && -> RpBuilder&&
@@ -179,12 +179,25 @@ namespace fg
     return std::move(*this);
   }
 
+  auto Registry::RpBuilder::addTarget(const char* tex_name, const gapi::LoadOp load) && -> RpBuilder&&
+  {
+    auto tex = m_Registry.modifyTexture(tex_name, gapi::TextureState::RenderTarget);
+    return std::move(*this).addTarget(tex, load, gapi::StoreOp::Store);
+  }
+
   auto Registry::RpBuilder::addDepth(const TextureRequest tex_req, 
                                      const gapi::LoadOp depth_load, const gapi::StoreOp depth_store,
                                      const gapi::LoadOp stencil_load, const gapi::StoreOp stencil_store) && -> RpBuilder&&
   {
     m_State.renderPass.depth = {tex_req.m_Id, depth_load, depth_store, stencil_load, stencil_store};
     return std::move(*this);
+  }
+
+  auto Registry::RpBuilder::addRODepth(const char* tex_name, const gapi::LoadOp load) && -> RpBuilder&&
+  {
+    auto tex = m_Registry.readTexture(tex_name, gapi::TextureState::DepthReadStencilRead);
+    return std::move(*this).addDepth(tex, load, gapi::StoreOp::Store,
+                                          gapi::LoadOp::Load, gapi::StoreOp::Store);
   }
 
   auto Registry::registerNode(const char* name, const char* file, BuildFunction build_cb) -> node_id_t
