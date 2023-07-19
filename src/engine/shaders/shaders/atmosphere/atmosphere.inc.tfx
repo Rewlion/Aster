@@ -1,0 +1,38 @@
+scope AtmosphereScope {
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0);
+
+  float2 sunAzimuth_Altitude = channel(sunAzimuth_Altitude);
+  float2 atmRTopMM_atmRBotMM = channel(atmRTopMM_atmRBotMM);
+};
+
+technique_macro USE_ATMOSPHERE_PARAMS {
+  support scope AtmosphereScope;
+
+#hlsl
+  struct AtmosphereParams
+  {
+    float rTopMM;
+    float rBotMM;
+    float3 rayleighScatteringBase;
+    float3 rayleighAbsorbtionBase;
+    float3 mieScatteringBase;
+    float3 mieAbsorbtionBase;
+    float3 ozoneAbsorbtionBase;
+  };
+
+  AtmosphereParams getAtmosphereParams()
+  {
+    AtmosphereParams p;
+    p.rTopMM = AtmosphereScope.atmRTopMM_atmRBotMM.x;
+    p.rBotMM = AtmosphereScope.atmRTopMM_atmRBotMM.y;
+    p.rayleighScatteringBase = float3(5.802, 13.558, 33.1);
+    p.rayleighAbsorbtionBase = 0.0;
+    p.mieScatteringBase = 3.996;
+    p.mieAbsorbtionBase = 4.4;
+    p.ozoneAbsorbtionBase = float3(0.650, 1.881, .085);
+    return p;
+  }
+#end
+};

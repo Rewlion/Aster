@@ -1,0 +1,12 @@
+technique_macro USE_MULTIPLE_SCATTERING_LUT {
+#hlsl
+  float3 samplePsi(AtmosphereParams atm_params, float r_mm, float sun_zenith)
+  {
+    float2 uv = {
+      0.5 + 0.5 * sun_zenith,
+      (r_mm - atm_params.rBotMM) / (atm_params.rTopMM - atm_params.rBotMM)
+    };
+    return msLUT.Sample(linearClampSampler, uv).rgb;
+  }
+#end
+};

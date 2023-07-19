@@ -1,37 +1,19 @@
+#include "../screen_space.inc.tfx"
+#include "../math.inc.tfx"
+#include "atmosphere.inc.tfx"
 #include "ebruneton.inc.tfx"
-#include "common.inc.tfx"
+#include "scattering.inc.tfx"
 
 technique TransmittanceLUT {
-  support scope AtmosphereScope;
+  USE_ATMOSPHERE_PARAMS();
 
-  render_state:
-    primitive_topology = triangle_strip;
-    depth:
-     test = no;
-     write = no;
-
+  USE_MATH();
+  USE_SCREENSPACE_BASE();
   USE_EBRUNETON_HELPERS();
-  USE_ATMOSPHERE_COMMON();
+  USE_SCATTERING();
 
   #hlsl
     #include "consts.hlsl"
-
-    struct VsOutput
-    {
-      float4 pos: SV_Position;
-    };
-
-    float4 vs_main(uint id: SV_VertexID) : SV_Position
-    {
-      float2 vertices[4] = {
-        float2(1.0f, -1.0f),
-        float2(-1.0f, -1.0f),
-        float2(1.0f, 1.0f),
-        float2(-1.0f, 1.0f)
-      };
-
-      return float4(vertices[id], 0, 1.0);
-    }
 
     float3 calcTransmittanceToTopAtmosphere(AtmosphereParams atmosphere, float r, float mu)
     {

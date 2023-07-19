@@ -1,0 +1,11 @@
+technique_macro USE_TRANSMITTANCE_LUT {
+#hlsl
+  #include "consts.hlsl"
+
+  float3 sampleTransmittance(float r_mm, float mu, float atm_bot_radius, float atm_top_radius)
+  {
+   float2 uv = GetTransmittanceTextureUvFromRMu(TR_LUT_SIZE, r_mm, mu, atm_bot_radius, atm_top_radius);
+   return trLUT.Sample(linearClampSampler, uv).rgb;
+  }
+#end
+};

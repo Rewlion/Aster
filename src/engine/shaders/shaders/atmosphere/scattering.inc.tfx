@@ -1,0 +1,67 @@
+
+technique_macro USE_SCATTERING {
+#hlsl
+
+#define TRANSMITTANCE_STEPS (float)100.0
+#define SCATTERING_STEPS (float)32.0
+#define MSCATTERING_STEPS (float)20.0
+
+float RayleighPhaseFunction(float VoL)
+{
+  const float k = 3.0/(16.0*PI);
+  return k*(1.0+VoL*VoL);
+}
+
+float MiePhaseFunction(float VoL, float g)
+{
+  float g2 = g*g;
+  float a = (1.0 - g2) * (1 + VoL * VoL);
+  float b = max(0.0, (1.0 + g2 - 2*g*VoL));
+        b = sqrt(pow(b, 3.0));
+  float c = (2.0 + g2);
+  float k = 3.0 / (8.0*PI);
+  
+  return k * a / (c*b);
+}
+
+float calcRayDensityProfile(float H_mm)
+{
+  return exp(-H_mm * MM2KM / 8.0);
+}
+
+float calcMieDensityProfile(float H_mm)
+{
+  return exp(-H_mm * MM2KM / 1.2);
+}
+
+float calcOzonDensityProfile(float H_mm)
+{
+  return max(0.0, 1.0 - abs(H_mm * MM2KM-25.0)/15.0);
+}
+
+float3 calcRayMieOzonDensities(float3 r_mm, AtmosphereParams atmosphere)
+{
+  float Hi_mm = length(r_mm) - atmosphere.rBotMM;
+  return float3(
+      calcRayDensityProfile(Hi_mm),
+      calcMieDensityProfile(Hi_mm),
+      calcOzonDensityProfile(Hi_mm));
+}
+
+void calcScatteringValues(AtmosphereParams atmosphere, float3 r_mm, out float3 ray_scattering, out float3 mie_scattering, out float3 extinction)
+{
+  float3 rayMieOzonDensities = calcRayMieOzonDensities(r_mm, atmosphere);
+  float rayDensity = rayMieOzonDensities.x;
+  float mieDensity = rayMieOzonDensities.y;
+  float ozonDensity = rayMieOzonDensities.z;
+  
+  ray_scattering = atmosphere.rayleighScatteringBase * rayDensity;
+  mie_scattering = float3(atmosphere.mieScatteringBase * mieDensity);
+  float3 mieAbsorbtion = float3(atmosphere.mieAbsorbtionBase * mieDensity);
+  float3 ozonAbsorbtion = atmosphere.ozoneAbsorbtionBase * ozonDensity;
+  
+  extinction = ray_scattering + mie_scattering + mieAbsorbtion + ozonAbsorbtion;
+}
+
+#end
+};

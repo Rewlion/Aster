@@ -1,0 +1,42 @@
+technique_macro USE_MATH{
+#hlsl
+  #define MM2KM 1e3
+  #define PI (float)3.14159265359
+
+  float3 sphericalToDecartian(float theta, float phi)
+  {
+    return float3(
+      sin(theta)*cos(phi),
+      sin(theta)*sin(phi),
+      cos(theta)
+    );
+  }
+
+  float3 altitudeAzimuthToDecartian(float altitude, float azimuth)
+  {
+    return normalize(float3(cos(altitude)*sin(azimuth),
+                     sin(altitude),
+                     cos(altitude)*cos(azimuth)));
+  }
+
+  float raySphereIntersection(float3 r0, float3 dir, float3 s, float radius, out float3 intersection)
+  {
+    float3 dr = r0 - s;
+    float k = dot(dr, dir);
+    float c = pow(length(dr), 2.0) - pow(radius, 2.0);
+    float D = k*k - c;
+    if (D<0.0)
+        return -1e6;
+
+    bool isInsideSphere = k*k < D;
+    float sqrtD = sqrt(D);
+    float t = isInsideSphere ?
+                -k + sqrtD :
+                -k - sqrtD;
+
+    intersection = r0 + dir * t;
+    return t;
+  }
+
+#end
+};

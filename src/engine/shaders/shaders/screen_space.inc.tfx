@@ -1,0 +1,67 @@
+technique_macro USE_SCREENSPACE_BASE {
+render_state:
+  cull_mode = none;
+  primitive_topology = triangle_strip;
+  depth:
+   test = no;
+   write = no;
+
+#hlsl
+ struct VsOutput
+ {
+   float4 pos: SV_Position;
+ };
+
+ float4 vs_main(uint id: SV_VertexID) : SV_Position
+ {
+   float2 vertices[4] = {
+     float2(1.0f, -1.0f),
+     float2(-1.0f, -1.0f),
+     float2(1.0f, 1.0f),
+     float2(-1.0f, 1.0f)
+   };
+
+   return float4(vertices[id], 0, 1.0);
+ }
+#end
+};
+
+technique_macro USE_SCREENSPACE_VIEW_BASE {
+render_state:
+  cull_mode = none;
+  primitive_topology = triangle_strip;
+  depth:
+   test = no;
+   write = no;
+
+#hlsl
+  struct VsOutput
+  {
+    float4 pos: SV_Position;
+    float3 viewDir: POSITION0;
+  };
+
+  VsOutput vs_main(uint id: SV_VertexID)
+  {
+    float2 vertices[4] = {
+      float2(1.0f, -1.0f),
+      float2(-1.0f, -1.0f),
+      float2(1.0f, 1.0f),
+      float2(-1.0f, 1.0f)
+    };
+
+    float3 frustumViews[4] = {
+      FrameScope.rbView,
+      FrameScope.lbView,
+      FrameScope.rtView,
+      FrameScope.ltView
+    };
+
+    VsOutput output;
+    output.pos = float4(vertices[id], 0, 1.0);
+    output.viewDir = frustumViews[id];
+
+    return output;
+  }
+#end
+};

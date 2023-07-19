@@ -1,6 +1,10 @@
-#include "ebruneton.inc.tfx"
-#include "common.inc.tfx"
 #include "../frame.inc.tfx"
+#include "../math.inc.tfx"
+#include "../screen_space.inc.tfx"
+#include "atmosphere.inc.tfx"
+#include "ebruneton.inc.tfx"
+#include "scattering.inc.tfx"
+#include "transmittance.inc.tfx"
 
 scope MsLUTScope {
   reserve:
@@ -12,54 +16,17 @@ scope MsLUTScope {
 
 technique MultipleScatteringLUT {
   support scope FrameScope;
-  support scope AtmosphereScope;
+  USE_ATMOSPHERE_PARAMS();
   activate scope MsLUTScope;
 
-  render_state:
-    primitive_topology = triangle_strip;
-    depth:
-     test = no;
-     write = no;
-
+  USE_MATH();
   USE_EBRUNETON_HELPERS();
-  USE_ATMOSPHERE_COMMON();
+  USE_SCATTERING();
+  USE_TRANSMITTANCE_LUT();
+  USE_SCREENSPACE_BASE();
 
   #hlsl
-    #include "consts.hlsl"
-
-    struct VsOutput
-    {
-      float4 pos: SV_Position;
-    };
-
-    float4 vs_main(uint id: SV_VertexID) : SV_Position
-    {
-      float2 vertices[4] = {
-        float2(1.0f, -1.0f),
-        float2(-1.0f, -1.0f),
-        float2(1.0f, 1.0f),
-        float2(-1.0f, 1.0f)
-      };
-
-      return float4(vertices[id], 0, 1.0);
-    }
-
-    float3 sphericalToDecart(float theta, float phi)
-    {
-      return float3(
-        sin(theta)*cos(phi),
-        sin(theta)*sin(phi),
-        cos(theta)
-      );
-    }
-
-    float3 sampleTransmittance(float r_mm, float mu, float atm_bot_radius, float atm_top_radius)
-    {
-     float2 uv = GetTransmittanceTextureUvFromRMu(TR_LUT_SIZE, r_mm, mu, atm_bot_radius, atm_top_radius);
-     return trLUT.Sample(linearClampSampler, uv).rgb;
-    }
-    
-    void calcMultipleScattering(AtmosphereParams atmParams, float3 p0_mm, float3 lightDir, out float3 psi)
+    void calcMultipleScattering(AtmosphereParams atm_params, float3 p0_mm, float3 light_dir, out float3 psi)
     {
       psi = float3(0,0,0);
     
@@ -73,18 +40,18 @@ technique MultipleScatteringLUT {
       {
         float theta = acos(clamp(1.0 - 2.0 * j/sqrtN, -1.0, 1.0));
         float phi = 2.0 * PI * i /sqrtN;
-        float3 viewDir = sphericalToDecart(theta, phi);
+        float3 viewDir = sphericalToDecartian(theta, phi);
         
-        float VoL = dot(viewDir, lightDir);
+        float VoL = dot(viewDir, light_dir);
       
-        float rayPhase = phaseR(VoL);
-        float miePhase = phaseM_HG(VoL, 0.76);
+        float rayPhase = RayleighPhaseFunction(VoL);
+        float miePhase = MiePhaseFunction(VoL, 0.76);
         
         float3 RTop_mm;
-        float topAtmDist_mm = raySphereIntersection(p0_mm, viewDir, float3(0,0,0), atmParams.rTopMM, RTop_mm);
+        float topAtmDist_mm = raySphereIntersection(p0_mm, viewDir, float3(0,0,0), atm_params.rTopMM, RTop_mm);
         
         float3 RBot_mm;
-        float botAtmDist_mm = raySphereIntersection(p0_mm, viewDir, float3(0,0,0), atmParams.rBotMM, RBot_mm);
+        float botAtmDist_mm = raySphereIntersection(p0_mm, viewDir, float3(0,0,0), atm_params.rBotMM, RBot_mm);
         
         float scatteringDist_mm = botAtmDist_mm > 0.0 ? botAtmDist_mm : topAtmDist_mm;
         
@@ -101,14 +68,14 @@ technique MultipleScatteringLUT {
           float3 Ri_mm = p0_mm + viewDir * t;
           float3 RiDir = normalize(Ri_mm);
           float Ri_len_mm = length(Ri_mm);
-          float RioSDir = dot(RiDir, lightDir);
+          float RioSDir = dot(RiDir, light_dir);
         
           float3 rayScattering, extintion;
           float3 mieScattering;
-          calcScatteringValues(atmParams, Ri_mm, rayScattering, mieScattering, extintion);
+          calcScatteringValues(atm_params, Ri_mm, rayScattering, mieScattering, extintion);
           
           float3 Tri = exp(-extintion * dt);
-          float3 TrSun = sampleTransmittance(Ri_len_mm, RioSDir, atmParams.rBotMM, atmParams.rTopMM);
+          float3 TrSun = sampleTransmittance(Ri_len_mm, RioSDir, atm_params.rBotMM, atm_params.rTopMM);
           
           float3 Sfi = rayScattering + mieScattering;
           fmsi += (Sfi * (1.0 - Tri) / extintion) * Tr;
