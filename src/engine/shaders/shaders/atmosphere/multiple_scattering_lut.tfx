@@ -12,8 +12,8 @@ scope MsLUTScope {
 
 technique MultipleScatteringLUT {
   support scope FrameScope;
-  support scope MsLUTScope;
   support scope AtmosphereScope;
+  activate scope MsLUTScope;
 
   render_state:
     primitive_topology = triangle_strip;

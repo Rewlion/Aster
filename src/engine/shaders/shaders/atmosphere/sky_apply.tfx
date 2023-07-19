@@ -14,7 +14,7 @@ scope SkyApplyScope {
 technique SkyApply {
   support scope FrameScope;
   support scope AtmosphereScope;
-  support scope SkyApplyScope;
+  activate scope SkyApplyScope;
 
    render_state:
     primitive_topology = triangle_strip;

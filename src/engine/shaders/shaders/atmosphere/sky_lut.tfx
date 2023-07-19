@@ -14,7 +14,7 @@ scope SkyLUTScope {
 technique SkyLUT {
   support scope FrameScope;
   support scope AtmosphereScope;
-  support scope SkyLUTScope;
+  activate scope SkyLUTScope;
 
   render_state:
     primitive_topology = triangle_strip;
