@@ -41,7 +41,7 @@
   codeBuf += "\n";
 }
 
-<hlsl>#end {
+<hlsl>#end[^a-zA-Z] {
   BEGIN(INITIAL);
   shlval.sval = strdup(codeBuf.c_str());
   return TFX_TOKEN_HLSL_CODE;
