@@ -14,10 +14,14 @@
 
 namespace ShadersSystem
 {
+  enum CompilationFlags
+  {
+    COMPILE_DEBUG = 1
+  };
   class Compiler
   {
     public:
-      bool compileModuleFromFile(const string& file);
+      bool compileModuleFromFile(const string& file, const int flags);
 
       inline void markCompilationFailed() { m_IsCompilationOk = false; }
       bool onScopeDeclaration(ScopeDeclarationExp*);
@@ -45,7 +49,7 @@ namespace ShadersSystem
       void incLine() { ++m_FileCtxs.back().line; }
       auto getLine() const -> unsigned int { return m_FileCtxs.back().line; }
       auto getCurrentFileName() const -> const string& { return m_FileCtxs.back().fileName; }
-
+      auto getFlags() const -> int { return m_CompileFlags; }
     private:
       struct FileContext
       {
@@ -54,6 +58,7 @@ namespace ShadersSystem
       };
       eastl::vector<FileContext> m_FileCtxs;
 
+      int m_CompileFlags = 0;
       bool m_IsCompilationOk = true;
 
       MaterialsBin m_Bin;

@@ -97,7 +97,8 @@ namespace ShadersSystem
     ShaderBlob compile_shader_stage(const string& hlsl,
                                     const TargetProfile target, const gapi::ShaderStage stage,
                                     const string& shaderName,
-                                    const string& entryName, const string& currentDir)
+                                    const string& entryName, const string& currentDir,
+                                    const bool debug)
     {
       using Microsoft::WRL::ComPtr;
       ComPtr<IDxcUtils> pUtils;
@@ -127,7 +128,7 @@ namespace ShadersSystem
       args.push_back(L"-I");
       args.push_back(dir.c_str());
       args.push_back(L"-Zi");
-      args.push_back(L"-O3");
+      args.push_back(debug ? L"-O0" : L"-O3");
 
       DxcBuffer dxcSrc;
       dxcSrc.Ptr = pSource->GetBufferPointer();
@@ -335,7 +336,8 @@ namespace ShadersSystem
           try
           {
             const string currentDir = fs::path(m_Compiler.getCurrentFileName()).parent_path().string();
-            ShaderBlob blob = compile_shader_stage(m_Hlsl, compileExp.targetProfile, stage, shaderName, compileExp.entry, currentDir);
+            const bool debug = m_Compiler.getFlags() & COMPILE_DEBUG;
+            ShaderBlob blob = compile_shader_stage(m_Hlsl, compileExp.targetProfile, stage, shaderName, compileExp.entry, currentDir, debug);
             m_Shaders.push_back(std::move(blob));
           }
           catch (std::exception&)

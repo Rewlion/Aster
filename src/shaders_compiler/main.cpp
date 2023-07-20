@@ -25,6 +25,7 @@ int main(int argc, char** argv)
     ("help", "produce help message")
     ("blk", po::value<string>(), "path to blk with shaders list")
     ("o", po::value<string>(), "output dir")
+    ("D", "enable debugging and disable all optimizations")
   ;
 
   po::variables_map vm;
@@ -38,6 +39,7 @@ int main(int argc, char** argv)
 
   const string blk = vm["blk"].as<string>();
   const string outputDir = vm["o"].as<string>();
+  const bool debugMode = vm.count("D") > 0;
 
   DataBlock shadersBlk;
   if (!load_blk_from_file(&shadersBlk, blk.c_str()))
@@ -65,7 +67,7 @@ int main(int argc, char** argv)
   {
     const auto shFile = blkDir + "/" + shader.getName();
     loginfo("compiling {}", shFile);
-    const bool isOk = compiler.compileModuleFromFile(shFile);
+    const bool isOk = compiler.compileModuleFromFile(shFile, debugMode);
     if (!isOk)
       return -1;
   }

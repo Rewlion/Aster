@@ -36,8 +36,10 @@ namespace ShadersSystem
       throw std::runtime_error(fmt::format("technique macro `{}` is not declared", macroName));
   }
 
-  bool Compiler::compileModuleFromFile(const string& file)
+  bool Compiler::compileModuleFromFile(const string& file, const int flags)
   {
+    m_CompileFlags = flags;
+
     FILE* f = fopen(file.c_str(), "r");
 
     if (!f)
