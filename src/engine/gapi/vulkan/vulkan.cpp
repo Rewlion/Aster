@@ -167,6 +167,7 @@ namespace gapi::vulkan
     {
       case ShadersSystem::ResourceType::Texture2D: return texture_2d_srv_stub;
       case ShadersSystem::ResourceType::TextureCube: return texture_cube_srv_stub;
+      case ShadersSystem::ResourceType::RWTexture3D : return texture_3d_srv_stub;
       default: ASSERT_FMT(false, "unsupported resource type {}", (int)type); return texture_2d_srv_stub;
     }
   }

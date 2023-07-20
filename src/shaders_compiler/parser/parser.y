@@ -86,6 +86,8 @@
 %token TFX_TOKEN_RIGHT_PARENTHESIS ")"
 %token TFX_TOKEN_LEFT_BRACKET "{"
 %token TFX_TOKEN_RIGHT_BRACKET "}"
+%token TFX_TOKEN_LESS_SIGN "<"
+%token TFX_TOKEN_GREATER_SIGN ">"
 %token TFX_TOKEN_COMMA ","
 %token TFX_TOKEN_MINUS "-"
 %token TFX_TOKEN_INPUT "input"
@@ -233,6 +235,7 @@
 %token TFX_TOKEN_INT4 "int4"
 %token TFX_TOKEN_TEXTURE2D "Texture2D"
 %token TFX_TOKEN_TEXTURE_CUBE "TextureCube"
+%token TFX_TOKEN_RWTEXTURE3D "RWTexture3D"
 
 %type <techniqueExp>         TECHNIQUE_EXP
 %type <techniqueExp>         TECHNIQUE_EXP_LIST
@@ -244,6 +247,7 @@
 %type <bval>                 BOOL_VALUE
 %type <f4val>                FLOAT4_VALUE
 %type <resourceType>         RESOURCE_TYPE
+%type <resourceType>         UAV_RESOURCE_TYPE
 %type <resourceAssignExp>    ASSIGN_EXP
 %type <targetProfile>        TARGET_PROFILE
 %type <inputBufferExp>       INPUT_BUFFER
@@ -765,8 +769,11 @@ SCOPE_EXP
   : "reserve" ":" RESOURCE_RESERVE_EXP_LIST[exps] {
     $$ = new ShadersResourcesReserveExp($exps);
   }
+  | UAV_RESOURCE_TYPE[uavType] "<" ATTRIBUTE_TYPE[uavElemType] ">" TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
+    $$ = new ResourceDeclarationExp($uavType, $uavElemType, $name, $exps);
+  }
   | RESOURCE_TYPE[type] TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
-    $$ = new ResourceDeclarationExp($type, $name, $exps);
+    $$ = new ResourceDeclarationExp($type, gapi::AttributeType::None, $name, $exps);
   }
   | ATTRIBUTE_TYPE[type] TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
     $$ = new CbufferVarDeclarationExp($type, $name, $exps);
@@ -827,6 +834,11 @@ RESOURCE_TYPE
     $$ = ResourceType::Sampler;
   }
   ;
+
+UAV_RESOURCE_TYPE
+  : "RWTexture3D" {
+    $$ = ResourceType::RWTexture3D;
+  }
 
 ATTRIBUTE_TYPE
   : TFX_TOKEN_INT {

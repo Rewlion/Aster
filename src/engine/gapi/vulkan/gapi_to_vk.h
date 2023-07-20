@@ -376,6 +376,7 @@ namespace gapi::vulkan
       case TextureState::DepthWrite:         return vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests;
       case TextureState::RenderTarget:       return vk::PipelineStageFlagBits::eColorAttachmentOutput;
       case TextureState::ShaderRead:         return vk::PipelineStageFlagBits::eAllGraphics;
+      case TextureState::ShaderReadWrite:    return vk::PipelineStageFlagBits::eAllGraphics;
       case TextureState::Present:            return vk::PipelineStageFlagBits::eColorAttachmentOutput;
       case TextureState::TransferSrc:        return vk::PipelineStageFlagBits::eTransfer;
       case TextureState::TransferDst:        return vk::PipelineStageFlagBits::eTransfer;
@@ -463,6 +464,7 @@ namespace gapi::vulkan
       case TextureState::DepthWrite:             return vk::ImageLayout::eDepthAttachmentOptimal;
       case TextureState::RenderTarget:           return vk::ImageLayout::eColorAttachmentOptimal;
       case TextureState::ShaderRead:             return vk::ImageLayout::eShaderReadOnlyOptimal;
+      case TextureState::ShaderReadWrite:        return vk::ImageLayout::eGeneral;
       case TextureState::Present:                return vk::ImageLayout::ePresentSrcKHR;
       case TextureState::TransferSrc:            return vk::ImageLayout::eTransferSrcOptimal;
       case TextureState::TransferDst:            return vk::ImageLayout::eTransferDstOptimal;
@@ -485,6 +487,7 @@ namespace gapi::vulkan
       case TextureState::DepthWrite:             return vk::AccessFlagBits::eDepthStencilAttachmentWrite;
       case TextureState::RenderTarget:           return vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eColorAttachmentRead;
       case TextureState::ShaderRead:             return vk::AccessFlagBits::eShaderRead;
+      case TextureState::ShaderReadWrite:        return vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
       case TextureState::Present:                return {};
       case TextureState::TransferSrc:            return vk::AccessFlagBits::eTransferRead;
       case TextureState::TransferDst:            return vk::AccessFlagBits::eTransferWrite;

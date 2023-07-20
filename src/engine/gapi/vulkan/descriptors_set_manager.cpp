@@ -243,11 +243,19 @@ namespace gapi::vulkan
           },
           [&](const TextureWriteInfo& info){
             auto type = vk::DescriptorType::eSampledImage;
+            auto storageType = vk::DescriptorType::eStorageImage;
             if(validateBindingType(info.binding, type))
             {              
               imgInfos[iImg].imageView = getImageView(info.texture, info.binding);
               imgInfos[iImg].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
               addWriteInfo(info.binding, type, nullptr, &imgInfos[iImg]);
+              ++iImg;
+            }
+            else if (validateBindingType(info.binding, storageType))
+            {
+              imgInfos[iImg].imageView = getImageView(info.texture, info.binding);
+              imgInfos[iImg].imageLayout = vk::ImageLayout::eGeneral;
+              addWriteInfo(info.binding, storageType, nullptr, &imgInfos[iImg]);
               ++iImg;
             }
           },
@@ -284,6 +292,7 @@ namespace gapi::vulkan
     : m_Device(device)
     , m_PoolManager(device)
     , m_PipelineLayout(nullptr)
+    , m_PipelineBindPoint(vk::PipelineBindPoint::eGraphics)
   {
   }
 
@@ -291,6 +300,7 @@ namespace gapi::vulkan
     : m_Device(rvl.m_Device)
     , m_PoolManager(std::move(rvl.m_PoolManager))
     , m_PipelineLayout(rvl.m_PipelineLayout)
+    , m_PipelineBindPoint(rvl.m_PipelineBindPoint)
   {
   }
 
@@ -323,16 +333,17 @@ namespace gapi::vulkan
       vk::DescriptorSet vkSet = m_SetManagers[i].acquireSet(device);
       if (vkSet != vk::DescriptorSet{})
       {
-        cmdBuf.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
-                                    m_PipelineLayout->pipelineLayout.get(),
-                                    i, 1, &vkSet, 0, nullptr);
+        cmdBuf.bindDescriptorSets(m_PipelineBindPoint,
+                                  m_PipelineLayout->pipelineLayout.get(),
+                                  i, 1, &vkSet, 0, nullptr);
       }
     }
   }
 
-  void DescriptorsSetManager::setPipelineLayout(const PipelineLayout* layout)
+  void DescriptorsSetManager::setPipelineLayout(const PipelineLayout* layout, const vk::PipelineBindPoint bind_point)
   {
     ASSERT(layout != nullptr);
+    m_PipelineBindPoint = bind_point;
     m_PipelineLayout = layout;
 
     const size_t activeSetsCount = layout->dsets.size();
@@ -342,7 +353,7 @@ namespace gapi::vulkan
     if (activeSetsCount > 0)
       fitSetManagers(activeSetsCount-1);
 
-    bool accumulatedToggling;
+    bool accumulatedToggling = false;
     for (size_t i = 0; i < activeSetsCount; ++i)
     {
       m_SetManagers[i].setPipelineLayout(layout->descriptorSetLayouts[i].get(), &layout->dsets[i], accumulatedToggling);

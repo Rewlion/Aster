@@ -32,6 +32,7 @@ namespace gapi
       case TextureState::DepthReadStencilWrite: return "DepthReadStencilWrite";
       case TextureState::DepthWriteStencilWrite: return "DepthWriteStencilWrite";
       case TextureState::ShaderRead: return "ShaderRead";
+      case TextureState::ShaderReadWrite: return "ShaderReadWrite";
       case TextureState::RenderTarget: return "RenderTarget";
       case TextureState::Present: return "Present";
       case TextureState::TransferSrc: return "TransferSrc";

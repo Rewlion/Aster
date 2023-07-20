@@ -134,6 +134,14 @@
   return TFX_TOKEN_RIGHT_BRACKET;
 }
 
+\< {
+  return TFX_TOKEN_LESS_SIGN;
+}
+
+\> {
+  return TFX_TOKEN_GREATER_SIGN;
+}
+
 , {
   return TFX_TOKEN_COMMA;
 }
@@ -262,6 +270,10 @@ Texture2D {
 
 TextureCube {
   return TFX_TOKEN_TEXTURE_CUBE;
+}
+
+RWTexture3D {
+  return TFX_TOKEN_RWTEXTURE3D;
 }
 
 technique {

@@ -100,9 +100,14 @@ namespace tfx
         gapi::ResourceHandler getResource(const ShadersSystem::ShBindResource& bc)
         {
           const auto isValidType = [](const auto& res, const ShadersSystem::ResourceType type) {
-            return std::holds_alternative<gapi::TextureHandle>(res) && (type == ShadersSystem::ResourceType::Texture2D) ||
-                   std::holds_alternative<gapi::TextureHandle>(res) && (type == ShadersSystem::ResourceType::TextureCube) ||
-                   std::holds_alternative<gapi::SamplerHandler>(res) && (type == ShadersSystem::ResourceType::Sampler);
+            #define VERIFY_CASE(handleType, resourceType) std::holds_alternative<gapi::handleType>(res) && (type == ShadersSystem::ResourceType::resourceType)
+
+            return  VERIFY_CASE(TextureHandle, Texture2D)   ||
+                    VERIFY_CASE(TextureHandle, TextureCube) ||
+                    VERIFY_CASE(TextureHandle, RWTexture3D) ||
+                    VERIFY_CASE(SamplerHandler, Sampler);
+
+            #undef VERIFY_CASE
           };
 
           const auto& [resource, resourceExist] = getParam(bc.accessType, bc.resourceName);
@@ -117,6 +122,7 @@ namespace tfx
               }
               case ShadersSystem::ResourceType::Texture2D:
               case ShadersSystem::ResourceType::TextureCube:
+              case ShadersSystem::ResourceType::RWTexture3D:
               {
                 const auto h = std::get<gapi::TextureHandle>(resource);
                 return (gapi::ResourceHandler)h;
@@ -144,6 +150,7 @@ namespace tfx
             }
             case ShadersSystem::ResourceType::Texture2D:
             case ShadersSystem::ResourceType::TextureCube:
+            case ShadersSystem::ResourceType::RWTexture3D:
             {
               m_CmdEncoder->bindTexture((gapi::TextureHandle)h, bc.dset, bc.binding);
               break;

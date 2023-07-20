@@ -118,7 +118,7 @@ namespace gapi::vulkan
 
       const DescriptorsSetManager& operator=(const DescriptorsSetManager& rvl) = delete;
 
-      void setPipelineLayout(const PipelineLayout* layout);
+      void setPipelineLayout(const PipelineLayout* layout, const vk::PipelineBindPoint);
 
       void setImage(TextureHandle, const size_t set, const size_t binding);
       void setSampler(const vk::Sampler sampler, const size_t set, const size_t binding);
@@ -135,5 +135,7 @@ namespace gapi::vulkan
 
       const PipelineLayout* m_PipelineLayout;
       eastl::vector<SetManager> m_SetManagers;
+
+      vk::PipelineBindPoint m_PipelineBindPoint;
   };
 }

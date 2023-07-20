@@ -408,6 +408,7 @@ namespace gapi
     DepthReadStencilWrite,
     DepthWriteStencilWrite,
     ShaderRead,
+    ShaderReadWrite,
     RenderTarget,
     Present,
     TransferSrc,

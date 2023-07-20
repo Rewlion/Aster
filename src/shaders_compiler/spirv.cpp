@@ -23,6 +23,7 @@ namespace spirv
         case ShadersSystem::ResourceType::Sampler: return vk::DescriptorType::eSampler;
         case ShadersSystem::ResourceType::Texture2D: return vk::DescriptorType::eSampledImage;
         case ShadersSystem::ResourceType::TextureCube: return vk::DescriptorType::eSampledImage;
+        case ShadersSystem::ResourceType::RWTexture3D: return vk::DescriptorType::eStorageImage;
         default:
         {
           ASSERT(!"unsupported");

@@ -234,7 +234,7 @@ namespace gapi::vulkan
     }
 
     const PipelineLayout& layout = m_PipelinesStorage.getPipelineLayout(desc.layout);
-    m_DsetManager.setPipelineLayout(&layout);
+    m_DsetManager.setPipelineLayout(&layout, vk::PipelineBindPoint::eGraphics);
     m_CmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 
     vk::Viewport vp;
@@ -256,7 +256,7 @@ namespace gapi::vulkan
     vk::Pipeline pipeline = m_PipelinesStorage.getComputePipeline(desc);
     const PipelineLayout& layout = m_PipelinesStorage.getPipelineLayout(desc.layout);
 
-    m_DsetManager.setPipelineLayout(&layout);
+    m_DsetManager.setPipelineLayout(&layout, vk::PipelineBindPoint::eCompute);
     m_CmdBuf.bindPipeline(vk::PipelineBindPoint::eCompute, pipeline);
   }
 

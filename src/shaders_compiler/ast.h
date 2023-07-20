@@ -805,12 +805,15 @@ namespace ShadersSystem
   struct ResourceDeclarationExp: public ScopeExp
   {
     ResourceType resourceType;
+    gapi::AttributeType uavElemType;
     const char* name;
     const ResourceAssignExp* assignExps;
-    ResourceDeclarationExp(const ResourceType resType, const char* name,
-                        const ResourceAssignExp* assignExps)
+    ResourceDeclarationExp(const ResourceType resType, const gapi::AttributeType uavElType,
+                           const char* name,
+                           const ResourceAssignExp* assignExps)
       : ScopeExp(ScopeExp::Type::ResourceDeclaration)
       , resourceType(resType)
+      , uavElemType(uavElType)
       , name(name)
       , assignExps(assignExps)
     {

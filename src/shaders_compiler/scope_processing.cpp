@@ -144,11 +144,13 @@ namespace ShadersSystem
           case ResourceType::Sampler:
           case ResourceType::Texture2D:
           case ResourceType::TextureCube:
+          case ResourceType::RWTexture3D:
           {
             m_Scope.declaredResources.insert({
               resNameHash,
               ResourceDeclaration{
                 .type = resourceDeclaration.resourceType,
+                .uavElemType = resourceDeclaration.uavElemType,
                 .name = resourceDeclaration.name,
                 .dset = 0,
                 .binding = 0,
@@ -264,6 +266,7 @@ namespace ShadersSystem
 
             case ResourceType::Texture2D:
             case ResourceType::TextureCube:
+            case ResourceType::RWTexture3D:
             {
               if (!hasTextures)
                  throw std::runtime_error(fmt::format(
@@ -433,6 +436,13 @@ namespace ShadersSystem
                 var.name, var.binding, var.dset);
               break;
             }
+            
+            case ResourceType::RWTexture3D:
+            {
+              hlsl += fmt::format("RWTexture3D<{}> {}: register(u{}, space{});\n",
+                gapi::attributeType_to_string(var.uavElemType), var.name, var.binding, var.dset);
+              break;
+            }
 
             default:
             {
@@ -468,6 +478,7 @@ namespace ShadersSystem
             case ResourceType::Sampler:
             case ResourceType::Texture2D:
             case ResourceType::TextureCube:
+            case ResourceType::RWTexture3D:
             {
               const ByteCodes var = generateByteCodeForResourceDeclaration(res);
               byteCode.insert(byteCode.end(), var.begin(), var.end());
