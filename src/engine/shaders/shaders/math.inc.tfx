@@ -1,5 +1,7 @@
 technique_macro USE_MATH{
 #hlsl
+  #define HAS_MATH
+
   #define MM2KM 1e3
   #define PI (float)3.14159265359
 
@@ -37,6 +39,5 @@ technique_macro USE_MATH{
     intersection = r0 + dir * t;
     return t;
   }
-
 #end
 };

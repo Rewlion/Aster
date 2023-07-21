@@ -19,6 +19,7 @@ template @("name: AtmosphereRender") {
   component @("texture atm_tr_lut") {}
   component @("texture atm_ms_lut") {}
   component @("texture atm_sky_lut") {}
+  component @("texture atm_ap_lut") {}
   int atm_lut_state = 0
 }
 

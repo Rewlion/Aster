@@ -52,16 +52,22 @@ static void atmosphere_creation_handler(const ecs::OnEntityCreated& evt, float a
   allocDesc.extent = uint3{MS_LUT_SIZE, 1};
   gapi::TextureHandle msLUT = gapi::allocate_texture(allocDesc);
 
+  allocDesc.extent = uint3{AP_LUT_SIZE};
+  allocDesc.usage = gapi::TEX_USAGE_SRV | gapi::TEX_USAGE_UAV;
+  gapi::TextureHandle apLUT = gapi::allocate_texture(allocDesc);
+
   std::unique_ptr<gapi::CmdEncoder> encoder{gapi::allocate_cmd_encoder()};
   encoder->transitTextureState(trLUT, gapi::TextureState::Undefined, gapi::TextureState::RenderTarget);
   encoder->transitTextureState(msLUT, gapi::TextureState::Undefined, gapi::TextureState::RenderTarget);
   encoder->transitTextureState(skyLUT, gapi::TextureState::Undefined, gapi::TextureState::RenderTarget);
+  encoder->transitTextureState(apLUT, gapi::TextureState::Undefined, gapi::TextureState::ShaderReadWrite);
   encoder->flush();
 
   ecs::EntityComponents init;
   init["atm_tr_lut"] = gapi::TextureWrapper{trLUT};
   init["atm_ms_lut"] = gapi::TextureWrapper{msLUT};
   init["atm_sky_lut"] = gapi::TextureWrapper{skyLUT};
+  init["atm_ap_lut"] = gapi::TextureWrapper{apLUT};
   init["atm_lut_state"] = (int)AtmosphereLutState::Preparing;
   ecs::get_registry().createEntity("AtmosphereRender", std::move(init));
 }
@@ -71,9 +77,10 @@ static void atmosphere_render_creation_handler(
   const ecs::OnEntityCreated& evt,
   const gapi::TextureWrapper& atm_tr_lut,
   const gapi::TextureWrapper& atm_sky_lut,
-  const gapi::TextureWrapper& atm_ms_lut)
+  const gapi::TextureWrapper& atm_ms_lut,
+  const gapi::TextureWrapper& atm_ap_lut)
 {
-  fg::register_node("atm_res_import", FG_FILE_DECL, [&atm_tr_lut, &atm_ms_lut, &atm_sky_lut](fg::Registry& reg)
+  fg::register_node("atm_res_import", FG_FILE_DECL, [&atm_tr_lut, &atm_ms_lut, &atm_sky_lut, &atm_ap_lut](fg::Registry& reg)
   {
     reg.orderMeAfter("frame_preparing");
 
@@ -119,6 +126,13 @@ static void atmosphere_render_creation_handler(
       };
     });
 
+    auto apLutTex = reg.importTextureProducer("atm_ap_lut", [&atm_ap_lut](){
+      return fg::TextureImport{
+        .tex = atm_ap_lut,
+        .initState = gapi::TextureState::ShaderReadWrite
+      };
+    });
+
     auto atmRTopMM_RBotMM = reg.createBlob<float2>("atmRTopMM_RBotMM");
     auto sunAzimuth_Altitude = reg.createBlob<float2>("sunAzimuth_Altitude");
 
@@ -129,6 +143,25 @@ static void atmosphere_render_creation_handler(
         atmRTopMM_RBotMM.get() = float2{atm_radius_top_km / 1000.0, atm_radius_bot_km / 1000.0};
         sunAzimuth_Altitude.get() = float2{math::radians(sun_azimuth),math::radians(sun_altitude)};
       });});
+    };
+  });
+
+  fg::register_node("atm_ap_lut_render", FG_FILE_DECL, [](fg::Registry& reg)
+  {
+    reg.orderMeBefore("atm_sky_apply");
+    auto trLUT = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
+    auto msLUT = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead);
+    auto apLUT = reg.modifyTexture("atm_ap_lut", gapi::TextureState::ShaderReadWrite);
+    return [trLUT, msLUT, apLUT](gapi::CmdEncoder& encoder)
+    {
+      tfx::set_extern("trLUT", trLUT.get());
+      tfx::set_extern("msLUT", msLUT.get());
+      tfx::set_extern("apLUT", apLUT.get());
+      tfx::set_extern("maxAerialDist_mm", 0.032f);
+      tfx::activate_technique("AerialPerspective", encoder);
+
+      encoder.updateResources();
+      encoder.dispatch(1,1,32);
     };
   });
 

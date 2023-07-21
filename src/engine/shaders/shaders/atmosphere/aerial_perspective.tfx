@@ -1,0 +1,121 @@
+#include "../frame.inc.tfx"
+#include "../math.inc.tfx"
+#include "atmosphere.inc.tfx"
+#include "ebruneton.inc.tfx"
+#include "multiple_scattering.inc.tfx"
+#include "scattering.inc.tfx"
+#include "transmittance.inc.tfx"
+
+scope AerialPerspectiveScope {
+  reserve:
+    descriptor_set(2);
+    register(buffer, 0);
+    register(texture, 0-2);
+
+  RWTexture3D<float4> apLUT = extern(apLUT);
+  Texture2D trLUT = extern(trLUT);
+  Texture2D msLUT = extern(msLUT);
+
+  float maxAerialDist_mm = extern(maxAerialDist_mm);
+};
+
+technique AerialPerspective {
+  support scope FrameScope;
+  activate scope AerialPerspectiveScope;
+  
+  USE_MATH();
+  USE_ATMOSPHERE_PARAMS();
+
+  USE_EBRUNETON_HELPERS();
+  USE_TRANSMITTANCE_LUT();
+  USE_MULTIPLE_SCATTERING_LUT();
+  USE_SCATTERING();
+
+  #hlsl
+  float3 raymarchScattering(float3 p0_mm, float scattering_dist_mm, float3 view_dir, float3 sun_dir, AtmosphereParams atm_params, out float3 transmittance)
+  { 
+    float VoL = dot(view_dir, sun_dir);
+
+    float rayPhase = RayleighPhaseFunction(VoL);
+    float miePhase = MiePhaseFunction(VoL, 0.76);
+
+    float3 L = float3(0,0,0);
+    float3 Tr = float3(1,1,1);
+
+    float t = 0.0;
+    for (float i = 0.0; i < SCATTERING_STEPS; i += 1.0)
+    {
+      float newT = (i+0.3)/SCATTERING_STEPS * scattering_dist_mm;
+      float dt = newT - t;
+      t = newT;
+
+      float3 Ri_mm = p0_mm + view_dir * t;
+      float3 RiDir = normalize(Ri_mm);
+      float Ri_len_mm = length(Ri_mm);
+      float RioSDir = dot(RiDir, sun_dir);
+
+      float3 rayScattering, extintion;
+      float3 mieScattering;
+      calcScatteringValues(atm_params, Ri_mm, rayScattering, mieScattering, extintion);
+
+      float3 Tri = exp(-extintion * dt);
+      float3 TrSun = sampleTransmittance(Ri_len_mm, RioSDir, atm_params.rBotMM, atm_params.rTopMM);
+      float3 psi = samplePsi(atm_params, Ri_len_mm, -sun_dir.y);
+
+      float3 Si = rayScattering*(rayPhase*TrSun+psi) + mieScattering * (miePhase *TrSun+psi);
+      float3 Li = Si*(1.0 -  Tri) / extintion;
+
+      L += Li * Tr;
+      Tr *= Tri;
+    }
+
+    transmittance = Tr;
+    return L;
+  }
+
+  [numthreads(32,32,1)]
+  void cs_main(uint3 id: SV_DispatchThreadID)
+  {
+    AtmosphereParams atmParams = getAtmosphereParams();
+    float3 p0_mm = float3(0.0, atmParams.rBotMM + 0.0002, 0.0);
+
+    float3 ltViewDir = normalize(FrameScope.ltView);
+    float3 lbViewDir = normalize(FrameScope.lbView);
+    float3 rtViewDir = normalize(FrameScope.rtView);
+
+    float3 lrDir = normalize(FrameScope.rtView - FrameScope.ltView);
+    float3 tbDir = normalize(FrameScope.lbView - FrameScope.ltView);
+
+    float3 k = float3(id + uint3(1,1,1)) / 32.0;
+    float3 lt_mm = ltViewDir * AerialPerspectiveScope.maxAerialDist_mm * k.z;
+    float3 lb_mm = lbViewDir * AerialPerspectiveScope.maxAerialDist_mm * k.z;
+    float3 rt_mm = rtViewDir * AerialPerspectiveScope.maxAerialDist_mm * k.z;
+
+    float h_mm = length(lb_mm-lt_mm);
+    float w_mm = length(rt_mm-lt_mm);
+
+    float3 froxelVSPos_mm = lt_mm + lrDir * w_mm * k.x + tbDir * h_mm * k.y;
+    float3 froxelDir = normalize(froxelVSPos_mm);
+    float froxelDist_mm = length(froxelVSPos_mm);
+    float3 froxelPos_mm = p0_mm + froxelVSPos_mm;
+
+    float3 RTop_mm;
+    float topAtmDist_mm = raySphereIntersection(p0_mm, froxelDir, float3(0,0,0), atmParams.rTopMM, RTop_mm);
+  
+    float3 RBot_mm;
+    float botAtmDist_mm = raySphereIntersection(p0_mm, froxelDir, float3(0,0,0), atmParams.rBotMM, RBot_mm);
+  
+    float3 sunDir = getAtmSunDir();
+    float scatteringDist_mm = min(froxelDist_mm, botAtmDist_mm > 0.0 ? botAtmDist_mm : topAtmDist_mm);
+
+    float3 Tr;
+    float3 L = raymarchScattering(p0_mm, scatteringDist_mm, froxelDir, sunDir, atmParams, Tr);
+
+    float a = 1.0 - dot(Tr, Tr * float3(1.0/3.0, 1.0/3.0, 1.0/3.0));
+
+    apLUT[id] = float4(L, a);
+  }
+  #end
+
+  compile(cs_6_1, cs_main);
+};

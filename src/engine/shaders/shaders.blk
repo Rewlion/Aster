@@ -10,5 +10,6 @@ shaders_list
   "shaders/atmosphere/sky_lut.tfx" {}
   "shaders/atmosphere/multiple_scattering_lut.tfx" {}
   "shaders/atmosphere/sky_apply.tfx" {}
+  "shaders/atmosphere/aerial_perspective.tfx" {}
   "shaders/post_process.tfx" {}
 }
