@@ -5,6 +5,7 @@ scope AtmosphereScope {
 
   float2 sunAzimuth_Altitude = channel(sunAzimuth_Altitude);
   float2 atmRTopMM_atmRBotMM = channel(atmRTopMM_atmRBotMM);
+  float3 atmPosMM = extern(atmPosMM);
 };
 
 technique_macro USE_ATMOSPHERE_PARAMS {
@@ -13,6 +14,7 @@ technique_macro USE_ATMOSPHERE_PARAMS {
 #hlsl
   struct AtmosphereParams
   {
+    float3 posMM;
     float rTopMM;
     float rBotMM;
     float3 rayleighScatteringBase;
@@ -25,6 +27,7 @@ technique_macro USE_ATMOSPHERE_PARAMS {
   AtmosphereParams getAtmosphereParams()
   {
     AtmosphereParams p;
+    p.posMM = AtmosphereScope.atmPosMM;
     p.rTopMM = AtmosphereScope.atmRTopMM_atmRBotMM.x;
     p.rBotMM = AtmosphereScope.atmRTopMM_atmRBotMM.y;
     p.rayleighScatteringBase = float3(5.802, 13.558, 33.1);

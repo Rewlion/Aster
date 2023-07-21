@@ -43,7 +43,7 @@ technique SkyLUT {
         altitude = pow(1.0 - 2*uv.y, 2.0) * (-PI/2.0);
 
       AtmosphereParams atmParams = getAtmosphereParams();
-      float3 p0_mm = float3(0.0, atmParams.rBotMM + 0.0002, 0.0);
+      float3 p0_mm = atmParams.posMM;
 
       float3 viewDir = altitudeAzimuthToDecartian(altitude, azimuth);
       float3 sunDir = altitudeAzimuthToDecartian(AtmosphereScope.sunAzimuth_Altitude.y, AtmosphereScope.sunAzimuth_Altitude.x);

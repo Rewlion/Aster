@@ -9,6 +9,7 @@
 #include <engine/render/frame_graph/frame_graph.h>
 #include <engine/render/imgui/imgui.h>
 #include <engine/tfx/tfx.h>
+#include <engine/work_cycle/camera.h>
 
 #include <engine/shaders/shaders/atmosphere/consts.hlsl>
 
@@ -96,6 +97,8 @@ static void atmosphere_render_creation_handler(
   {
     reg.orderMeAfter("frame_preparing");
 
+    auto cameraData = reg.readBlob<Engine::CameraData>("camera_data");
+
     auto trLutTex = reg.importTextureProducer("atm_tr_lut", [&atm_tr_lut](){
       return fg::TextureImport{
         .tex = atm_tr_lut,
@@ -127,12 +130,13 @@ static void atmosphere_render_creation_handler(
     auto atmRTopMM_RBotMM = reg.createBlob<float2>("atmRTopMM_RBotMM");
     auto sunAzimuth_Altitude = reg.createBlob<float2>("sunAzimuth_Altitude");
 
-    return [atmRTopMM_RBotMM, sunAzimuth_Altitude](gapi::CmdEncoder&)
+    return [atmRTopMM_RBotMM, sunAzimuth_Altitude, cameraData](gapi::CmdEncoder&)
     {
       query_atm_params([&](float atm_radius_bot_km, float atm_radius_top_km){
       query_sun_params([&](float sun_azimuth, float sun_altitude){
         atmRTopMM_RBotMM.get() = float2{atm_radius_top_km / 1000.0, atm_radius_bot_km / 1000.0};
         sunAzimuth_Altitude.get() = float2{math::radians(sun_azimuth),math::radians(sun_altitude)};
+        tfx::set_extern("atmPosMM", float3(0.0f, atmRTopMM_RBotMM->y + 0.0002f, 0.0f));
       });});
     };
   });
