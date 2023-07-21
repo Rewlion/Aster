@@ -3,8 +3,7 @@ scope AtmosphereScope {
     descriptor_set(1);
     register(buffer, 0);
 
-  float2 sunAzimuth_Altitude = channel(sunAzimuth_Altitude);
-  float2 atmRTopMM_atmRBotMM = channel(atmRTopMM_atmRBotMM);
+  float4 sunAzimuth_sunAltitude_rTopMM_rBotMM = channel(sunAzimuth_sunAltitude_rTopMM_rBotMM);
   float3 atmPosMM = extern(atmPosMM);
 };
 
@@ -28,8 +27,8 @@ technique_macro USE_ATMOSPHERE_PARAMS {
   {
     AtmosphereParams p;
     p.posMM = AtmosphereScope.atmPosMM;
-    p.rTopMM = AtmosphereScope.atmRTopMM_atmRBotMM.x;
-    p.rBotMM = AtmosphereScope.atmRTopMM_atmRBotMM.y;
+    p.rTopMM = AtmosphereScope.sunAzimuth_sunAltitude_rTopMM_rBotMM.z;
+    p.rBotMM = AtmosphereScope.sunAzimuth_sunAltitude_rTopMM_rBotMM.w;
     p.rayleighScatteringBase = float3(5.802, 13.558, 33.1);
     p.rayleighAbsorbtionBase = 0.0;
     p.mieScatteringBase = 3.996;
@@ -41,7 +40,8 @@ technique_macro USE_ATMOSPHERE_PARAMS {
   #ifdef HAS_MATH
   float3 getAtmSunDir()
   {
-    return altitudeAzimuthToDecartian(AtmosphereScope.sunAzimuth_Altitude.y, AtmosphereScope.sunAzimuth_Altitude.x);    
+    return altitudeAzimuthToDecartian(AtmosphereScope.sunAzimuth_sunAltitude_rTopMM_rBotMM.y,
+                                      AtmosphereScope.sunAzimuth_sunAltitude_rTopMM_rBotMM.x);    
   }
   #endif
 #end

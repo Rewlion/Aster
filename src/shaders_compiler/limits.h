@@ -1,6 +1,6 @@
 #pragma once
 
-constexpr size_t RESOURCE_MAX_NAME_LEN = 32;
+constexpr size_t RESOURCE_MAX_NAME_LEN = 64;
 
 constexpr size_t MAX_REGISTER = 32;
 constexpr size_t TEXTURE_REGISTERS_BEGIN = 0;

@@ -19,10 +19,11 @@ scope SkyLUTScope {
 
 technique SkyLUT {
   support scope FrameScope;
-  USE_ATMOSPHERE_PARAMS();
   activate scope SkyLUTScope;
 
   USE_MATH();
+  USE_ATMOSPHERE_PARAMS();
+  
   USE_EBRUNETON_HELPERS();
   USE_SCATTERING();
   USE_TRANSMITTANCE_LUT();
@@ -46,7 +47,7 @@ technique SkyLUT {
       float3 p0_mm = atmParams.posMM;
 
       float3 viewDir = altitudeAzimuthToDecartian(altitude, azimuth);
-      float3 sunDir = altitudeAzimuthToDecartian(AtmosphereScope.sunAzimuth_Altitude.y, AtmosphereScope.sunAzimuth_Altitude.x);
+      float3 sunDir = getAtmSunDir();
 
       float3 RTop_mm;
       float topAtmDist_mm = raySphereIntersection(p0_mm, viewDir, float3(0,0,0), atmParams.rTopMM, RTop_mm);

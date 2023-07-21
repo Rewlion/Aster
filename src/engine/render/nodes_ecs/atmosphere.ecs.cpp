@@ -131,13 +131,15 @@ static void atmosphere_render_creation_handler(
     {
       query_atm_params([&](float atm_radius_bot_km, float atm_radius_top_km){
       query_sun_params([&](float sun_azimuth, float sun_altitude){
-        float2 atmRTopMM_RBotMM = float2{atm_radius_top_km / 1000.0, atm_radius_bot_km / 1000.0};
-        float2 sunAzimuth_Altitude = float2{math::radians(sun_azimuth),math::radians(sun_altitude)};
-
-        tfx::set_extern("atmPosMM", float3(0.0f, atmRTopMM_RBotMM.y + 0.0002f, 0.0f));
+        float4 sunAzimuth_sunAltitude_rTopMM_rBotMM{
+          math::radians(sun_azimuth),
+          math::radians(sun_altitude),
+          atm_radius_top_km / 1000.0,
+          atm_radius_bot_km / 1000.0
+        };
+        tfx::set_extern("atmPosMM", float3(0.0f, sunAzimuth_sunAltitude_rTopMM_rBotMM.w + 0.0002f, 0.0f));
         tfx::set_extern("maxAerialDist_mm", 0.032f);
-        tfx::set_channel("atmRTopMM_atmRBotMM", atmRTopMM_RBotMM);
-        tfx::set_channel("sunAzimuth_Altitude", sunAzimuth_Altitude);
+        tfx::set_channel("sunAzimuth_sunAltitude_rTopMM_rBotMM", sunAzimuth_sunAltitude_rTopMM_rBotMM);
         tfx::activate_scope("AtmosphereScope", encoder);
       });});
     };
