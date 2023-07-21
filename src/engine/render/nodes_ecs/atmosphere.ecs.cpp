@@ -127,16 +127,18 @@ static void atmosphere_render_creation_handler(
       };
     });
 
-    auto atmRTopMM_RBotMM = reg.createBlob<float2>("atmRTopMM_RBotMM");
-    auto sunAzimuth_Altitude = reg.createBlob<float2>("sunAzimuth_Altitude");
-
-    return [atmRTopMM_RBotMM, sunAzimuth_Altitude, cameraData](gapi::CmdEncoder&)
+    return [cameraData](gapi::CmdEncoder& encoder)
     {
       query_atm_params([&](float atm_radius_bot_km, float atm_radius_top_km){
       query_sun_params([&](float sun_azimuth, float sun_altitude){
-        atmRTopMM_RBotMM.get() = float2{atm_radius_top_km / 1000.0, atm_radius_bot_km / 1000.0};
-        sunAzimuth_Altitude.get() = float2{math::radians(sun_azimuth),math::radians(sun_altitude)};
-        tfx::set_extern("atmPosMM", float3(0.0f, atmRTopMM_RBotMM->y + 0.0002f, 0.0f));
+        float2 atmRTopMM_RBotMM = float2{atm_radius_top_km / 1000.0, atm_radius_bot_km / 1000.0};
+        float2 sunAzimuth_Altitude = float2{math::radians(sun_azimuth),math::radians(sun_altitude)};
+
+        tfx::set_extern("atmPosMM", float3(0.0f, atmRTopMM_RBotMM.y + 0.0002f, 0.0f));
+        tfx::set_extern("maxAerialDist_mm", 0.032f);
+        tfx::set_channel("atmRTopMM_atmRBotMM", atmRTopMM_RBotMM);
+        tfx::set_channel("sunAzimuth_Altitude", sunAzimuth_Altitude);
+        tfx::activate_scope("AtmosphereScope", encoder);
       });});
     };
   });
@@ -151,7 +153,6 @@ static void atmosphere_render_creation_handler(
       tfx::set_extern("trLUT", trLUT.get());
       tfx::set_extern("msLUT", msLUT.get());
       tfx::set_extern("apLUT", apLUT.get());
-      tfx::set_extern("maxAerialDist_mm", 0.032f);
       tfx::activate_technique("AerialPerspective", encoder);
 
       encoder.updateResources();
@@ -166,14 +167,8 @@ static void atmosphere_render_creation_handler(
     reg.requestRenderPass()
        .addTarget("atm_tr_lut", gapi::LoadOp::DontCare);
 
-    auto atmRTopMM_RBotMM = reg.readBlob<float2>("atmRTopMM_RBotMM");
-    auto sunAzimuth_Altitude = reg.readBlob<float2>("sunAzimuth_Altitude");
-
-    return [atmRTopMM_RBotMM, sunAzimuth_Altitude](gapi::CmdEncoder& encoder)
+    return [](gapi::CmdEncoder& encoder)
     {
-      tfx::set_channel("atmRTopMM_atmRBotMM", atmRTopMM_RBotMM.get());
-      tfx::set_channel("sunAzimuth_Altitude", sunAzimuth_Altitude.get());
-      tfx::activate_scope("AtmosphereScope", encoder);
       tfx::activate_technique("TransmittanceLUT", encoder);
 
       encoder.updateResources();
