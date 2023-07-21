@@ -4,6 +4,7 @@
 #include "ebruneton.inc.tfx"
 #include "multiple_scattering.inc.tfx"
 #include "scattering.inc.tfx"
+#include "sky.inc.tfx"
 #include "transmittance.inc.tfx"
 
 scope AerialPerspectiveScope {
@@ -30,49 +31,9 @@ technique AerialPerspective {
   USE_TRANSMITTANCE_LUT();
   USE_MULTIPLE_SCATTERING_LUT();
   USE_SCATTERING();
+  USE_SKY_RAYMARCH();
 
   #hlsl
-  float3 raymarchScattering(float3 p0_mm, float scattering_dist_mm, float3 view_dir, float3 sun_dir, AtmosphereParams atm_params, out float3 transmittance)
-  { 
-    float VoL = dot(view_dir, sun_dir);
-
-    float rayPhase = RayleighPhaseFunction(VoL);
-    float miePhase = MiePhaseFunction(VoL, 0.76);
-
-    float3 L = float3(0,0,0);
-    float3 Tr = float3(1,1,1);
-
-    float t = 0.0;
-    for (float i = 0.0; i < SCATTERING_STEPS; i += 1.0)
-    {
-      float newT = (i+0.3)/SCATTERING_STEPS * scattering_dist_mm;
-      float dt = newT - t;
-      t = newT;
-
-      float3 Ri_mm = p0_mm + view_dir * t;
-      float3 RiDir = normalize(Ri_mm);
-      float Ri_len_mm = length(Ri_mm);
-      float RioSDir = dot(RiDir, sun_dir);
-
-      float3 rayScattering, extintion;
-      float3 mieScattering;
-      calcScatteringValues(atm_params, Ri_mm, rayScattering, mieScattering, extintion);
-
-      float3 Tri = exp(-extintion * dt);
-      float3 TrSun = sampleTransmittance(Ri_len_mm, RioSDir, atm_params.rBotMM, atm_params.rTopMM);
-      float3 psi = samplePsi(atm_params, Ri_len_mm, -sun_dir.y);
-
-      float3 Si = rayScattering*(rayPhase*TrSun+psi) + mieScattering * (miePhase *TrSun+psi);
-      float3 Li = Si*(1.0 -  Tri) / extintion;
-
-      L += Li * Tr;
-      Tr *= Tri;
-    }
-
-    transmittance = Tr;
-    return L;
-  }
-
   [numthreads(32,32,1)]
   void cs_main(uint3 id: SV_DispatchThreadID)
   {
