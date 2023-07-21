@@ -1,3 +1,4 @@
+#include "../depth.inc.tfx"
 #include "../frame.inc.tfx"
 #include "../math.inc.tfx"
 #include "../screen_space.inc.tfx"
@@ -9,27 +10,37 @@
 scope SkyApplyScope {
   reserve:
     descriptor_set(2);
-    register(texture, 0-1);
+    register(buffer, 0);
+    register(texture, 0-3);
 
   Texture2D skyLUT = extern(skyLUT);
   Texture2D trLUT = extern(trLUT);
+  Texture3D apLUT = extern(apLUT);
+  Texture2D gbufferDepth = extern(gbufferDepth);
+
+  float maxAerialDist_mm = extern(maxAerialDist_mm);
 };
 
 technique SkyApply {
   support scope FrameScope;
-  USE_ATMOSPHERE_PARAMS();
   activate scope SkyApplyScope;
 
-  USE_SCREENSPACE_VIEW_BASE();
-  render_state:
-    depth:
-      test = yes;
-      compare_op = equal;
-
   USE_MATH();
+  USE_ATMOSPHERE_PARAMS();
+
+  USE_DEPTH_UTILS();
+  USE_SCREENSPACE_VIEW_BASE();
   USE_EBRUNETON_HELPERS();
   USE_SCATTERING();
   USE_TRANSMITTANCE_LUT();
+
+  render_state:
+    blending:
+      mrt(0):
+        has_blending = yes;
+        src_color_blend_factor = src_alpha;
+        dst_color_blend_factor = one_minus_src_alpha;
+        color_blend_op = add;
 
   #hlsl
     float3 calcSunDisk(AtmosphereParams atm_params, float3 view_dir, float3 sun_dir)
@@ -63,7 +74,7 @@ technique SkyApply {
       return sunDisk;
     }
 
-    float3 ps_main(VsOutput input) : SV_Target0
+    float4 applySkyLUT(VsOutput input)
     {
       float3 viewDir = normalize(input.viewDir);
 
@@ -78,12 +89,33 @@ technique SkyApply {
       float2 uv = float2(u,v);
 
       AtmosphereParams atmParams = getAtmosphereParams();
-      float3 sunDir = altitudeAzimuthToDecartian(AtmosphereScope.sunAzimuth_Altitude.y, AtmosphereScope.sunAzimuth_Altitude.x);
-
+      float3 sunDir = getAtmSunDir();
       float3 L = skyLUT.Sample(linearClampSampler, uv).rgb
                + calcSunDisk(atmParams, viewDir, sunDir);
+      
+      return float4(L, 1.0);
+    }
 
-      return L;
+    float4 applyAerialPerspective(VsOutput input, float depth)
+    {
+      float3 vsPos = calcViewSpacePos(input.viewDir, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+      float vsPosDist_mm = length(vsPos) / 1e6;
+
+      float u = (input.viewDir.x - FrameScope.ltView.x) / (FrameScope.rtView.x - FrameScope.ltView.x);
+      float v = (input.viewDir.y - FrameScope.ltView.y) / (FrameScope.lbView.y - FrameScope.ltView.y);
+      float w = saturate(vsPosDist_mm / SkyApplyScope.maxAerialDist_mm);
+
+      return apLUT.Sample(linearClampSampler, float3(u,v,w));
+    }
+
+    float4 ps_main(VsOutput input) : SV_Target0
+    {
+      float depth = gbufferDepth.Load(float3(input.pos.xy, 0)).r;
+
+      if (depth > 0.0)
+        return applyAerialPerspective(input, depth);
+      else
+        return applySkyLUT(input);
     }
   #end
 

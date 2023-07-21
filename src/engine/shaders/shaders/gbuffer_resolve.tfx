@@ -65,7 +65,7 @@ technique ResolveGbuffer {
       float2 metalRoughness = gbufferMetalRoughness.Sample(modelSampler, tc).rg;
 
       float depth = gbufferDepth.Sample(linearClampSampler, tc).r;
-      float3 worldPos = FrameScope.cameraPos + input.viewDir * linearize_z(depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+      float3 worldPos = calcWorldPos(FrameScope.cameraPos, input.viewDir, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
 
       Gbuffer g = (Gbuffer)0;
       init_albedo(g, albedo);

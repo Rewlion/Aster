@@ -2,7 +2,17 @@ technique_macro USE_DEPTH_UTILS {
   #hlsl
     float linearize_z(const float depth, const float znear, const float zfar)
     {
-      return zfar*znear / ( zfar - depth * (zfar - znear) ) / znear; //inverse z
+      return zfar*znear / ( zfar - depth * (zfar - znear) ); //inverse z
+    }
+
+    float3 calcViewSpacePos(float3 view_dir, const float depth, const float znear, const float zfar)
+    {
+      return view_dir * linearize_z(depth, znear, zfar) / znear;
+    }
+
+    float3 calcWorldPos(const float3 camera_pos, float3 view_dir, const float depth, const float znear, const float zfar)
+    {
+      return camera_pos + calcViewSpacePos(view_dir, depth, znear, zfar);
     }
   #end
 };
