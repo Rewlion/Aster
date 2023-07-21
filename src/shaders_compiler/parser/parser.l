@@ -268,6 +268,10 @@ Texture2D {
   return TFX_TOKEN_TEXTURE2D;
 }
 
+Texture3D {
+  return TFX_TOKEN_TEXTURE3D;
+}
+
 TextureCube {
   return TFX_TOKEN_TEXTURE_CUBE;
 }

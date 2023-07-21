@@ -143,6 +143,7 @@ namespace ShadersSystem
         {
           case ResourceType::Sampler:
           case ResourceType::Texture2D:
+          case ResourceType::Texture3D:
           case ResourceType::TextureCube:
           case ResourceType::RWTexture3D:
           {
@@ -265,6 +266,7 @@ namespace ShadersSystem
             }
 
             case ResourceType::Texture2D:
+            case ResourceType::Texture3D:
             case ResourceType::TextureCube:
             case ResourceType::RWTexture3D:
             {
@@ -430,6 +432,13 @@ namespace ShadersSystem
               break;
             }
 
+            case ResourceType::Texture3D:
+            {
+              hlsl += fmt::format("Texture3D {}: register(t{}, space{});\n",
+                var.name, var.binding, var.dset);
+              break;
+            }
+
             case ResourceType::TextureCube:
             {
               hlsl += fmt::format("TextureCube {}: register(t{}, space{});\n",
@@ -477,6 +486,7 @@ namespace ShadersSystem
             }
             case ResourceType::Sampler:
             case ResourceType::Texture2D:
+            case ResourceType::Texture3D:
             case ResourceType::TextureCube:
             case ResourceType::RWTexture3D:
             {

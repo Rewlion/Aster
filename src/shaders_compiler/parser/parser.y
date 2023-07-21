@@ -234,6 +234,7 @@
 %token TFX_TOKEN_INT3 "int3"
 %token TFX_TOKEN_INT4 "int4"
 %token TFX_TOKEN_TEXTURE2D "Texture2D"
+%token TFX_TOKEN_TEXTURE3D "Texture3D"
 %token TFX_TOKEN_TEXTURE_CUBE "TextureCube"
 %token TFX_TOKEN_RWTEXTURE3D "RWTexture3D"
 
@@ -826,6 +827,9 @@ ASSIGN_EXP
 RESOURCE_TYPE
   : TFX_TOKEN_TEXTURE2D {
     $$ = ResourceType::Texture2D;
+  }
+  | "Texture3D" {
+    $$ = ResourceType::Texture3D;
   }
   | TFX_TOKEN_TEXTURE_CUBE {
     $$ = ResourceType::TextureCube;

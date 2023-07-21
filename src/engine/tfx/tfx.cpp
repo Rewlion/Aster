@@ -103,6 +103,7 @@ namespace tfx
             #define VERIFY_CASE(handleType, resourceType) std::holds_alternative<gapi::handleType>(res) && (type == ShadersSystem::ResourceType::resourceType)
 
             return  VERIFY_CASE(TextureHandle, Texture2D)   ||
+                    VERIFY_CASE(TextureHandle, Texture3D)   ||
                     VERIFY_CASE(TextureHandle, TextureCube) ||
                     VERIFY_CASE(TextureHandle, RWTexture3D) ||
                     VERIFY_CASE(SamplerHandler, Sampler);
@@ -121,6 +122,7 @@ namespace tfx
                 return (gapi::ResourceHandler)h;
               }
               case ShadersSystem::ResourceType::Texture2D:
+              case ShadersSystem::ResourceType::Texture3D:
               case ShadersSystem::ResourceType::TextureCube:
               case ShadersSystem::ResourceType::RWTexture3D:
               {
@@ -149,6 +151,7 @@ namespace tfx
               break;
             }
             case ShadersSystem::ResourceType::Texture2D:
+            case ShadersSystem::ResourceType::Texture3D:
             case ShadersSystem::ResourceType::TextureCube:
             case ShadersSystem::ResourceType::RWTexture3D:
             {

@@ -11,6 +11,7 @@ namespace gapi::vulkan
     switch (type)
     {
       case ShadersSystem::ResourceType::Texture2D: return vk::ImageViewType::e2D;
+      case ShadersSystem::ResourceType::Texture3D: return vk::ImageViewType::e3D;
       case ShadersSystem::ResourceType::TextureCube: return vk::ImageViewType::eCube;
       case ShadersSystem::ResourceType::RWTexture3D: return vk::ImageViewType::e3D;
       default: ASSERT_FMT(false, "unsupported resource type {}", (int) type); return vk::ImageViewType::e2D;
