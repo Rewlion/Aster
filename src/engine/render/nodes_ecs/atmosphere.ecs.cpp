@@ -137,7 +137,11 @@ static void atmosphere_render_creation_handler(
           atm_radius_top_km / 1000.0,
           atm_radius_bot_km / 1000.0
         };
-        tfx::set_extern("atmPosMM", float3(0.0f, sunAzimuth_sunAltitude_rTopMM_rBotMM.w + 0.0002f, 0.0f));
+
+        float cameraH = sunAzimuth_sunAltitude_rTopMM_rBotMM.w + cameraData->pos.y;
+        cameraH = (cameraH < 10.0 ? 10.0 : cameraH) / 1e6;
+
+        tfx::set_extern("atmPosMM", float3(0.0f, sunAzimuth_sunAltitude_rTopMM_rBotMM.w + cameraH, 0.0f));
         tfx::set_extern("maxAerialDist_mm", 0.032f);
         tfx::set_channel("sunAzimuth_sunAltitude_rTopMM_rBotMM", sunAzimuth_sunAltitude_rTopMM_rBotMM);
         tfx::activate_scope("AtmosphereScope", encoder);
