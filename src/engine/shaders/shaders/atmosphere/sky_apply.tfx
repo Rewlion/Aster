@@ -45,7 +45,7 @@ technique SkyApply {
   #hlsl
     float3 calcSunDisk(AtmosphereParams atm_params, float3 view_dir, float3 sun_dir)
     {
-      float3 pos = float3(0.0, atm_params.rBotMM + 0.0002, 0.0);
+      float3 pos = atm_params.posMM;
       float3 RBot_mm;
       float botAtmDist_mm = raySphereIntersection(pos, view_dir, float3(0,0,0), atm_params.rBotMM, RBot_mm);
       if (botAtmDist_mm > 0.0)
