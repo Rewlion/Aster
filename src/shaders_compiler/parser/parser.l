@@ -264,6 +264,10 @@ int4 {
   return TFX_TOKEN_INT4;
 }
 
+RWBuffer {
+  return TFX_TOKEN_RWBUFFER;
+}
+
 Texture2D {
   return TFX_TOKEN_TEXTURE2D;
 }

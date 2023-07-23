@@ -146,6 +146,7 @@ namespace ShadersSystem
           case ResourceType::Texture3D:
           case ResourceType::TextureCube:
           case ResourceType::RWTexture3D:
+          case ResourceType::RWBuffer:
           {
             m_Scope.declaredResources.insert({
               resNameHash,
@@ -262,6 +263,20 @@ namespace ShadersSystem
                   "failed to declare sampler {}: all sampler slots are already in use", resource.name));
 
               resource.binding = currentSamplerReg++;
+              break;
+            }
+
+            case ResourceType::RWBuffer:
+            {
+              if (!hasBuffers)
+                 throw std::runtime_error(fmt::format(
+                  "failed to declare a buffer {}: there is no buffers declared in scope", resource.name));
+
+              if (currentBufferReg > buffersEnd)
+                throw std::runtime_error(fmt::format(
+                  "failed to declare a buffer {}: all buffer slots are already in use", resource.name));
+
+              resource.binding = currentBufferReg++;
               break;
             }
 
@@ -445,6 +460,13 @@ namespace ShadersSystem
                 var.name, var.binding, var.dset);
               break;
             }
+
+            case ResourceType::RWBuffer:
+            {
+              hlsl += fmt::format("RWBuffer<{}> {}: register(u{}, space{});\n",
+                gapi::attributeType_to_string(var.uavElemType), var.name, var.binding, var.dset);
+              break;
+            }
             
             case ResourceType::RWTexture3D:
             {
@@ -488,6 +510,7 @@ namespace ShadersSystem
             case ResourceType::Texture2D:
             case ResourceType::Texture3D:
             case ResourceType::TextureCube:
+            case ResourceType::RWBuffer:
             case ResourceType::RWTexture3D:
             {
               const ByteCodes var = generateByteCodeForResourceDeclaration(res);
