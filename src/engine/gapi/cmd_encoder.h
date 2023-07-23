@@ -59,6 +59,9 @@ namespace gapi
       void bindSampler(const SamplerHandler sampler, const size_t set, const size_t binding) = 0;
 
       virtual
+      void bindBuffer(const BufferHandler buffer, const size_t set, const size_t binding) = 0;
+
+      virtual
       void flush(Fence* signalFence = nullptr) = 0;
 
       virtual

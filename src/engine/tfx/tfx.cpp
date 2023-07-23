@@ -102,10 +102,12 @@ namespace tfx
           const auto isValidType = [](const auto& res, const ShadersSystem::ResourceType type) {
             #define VERIFY_CASE(handleType, resourceType) std::holds_alternative<gapi::handleType>(res) && (type == ShadersSystem::ResourceType::resourceType)
 
-            return  VERIFY_CASE(TextureHandle, Texture2D)   ||
-                    VERIFY_CASE(TextureHandle, Texture3D)   ||
-                    VERIFY_CASE(TextureHandle, TextureCube) ||
-                    VERIFY_CASE(TextureHandle, RWTexture3D) ||
+            return  VERIFY_CASE(TextureHandle, Texture2D)          ||
+                    VERIFY_CASE(TextureHandle, Texture3D)          ||
+                    VERIFY_CASE(TextureHandle, TextureCube)        ||
+                    VERIFY_CASE(TextureHandle, RWTexture3D)        ||
+                    VERIFY_CASE(BufferHandler, RWStructuredBuffer) ||
+                    VERIFY_CASE(BufferHandler, RWBuffer)           ||
                     VERIFY_CASE(SamplerHandler, Sampler);
 
             #undef VERIFY_CASE
@@ -119,6 +121,12 @@ namespace tfx
               case ShadersSystem::ResourceType::Sampler:
               {
                 const auto h = std::get<gapi::SamplerHandler>(resource);
+                return (gapi::ResourceHandler)h;
+              }
+              case ShadersSystem::ResourceType::RWStructuredBuffer:
+              case ShadersSystem::ResourceType::RWBuffer:
+              {
+                const auto h = std::get<gapi::BufferHandler>(resource);
                 return (gapi::ResourceHandler)h;
               }
               case ShadersSystem::ResourceType::Texture2D:
@@ -148,6 +156,12 @@ namespace tfx
             case ShadersSystem::ResourceType::Sampler:
             {
               m_CmdEncoder->bindSampler((gapi::SamplerHandler)h, bc.dset, bc.binding);
+              break;
+            }
+            case ShadersSystem::ResourceType::RWStructuredBuffer:
+            case ShadersSystem::ResourceType::RWBuffer:
+            {
+              m_CmdEncoder->bindBuffer((gapi::BufferHandler)h, bc.dset, bc.binding);
               break;
             }
             case ShadersSystem::ResourceType::Texture2D:

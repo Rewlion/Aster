@@ -308,6 +308,15 @@ namespace gapi::vulkan
     }
   }
 
+  void CmdEncoder::bindBuffer(const BufferHandler h, const size_t set, const size_t binding)
+  {
+    if (h != BufferHandler::Invalid)
+    {
+      const Buffer& buffer = m_Device.getBuffer(h);
+      m_DsetManager.setUniformBuffer(buffer.buffer.get(), set, binding, buffer.getConstOffset());
+    }
+  }
+
   void CmdEncoder::transitTextureState(const TextureHandle texture,
                                        const TextureState oldState, const TextureState newState,
                                        const uint32_t firstMipLevel, const uint32_t mipLevelsCount,

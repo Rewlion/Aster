@@ -279,8 +279,15 @@ namespace gapi
 
     BF_BindVertex   = 1 << 3,
     BF_BindIndex    = 1 << 4,
-    BF_BindConstant = 1 << 5
+    BF_BindConstant = 1 << 5,
+    BF_BindUAV      = 1 << 6
   };
+
+  inline
+  auto operator|(const BufferUsage a, const BufferUsage b) -> BufferUsage
+  {
+      return (BufferUsage)((int)a|(int)b);
+  }
 
   enum WriteFlags
   {
@@ -420,6 +427,7 @@ namespace gapi
     BF_STATE_INDEX            = 1,
     BF_STATE_VERTEX           = 1 << 2,
     BF_STATE_TRANSFER_DST     = 1 << 3,
+    BF_STATE_UAV_RW           = 1 << 4,
     BF_STATE_LAST             = BF_STATE_TRANSFER_DST
   };
 

@@ -123,14 +123,20 @@ namespace gapi::vulkan
     if (usage & BufferUsage::BF_BindConstant)
       bits |= vk::BufferUsageFlagBits::eUniformBuffer;
 
+    if (usage & BufferUsage::BF_BindUAV)
+      bits |= vk::BufferUsageFlagBits::eStorageBuffer;
+
     return bits;
   }
 
   inline size_t get_buffer_size(const size_t blockSize, const size_t discards, const int usage, const vk::PhysicalDeviceLimits& limits)
   {
-    if (usage & BF_BindConstant)
+    if (usage & (BF_BindConstant | BF_BindUAV))
     {
-      const size_t alignment = limits.minUniformBufferOffsetAlignment;
+      const size_t alignment = usage & BF_BindConstant ? 
+                                limits.minUniformBufferOffsetAlignment :
+                                limits.minStorageBufferOffsetAlignment;
+
       if (blockSize >= alignment)
       {
         size_t alignedBlock = blockSize;
@@ -404,6 +410,11 @@ namespace gapi::vulkan
           flags |= vk::PipelineStageFlagBits::eTransfer;
           break;
         }
+        case BF_STATE_UAV_RW:
+        {
+          flags |= vk::PipelineStageFlagBits::eAllGraphics | vk::PipelineStageFlagBits::eComputeShader;
+          break;
+        }
         default:
         {
           ASSERT(!"unsupported BufferState");
@@ -437,6 +448,11 @@ namespace gapi::vulkan
         case BF_STATE_TRANSFER_DST:
         {
           flags |= vk::AccessFlagBits::eTransferWrite;
+          break;
+        }
+        case BF_STATE_UAV_RW:
+        {
+          flags |= vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
           break;
         }
         default:

@@ -261,12 +261,20 @@ namespace gapi::vulkan
           },
           [&](const UniformBufferWriteInfo& info){
             auto type = vk::DescriptorType::eUniformBuffer;
+            auto storageType = vk::DescriptorType::eStorageBuffer;
             if(validateBindingType(info.binding, type))
             {
               bufInfos[iBuf].buffer = info.buffer;
               bufInfos[iBuf].offset = info.constOffset;
               bufInfos[iBuf].range = VK_WHOLE_SIZE;
               addWriteInfo(info.binding, type, &bufInfos[iBuf], nullptr);
+              ++iBuf;
+            } else if(validateBindingType(info.binding, storageType))
+            {
+              bufInfos[iBuf].buffer = info.buffer;
+              bufInfos[iBuf].offset = info.constOffset;
+              bufInfos[iBuf].range = VK_WHOLE_SIZE;
+              addWriteInfo(info.binding, storageType, &bufInfos[iBuf], nullptr);
               ++iBuf;
             }
           },

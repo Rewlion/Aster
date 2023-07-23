@@ -67,6 +67,8 @@ namespace gapi::vulkan
 
       void bindSampler(const SamplerHandler sampler, const size_t set, const size_t binding) override;
 
+      void bindBuffer(const BufferHandler buffer, const size_t set, const size_t binding) override;
+
       void transitTextureState(const TextureHandle texture,
                                const TextureState oldState, const TextureState newState,
                                const uint32_t firstMipLevel, const uint32_t mipLevelsCount,
