@@ -342,6 +342,12 @@ namespace fg
           m_ResourceStorages[m_iFrame].transitTextureState(vRes.resourceId, texState.state, *encoder);
         }
 
+        for (auto bufState: node.execState.bufferBeginStates)
+        {
+          auto& vRes = m_Registry.m_VirtResources[bufState.virtResId];
+          m_ResourceStorages[m_iFrame].transitBufferState(vRes.resourceId, bufState.state, *encoder);
+        }
+
         const bool declaredRp = (node.execState.renderPass.depth.vResId != INVALID_VIRT_RES_ID)
                                || node.execState.renderPass.mrt.empty();
         if (declaredRp)
@@ -395,6 +401,25 @@ namespace fg
         m_Registry.m_Resources[vRes.resourceId]).allocDesc;
     
     return m_DefaultSamplerAllocDesc;
+  }
+
+  auto Manager::getBuffer(const virt_res_id_t virt_res_id) -> gapi::BufferHandler
+  {
+    auto& vRes = m_Registry.m_VirtResources[virt_res_id];
+    if (vRes.resourceId != INVALID_RES_ID)
+      return m_ResourceStorages[m_iFrame].getBuffer(vRes.resourceId);
+    
+    return gapi::BufferHandler::Invalid;
+  }
+
+  auto Manager::getBufferAllocDescription(const virt_res_id_t virt_res_id) -> const gapi::BufferAllocationDescription&
+  {
+    const auto& vRes = m_Registry.m_VirtResources[virt_res_id];
+    if (vRes.resourceId != INVALID_RES_ID)
+      return std::get<Registry::BufferResource>(
+        m_Registry.m_Resources[vRes.resourceId]).allocDesc;
+    
+    return m_DefaultBufferAllocDesc;
   }
 
   auto Manager::getBlob(const virt_res_id_t virt_res_id) -> std::byte*

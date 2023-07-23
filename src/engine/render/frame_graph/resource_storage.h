@@ -16,12 +16,14 @@ namespace fg
   {
       struct TextureResource;
       struct SamplerResource;
-      using Resource = std::variant<std::monostate, TextureResource, SamplerResource>;
+      struct BufferResource;
+      using Resource = std::variant<std::monostate, TextureResource, SamplerResource, BufferResource>;
 
     public:
       void create(const res_id_t, const Registry::Resource&);
       void importTexture(const res_id_t, const gapi::TextureHandle, const gapi::TextureState init_state);
       void transitTextureState(const res_id_t, const gapi::TextureState to_state, gapi::CmdEncoder& encoder);
+      void transitBufferState(const res_id_t, const gapi::BufferState to_state, gapi::CmdEncoder& encoder);
       
       void setBlobsStorageSize(const size_t);
 
@@ -29,12 +31,14 @@ namespace fg
       auto getTexture(const res_id_t) -> gapi::TextureHandle;
       auto getTextureAndCurrentState(const res_id_t) -> eastl::pair<gapi::TextureHandle, gapi::TextureState>;
       auto getSampler(const res_id_t) -> gapi::SamplerHandler;
+      auto getBuffer(const res_id_t) -> gapi::BufferHandler;
 
       void reset();
 
     private:
       void createTexture(const res_id_t, const gapi::TextureAllocationDescription&);
       void createSampler(const res_id_t, const gapi::SamplerAllocationDescription&);
+      void createBuffer(const res_id_t, const gapi::BufferAllocationDescription&, const gapi::BufferState);
 
     private:
       Utils::ResizableVector<Resource, res_id_t> m_Resources;
@@ -51,6 +55,12 @@ namespace fg
       struct SamplerResource
       {
         gapi::SamplerHandler sampler = gapi::SamplerHandler::Invalid;
+      };
+
+      struct BufferResource
+      {
+        gapi::BufferHandler buffer = gapi::BufferHandler::Invalid;
+        gapi::BufferState currentState = (gapi::BufferState)0;
       };
   };
 }

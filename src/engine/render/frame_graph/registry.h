@@ -36,10 +36,11 @@ namespace fg
     struct ExecState;
     struct NodeInfo;
     struct VirtualResourceInfo;
+    struct BufferResource;
     struct TextureResource;
     struct BlobResource;
     struct SamplerResource;
-    using Resource = std::variant<TextureResource, SamplerResource, BlobResource>;
+    using Resource = std::variant<BufferResource, TextureResource, SamplerResource, BlobResource>;
 
     struct null_capacity : fu2::capacity_fixed<0> {};
     using BlobConstructorFunction = fu2::function_base<true, true, null_capacity, false, true, void(std::byte*) const>;
@@ -62,6 +63,10 @@ namespace fg
     public:
       void orderMeBefore(const char* node);
       void orderMeAfter(const char* node);
+
+      auto createBuffer(const char* name, const gapi::BufferAllocationDescription&, const gapi::BufferState init_state) -> BufferRequest;
+      auto modifyBuffer(const char* name, const gapi::BufferState state) -> BufferRequest;
+      auto readBuffer(const char* name, const gapi::BufferState state) -> BufferRequest;
 
       auto createTexture(const char* name, const gapi::TextureAllocationDescription&, const gapi::TextureState init_state) -> TextureRequest;
       auto importTextureProducer(const char* name, TextureProduceFunction) -> TextureRequest;
@@ -111,6 +116,12 @@ namespace fg
           gapi::TextureState state;
         };
 
+        struct Buffer
+        {
+          virt_res_id_t virtResId;
+          gapi::BufferState state;
+        };
+
         struct RenderTarget
         {
           virt_res_id_t vResId = INVALID_VIRT_RES_ID;
@@ -133,6 +144,7 @@ namespace fg
           DepthTarget depth;
         };
 
+        eastl::vector<Buffer> bufferBeginStates;
         eastl::vector<Texture> textureBeginStates;
         RenderPass renderPass;
       };
@@ -159,6 +171,12 @@ namespace fg
           reads.clear();
           creates.clear();
         }
+      };
+
+      struct BufferResource
+      {
+        gapi::BufferAllocationDescription allocDesc;
+        gapi::BufferState initState;
       };
 
       struct TextureResource

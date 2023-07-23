@@ -30,4 +30,14 @@ namespace fg
   {
     return get_manager()->getSamplerAllocDescription(id);
   }
+
+  auto BufferAccessor::access(const virt_res_id_t id) -> return_type
+  {
+    return get_manager()->getBuffer(id);
+  }
+
+  auto BufferAccessor::getAllocDescription(const virt_res_id_t id) -> alloc_desc_return_type
+  {
+    return get_manager()->getBufferAllocDescription(id);
+  }
 }

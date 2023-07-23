@@ -62,6 +62,19 @@ namespace fg
       auto getAllocDescription(const virt_res_id_t id) -> alloc_desc_return_type;
   };
 
+  class BufferAccessor
+  {
+    public:
+      using alloc_desc_return_type = const gapi::BufferAllocationDescription&;
+      using return_type = const gapi::BufferHandler;
+
+      static
+      auto access(const virt_res_id_t id) -> return_type;
+
+      static
+      auto getAllocDescription(const virt_res_id_t id) -> alloc_desc_return_type;
+  };
+
   class BlobAccessorInternal
   {
     template<class BlobType, class Access>
@@ -106,6 +119,7 @@ namespace fg
 
   using TextureRequest = ResourceRequest<TextureAccessor>;
   using SamplerRequest = ResourceRequest<SamplerAccessor>;
+  using BufferRequest  = ResourceRequest<BufferAccessor>;
 
   template<class BlobType>
   using BlobReadRequest = ResourceRequest<BlobAccessor<BlobType, BlobRAccess<BlobType>>>;

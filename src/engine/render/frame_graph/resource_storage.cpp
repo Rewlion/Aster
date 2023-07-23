@@ -22,6 +22,10 @@ namespace fg
     {
       createSampler(res_id, samplerRes->allocDesc);
     }
+    else if (auto* bufferRes = std::get_if<Registry::BufferResource>(&res_info))
+    {
+      createBuffer(res_id, bufferRes->allocDesc, bufferRes->initState);
+    }
     else if (auto* blobRes = std::get_if<Registry::BlobResource>(&res_info))
     {
       std::byte* storage = m_Blobs.data() + blobRes->bufferStart;
@@ -51,6 +55,19 @@ namespace fg
     };
   }
 
+  void ResourceStorage::createBuffer(const res_id_t res_id,
+                                     const gapi::BufferAllocationDescription& alloc_desc,
+                                     const gapi::BufferState init_state)
+  {
+    Resource& res = m_Resources[res_id];
+    ASSERT(std::holds_alternative<std::monostate>(res));
+
+    res = BufferResource{
+      .buffer = gapi::allocate_buffer(alloc_desc.size, alloc_desc.usage),
+      .currentState = init_state
+    };
+  }
+
   void ResourceStorage::importTexture(const res_id_t res_id, const gapi::TextureHandle h, const gapi::TextureState init_state)
   {
     Resource& res = m_Resources[res_id];
@@ -70,6 +87,16 @@ namespace fg
     {
       encoder.transitTextureState(tex.texture, tex.currentState, to_state);
       tex.currentState = to_state;
+    }
+  }
+
+  void ResourceStorage::transitBufferState(const res_id_t res_id, const gapi::BufferState to_state, gapi::CmdEncoder& encoder)
+  {
+    BufferResource& buf = std::get<BufferResource>(m_Resources[res_id]);
+    if (buf.currentState != to_state)
+    {
+      encoder.insertGlobalBufferBarrier(buf.currentState, to_state);
+      buf.currentState = to_state;
     }
   }
 
@@ -100,6 +127,11 @@ namespace fg
     return std::get<SamplerResource>(m_Resources[res_id]).sampler;
   }
 
+  auto ResourceStorage::getBuffer(const res_id_t res_id) -> gapi::BufferHandler
+  {
+    return std::get<BufferResource>(m_Resources[res_id]).buffer;
+  }
+
   void ResourceStorage::reset()
   {
     for (auto& res: m_Resources)
@@ -113,6 +145,11 @@ namespace fg
       {
         if (smp->sampler != gapi::SamplerHandler::Invalid)
           gapi::free_resource(smp->sampler);
+      }
+      else if (auto* buf = std::get_if<BufferResource>(&res))
+      {
+        if (buf->buffer != gapi::BufferHandler::Invalid)
+          gapi::free_resource(buf->buffer);
       }
     }
 
