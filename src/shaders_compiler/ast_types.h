@@ -17,6 +17,7 @@ namespace ShadersSystem
     Texture2D,
     Texture3D,
     TextureCube,
+    RWStructuredBuffer,
     RWBuffer,
     RWTexture3D,
     CbufferVar,

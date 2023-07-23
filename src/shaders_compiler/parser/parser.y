@@ -233,6 +233,7 @@
 %token TFX_TOKEN_INT2 "int2"
 %token TFX_TOKEN_INT3 "int3"
 %token TFX_TOKEN_INT4 "int4"
+%token TFX_TOKEN_RWSTRUCTUREDBUFFER "RWStructuredBuffer"
 %token TFX_TOKEN_RWBUFFER "RWBuffer"
 %token TFX_TOKEN_TEXTURE2D "Texture2D"
 %token TFX_TOKEN_TEXTURE3D "Texture3D"
@@ -846,6 +847,9 @@ UAV_RESOURCE_TYPE
   }
   | "RWBuffer" {
     $$ = ResourceType::RWBuffer;
+  }
+  | "RWStructuredBuffer" {
+    $$ = ResourceType::RWStructuredBuffer;
   }
   ;
 

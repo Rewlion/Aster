@@ -146,6 +146,7 @@ namespace ShadersSystem
           case ResourceType::Texture3D:
           case ResourceType::TextureCube:
           case ResourceType::RWTexture3D:
+          case ResourceType::RWStructuredBuffer:
           case ResourceType::RWBuffer:
           {
             m_Scope.declaredResources.insert({
@@ -266,6 +267,7 @@ namespace ShadersSystem
               break;
             }
 
+            case ResourceType::RWStructuredBuffer:
             case ResourceType::RWBuffer:
             {
               if (!hasBuffers)
@@ -461,6 +463,13 @@ namespace ShadersSystem
               break;
             }
 
+            case ResourceType::RWStructuredBuffer:
+            {
+              hlsl += fmt::format("RWStructuredBuffer<{}> {}: register(u{}, space{});\n",
+                gapi::attributeType_to_string(var.uavElemType), var.name, var.binding, var.dset);
+              break;
+            }
+
             case ResourceType::RWBuffer:
             {
               hlsl += fmt::format("RWBuffer<{}> {}: register(u{}, space{});\n",
@@ -510,6 +519,7 @@ namespace ShadersSystem
             case ResourceType::Texture2D:
             case ResourceType::Texture3D:
             case ResourceType::TextureCube:
+            case ResourceType::RWStructuredBuffer:
             case ResourceType::RWBuffer:
             case ResourceType::RWTexture3D:
             {

@@ -264,6 +264,10 @@ int4 {
   return TFX_TOKEN_INT4;
 }
 
+RWStructuredBuffer {
+  return TFX_TOKEN_RWSTRUCTUREDBUFFER;
+}
+
 RWBuffer {
   return TFX_TOKEN_RWBUFFER;
 }
