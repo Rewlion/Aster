@@ -4,19 +4,6 @@ scene
 {
   object
   {
-    float3 pos = 5.0 , 0.0 , 10.0
-    float3 scale = 5.0, 1.0, 1.0
-    text model = "cube"
-  }
-
-  object
-  {
-    float3 pos = 0.0 , 0.0 , -5.0
-    text model = "cube"
-  }
-
-  object
-  {
     float3 pos = 0.0 , 0.0 , 5.0
     float3 rot = -90.0, 0.0, 0.0
     text model = "damaged_helmet"

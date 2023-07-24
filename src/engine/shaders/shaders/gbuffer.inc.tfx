@@ -109,10 +109,10 @@ technique_macro USE_GBUFFER {
       float4 kD = (1.0 - F) * (1.0 - g.metal);
       float4 specular = (NDF*ggx*F) / (4.0 * LoN * VoN + 0.0001);
       float4 diffuseSPH = float4(getSphDiffuseE(N), 1.0);
-      float4 lambertDiffuse = (kD * g.albedo * diffuseSPH) / Pi;
+      float4 sunL = float4(getSunL(), 1.0);
+      float4 lambertDiffuse = (kD * g.albedo * (diffuseSPH + sunL*LoN)) / Pi;
       //float4 ambient = g.albedo * 0.1;
 
-      float4 sunL = float4(getSunL(), 1.0);
       float4 Ri = float4(1.0, 1.0, 1.0, 1.0) * LoN;
       float4 Ro = lambertDiffuse + specular * sunL * LoN;// (lambertDiffuse + specular) * Ri;
 
