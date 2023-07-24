@@ -12,7 +12,7 @@ technique_macro USE_SKY_LUT {
     float u = azimuth / (2.0 * PI);
     float2 uv = float2(u,v);
 
-    return skyLUT.Sample(linearClampSampler, uv).rgb;
+    return skyLUT.SampleLevel(linearClampSampler, uv, 0).rgb;
   }
 
   float3 calcSunDisk(AtmosphereParams atm_params, float3 view_dir, float3 sun_dir)

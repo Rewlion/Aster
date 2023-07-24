@@ -12,6 +12,7 @@
 #include <engine/work_cycle/camera.h>
 
 #include <engine/shaders/shaders/atmosphere/consts.hlsl>
+#include <engine/shaders/shaders/atmosphere/sph.hlsl>
 
 ECS_QUERY()
 static
@@ -215,6 +216,30 @@ static void atmosphere_render_creation_handler(
 
       encoder.updateResources();
       encoder.draw(4, 1, 0, 0);
+    };
+  });
+
+  fg::register_node("atm_sph_render", FG_FILE_DECL, [](fg::Registry& reg)
+  {
+    reg.orderMeBefore("atm_sky_apply");
+
+    auto paramsBuf = reg.createBuffer("atm_sph_buf", gapi::BufferAllocationDescription{
+      .size = ATM_PARAMS_COUNT * sizeof(float4),
+      .usage = gapi::BufferUsage::BF_GpuVisible | gapi::BufferUsage::BF_BindUAV
+    }, gapi::BufferState::BF_STATE_UAV_RW);
+
+    auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
+    auto skyLUTtex = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead);
+
+    return [paramsBuf, trLUTtex, skyLUTtex](gapi::CmdEncoder& encoder)
+    {
+      tfx::set_extern("trLUT", trLUTtex.get());
+      tfx::set_extern("skyLUT", skyLUTtex.get());
+      tfx::set_extern("atmParamsBuffer", paramsBuf.get());
+      tfx::activate_technique("AtmSphericalHarmonics", encoder);
+
+      encoder.updateResources();
+      encoder.dispatch(1,1,1);
     };
   });
 

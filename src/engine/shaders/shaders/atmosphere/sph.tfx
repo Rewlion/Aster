@@ -1,0 +1,142 @@
+#include "../frame.inc.tfx"
+#include "../math.inc.tfx"
+#include "atmosphere.inc.tfx"
+#include "ebruneton.inc.tfx"
+#include "sky.inc.tfx"
+#include "transmittance.inc.tfx"
+
+scope AtmSphericalHarmonicsScope {
+  reserve:
+    descriptor_set(2);
+    register(buffer, 0-1);
+    register(texture, 0-1);
+
+  RWStructuredBuffer<float3> atmParamsBuffer = extern(atmParamsBuffer);
+  Texture2D skyLUT = extern(skyLUT);
+  Texture2D trLUT = extern(trLUT);
+};
+
+technique AtmSphericalHarmonics {
+  support scope FrameScope;
+  activate scope AtmSphericalHarmonicsScope;
+
+  USE_MATH();
+  USE_ATMOSPHERE_PARAMS();
+  USE_EBRUNETON_HELPERS();
+  USE_TRANSMITTANCE_LUT();
+  USE_SKY_LUT();
+
+  #hlsl
+  #include "sph.hlsl"
+
+  #define GROUP_SIZE 256
+  #define GROUP_SIZE_SQ 16
+
+  groupshared float3 sum[GROUP_SIZE*SPH_COUNT];
+
+  [numthreads(GROUP_SIZE,1,1)]
+  void cs_main(uint3 id: SV_DispatchThreadID)
+  {
+    uint uty = id.x / GROUP_SIZE_SQ;
+    uint utx = id.x - uty;
+    float2 t = float2(utx, uty) / (float)(GROUP_SIZE_SQ);
+
+    float theta = lerp(0.0, PI, t.x);
+    float phi = lerp (0.0, 2.0 * PI, t.y);
+
+    float3 viewDir = sphericalToDecartian(theta, phi);
+    float x = viewDir.x;
+    float y = viewDir.y;
+    float z = viewDir.z;
+
+    float Y[SPH_COUNT] = {
+      0.282095,                   // Y00
+      0.488603,0.488603,0.488603, // (Y11; Y10; Y1−1)  (x; z; y)
+      1.092548,1.092548,1.092548, // (Y21; Y2−1; Y2−2) (xz; yz; xy)
+      0.315392,                   // Y20               (3z*z-1)
+      0.54627                     // Y22               (x*x-y*y)
+    };
+
+    float Ys[SPH_COUNT] = {
+      1.0,
+      x, z, y,
+      x*z, y*z, x*y,
+      3*z*z - 1.0,
+      x*x - y*y
+    };
+
+    AtmosphereParams atmParams = getAtmosphereParams();
+    float3 sunDir = getAtmSunDir();
+    float3 L = sampleSkyLUT(viewDir) + calcSunDisk(atmParams, viewDir, sunDir);
+
+    [UNROLL]
+    for (uint i = 0; i < SPH_COUNT; ++i)
+      sum[id.x * SPH_COUNT + i] = Y[i] * Ys[i] * L;
+
+    GroupMemoryBarrierWithGroupSync();
+
+    [UNROLL]
+    for (uint s = GROUP_SIZE/2; s > 0; s >>= 1)
+    {
+      if (id.x < s)
+      {
+        [UNROLL]
+        for(uint i = 0; i < SPH_COUNT; ++i)
+          sum[id.x * SPH_COUNT + i] += sum[(id.x+s) * SPH_COUNT + i];
+      }
+
+      GroupMemoryBarrierWithGroupSync();
+    }
+
+    float3 sunL = sampleSkyLUT(sunDir) + calcSunDisk(atmParams, sunDir, sunDir);
+    if (id.x == 0)
+    {
+      [UNROLL]
+      for (uint i = 0; i < SPH_COUNT; ++i)
+        atmParamsBuffer[i] = sum[i] * 4.0 * PI / (float)(GROUP_SIZE);
+
+      atmParamsBuffer[SPH_COUNT] = sunL;
+    }
+  }
+  #end
+
+  compile(cs_6_1, cs_main);
+};
+
+technique_macro USE_ATM_SPH {
+  #hlsl
+  float3 getSunL()
+  {
+    return atmParamsBuffer[SPH_COUNT];
+  }
+
+  float3 getSphDiffuseE(float3 N)
+  {
+    float x = N.x;
+    float y = N.y;
+    float z = N.z;
+
+    float c1 = 0.429043;
+    float c2 = 0.511664;
+    float c3 = 0.743125;
+    float c4 = 0.886227;
+    float c5 = 0.247708;
+
+    float3 L00  = atmParamsBuffer[0];
+    float3 L11  = atmParamsBuffer[1];
+    float3 L10  = atmParamsBuffer[2];
+    float3 L1m1 = atmParamsBuffer[3];
+    float3 L21  = atmParamsBuffer[4];
+    float3 L2m1 = atmParamsBuffer[5];
+    float3 L2m2 = atmParamsBuffer[6];
+    float3 L20  = atmParamsBuffer[7];
+    float3 L22  = atmParamsBuffer[8];
+
+    float3 E = c1*L22*(x*x - y*y) + c3*L20*z*z + c4*L00 - c5*L20
+             + 2.0 * c1 * (L2m2*x*y + L21*x*z + L2m1*y*z)
+             + 2.0 * c2 * (L11*x + L1m1*y + L10*z);
+
+    return E;
+  }
+  #end
+};
