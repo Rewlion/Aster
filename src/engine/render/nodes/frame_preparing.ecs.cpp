@@ -11,6 +11,8 @@
 #include <engine/window.h>
 #include <engine/work_cycle/camera.h>
 
+#include <engine/shaders/shaders/atmosphere/sph.hlsl>
+
 namespace Engine::Render
 {
   fg::node_id_t mk_backbuffer_acquiring_node()
@@ -34,6 +36,11 @@ namespace Engine::Render
     return fg::register_node("frame_preparing", FG_FILE_DECL, [](fg::Registry& reg)
     {
       reg.orderMeAfter("backbuffer_acquiring");
+
+      auto paramsBuf = reg.createBuffer("sph_buf", gapi::BufferAllocationDescription{
+        .size = ATM_PARAMS_COUNT * sizeof(float4),
+        .usage = gapi::BufferUsage::BF_GpuVisible | gapi::BufferUsage::BF_BindUAV
+      }, gapi::BufferState::BF_STATE_UAV_RW);
 
       auto cameraData = reg.createBlob<Engine::CameraData>("camera_data");
       auto wndSize = reg.createBlob<int2>("window_size");

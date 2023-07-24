@@ -71,8 +71,8 @@ namespace fg
         if (vRes.createdBy == INVALID_VIRT_RES_ID)
         {
           logerror("FG: node `{}` {} resource `{}` not produced by any node.",
-              action,
               m_Registry.m_NodesNames.getString(to_name_id(nodeId)), 
+              action,
               m_Registry.m_ResourcesNames.getString(to_name_id(virt_res_id)));
           return false;
         }

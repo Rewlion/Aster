@@ -102,16 +102,18 @@ namespace Engine::Render
       auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead);
       auto gbuf2 = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead);
       auto gbufDepth = reg.readTexture("gbuffer_depth", gapi::TextureState::ShaderRead);
+      auto atmParams = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_UAV_RW);
 
       reg.requestRenderPass()
          .addTarget(resolveTarget, gapi::LoadOp::Load, gapi::StoreOp::Store);
 
-      return [gbuf0,gbuf1,gbuf2, gbufDepth](gapi::CmdEncoder& encoder)
+      return [gbuf0,gbuf1,gbuf2, gbufDepth, atmParams](gapi::CmdEncoder& encoder)
       {
         tfx::set_extern("gbuffer_albedo", gbuf0.get());
         tfx::set_extern("gbuffer_normal", gbuf1.get());
         tfx::set_extern("gbuffer_metal_roughness", gbuf2.get());
         tfx::set_extern("gbuffer_depth", gbufDepth.get());
+        tfx::set_extern("atmParamsBuffer", atmParams.get());
 
         tfx::activate_technique("ResolveGbuffer", encoder);
         encoder.updateResources();

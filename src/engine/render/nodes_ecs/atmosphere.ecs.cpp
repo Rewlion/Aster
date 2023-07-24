@@ -221,13 +221,7 @@ static void atmosphere_render_creation_handler(
 
   fg::register_node("atm_sph_render", FG_FILE_DECL, [](fg::Registry& reg)
   {
-    reg.orderMeBefore("atm_sky_apply");
-
-    auto paramsBuf = reg.createBuffer("atm_sph_buf", gapi::BufferAllocationDescription{
-      .size = ATM_PARAMS_COUNT * sizeof(float4),
-      .usage = gapi::BufferUsage::BF_GpuVisible | gapi::BufferUsage::BF_BindUAV
-    }, gapi::BufferState::BF_STATE_UAV_RW);
-
+    auto paramsBuf = reg.modifyBuffer("sph_buf", gapi::BufferState::BF_STATE_UAV_RW);
     auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
     auto skyLUTtex = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead);
 

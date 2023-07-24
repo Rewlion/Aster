@@ -1,2 +1,7 @@
+#ifndef SPH_INCLUDE_GUARD
+#define SPH_INCLUDE_GUARD
+
 #define SPH_COUNT 9
 #define ATM_PARAMS_COUNT (SPH_COUNT+1)
+
+#endif
