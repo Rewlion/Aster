@@ -199,6 +199,7 @@ namespace gapi::vulkan
   void PipelinesStorage::clear()
   {
     m_Pipelines.clear();
+    m_ComputePipelines.clear();
     m_ShadersStorage.clear();
   }
 }
