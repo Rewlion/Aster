@@ -45,6 +45,12 @@ technique_macro USE_SKY_LUT {
     float3 sunDisk = limbDarkening * sampleTransmittance(length(pos), VoZ, atm_params.rBotMM, atm_params.rTopMM);
     return sunDisk;
   }
+
+  float3 sampleFullSky(AtmosphereParams atm_params, float3 view_dir, float3 sun_dir)
+  {
+    return sampleSkyLUT(view_dir) + calcSunDisk(atm_params, view_dir, sun_dir);
+  }
+
   #end
 };
 
@@ -78,7 +84,7 @@ technique_macro USE_SKY_RAYMARCH {
 
       float3 Tri = exp(-extintion * dt);
       float3 TrSun = sampleTransmittance(Ri_len_mm, RioSDir, atm_params.rBotMM, atm_params.rTopMM);
-      float3 psi = samplePsi(atm_params, Ri_len_mm, -sun_dir.y);
+      float3 psi = float3(0,0,0);// samplePsi(atm_params, Ri_len_mm, -sun_dir.y);
 
       float3 Si = rayScattering*(rayPhase*TrSun+psi) + mieScattering * (miePhase *TrSun+psi);
       float3 Li = Si*(1.0 -  Tri) / extintion;

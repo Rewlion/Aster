@@ -67,7 +67,7 @@ technique AtmSphericalHarmonics {
 
     AtmosphereParams atmParams = getAtmosphereParams();
     float3 sunDir = getAtmSunDir();
-    float3 L = sampleSkyLUT(viewDir) + calcSunDisk(atmParams, viewDir, sunDir);
+    float3 L = sampleFullSky(atmParams, viewDir, sunDir);
 
     [UNROLL]
     for (uint i = 0; i < SPH_COUNT; ++i)
@@ -88,7 +88,7 @@ technique AtmSphericalHarmonics {
       GroupMemoryBarrierWithGroupSync();
     }
 
-    float3 sunL = sampleSkyLUT(sunDir) + calcSunDisk(atmParams, sunDir, sunDir);
+    float3 sunL = sampleFullSky(atmParams, sunDir, sunDir);
     if (id.x == 0)
     {
       [UNROLL]

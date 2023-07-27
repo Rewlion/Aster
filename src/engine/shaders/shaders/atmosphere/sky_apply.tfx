@@ -51,8 +51,7 @@ technique SkyApply {
 
       AtmosphereParams atmParams = getAtmosphereParams();
       float3 sunDir = getAtmSunDir();
-      float3 L = sampleSkyLUT(viewDir)
-               + calcSunDisk(atmParams, viewDir, sunDir);
+      float3 L = sampleFullSky(atmParams, viewDir, sunDir);
       
       return float4(L, 1.0);
     }
