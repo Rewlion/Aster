@@ -23,7 +23,7 @@ technique_macro USE_MATH{
 
   float2 decartianToAltitudeAzimuth(float3 dir)
   {
-    float altitude = PI/2.0 - acos(dir.y);
+    float altitude = asin(dir.y);
     float azimuth = fmod(atan2(dir.x, dir.z) + 2*PI, 2*PI);
 
     return float2(altitude, azimuth);
