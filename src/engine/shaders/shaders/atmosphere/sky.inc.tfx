@@ -2,9 +2,9 @@ technique_macro USE_SKY_LUT {
   #hlsl
   float3 sampleSkyLUT(float3 view_dir)
   {
-    float altitude = PI/2.0 - acos(view_dir.y);
-    float2 xzDir = normalize(float2(view_dir.x, view_dir.z));
-    float azimuth = fmod(atan2(xzDir.x, xzDir.y) + 2*PI, 2*PI);
+    float2 altitudeAzimuth = decartianToAltitudeAzimuth(view_dir);
+    float altitude = altitudeAzimuth.x;
+    float azimuth = altitudeAzimuth.y;
 
     float v = altitude >= 0.0 ? 0.5 + 0.5 * sqrt(altitude / (PI/2.0))
                               : 0.5 - 0.5 * sqrt(abs(altitude) / (PI/2.0));
