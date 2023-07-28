@@ -59,16 +59,17 @@ namespace fg
   void Manager::validateResources()
   {
     eastl::vector_set<virt_res_id_t> processedReads, processedModifies, processedCreates;
-    eastl::vector<virt_res_id_t> validReads, validModifies, validCreates;
+    eastl::vector<virt_res_id_t> validModifies, validCreates;
+    eastl::vector<Registry::NodeInfo::ReadRequest> validReads;
 
     for (size_t i = 0; auto& node: m_Registry.m_Nodes)
     {
       const node_id_t nodeId = to_node_id(i++);
 
-      const auto validateResourceCreated = [this, nodeId](const char* action, virt_res_id_t virt_res_id)
+      const auto validateResourceCreated = [this, nodeId](const char* action, const virt_res_id_t virt_res_id, const bool optional)
       {
         auto& vRes = m_Registry.m_VirtResources[virt_res_id];
-        if (vRes.createdBy == INVALID_VIRT_RES_ID)
+        if (vRes.createdBy == INVALID_VIRT_RES_ID && !optional)
         {
           logerror("FG: node `{}` {} resource `{}` not produced by any node.",
               m_Registry.m_NodesNames.getString(to_name_id(nodeId)), 
@@ -80,16 +81,16 @@ namespace fg
         return true;
       };
 
-      for (virt_res_id_t vResId: node.reads)
+      for (const auto& readRq: node.reads)
       {
-        if (validateResourceCreated("reads", vResId))
-          validReads.push_back(vResId);
-        processedReads.insert(vResId);
+        if (validateResourceCreated("reads", readRq.vResId, readRq.optional))
+          validReads.push_back(readRq);
+        processedReads.insert(readRq.vResId);
       }
 
       for (virt_res_id_t vResId: node.modifies)
       {
-        if (validateResourceCreated("modifies", vResId))
+        if (validateResourceCreated("modifies", vResId, false))
           validModifies.push_back(vResId);
         
         processedModifies.insert(vResId);
@@ -115,6 +116,7 @@ namespace fg
       node.modifies = validModifies;
       node.creates = validCreates;
 
+      //todo: processed not used
       processedReads.clear(); validReads.clear();
       processedModifies.clear(); validModifies.clear();
       processedCreates.clear(); validCreates.clear();
@@ -182,11 +184,11 @@ namespace fg
         for (const auto& vResId: node.modifies)
           dfsCreation(vResId);
 
-        for (const auto& vResId: node.reads)
+        for (const auto& readRq: node.reads)
         {
-          dfsCreation(vResId);
+          dfsCreation(readRq.vResId);
 
-          const auto& vRes = m_Registry.m_VirtResources[vResId];
+          const auto& vRes = m_Registry.m_VirtResources[readRq.vResId];
           if (vRes.clonnedVResId != INVALID_VIRT_RES_ID)
           {
             fg::virt_res_id_t clonnedFrom = vRes.clonnedVResId;
@@ -339,13 +341,15 @@ namespace fg
         for (auto texState: node.execState.textureBeginStates)
         {
           auto& vRes = m_Registry.m_VirtResources[texState.virtResId];
-          m_ResourceStorages[m_iFrame].transitTextureState(vRes.resourceId, texState.state, *encoder);
+          if(vRes.resourceId != INVALID_RES_ID)
+            m_ResourceStorages[m_iFrame].transitTextureState(vRes.resourceId, texState.state, *encoder);
         }
 
         for (auto bufState: node.execState.bufferBeginStates)
         {
           auto& vRes = m_Registry.m_VirtResources[bufState.virtResId];
-          m_ResourceStorages[m_iFrame].transitBufferState(vRes.resourceId, bufState.state, *encoder);
+          if(vRes.resourceId != INVALID_RES_ID)
+            m_ResourceStorages[m_iFrame].transitBufferState(vRes.resourceId, bufState.state, *encoder);
         }
 
         const bool declaredRp = (node.execState.renderPass.depth.vResId != INVALID_VIRT_RES_ID)

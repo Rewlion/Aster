@@ -153,13 +153,13 @@ namespace fg
         edges.push_back({outputPins,inputPins, prevNodeId, nodeId});
       }
 
-      for (const virt_res_id_t vResId: node.reads)
+      for (const auto& readRq: node.reads)
       {
-        const node_id_t prevNodeId = m_Registry.m_VirtResources[vResId].modificationChain.back();
+        const node_id_t prevNodeId = m_Registry.m_VirtResources[readRq.vResId].modificationChain.back();
         nodesTree[(size_t)prevNodeId].followingNodes.insert(nodeId);
 
-        const Pins inputPins = nodesTree[(size_t)nodeId].getResourcePin(vResId, INPUT, &pinReserveId);
-        const Pins outputPins = nodesTree[(size_t)prevNodeId].getResourcePin(vResId, OUTPUT, &pinReserveId);
+        const Pins inputPins = nodesTree[(size_t)nodeId].getResourcePin(readRq.vResId, INPUT, &pinReserveId);
+        const Pins outputPins = nodesTree[(size_t)prevNodeId].getResourcePin(readRq.vResId, OUTPUT, &pinReserveId);
         edges.push_back({outputPins, inputPins, prevNodeId, nodeId});
       }
 

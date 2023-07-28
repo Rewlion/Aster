@@ -66,12 +66,12 @@ namespace fg
 
       auto createBuffer(const char* name, const gapi::BufferAllocationDescription&, const gapi::BufferState init_state) -> BufferRequest;
       auto modifyBuffer(const char* name, const gapi::BufferState state) -> BufferRequest;
-      auto readBuffer(const char* name, const gapi::BufferState state) -> BufferRequest;
+      auto readBuffer(const char* name, const gapi::BufferState state, const bool optional = false) -> BufferRequest;
 
       auto createTexture(const char* name, const gapi::TextureAllocationDescription&, const gapi::TextureState init_state) -> TextureRequest;
       auto importTextureProducer(const char* name, TextureProduceFunction) -> TextureRequest;
       auto modifyTexture(const char* name, const gapi::TextureState state) -> TextureRequest;
-      auto readTexture(const char* name, const gapi::TextureState state) -> TextureRequest;
+      auto readTexture(const char* name, const gapi::TextureState state, const bool optional = false) -> TextureRequest;
       auto renameTexture(const char* from, const char* to, const gapi::TextureState state) -> TextureRequest;
 
       template<class BlobType>
@@ -79,7 +79,7 @@ namespace fg
       template<class BlobType>
       auto modifyBlob(const char* name) -> BlobReadWriteRequest<BlobType>;
       template<class BlobType>
-      auto readBlob(const char* name) -> BlobReadRequest<BlobType>;
+      auto readBlob(const char* name, const bool optional = false) -> BlobReadRequest<BlobType>;
 
       auto createSampler(const char* name, const gapi::SamplerAllocationDescription&) -> SamplerRequest;
 
@@ -91,7 +91,7 @@ namespace fg
       using CreateCb = ModifyCb;
       auto createResourceInternal(const char* name, Resource&&, CreateCb&&) -> virt_res_id_t;
       auto modifyResourceInternal(const char* name, ModifyCb&&) -> virt_res_id_t;
-      auto readResourceInternal(const char* name, ReadCb&&) -> virt_res_id_t;
+      auto readResourceInternal(const char* name, const bool optional, ReadCb&&) -> virt_res_id_t;
 
       auto registerNode(const char* name, const char* file, BuildFunction build_cb) -> node_id_t;
       void reset();
@@ -154,8 +154,14 @@ namespace fg
         name_id_t nameId;
         const char* fileSrc;
 
+        struct ReadRequest
+        {
+          virt_res_id_t vResId;
+          bool optional;
+        };
+
         eastl::vector<virt_res_id_t> modifies;
-        eastl::vector<virt_res_id_t> reads;
+        eastl::vector<ReadRequest> reads;
         eastl::vector<virt_res_id_t> creates;
 
         eastl::vector<node_id_t> prevNodes;
@@ -245,9 +251,9 @@ namespace fg
   }
 
   template<class BlobType>
-  auto Registry::readBlob(const char* name) -> BlobReadRequest<BlobType>
+  auto Registry::readBlob(const char* name, const bool optional) -> BlobReadRequest<BlobType>
   {
-    return readResourceInternal(name, [](auto, auto&){});
+    return readResourceInternal(name, optional, [](auto, auto&){});
   }
 
   template<class T>
