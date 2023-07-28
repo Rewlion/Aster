@@ -123,7 +123,7 @@ namespace gapi::vulkan
       auto& tex = m_AllocatedTextures.get(h.as.typed.id);
       if (srv && is_depth_format(tex.format))
         return tex.depthView.get();
-      return tex.view.get();
+      return tex.viewsPerMip[0].get();
     }
 
     ASSERT(!"UNSUPPORTED");
@@ -458,8 +458,17 @@ namespace gapi::vulkan
     viewCi.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA);
     viewCi.subresourceRange = subresRange;
 
-    auto view = m_Device->createImageViewUnique(viewCi);
-    VK_CHECK_RES(view);
+    eastl::vector<vk::UniqueImageView> imgViewsPerMip;
+    imgViewsPerMip.resize(allocDesc.mipLevels);
+    for (int i = 0; i < allocDesc.mipLevels; ++i)
+    {
+      viewCi.subresourceRange.baseMipLevel = i;
+      auto res = m_Device->createImageViewUnique(viewCi);
+      VK_CHECK_RES(res);
+      imgViewsPerMip[i] = std::move(res.value);
+    }
+    viewCi.subresourceRange.baseMipLevel = 0;
+    resource.viewsPerMip = std::move(imgViewsPerMip);
 
     if (is_depth_format(allocDesc.format))
     {
@@ -468,7 +477,6 @@ namespace gapi::vulkan
       VK_CHECK_RES(depthView);
       resource.depthView = std::move(depthView.value);
     }
-    resource.view = std::move(view.value);
     resource.viewType = viewCi.viewType;
 
     size_t id = ~0;

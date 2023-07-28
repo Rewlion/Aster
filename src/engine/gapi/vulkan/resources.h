@@ -82,7 +82,7 @@ namespace gapi::vulkan
   struct Texture
   {
     vk::UniqueImageView depthView;
-    vk::UniqueImageView view;
+    eastl::vector<vk::UniqueImageView> viewsPerMip;
     vk::ImageViewType viewType;
     vk::UniqueDeviceMemory memory;
     vk::UniqueImage img;
