@@ -111,7 +111,7 @@ namespace gapi::vulkan
     return vk::Format::eUndefined;
   }
 
-  vk::ImageView Device::getImageView(const TextureHandle handler, const bool srv)
+  vk::ImageView Device::getImageView(const TextureHandle handler, const bool srv, const size_t mip)
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
@@ -121,9 +121,11 @@ namespace gapi::vulkan
     {
       ASSERT(m_AllocatedTextures.contains(h.as.typed.id));
       auto& tex = m_AllocatedTextures.get(h.as.typed.id);
-      if (srv && is_depth_format(tex.format))
-        return tex.depthView.get();
-      return tex.viewsPerMip[0].get();
+      
+      if (srv)
+        return is_depth_format(tex.format) ? tex.depthView.get() : tex.srvView.get();
+
+      return tex.viewsPerMip[mip].get();
     }
 
     ASSERT(!"UNSUPPORTED");
@@ -458,16 +460,22 @@ namespace gapi::vulkan
     viewCi.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA);
     viewCi.subresourceRange = subresRange;
 
+    auto view = m_Device->createImageViewUnique(viewCi);
+    VK_CHECK_RES(view);
+    resource.srvView = std::move(view.value);
+
     eastl::vector<vk::UniqueImageView> imgViewsPerMip;
     imgViewsPerMip.resize(allocDesc.mipLevels);
     for (int i = 0; i < allocDesc.mipLevels; ++i)
     {
       viewCi.subresourceRange.baseMipLevel = i;
+      viewCi.subresourceRange.levelCount = 1;
       auto res = m_Device->createImageViewUnique(viewCi);
       VK_CHECK_RES(res);
       imgViewsPerMip[i] = std::move(res.value);
     }
     viewCi.subresourceRange.baseMipLevel = 0;
+    viewCi.subresourceRange.levelCount = VK_REMAINING_ARRAY_LAYERS;
     resource.viewsPerMip = std::move(imgViewsPerMip);
 
     if (is_depth_format(allocDesc.format))

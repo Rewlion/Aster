@@ -107,7 +107,7 @@ namespace gapi::vulkan
     size_t attachmentsCount = 0;
 
     for(const auto& rt: renderTargets)
-      attachments.push(m_Device.getImageView(rt.texture));
+      attachments.push(m_Device.getImageView(rt.texture, false, rt.mipLevel));
 
     if (depthStencil.texture != TextureHandle::Invalid)
       attachments.push(m_Device.getImageView(depthStencil.texture));

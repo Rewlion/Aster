@@ -433,25 +433,12 @@ namespace gapi
 
   struct RenderPassAttachment
   {
-    TextureHandle texture    = TextureHandle::Invalid;
-    TextureState initialState = TextureState::Undefined;
-    TextureState finalState   = TextureState::Undefined;
-    LoadOp loadOp             = LoadOp::DontCare;
-    StoreOp storeOp           = StoreOp::DontCare;
-
-    bool operator==(const RenderPassAttachment& rvl) const
-    {
-      return texture      == rvl.texture &&
-             initialState == rvl.initialState &&
-             finalState   == rvl.finalState &&
-             loadOp       == rvl.loadOp &&
-             storeOp      == rvl.storeOp;
-    }
-
-    bool operator!=(const RenderPassAttachment& rvl) const
-    {
-      return !(*this == rvl);
-    }
+    TextureHandle texture     = TextureHandle::Invalid;
+    uint32_t mipLevel         = 0;
+    TextureState initialState = TextureState::RenderTarget;
+    TextureState finalState   = TextureState::RenderTarget;
+    LoadOp loadOp             = LoadOp::Load;
+    StoreOp storeOp           = StoreOp::Store;
   };
 
   struct RenderPassDepthStencilAttachment
