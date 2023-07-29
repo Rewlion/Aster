@@ -1,16 +1,17 @@
 shaders_list
 {
-  "shaders/imgui.tfx" {}
-  "shaders/test.tfx" {}
-  "shaders/scene_opaque.tfx" {}
-  "shaders/gbuffer_resolve.tfx" {}
-  "shaders/font.tfx" {}
-  "shaders/gui.tfx" {}
-  "shaders/atmosphere/transmittance_lut.tfx" {}
-  "shaders/atmosphere/sky_lut.tfx" {}
+  "shaders/atmosphere/aerial_perspective.tfx" {}
+  "shaders/atmosphere/envi.tfx" {}
   "shaders/atmosphere/multiple_scattering_lut.tfx" {}
   "shaders/atmosphere/sky_apply.tfx" {}
-  "shaders/atmosphere/aerial_perspective.tfx" {}
+  "shaders/atmosphere/sky_lut.tfx" {}
   "shaders/atmosphere/sph.tfx" {}
+  "shaders/atmosphere/transmittance_lut.tfx" {}
+  "shaders/font.tfx" {}
+  "shaders/gbuffer_resolve.tfx" {}
+  "shaders/gui.tfx" {}
+  "shaders/imgui.tfx" {}
   "shaders/post_process.tfx" {}
+  "shaders/scene_opaque.tfx" {}
+  "shaders/test.tfx" {}
 }

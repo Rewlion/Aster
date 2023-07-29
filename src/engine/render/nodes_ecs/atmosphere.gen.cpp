@@ -121,7 +121,10 @@ static void atmosphere_render_creation_handler_internal(Event* event, Components
   const gapi::TextureWrapper& atm_sky_lut = accessor.get<gapi::TextureWrapper>(compile_ecs_name_hash("atm_sky_lut"));
   const gapi::TextureWrapper& atm_ms_lut = accessor.get<gapi::TextureWrapper>(compile_ecs_name_hash("atm_ms_lut"));
   const gapi::TextureWrapper& atm_ap_lut = accessor.get<gapi::TextureWrapper>(compile_ecs_name_hash("atm_ap_lut"));
-  atmosphere_render_creation_handler(*casted_event, atm_tr_lut,atm_sky_lut,atm_ms_lut,atm_ap_lut);
+  const gapi::TextureWrapper& atm_envi_specular = accessor.get<gapi::TextureWrapper>(compile_ecs_name_hash("atm_envi_specular"));
+  const gapi::TextureWrapper& atm_envi_brdf = accessor.get<gapi::TextureWrapper>(compile_ecs_name_hash("atm_envi_brdf"));
+  int atm_envi_mips = accessor.get<int>(compile_ecs_name_hash("atm_envi_mips"));
+  atmosphere_render_creation_handler(*casted_event, atm_tr_lut,atm_sky_lut,atm_ms_lut,atm_ap_lut,atm_envi_specular,atm_envi_brdf,atm_envi_mips);
 }
 
 
@@ -132,7 +135,10 @@ static EventSystemRegistration atmosphere_render_creation_handler_registration(
     DESCRIBE_QUERY_COMPONENT("atm_tr_lut", gapi::TextureWrapper),
     DESCRIBE_QUERY_COMPONENT("atm_sky_lut", gapi::TextureWrapper),
     DESCRIBE_QUERY_COMPONENT("atm_ms_lut", gapi::TextureWrapper),
-    DESCRIBE_QUERY_COMPONENT("atm_ap_lut", gapi::TextureWrapper)
+    DESCRIBE_QUERY_COMPONENT("atm_ap_lut", gapi::TextureWrapper),
+    DESCRIBE_QUERY_COMPONENT("atm_envi_specular", gapi::TextureWrapper),
+    DESCRIBE_QUERY_COMPONENT("atm_envi_brdf", gapi::TextureWrapper),
+    DESCRIBE_QUERY_COMPONENT("atm_envi_mips", int)
   },
   "atmosphere_render_creation_handler"
 );

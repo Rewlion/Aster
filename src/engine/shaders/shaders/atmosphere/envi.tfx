@@ -1,0 +1,163 @@
+#include "../frame.inc.tfx"
+#include "../math.inc.tfx"
+#include "../noise.inc.tfx"
+#include "../screen_space.inc.tfx"
+#include "atmosphere.inc.tfx"
+#include "ebruneton.inc.tfx"
+#include "sky.inc.tfx"
+#include "transmittance.inc.tfx"
+
+scope EnviSpecularScope {
+  reserve:
+    descriptor_set(2);
+    register(buffer, 0);
+    register(texture, 0-1);
+  
+  Texture2D skyLUT = extern(skyLUT);
+  Texture2D trLUT = extern(trLUT);
+  float enviRoughness = extern(enviRoughness);
+  float enviMips = extern(enviMips);
+  float2 renderSize = extern(renderSize);
+};
+
+technique EnviSpecular {
+  support scope FrameScope;
+  USE_MATH();
+  USE_ATMOSPHERE_PARAMS();
+  activate scope EnviSpecularScope;
+
+  USE_SCREENSPACE_BASE();
+  USE_FRAME_HELPERS();
+  USE_NOISE();
+  USE_EBRUNETON_HELPERS();
+  USE_TRANSMITTANCE_LUT();
+  USE_SKY_LUT();
+
+  #hlsl
+  #define SAMPLES_COUNT 2048.0
+
+  float3 ps_main(VsOutput input) : SV_Target0
+  {
+    float2 tc = (input.pos.xy + float2(0.5f, 0.5f)) / EnviSpecularScope.renderSize;
+
+    AtmosphereParams atmParams = getAtmosphereParams();
+    float3 sunDir = getAtmSunDir();
+    
+    float planePhi = 2.0*PI*(tc.x);
+    float planeTheta = PI * (tc.y);
+
+    float3 N = sphericalToDecartian(planeTheta, planePhi);
+    float3 V = N;
+
+    float3 L = float3(0.0,0.0,0.0);
+    float weight = 0.0;
+    for (float i = 0.0; i < SAMPLES_COUNT; i += 1.0)
+    {
+      float3 random = random_pcg3d(uint3(input.pos.x, input.pos.y, i));
+      float alpha = EnviSpecularScope.enviRoughness * EnviSpecularScope.enviRoughness;
+      float v = random.x;
+      float u = random.y;
+      float theta = acos(sqrt((1.0-u)/(u*(alpha*alpha-1.0)+1.0)));
+      float phi =  2.0 * PI * v;
+
+      float3 H_ls = sphericalToDecartian(theta, phi);
+      float3 H = mul(H_ls, tsToWs(N));
+      float3 Ldir = normalize(2.0 * dot(V, H) * H - V);
+
+      float NoL = dot(Ldir, N);
+      if (NoL > 0.0)
+      {
+        L += sampleFullSky(atmParams, Ldir, sunDir) * NoL;
+        weight += NoL;
+      }
+    }
+
+    L /= weight;
+
+    return L;
+  }
+  #end
+
+  compile(vs_6_1, vs_main);
+  compile(ps_6_1, ps_main);
+};
+
+scope EnviBRDFScope {
+  reserve:
+    descriptor_set(2);
+    register(buffer, 0);
+  
+  float2 renderSize = extern(renderSize);
+};
+
+technique EnviBRDF {
+  activate scope EnviBRDFScope;
+
+  USE_MATH();
+  USE_SCREENSPACE_BASE();
+  USE_NOISE();
+
+  #hlsl
+  #define SAMPLES_COUNT 1024
+  #define SAMPLES_COUNT_SQ 32
+
+  float schlick_ggx_sub(float3 N, float3 V, float k)
+  {
+    float NoV = max(dot(N, V), 0);
+    return NoV / (NoV * (1-k) + k);
+  }
+
+  float schlick_ggx(float3 N, float3 V, float3 L, float roughness)
+  {
+    float k = roughness * roughness / 2.0;
+    return schlick_ggx_sub(N,V,k) * schlick_ggx_sub(N,L,k);
+  }
+
+  float3 ps_main(VsOutput input) : SV_Target0
+  {
+    float2 tc = (input.pos.xy - 0.5) / EnviBRDFScope.renderSize;
+
+    float NoV = tc.x;
+    float roughness = tc.y;
+
+    float3 N = float3(0.0, 1.0, 0.0);
+    float3 V = float3(sqrt(1.0 - NoV*NoV), NoV, 0.0);
+
+    float F0Term = 0.0;
+    float STerm = 0.0;
+
+    for (int i = 0.0; i < SAMPLES_COUNT; i += 1)
+    {
+      float alpha = roughness*roughness;
+      float v = float(i / SAMPLES_COUNT_SQ) / float(SAMPLES_COUNT_SQ);
+      float u = (i % SAMPLES_COUNT_SQ) / float(SAMPLES_COUNT_SQ);;
+      float theta = acos(sqrt((1.0-u)/(u*(alpha*alpha-1.0)+1.0)));
+      float phi =  2.0 * PI * v;
+
+      float3 H = sphericalToDecartian(theta, phi);
+      float3 Ldir = normalize(2.0 * dot(V, H) * H - V);
+
+      float VoH = saturate(dot(V,H));
+      float NoH = max(1e-6, dot(N,H));
+      float NoV = max(1e-6, dot(N,V));
+
+      if (dot(N, Ldir) > 0.0)
+      {
+        float s = pow(1.0 - VoH, 5.0);
+        float Gterm = schlick_ggx(N, V, Ldir, roughness) * VoH / ( NoH * NoV );
+
+        F0Term += Gterm * (1.0 - s);
+        STerm += Gterm * s;
+      }
+    }
+
+    F0Term /= SAMPLES_COUNT;
+    STerm /= SAMPLES_COUNT;
+
+    return float3(F0Term, STerm, 0.0);
+  }
+  #end
+
+  compile(vs_6_1, vs_main);
+  compile(ps_6_1, ps_main);
+};

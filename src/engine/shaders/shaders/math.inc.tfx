@@ -5,6 +5,15 @@ technique_macro USE_MATH{
   #define MM2KM 1e3
   #define PI (float)3.14159265359
 
+  float3x3 tsToWs(float3 N)
+  {
+    float3 up = N.y < 0.99 ? float3(0.0, 1.0, 0.0) : float3(0.0, 0.0, 1.0);
+    float3 tangent = normalize(cross(up, N));
+    float3 bitangent = normalize(cross(N, tangent));
+    
+    return float3x3(tangent, N, bitangent);
+  }
+  
   float3 sphericalToDecartian(float theta, float phi)
   {
     return float3(
