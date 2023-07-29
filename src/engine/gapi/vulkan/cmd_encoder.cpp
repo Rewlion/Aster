@@ -32,6 +32,7 @@ namespace gapi::vulkan
   {
     const vk::Extent2D min = getMinRenderSize(renderTargets, depthStencil);
     const vk::Rect2D renderArea = vk::Rect2D{{0,0}, min};
+    m_RenderSize = float2{min.width, min.height};
 
     m_RenderPassState.renderTargets = renderTargets;
     m_RenderPassState.depthStencil = depthStencil;
@@ -72,6 +73,10 @@ namespace gapi::vulkan
       if (rt.texture != TextureHandle::Invalid)
       {
         vk::Extent3D dim = m_Device.getImageDim(rt.texture);
+        dim.width =  std::max((dim.width  >> rt.mipLevel), 1u);
+        dim.height = std::max((dim.height >> rt.mipLevel), 1u);
+        dim.depth =  std::max((dim.depth  >> rt.mipLevel), 1u);
+
         min.width  = dim.width  < min.width  ? dim.width  : min.width;
         min.height = dim.height < min.height ? dim.height : min.height;
       }

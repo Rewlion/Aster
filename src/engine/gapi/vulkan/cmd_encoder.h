@@ -95,6 +95,8 @@ namespace gapi::vulkan
       void endMarkerRegion() override;
 
       void dispatch(const uint32_t group_count_x, const uint32_t group_count_y, const uint32_t group_count_z) override;
+
+      auto getRenderSize() const -> float2 override { return m_RenderSize; };
     private:
       vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) const;
       vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil);
@@ -114,5 +116,7 @@ namespace gapi::vulkan
       vk::CommandBuffer m_CmdBuf;
       RenderPassState m_RenderPassState;
       GraphicsPipelineState m_GraphicsPipelineState;
+
+      float2 m_RenderSize;
   };
 }
