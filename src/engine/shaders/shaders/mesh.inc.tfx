@@ -17,7 +17,6 @@ technique_macro USE_STATIC_MESH {
     input:
       buffer(0):
         float3 pos:    POSITION0;
-        float3 tan:    TEXTURE0;
-        float3 normal: TEXTURE1;
-        float2 uv:     TEXTURE2;
+        float3 normal: TEXTURE0;
+        float2 uv:     TEXTURE1;
 };

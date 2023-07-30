@@ -139,7 +139,6 @@ namespace
   struct MeshVertex
   {
     float3 pos       = {0,0,0};
-    float3 tangent   = {0,0,0};
     float3 normal    = {0,0,0};
     float2 uv        = {0,0};
   };
@@ -166,6 +165,7 @@ namespace
     for (tinygltf::Primitive primitive : mesh.primitives)
     {
       AttributeAccessor posAccessor(model, primitive, AttributeType::Position);
+      AttributeAccessor normalAccessor(model, primitive, AttributeType::Normal);
       AttributeAccessor uvAccessor(model, primitive, AttributeType::UV);
       AttributeAccessor indexAccessor(model, primitive, AttributeType::Index);
 
@@ -173,6 +173,7 @@ namespace
       {
         MeshVertex vertex;
         vertex.pos = posAccessor++;
+        vertex.normal = normalAccessor++;
         vertex.uv = uvAccessor++;
 
         vertices.push_back(vertex);
@@ -188,57 +189,6 @@ namespace
 
 namespace Engine
 {
-  static void generate_tb_vectors(std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices)
-  {
-    for (size_t i = 0; i < indices.size(); i += 3)
-    {
-      const auto& p0 = vertices[indices[i]];
-      const auto& p1 = vertices[indices[i + 1]];
-      const auto& p2 = vertices[indices[i + 2]];
-
-      const float dU1 = p1.uv.x - p0.uv.x;
-      const float dV1 = p1.uv.y - p0.uv.y;
-
-      const float dU2 = p2.uv.x - p0.uv.x;
-      const float dV2 = p2.uv.y - p0.uv.y;
-
-      const float3 p1p0 = p1.pos - p0.pos;
-      const float3 p2p0 = p2.pos - p0.pos;
-
-      glm::mat3x2 edges{
-        {p1p0.x, p2p0.x}, {p1p0.y, p2p0.y}, {p1p0.z, p2p0.z}
-      };
-
-      const glm::mat2x2 m = glm::inverse(glm::mat2x2{ {dU1, dU2}, {dV1, dV2} });
-      const glm::mat3x2 tb = m * edges;
-
-      const float3 tangent = glm::normalize(float3{tb[0][0], tb[1][0], tb[2][0]});
-      const float3 bitangent = glm::normalize(float3{ tb[0][1], tb[1][1], tb[2][1] });
-      const float3 normal = glm::normalize(glm::cross(p1p0, p2p0));
-
-      vertices[indices[i]].tangent  += tangent;
-      vertices[indices[i]].normal   += normal;
-
-      vertices[indices[i+1]].tangent += tangent;
-      vertices[indices[i+1]].normal  += normal;
-
-      vertices[indices[i+2]].tangent += tangent;
-      vertices[indices[i+2]].normal  += normal;
-    }
-
-    for (size_t i = 0; i < indices.size(); i += 3)
-    {
-      vertices[indices[i]].tangent   = glm::normalize(vertices[indices[i]].tangent);
-      vertices[indices[i]].normal    = glm::normalize(vertices[indices[i]].normal);
-
-      vertices[indices[i+1]].tangent = glm::normalize(vertices[indices[i+1]].tangent);
-      vertices[indices[i+1]].normal  = glm::normalize(vertices[indices[i+1]].normal);
-
-      vertices[indices[i+2]].tangent = glm::normalize(vertices[indices[i+2]].tangent);
-      vertices[indices[i+2]].normal  = glm::normalize(vertices[indices[i+2]].normal);
-    }
-  }
-
   static StaticMesh process_model(const tinygltf::Model& model, gapi::CmdEncoder& encoder)
   {
     StaticMesh asset;
@@ -246,7 +196,6 @@ namespace Engine
     for (tinygltf::Mesh mesh : model.meshes)
     {
       auto [vertices, indices] = gather_vertices(model, mesh);
-      generate_tb_vectors(vertices, indices);
 
       gapi::BufferAllocationDescription vbAlloc;
       const size_t verticesSize = vertices.size() * sizeof(vertices[0]);
