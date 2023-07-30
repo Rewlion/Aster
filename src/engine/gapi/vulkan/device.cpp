@@ -524,7 +524,7 @@ namespace gapi::vulkan
     samplerCi.compareEnable = allocDesc.compareEnable;
     samplerCi.compareOp = get_compare_op(allocDesc.compareOp);
     samplerCi.minLod = allocDesc.minLod;
-    samplerCi.maxLod = allocDesc.maxLod;
+    samplerCi.maxLod = std::min(allocDesc.maxLod, VK_LOD_CLAMP_NONE);
     samplerCi.borderColor = get_border_color(allocDesc.borderColor);
     samplerCi.unnormalizedCoordinates = allocDesc.unnormalizedCoordinates;
 

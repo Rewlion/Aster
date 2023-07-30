@@ -109,13 +109,15 @@ namespace Engine::Render
       reg.requestRenderPass()
          .addTarget(resolveTarget, gapi::LoadOp::Load, gapi::StoreOp::Store);
 
-      return [gbuf0,gbuf1,gbuf2, gbufDepth, atmParams](gapi::CmdEncoder& encoder)
+      return [gbuf0,gbuf1,gbuf2, gbufDepth, atmParams, enviSpecular, enviBRDF](gapi::CmdEncoder& encoder)
       {
         tfx::set_extern("gbuffer_albedo", gbuf0.get());
         tfx::set_extern("gbuffer_normal", gbuf1.get());
         tfx::set_extern("gbuffer_metal_roughness", gbuf2.get());
         tfx::set_extern("gbuffer_depth", gbufDepth.get());
         tfx::set_extern("atmParamsBuffer", atmParams.get());
+        tfx::set_extern("enviSpecular", enviSpecular.get());
+        tfx::set_extern("enviBRDF", enviBRDF.get());
 
         tfx::activate_technique("ResolveGbuffer", encoder);
         encoder.updateResources();

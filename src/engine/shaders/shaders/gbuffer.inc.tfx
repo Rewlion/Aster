@@ -29,6 +29,11 @@ technique_macro USE_GBUFFER {
       return schlick_ggx_sub(N,V,k) * schlick_ggx_sub(N,L,k);
     }
 
+    float3 calcF0(float3 albedo, float metal)
+    {
+      return lerp(float3(0.04, 0.04, 0.04), albedo, metal);
+    }
+
     // Schlick-Fresnel
     float4 schlick_fresnel(float4 albedo, float metal, float3 V, float3 h)
     {
@@ -113,8 +118,11 @@ technique_macro USE_GBUFFER {
       float4 lambertDiffuse = (kD * g.albedo * (diffuseSPH + sunL*LoN)) / Pi;
       //float4 ambient = g.albedo * 0.1;
 
+      float3 F0 = calcF0(g.albedo.rgb, g.metal);
+      float4 iblSpecular = float4(enviSpecularIBL(F0, g.roughness, N ,V), 1.0);
+
       float4 Ri = float4(1.0, 1.0, 1.0, 1.0) * LoN;
-      float4 Ro = lambertDiffuse + specular * sunL * LoN;// (lambertDiffuse + specular) * Ri;
+      float4 Ro = lambertDiffuse + iblSpecular;//specular * sunL * LoN;// (lambertDiffuse + specular) * Ri;
 
       //Ro = pow(Ro, 1/2.2);
 

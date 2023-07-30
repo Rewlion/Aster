@@ -380,7 +380,7 @@ namespace gapi
     bool               compareEnable           = false;
     CompareOp          compareOp               = CompareOp::Always;
     float              minLod                  = 0.0f;
-    float              maxLod                  = 0.0f;
+    float              maxLod                  = 1000.0f;
     BorderColor        borderColor             = BorderColor::FloatOpaqueBlack;
     bool               unnormalizedCoordinates = false;
   };

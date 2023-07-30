@@ -1,4 +1,5 @@
 #include "atmosphere/atmosphere.inc.tfx"
+#include "atmosphere/envi.inc.tfx"
 #include "atmosphere/sph.inc.tfx"
 #include "depth.inc.tfx"
 #include "frame.inc.tfx"
@@ -9,7 +10,7 @@ scope ResolveGbufferScope {
   reserve:
     descriptor_set(3);
     register(buffer, 0-1);
-    register(texture, 0-4);
+    register(texture, 0-5);
 
   RWStructuredBuffer<float3> atmParamsBuffer = extern(atmParamsBuffer);
 
@@ -17,7 +18,10 @@ scope ResolveGbufferScope {
   Texture2D gbufferNormal = extern(gbuffer_normal);
   Texture2D gbufferMetalRoughness = extern(gbuffer_metal_roughness);
   Texture2D gbufferDepth = extern(gbuffer_depth);
+  Texture2D enviSpecular = extern(enviSpecular);
+  Texture2D enviBRDF = extern(enviBRDF);
 
+  float enviMips = extern(enviMips);
   float4 sunAzimuth_sunAltitude_rTopMM_rBotMM = channel(sunAzimuth_sunAltitude_rTopMM_rBotMM);
 };
 
@@ -39,6 +43,7 @@ technique ResolveGbuffer {
   USE_ATM_SPH();
 
   USE_FRAME_HELPERS();
+  USE_ENVI_IBL();
   USE_GBUFFER();
   USE_DEPTH_UTILS();
 

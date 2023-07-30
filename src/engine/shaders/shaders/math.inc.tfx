@@ -1,5 +1,8 @@
 technique_macro USE_MATH{
 #hlsl
+  #ifndef MATH_INCLUDE_GUARD
+  #define MATH_INCLUDE_GUARD
+
   #define HAS_MATH
 
   #define MM2KM 1e3
@@ -64,5 +67,6 @@ technique_macro USE_MATH{
     intersection = r0 + dir * t;
     return t;
   }
+  #endif
 #end
 };
