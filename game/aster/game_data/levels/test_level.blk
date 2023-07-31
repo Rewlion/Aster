@@ -4,6 +4,12 @@ scene
 {
   object
   {
+    float3 pos = 0.0 , 2.0 , 15.0
+    text model = "cube"
+  }
+
+  object
+  {
     float3 pos = 0.0 , 0.0 , 5.0
     float3 rot = 90.0, 180.0, 0.0
     text model = "damaged_helmet"
@@ -94,5 +100,6 @@ entity @("Atmosphere")
 
 entity @("Sun")
 {
-  float sun_altitude = 35
+  float sun_altitude = 20
+  float sun_azimuth = 180
 }
