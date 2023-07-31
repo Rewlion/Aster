@@ -20,9 +20,9 @@ technique_macro USE_MATH{
   float3 sphericalToDecartian(float theta, float phi)
   {
     return float3(
-      sin(theta)*cos(phi),
+      sin(theta)*sin(phi),
       cos(theta),
-      sin(theta)*sin(phi)
+      sin(theta)*cos(phi)
     );
   }
 
