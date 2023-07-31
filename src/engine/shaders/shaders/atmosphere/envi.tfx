@@ -34,11 +34,11 @@ technique EnviSpecular {
   USE_SKY_LUT();
 
   #hlsl
-  #define SAMPLES_COUNT 2048.0
+  #define SAMPLES_COUNT 1024.0
 
   float3 ps_main(VsOutput input) : SV_Target0
   {
-    float2 tc = (input.pos.xy + float2(0.5f, 0.5f)) / EnviSpecularScope.renderSize;
+    float2 tc = (input.pos.xy) / EnviSpecularScope.renderSize;
 
     AtmosphereParams atmParams = getAtmosphereParams();
     float3 sunDir = getAtmSunDir();
