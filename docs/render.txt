@@ -1,0 +1,54 @@
+Atmosphere Scattering:
+ - A Scalable and Production Ready Sky and Atmosphere Rendering Technique
+   Sébastien Hillaire
+   https://sebh.github.io/publications/egsr2020.pdf
+   https://www.youtube.com/watch?v=SW30QX1wxTY&ab_channel=SIGGRAPHPhysicallyBasedShadingCourse
+
+ - Physically Based Sky, Atmosphere and Cloud Rendering in Frostbite
+   Sébastien Hillaire
+   https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/s2016-pbs-frostbite-sky-clouds-new.pdf
+
+ - Precomputed Atmospheric Scattering
+   Eric Bruneton, Fabrice Neyret
+   https://inria.hal.science/inria-00288758v1/document
+
+ - Production Volume Rendering SIGGRAPH 2017 Course
+   JULIAN FONG, MAGNUS WRENNINGE, CHRISTOPHER KULLA, RALF HABEL
+   https://graphics.pixar.com/library/ProductionVolumeRendering/paper.pdf
+
+ - ShaderToy examples: 
+     https://www.shadertoy.com/view/slSXRW
+     https://www.shadertoy.com/view/MllBR2#
+
+
+Spherical Harmonics:
+  - An Efficient Representation for Irradiance Environment Maps
+    Ravi Ramamoorthi and Pat Hanrahan
+    https://graphics.stanford.edu/papers/envmap/envmap.pdf
+
+  - Spherical Harmonic Lighting: The Gritty Details
+    Robin Green
+    https://3dvar.com/Green2003Spherical.pdf
+
+  - On the relationship between radiance and irradiance: determining the illumination from images of a convex Lambertian object
+    Ravi Ramamoorthi and Pat Hanrahan
+    https://cseweb.ucsd.edu/~ravir/papers/invlamb/josa.pdf
+
+
+Importance Sampling:
+  - https://www.youtube.com/watch?v=C3p2wI4RAi8&ab_channel=MutualInformation
+
+
+Image Based Lighthing for Specular:
+  - Real Shading in Unreal Engine 4
+    by Brian Karis, Epic Games
+    https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
+
+  - Physically Based Rendering:From Theory To ImplementationMatt
+    Pharr, Wenzel Jakob, and Greg Humphreys
+      8.4 Microfacet Models
+      https://www.pbr-book.org/3ed-2018/Reflection_Models/Microfacet_Models#sec:microfacet
+      13.5 Transforming between Distributions
+      https://www.pbr-book.org/3ed-2018/Monte_Carlo_Integration/Transforming_between_Distributions#sec:mc-transforming
+      14.1 Sampling Reflection Functions
+      https://www.pbr-book.org/3ed-2018/Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions
