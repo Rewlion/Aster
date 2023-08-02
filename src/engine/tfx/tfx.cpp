@@ -28,11 +28,12 @@ namespace tfx
 
     struct Technique
     {
+      using PipelineDesc = std::variant<gapi::GraphicsPipelineDescription, gapi::ComputePipelineDescription>;
+
       gapi::PipelineType type;
       string name;
       const ShadersSystem::ByteCodes& byteCode;
-      gapi::GraphicsPipelineDescription graphicsPipelineDesc;
-      gapi::ComputePipelineDescription computePipelineDesc;
+      PipelineDesc pipelineDesc;
     };
 
     template<class T>
@@ -66,9 +67,9 @@ namespace tfx
           processByteCodes(technique.byteCode);
 
           if (technique.type == gapi::PipelineType::Graphics)
-            m_CmdEncoder->bindGraphicsPipeline(technique.graphicsPipelineDesc);
+            m_CmdEncoder->bindGraphicsPipeline(std::get<gapi::GraphicsPipelineDescription>(technique.pipelineDesc));
           else
-            m_CmdEncoder->bindComputePipeline(technique.computePipelineDesc);
+            m_CmdEncoder->bindComputePipeline(std::get<gapi::ComputePipelineDescription>(technique.pipelineDesc));
         }
 
       private:
@@ -297,7 +298,7 @@ namespace tfx
 
       if (t.type == gapi::PipelineType::Graphics)
       {
-        technique.graphicsPipelineDesc = {
+        technique.pipelineDesc = gapi::GraphicsPipelineDescription{
           .layout = layout,
           .shaders = std::move(modules),
           .ia = t.renderState.ia,
@@ -309,7 +310,7 @@ namespace tfx
       }
       else
       {
-        technique.computePipelineDesc = {
+        technique.pipelineDesc = gapi::ComputePipelineDescription{
           .layout = layout,
           .shader = modules[0]
         };
