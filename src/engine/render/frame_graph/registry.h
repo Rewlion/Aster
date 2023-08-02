@@ -2,6 +2,7 @@
 
 #include "id.h"
 #include "resource_request.hpp"
+#include "timeline.h"
 
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/gapi/resources.h>
@@ -71,6 +72,7 @@ namespace fg
       auto createTexture(const char* name, const gapi::TextureAllocationDescription&, const gapi::TextureState init_state) -> TextureRequest;
       auto importTextureProducer(const char* name, TextureProduceFunction) -> TextureRequest;
       auto modifyTexture(const char* name, const gapi::TextureState state) -> TextureRequest;
+      auto readTexture(const char* name, const gapi::TextureState state, const Timeline) -> TextureRequest;
       auto readTexture(const char* name, const gapi::TextureState state, const bool optional = false) -> TextureRequest;
       auto renameTexture(const char* from, const char* to, const gapi::TextureState state) -> TextureRequest;
 
@@ -91,7 +93,7 @@ namespace fg
       using CreateCb = ModifyCb;
       auto createResourceInternal(const char* name, Resource&&, CreateCb&&) -> virt_res_id_t;
       auto modifyResourceInternal(const char* name, ModifyCb&&) -> virt_res_id_t;
-      auto readResourceInternal(const char* name, const bool optional, ReadCb&&) -> virt_res_id_t;
+      auto readResourceInternal(const char* name, const bool optional, const Timeline, ReadCb&&) -> virt_res_id_t;
 
       auto registerNode(const char* name, const char* file, BuildFunction build_cb) -> node_id_t;
       void reset();
@@ -114,6 +116,7 @@ namespace fg
         {
           virt_res_id_t virtResId;
           gapi::TextureState state;
+          Timeline timeline = Timeline::Current;
         };
 
         struct Buffer
@@ -158,6 +161,7 @@ namespace fg
         {
           virt_res_id_t vResId;
           bool optional;
+          Timeline timeline;
         };
 
         eastl::vector<virt_res_id_t> modifies;
@@ -253,7 +257,7 @@ namespace fg
   template<class BlobType>
   auto Registry::readBlob(const char* name, const bool optional) -> BlobReadRequest<BlobType>
   {
-    return readResourceInternal(name, optional, [](auto, auto&){});
+    return readResourceInternal(name, optional, Timeline::Current, [](auto, auto&){});
   }
 
   template<class T>

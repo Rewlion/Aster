@@ -2,6 +2,7 @@
 
 #include "registry.h"
 #include "resource_storage.h"
+#include "timeline.h"
 
 #include <engine/render/consts.h>
 
@@ -15,7 +16,7 @@ namespace fg
       void execNewFrame();
       void setClosingNode(const char* node) { m_ClosingNode = node; }
 
-      auto getTexture(const virt_res_id_t) -> gapi::TextureHandle;
+      auto getTexture(const virt_res_id_t, const Timeline = Timeline::Current) -> gapi::TextureHandle;
       auto getTextureAllocDescription(const virt_res_id_t) -> const gapi::TextureAllocationDescription&;
 
       auto getSampler(const virt_res_id_t) -> gapi::SamplerHandler;
@@ -29,6 +30,7 @@ namespace fg
       void imGuiDrawFramegraph();
 
     private:
+      auto getStorage(const Timeline = Timeline::Current) -> ResourceStorage&;
       void compile();
       void validateResources();
       void orderNodes();
@@ -46,7 +48,7 @@ namespace fg
 
       Registry m_Registry;
       ResourceStorage m_ResourceStorages[Engine::Render::FRAMES_COUNT];
-      uint8_t m_iFrame = 0;
+      uint64_t m_iFrame = 0;
 
       const char* m_ClosingNode = nullptr;
 

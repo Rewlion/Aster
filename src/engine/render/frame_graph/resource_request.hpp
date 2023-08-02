@@ -2,6 +2,8 @@
 
 #include "id.h"
 
+#include "timeline.h"
+
 #include <engine/gapi/resources.h>
 
 namespace fg
@@ -11,15 +13,15 @@ namespace fg
   {
       friend class Registry;
     public:
-      ResourceRequest(virt_res_id_t id)
+      ResourceRequest(virt_res_id_t id, const Timeline timeline = Timeline::Current)
         : m_Id(id)
+        , m_Timeline(timeline)
       {
       }
 
       auto get() const -> typename Accessor::return_type
       {
-        return Accessor::access(m_Id);
-
+        return Accessor::access(m_Id, m_Timeline);
       }
       auto describe() const -> typename Accessor::alloc_desc_return_type
       {
@@ -34,6 +36,7 @@ namespace fg
 
     private:
       virt_res_id_t m_Id;
+      Timeline m_Timeline;
   };
 
   class TextureAccessor
@@ -43,7 +46,7 @@ namespace fg
       using return_type = const gapi::TextureHandle;
 
       static
-      auto access(const virt_res_id_t id) -> return_type;
+      auto access(const virt_res_id_t id, const Timeline) -> return_type;
 
       static
       auto getAllocDescription(const virt_res_id_t id) -> alloc_desc_return_type;
@@ -56,7 +59,7 @@ namespace fg
       using return_type = const gapi::SamplerHandler;
 
       static
-      auto access(const virt_res_id_t id) -> return_type;
+      auto access(const virt_res_id_t id, const Timeline) -> return_type;
 
       static
       auto getAllocDescription(const virt_res_id_t id) -> alloc_desc_return_type;
@@ -69,7 +72,7 @@ namespace fg
       using return_type = const gapi::BufferHandler;
 
       static
-      auto access(const virt_res_id_t id) -> return_type;
+      auto access(const virt_res_id_t id, const Timeline) -> return_type;
 
       static
       auto getAllocDescription(const virt_res_id_t id) -> alloc_desc_return_type;
@@ -92,7 +95,7 @@ namespace fg
       using return_type = typename Access::return_type;
 
       static
-      auto access(const virt_res_id_t id) -> return_type
+      auto access(const virt_res_id_t id, const Timeline) -> return_type
       {
         std::byte* storage = BlobAccessorInternal::getBlob(id);
         return storage != nullptr ?

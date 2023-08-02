@@ -157,7 +157,7 @@ namespace gapi::vulkan
     if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
       return m_Swapchain.getSurfaceImage();
 
-    ASSERT(!"unsupported image type");
+    ASSERT_FMT(false, "unsupported image type. handler:[id:{} type:{}]", (int)h.as.typed.id, (int)h.as.typed.type);
     return {};
   }
 

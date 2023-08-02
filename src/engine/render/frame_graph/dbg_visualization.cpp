@@ -155,6 +155,9 @@ namespace fg
 
       for (const auto& readRq: node.reads)
       {
+        if (readRq.timeline == Timeline::Previous)
+          continue;
+
         const node_id_t prevNodeId = m_Registry.m_VirtResources[readRq.vResId].modificationChain.back();
         nodesTree[(size_t)prevNodeId].followingNodes.insert(nodeId);
 

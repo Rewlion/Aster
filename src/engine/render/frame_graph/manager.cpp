@@ -36,13 +36,19 @@ namespace fg
       {
         flushResources();
         execNodes();
+        ++m_iFrame;
         break;
       }
       default:
         ASSERT(!"framegraph doesn't have nodes to process");
-
-      ++m_iFrame;
     }
+  }
+
+  auto Manager::getStorage(const Timeline timeline) -> ResourceStorage&
+  {
+    ASSERT(!(timeline == Timeline::Previous && m_iFrame == 0));
+    const auto id = (timeline == Timeline::Current ? m_iFrame : (m_iFrame-1)) % Engine::Render::FRAMES_COUNT;
+    return m_ResourceStorages[id];
   }
 
   void Manager::compile()
@@ -83,7 +89,7 @@ namespace fg
 
       for (const auto& readRq: node.reads)
       {
-        if (validateResourceCreated("reads", readRq.vResId, readRq.optional))
+        if (validateResourceCreated("reads", readRq.vResId, readRq.optional) && (readRq.timeline != Timeline::Previous))
           validReads.push_back(readRq);
         processedReads.insert(readRq.vResId);
       }
@@ -186,6 +192,9 @@ namespace fg
 
         for (const auto& readRq: node.reads)
         {
+          if (readRq.timeline == Timeline::Previous)
+            continue;
+
           dfsCreation(readRq.vResId);
 
           const auto& vRes = m_Registry.m_VirtResources[readRq.vResId];
@@ -249,15 +258,15 @@ namespace fg
 
   void Manager::flushResources()
   {
-    m_iFrame = (m_iFrame+1) % Engine::Render::FRAMES_COUNT;
-    m_ResourceStorages[m_iFrame].reset();
-    m_ResourceStorages[m_iFrame].setBlobsStorageSize(m_BlobsSize);
+    auto& storage = getStorage();
+    storage.reset();
+    storage.setBlobsStorageSize(m_BlobsSize);
   }
 
   void Manager::execNodes()
   {
     std::unique_ptr<gapi::CmdEncoder> encoder{gapi::allocate_cmd_encoder()};
-    const auto beginRp = [&encoder, &registry = m_Registry, &storage = m_ResourceStorages[m_iFrame]]
+    const auto beginRp = [&encoder, &registry = m_Registry, &storage = getStorage()]
       (const Registry::NodeInfo& node)
     {
       const Registry::ExecState::RenderPass& rp = node.execState.renderPass;
@@ -330,26 +339,27 @@ namespace fg
 
         for (auto vResId: node.creates)
         {
-          auto& vRes = m_Registry.m_VirtResources[vResId];
+          const auto& vRes = m_Registry.m_VirtResources[vResId];
           if (vRes.clonnedVResId == INVALID_VIRT_RES_ID)
           {
             auto& res = m_Registry.m_Resources[vRes.resourceId];
-            m_ResourceStorages[m_iFrame].create(vRes.resourceId, res);
+            getStorage().create(vRes.resourceId, res);
           }
         }
 
         for (auto texState: node.execState.textureBeginStates)
         {
-          auto& vRes = m_Registry.m_VirtResources[texState.virtResId];
-          if(vRes.resourceId != INVALID_RES_ID)
-            m_ResourceStorages[m_iFrame].transitTextureState(vRes.resourceId, texState.state, *encoder);
+          const auto& vRes = m_Registry.m_VirtResources[texState.virtResId];
+          const bool validTimeline = !(texState.timeline == Timeline::Previous && m_iFrame == 0);
+          if(vRes.resourceId != INVALID_RES_ID && validTimeline)
+            getStorage(texState.timeline).transitTextureState(vRes.resourceId, texState.state, *encoder);
         }
 
         for (auto bufState: node.execState.bufferBeginStates)
         {
-          auto& vRes = m_Registry.m_VirtResources[bufState.virtResId];
+          const auto& vRes = m_Registry.m_VirtResources[bufState.virtResId];
           if(vRes.resourceId != INVALID_RES_ID)
-            m_ResourceStorages[m_iFrame].transitBufferState(vRes.resourceId, bufState.state, *encoder);
+            getStorage().transitBufferState(vRes.resourceId, bufState.state, *encoder);
         }
 
         const bool declaredRp = (node.execState.renderPass.depth.vResId != INVALID_VIRT_RES_ID)
@@ -367,11 +377,14 @@ namespace fg
     encoder->flush();
   }
 
-  auto Manager::getTexture(const virt_res_id_t virt_res_id) -> gapi::TextureHandle
+  auto Manager::getTexture(const virt_res_id_t virt_res_id, const Timeline timeline) -> gapi::TextureHandle
   {
+    if (timeline == Timeline::Previous && m_iFrame == 0) [[unlikely]]
+      return gapi::TextureHandle::Invalid;
+
     auto& vRes = m_Registry.m_VirtResources[virt_res_id];
     if (vRes.resourceId != INVALID_RES_ID)
-      return m_ResourceStorages[m_iFrame].getTexture(vRes.resourceId);
+      return getStorage(timeline).getTexture(vRes.resourceId);
     
     return gapi::TextureHandle::Invalid;
   }
@@ -391,7 +404,7 @@ namespace fg
   {
     auto& vRes = m_Registry.m_VirtResources[virt_res_id];
     if (vRes.resourceId != INVALID_RES_ID)
-      return m_ResourceStorages[m_iFrame].getSampler(vRes.resourceId);
+      return getStorage().getSampler(vRes.resourceId);
     
     return gapi::SamplerHandler::Invalid;
   }
@@ -411,7 +424,7 @@ namespace fg
   {
     auto& vRes = m_Registry.m_VirtResources[virt_res_id];
     if (vRes.resourceId != INVALID_RES_ID)
-      return m_ResourceStorages[m_iFrame].getBuffer(vRes.resourceId);
+      return getStorage().getBuffer(vRes.resourceId);
     
     return gapi::BufferHandler::Invalid;
   }
@@ -432,7 +445,7 @@ namespace fg
     if (vRes.resourceId != INVALID_RES_ID)
     {
       auto& blobRes = std::get<Registry::BlobResource>(m_Registry.m_Resources[vRes.resourceId]);
-      return m_ResourceStorages[m_iFrame].getBlob(blobRes.bufferStart);
+      return getStorage().getBlob(blobRes.bufferStart);
     }
     
     return nullptr;

@@ -53,7 +53,7 @@ namespace fg
 
   auto Registry::readBuffer(const char* name, const gapi::BufferState state, const bool optional) -> BufferRequest
   {
-    return readResourceInternal(name, optional, [state](const virt_res_id_t virt_res_id, NodeInfo& node)
+    return readResourceInternal(name, optional, Timeline::Current, [state](const virt_res_id_t virt_res_id, NodeInfo& node)
     {
       node.execState.bufferBeginStates.push_back({virt_res_id, state});
     });
@@ -102,13 +102,13 @@ namespace fg
     return vResId;
   }
 
-  auto Registry::readResourceInternal(const char* name, const bool optional, ReadCb&& cb) -> virt_res_id_t
+  auto Registry::readResourceInternal(const char* name, const bool optional, const Timeline timeline, ReadCb&& cb) -> virt_res_id_t
   {
     const name_id_t nameId = m_ResourcesNames.storeString(name);
     const virt_res_id_t vResId = to_virt_res_id(nameId);
 
     auto& node = m_Nodes[m_CurrentExecNodeId];
-    node.reads.push_back({vResId, optional});
+    node.reads.push_back({vResId, optional, timeline});
     cb(vResId, node);
 
     return vResId;
@@ -144,9 +144,20 @@ namespace fg
     });
   }
 
+  auto Registry::readTexture(const char* name, const gapi::TextureState state, const Timeline timeline) -> TextureRequest
+  {
+    const bool optional = false;
+    const virt_res_id_t vResId = readResourceInternal(name, optional, timeline, [state, timeline](const virt_res_id_t virt_res_id, NodeInfo& node)
+    {
+      node.execState.textureBeginStates.push_back({virt_res_id, state, timeline});
+    });
+
+    return TextureRequest(vResId, timeline);
+  }
+
   auto Registry::readTexture(const char* name, const gapi::TextureState state, const bool optional) -> TextureRequest
   {
-    return readResourceInternal(name, optional, [state](const virt_res_id_t virt_res_id, NodeInfo& node)
+    return readResourceInternal(name, optional, Timeline::Current, [state](const virt_res_id_t virt_res_id, NodeInfo& node)
     {
       node.execState.textureBeginStates.push_back({virt_res_id, state});
     });
