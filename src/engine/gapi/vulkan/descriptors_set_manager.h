@@ -88,7 +88,6 @@ namespace gapi::vulkan
           eastl::vector<vk::DescriptorImageInfo> imgs;
           eastl::vector<vk::DescriptorBufferInfo> bufs;
         };
-        auto prepareWrites(const eastl::vector<WriteInfo>&) -> WritePreparation;
         void fitWriteInfos(const size_t up_to);
         auto isCompatible(const spirv::v2::DescriptorSet*) const -> bool;
         auto getBindingId(const size_t binding) const -> int;
