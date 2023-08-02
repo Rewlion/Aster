@@ -13,5 +13,5 @@ namespace Engine
     float zFar;
   };
 
-  CameraData get_camera(const float aspect);
+  CameraData get_camera(const float aspect, const float3 jitter);
 }

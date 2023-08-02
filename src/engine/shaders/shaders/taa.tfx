@@ -1,0 +1,53 @@
+#include "screen_space.inc.tfx"
+#include "frame.inc.tfx"
+
+scope TAAScope
+{
+  reserve:
+    descriptor_set(1);
+    register(texture, 0-1);
+
+  Texture2D taaPrevFrame = extern(taaPrevFrame);
+  Texture2D taaCurrentFrame = extern(taaCurrentFrame);
+};
+
+technique TAA
+{
+  support scope FrameScope;
+  activate scope TAAScope;
+
+  USE_SCREENSPACE_BASE();
+  USE_FRAME_HELPERS();
+
+  #hlsl
+  float3 ps_main(VsOutput input) : SV_Target0
+  {
+    float2 uv = get_screen_space_coords(input.pos.xy - float2(0.5, 0.5));
+    float3 prev = taaPrevFrame.Sample(cubicClampSampler, uv).rgb;
+    float3 current = taaCurrentFrame.Sample(linearClampSampler, uv).rgb;
+    
+    float3 bbMin = float3(1e3,1e3,1e3);
+    float3 bbMax = float3(-1e3,-1e3,-1e3);
+    [UNROLL]
+    for (int i = -1; i <= 1; ++i)
+    {
+      [UNROLL]
+      for (int j = -1; j <= 1; ++j)
+      {
+        float2 pUV = get_screen_space_coords(input.pos.xy +  float2(i,j) - float2(0.5, 0.5));
+        float3 pColor = taaCurrentFrame.Sample(linearClampSampler, pUV).rgb;
+        bbMin = min(pColor, bbMin);
+        bbMax = max(pColor, bbMax);
+      }
+    }
+    prev = clamp(prev, bbMin, bbMax);
+
+    float w = 0.75;
+
+    return lerp(current, prev, w);
+  }
+  #end
+
+  compile(vs_6_1, vs_main);
+  compile(ps_6_1, ps_main);
+};

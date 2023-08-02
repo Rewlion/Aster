@@ -18,7 +18,7 @@ static void query_camera(eastl::function<void(
 
 namespace Engine
 {
-  CameraData get_camera(const float aspect)
+  CameraData get_camera(const float aspect, const float3 jitter)
   {
     float3 pos;
     float3 forward;
@@ -33,6 +33,8 @@ namespace Engine
       zNear = _zNear;
       zFar = _zFar;
     });
+
+    pos += jitter;
 
     std::swap(zNear, zFar);
 

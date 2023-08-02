@@ -50,13 +50,35 @@ namespace Engine::Render
         .addressModeV = gapi::SamplerAddressMode::ClampToEdge,
         .addressModeW = gapi::SamplerAddressMode::ClampToEdge,
       });
+      auto cubicClampSampler = reg.createSampler("cubic_clamp_sampler", {
+        .magFilter = gapi::ImageFilter::Cubic,
+        .minFilter = gapi::ImageFilter::Cubic,
+        .addressModeU = gapi::SamplerAddressMode::ClampToEdge,
+        .addressModeV = gapi::SamplerAddressMode::ClampToEdge,
+        .addressModeW = gapi::SamplerAddressMode::ClampToEdge,
+      });
 
-      return [linearClampSampler, modelSampler, cameraData, wndSize](gapi::CmdEncoder& encoder)
+      return [linearClampSampler, cubicClampSampler, modelSampler, cameraData, wndSize](gapi::CmdEncoder& encoder)
       {
         wndSize.get() = get_render_size();
 
+        static size_t iFrame = 0;
+        const int haltonCount = 8;
+        float2 haltonSequence[haltonCount] = {
+          float2(1.0f / 2.0f,  1.0f / 3.0f),
+          float2(1.0f / 4.0f,  2.0f / 3.0f),
+          float2(3.0f / 4.0f,  1.0f / 9.0f),
+          float2(1.0f / 8.0f,  4.0f / 9.0f),
+          float2(5.0f / 8.0f,  7.0f / 9.0f),
+          float2(3.0f / 8.0f,  2.0f / 9.0f),
+          float2(7.0f / 8.0f,  5.0f / 9.0f),
+          float2(1.0f / 16.0f, 8.0f / 9.0f)
+        };
+        const float jitterMul = 0.003;
+        const float3 cameraJitter = float3(haltonSequence[iFrame++ % haltonCount] - float2(0.5f, 0.5f), 0.0) * jitterMul;
+
         const float aspect = (float)wndSize->x / (float)wndSize->y;
-        cameraData.get() = get_camera(aspect);
+        cameraData.get() = get_camera(aspect, cameraJitter);
 
         auto viewProjTm = cameraData->proj * cameraData->view;
 
@@ -88,6 +110,7 @@ namespace Engine::Render
 
         tfx::set_extern("model_sampler", modelSampler.get());
         tfx::set_extern("linear_clamp_sampler", linearClampSampler.get());
+        tfx::set_extern("cubic_clamp_sampler", cubicClampSampler.get());
 
         tfx::set_extern("viewport_size", float2(wndSize->x, wndSize->y));
         tfx::activate_scope("FrameScope", encoder);

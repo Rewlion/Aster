@@ -18,7 +18,7 @@ namespace Engine::Render
       allocDesc.extent = int3{renderSize.x, renderSize.y, 1};
       allocDesc.mipLevels = 1;
       allocDesc.arrayLayers = 1;
-      allocDesc.usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_TRANSFER_SRC;
+      allocDesc.usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV;
 
       auto rt = reg.createTexture("final_target", allocDesc, gapi::TextureState::RenderTarget);
 

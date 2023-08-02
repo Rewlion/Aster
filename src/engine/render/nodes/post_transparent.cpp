@@ -6,6 +6,7 @@
 #include <engine/render/frame_graph/frame_graph.h>
 #include <engine/render/gui_render.h>
 #include <engine/render/imgui/imgui_render.h>
+#include <engine/tfx/tfx.h>
 #include <engine/window.h>
 
 namespace Engine::Render
@@ -60,11 +61,44 @@ namespace Engine::Render
     });
   }
 
+  fg::node_id_t mk_taa_node()
+  {
+    return fg::register_node("TAA", FG_FILE_DECL, [](fg::Registry& reg)
+    {
+      auto renderSize = Engine::Render::get_render_size();
+
+      gapi::TextureAllocationDescription allocDesc;
+      allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
+      allocDesc.extent = int3{renderSize.x, renderSize.y, 1};
+      allocDesc.mipLevels = 1;
+      allocDesc.arrayLayers = 1;
+      allocDesc.usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV | gapi::TEX_USAGE_TRANSFER_SRC;
+
+
+      auto taaCurrentFrame = reg.readTexture("final_target", gapi::TextureState::ShaderRead);
+      auto taaPrevFrame = reg.readTexture("final_antialiased_target", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+      auto rt = reg.createTexture("final_antialiased_target", allocDesc, gapi::TextureState::RenderTarget);
+
+      reg.requestRenderPass()
+         .addTarget(rt, gapi::LoadOp::DontCare, gapi::StoreOp::Store);
+
+      return [taaCurrentFrame, taaPrevFrame](gapi::CmdEncoder& encoder)
+      {
+        tfx::set_extern("taaCurrentFrame", taaCurrentFrame.get());
+        tfx::set_extern("taaPrevFrame", taaPrevFrame.get());
+        tfx::activate_technique("TAA", encoder);
+
+        encoder.updateResources();
+        encoder.draw(4, 1, 0, 0);
+      };
+    });
+  }
+
   fg::node_id_t mk_present_node()
   {
     return fg::register_node("present", FG_FILE_DECL, [](fg::Registry& reg)
     {
-      auto rt = reg.readTexture("final_target", gapi::TextureState::TransferSrc);
+      auto rt = reg.readTexture("final_antialiased_target", gapi::TextureState::TransferSrc);
       auto backbuffer = reg.modifyTexture("backbuffer", gapi::TextureState::TransferDst);
       return [rt, backbuffer](gapi::CmdEncoder& encoder)
       {

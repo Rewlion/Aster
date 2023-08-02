@@ -30,6 +30,7 @@ namespace Engine::Render
       mk_early_transparent_sync_node,
       mk_transparent_sync_node,
       mk_post_process_node,
+      mk_taa_node,
       mk_ui_node,
       mk_dbg_text_node,
       mk_present_node

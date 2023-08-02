@@ -13,5 +13,6 @@ shaders_list
   "shaders/imgui.tfx" {}
   "shaders/post_process.tfx" {}
   "shaders/scene_opaque.tfx" {}
+  "shaders/taa.tfx" {}
   "shaders/test.tfx" {}
 }
