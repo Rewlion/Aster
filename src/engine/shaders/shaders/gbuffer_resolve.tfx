@@ -3,8 +3,10 @@
 #include "atmosphere/sph.inc.tfx"
 #include "depth.inc.tfx"
 #include "frame.inc.tfx"
-#include "gbuffer.inc.tfx"
+#include "materials.inc.tfx"
 #include "math.inc.tfx"
+#include "pbr.inc.tfx"
+#include "screen_space.inc.tfx"
 
 scope ResolveGbufferScope {
   reserve:
@@ -42,59 +44,50 @@ technique ResolveGbuffer {
   USE_ATMOSPHERE_PARAMS();
   USE_ATM_SPH();
 
+  USE_SCREENSPACE_VIEW_BASE();
   USE_FRAME_HELPERS();
   USE_ENVI_IBL();
-  USE_GBUFFER();
+  USE_MATERIALS_UNPACKING();
   USE_DEPTH_UTILS();
+  USE_PBR();
 
   #hlsl
-    struct VsOutput{
-      float4 pos: SV_Position;
-      float3 viewDir: POSITION0;
-    };
-
-    VsOutput vs_main(uint id: SV_VertexID)
-    {
-      float2 vertices[4] = {
-        float2(1.0f, -1.0f),
-        float2(-1.0f, -1.0f),
-        float2(1.0f, 1.0f),
-        float2(-1.0f, 1.0f)
-      };
-
-      float3 frustumViews[4] = {
-        FrameScope.rbView,
-        FrameScope.lbView,
-        FrameScope.rtView,
-        FrameScope.ltView
-      };
-
-      VsOutput output;
-      output.viewDir = frustumViews[id];
-      output.pos = float4(vertices[id], 0, 1.0);
-
-      return output;
-    }
-
-    float4 ps_main(VsOutput input) : SV_Target0
+    float3 deferredLight(VsOutput input)
     {
       float2 tc = get_screen_space_coords(input.pos.xy);
 
-      float4 albedo = float4(gbufferAlbedo.Sample(modelSampler, tc).rgb, 1.0);
-      float3 normal = gbufferNormal.Sample(modelSampler, tc).rgb / 0.5f - 1.0f;
-      float2 metalRoughness = gbufferMetalRoughness.Sample(modelSampler, tc).rg;
+      ProcessedMaterial mat = processMaterial(unpackMaterial(tc));
 
       float depth = gbufferDepth.Sample(linearClampSampler, tc).r;
       float3 worldPos = calcWorldPos(FrameScope.cameraPos, input.viewDir, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
 
-      Gbuffer g = (Gbuffer)0;
-      init_albedo(g, albedo);
-      init_metal(g, metalRoughness.r);
-      init_roughness(g, metalRoughness.g);
-      init_normal(g, normal);
-      init_worldPos(g, worldPos);
+      float3 N = mat.normal;
+      float3 L = getAtmSunDir();
+      float3 V = normalize(FrameScope.cameraPos - worldPos);
+      float3 H = normalize(L+V);
+      float3 R = reflect(-V,N);
 
-      return process_gbuffer(g);
+      float NoL = max(dot(L, N), 0.0);
+      float NoV = max(dot(V,N), 0.0);
+      float VoH = max(dot(V,H), 0.0);
+
+      float3 F = schlickFresnel(mat.specularReflection, VoH).rgb;
+      float3 kD = (1.0 - F);
+
+      float3 diffuseSPH = getSphDiffuseProbe(N);
+      float3 sunL = getSunL() * NoL;
+
+      float3 diffusePart = diffuseBRDF(mat.diffuseColor, mat.specularReflection, VoH) * (diffuseSPH + sunL);
+      float3 specularPart = enviSpecularIBL(mat.specularReflection, mat.roughness, NoV, R);
+
+      float3 Lo = diffusePart + specularPart;
+
+      return Lo;
+    }
+
+    float4 ps_main(VsOutput input) : SV_Target0
+    {
+      return float4(deferredLight(input), 1.0);
     }
   #end
 

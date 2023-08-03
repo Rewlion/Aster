@@ -1,7 +1,7 @@
 #include "frame.inc.tfx"
-#include "gbuffer.inc.tfx"
 #include "mesh.inc.tfx"
 #include "normals.inc.tfx"
+#include "materials.inc.tfx"
 
 technique SceneOpaque {
   support scope FrameScope;
@@ -9,7 +9,7 @@ technique SceneOpaque {
 
   USE_STATIC_MESH();
   USE_NORMALS_UTILS();
-  USE_GBUFFER();
+  USE_MATERIALS_PACKING();
 
   #hlsl
     struct VsOutput
@@ -34,9 +34,9 @@ technique SceneOpaque {
       return output;
     }
 
-    GbufferOutput ps_main(VsOutput input)
+    PackedMaterial ps_main(VsOutput input)
     {
-      float4 albedo = albedoTex.Sample(modelSampler, input.uv);
+      float3 albedo = albedoTex.Sample(modelSampler, input.uv).rgb;
       float3 metalRoughness = metalRoughnessTex.Sample(modelSampler, input.uv).rgb;
       float metal = metalRoughness.b;
       float roughness = metalRoughness.g;
@@ -45,14 +45,13 @@ technique SceneOpaque {
       float3 normal_ts = normalTex.Sample(modelSampler, input.uv).rgb * 2.0 - 1.0;
       float3 normal = perturbNormal(normal_ts, input.normal, viewDir, input.uv);
 
-      Gbuffer gbuffer;
-      init_albedo(gbuffer, albedo);
-      init_metal(gbuffer, metal);
-      init_roughness(gbuffer, roughness);
-      init_normal(gbuffer, normal);
-      init_worldPos(gbuffer, input.worldPos);
+      UnpackedMaterial mat;
+      initAlbedo(mat, albedo);
+      initMetal(mat, metal);
+      initRoughness(mat, roughness);
+      initNormal(mat, normal);
 
-      return encode_gbuffer(gbuffer);
+      return packMaterial(mat);
     }
   #end
 

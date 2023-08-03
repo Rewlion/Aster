@@ -1,6 +1,7 @@
 #include "../frame.inc.tfx"
 #include "../math.inc.tfx"
 #include "../noise.inc.tfx"
+#include "../pbr.inc.tfx"
 #include "../screen_space.inc.tfx"
 #include "atmosphere.inc.tfx"
 #include "ebruneton.inc.tfx"
@@ -96,22 +97,11 @@ technique EnviBRDF {
   USE_MATH();
   USE_SCREENSPACE_BASE();
   USE_NOISE();
+  USE_PBR();
 
   #hlsl
   #define SAMPLES_COUNT 1024
   #define SAMPLES_COUNT_SQ 32
-
-  float schlick_ggx_sub(float3 N, float3 V, float k)
-  {
-    float NoV = max(dot(N, V), 0);
-    return NoV / (NoV * (1-k) + k);
-  }
-
-  float schlick_ggx(float3 N, float3 V, float3 L, float roughness)
-  {
-    float k = roughness * roughness / 2.0;
-    return schlick_ggx_sub(N,V,k) * schlick_ggx_sub(N,L,k);
-  }
 
   float3 ps_main(VsOutput input) : SV_Target0
   {
@@ -128,10 +118,11 @@ technique EnviBRDF {
 
     for (int i = 0.0; i < SAMPLES_COUNT; i += 1)
     {
-      float alpha = roughness*roughness;
       float v = float(i / SAMPLES_COUNT_SQ) / float(SAMPLES_COUNT_SQ);
       float u = (i % SAMPLES_COUNT_SQ) / float(SAMPLES_COUNT_SQ);;
-      float theta = acos(sqrt((1.0-u)/(u*(alpha*alpha-1.0)+1.0)));
+
+      float ggxAlpha = roughness*roughness;
+      float theta = acos(sqrt((1.0-u)/(u*(ggxAlpha*ggxAlpha-1.0)+1.0)));
       float phi =  2.0 * PI * v;
 
       float3 H = sphericalToDecartian(theta, phi);
@@ -140,11 +131,12 @@ technique EnviBRDF {
       float VoH = saturate(dot(V,H));
       float NoH = max(1e-6, dot(N,H));
       float NoV = max(1e-6, dot(N,V));
+      float NoL = dot(N, Ldir);
 
-      if (dot(N, Ldir) > 0.0)
+      if (NoL > 0.0)
       {
         float s = pow(1.0 - VoH, 5.0);
-        float Gterm = schlick_ggx(N, V, Ldir, roughness) * VoH / ( NoH * NoV );
+        float Gterm = schlickSmithGGX_IBL(NoL, NoV, ggxAlpha) * VoH / ( NoH * NoV );
 
         F0Term += Gterm * (1.0 - s);
         STerm += Gterm * s;

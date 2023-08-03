@@ -1,13 +1,13 @@
 #include "frame.inc.tfx"
 #include "mesh.inc.tfx"
-#include "gbuffer.inc.tfx"
+#include "materials.inc.tfx"
 
 technique TestStaticMesh {
   support scope FrameScope;
   support scope StaticModelScope;
 
   USE_STATIC_MESH();
-  USE_GBUFFER();
+  USE_MATERIALS_PACKING();
 
   #hlsl
     struct VsOutput
@@ -30,17 +30,17 @@ technique TestStaticMesh {
       return output;
     }
 
-    GbufferOutput ps_main(VsOutput input)
+    PackedMaterial ps_main(VsOutput input)
     {
       float4 albedo = albedoTex.Sample(modelSampler, input.uv);
 
-      Gbuffer gbuffer;
-      init_albedo(gbuffer, float4(1.0, 1.0, 1.0, 1.0));
-      init_metal(gbuffer, 1.0);
-      init_roughness(gbuffer, 0.0);
-      init_normal(gbuffer, input.normal);
+      UnpackedMaterial mat;
+      initAlbedo(mat, float3(1.0, 1.0, 1.0));
+      initMetal(mat, 1.0);
+      initRoughness(mat, 0.0);
+      initNormal(mat, input.normal);
 
-      return encode_gbuffer(gbuffer);
+      return packMaterial(mat);
     }
   #end
 

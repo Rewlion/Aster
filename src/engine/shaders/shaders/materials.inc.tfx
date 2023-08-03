@@ -1,0 +1,110 @@
+technique_macro USE_MATERIALS_BASE
+{
+  #hlsl
+  struct UnpackedMaterial
+  {
+    float3 albedo;
+    float metal;
+    float roughness;
+    float3 normal;
+  };
+
+  struct PackedMaterial
+  {
+    float3 albedo         : SV_Target0;
+    float3 normal         : SV_Target1;
+    float3 metalRoughness : SV_Target2;
+  };
+  #end
+};
+
+technique_macro USE_MATERIALS_PACKING
+{
+  USE_MATERIALS_BASE();
+
+  #hlsl
+  void initAlbedo(inout UnpackedMaterial m, float3 albedo)
+  {
+    m.albedo = albedo;
+  }
+
+  void initMetal(inout UnpackedMaterial m, float metal)
+  {
+    m.metal = metal;
+  }
+
+  void initRoughness(inout UnpackedMaterial m, float roughness)
+  {
+    m.roughness = roughness;
+  }
+
+  void initNormal(inout UnpackedMaterial m, float3 normal)
+  {
+    m.normal = normal;
+  }
+
+  PackedMaterial packMaterial(UnpackedMaterial m)
+  {
+    PackedMaterial output = (PackedMaterial)0;
+    output.albedo = m.albedo.rgb;
+    output.normal = (m.normal + 1.0) * 0.5;
+    output.metalRoughness = float3(m.metal, m.roughness, 0.0f);
+    return output;
+  }
+  #end
+};
+
+technique_macro USE_MATERIALS_UNPACKING
+{
+  USE_MATERIALS_BASE();
+
+  #hlsl
+  struct ProcessedMaterial
+  {
+    float metal;
+    float roughness;
+    float ggxAlpha;
+    float3 normal;
+
+    float3 diffuseColor;
+    float3 specularReflection;
+
+    float3 albedo;
+  };
+
+  float3 calcFresnelSpecularReflection(float3 baseColor, float metal, float reflectance)
+  {
+    float f0Dielectric = 0.16 * pow(reflectance, 2.0);
+    return lerp(float3(f0Dielectric,f0Dielectric,f0Dielectric), baseColor, metal);
+  }
+
+  UnpackedMaterial unpackMaterial(float2 tc)
+  {
+    float3 albedo = gbufferAlbedo.Sample(modelSampler, tc).rgb;
+    float3 normal = gbufferNormal.Sample(modelSampler, tc).rgb / 0.5f - 1.0f;
+    float2 metalRoughness = gbufferMetalRoughness.Sample(modelSampler, tc).rg;
+
+    UnpackedMaterial o = (UnpackedMaterial)0;
+    o.albedo = albedo;
+    o.metal = metalRoughness.r;
+    o.roughness = metalRoughness.g;
+    o.normal = normal;
+
+    return o;
+  }
+
+  ProcessedMaterial processMaterial(UnpackedMaterial m)
+  {
+    ProcessedMaterial o;
+    o.albedo = m.albedo;
+    o.metal = m.metal;
+    o.roughness = m.roughness;
+    o.ggxAlpha = m.roughness * m.roughness;
+    o.normal = m.normal;
+    o.diffuseColor = (1.0 - m.metal) * m.albedo;
+    o.specularReflection = calcFresnelSpecularReflection(m.albedo, m.metal, 0.5);
+
+    return o;
+  }
+  #end
+};

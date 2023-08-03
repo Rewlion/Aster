@@ -14,10 +14,9 @@ technique_macro USE_ENVI_IBL {
     return enviBRDF.Sample(linearClampSampler, float2(NoV, roughness)).rg;
   }
 
-  float3 enviSpecularIBL(float3 F0, float roughness, float3 N, float3 V)
+  float3 enviSpecularIBL(float3 F0, float roughness, float NoV, float3 R)
   {
-    float NoV = saturate(dot(N,V));
-    float3 specular = sampleEnviSpecular(roughness, reflect(-V,N));
+    float3 specular = sampleEnviSpecular(roughness, R);
     float2 brdf = sampleEnviBRDF(roughness, NoV);
 
     return specular * (F0 * brdf.x + brdf.y);

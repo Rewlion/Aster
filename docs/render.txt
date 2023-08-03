@@ -34,6 +34,9 @@ Spherical Harmonics:
     Ravi Ramamoorthi and Pat Hanrahan
     https://cseweb.ucsd.edu/~ravir/papers/invlamb/josa.pdf
 
+Ambient Dice (TODO)
+https://www.ppsloan.org/publications/AmbientDice.pdf
+
 
 Importance Sampling:
   - https://www.youtube.com/watch?v=C3p2wI4RAi8&ab_channel=MutualInformation
@@ -52,3 +55,11 @@ Image Based Lighthing for Specular:
       https://www.pbr-book.org/3ed-2018/Monte_Carlo_Integration/Transforming_between_Distributions#sec:mc-transforming
       14.1 Sampling Reflection Functions
       https://www.pbr-book.org/3ed-2018/Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions
+
+PBR
+  - https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/course-notes-moving-frostbite-to-pbr-v2.pdf
+
+    MS diffuse brdf TODO
+    https://www.activision.com/cdn/research/siggraph_2018_opt.pdf
+    https://advances.realtimerendering.com/s2018/MaterialAdvancesInWWII.pdf
+    https://advances.realtimerendering.com/s2018/MaterialAdvancesInWWII-course_notes.pdf
