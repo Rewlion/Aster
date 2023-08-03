@@ -428,68 +428,23 @@ namespace ShadersSystem
       string generateHlslResourcesDecl() const
       {
         string hlsl;
+        const auto getStorageType = [&](auto t) {
+          return t != gapi::AttributeType::None ? 
+            fmt::format("<{}>", gapi::attributeType_to_string(t)) :
+            "";
+        };
+
         for (auto& [_, var]: m_Scope.declaredResources)
         {
           if (var.type == ResourceType::Cbuffer)
             continue;
 
-          switch (var.type)
-          {
-            case ResourceType::Sampler:
-            {
-              hlsl += fmt::format("sampler {}: register(s{}, space{});\n",
-                var.name, var.binding, var.dset);
-              break;
-            }
-
-            case ResourceType::Texture2D:
-            {
-              hlsl += fmt::format("Texture2D {}: register(t{}, space{});\n",
-                var.name, var.binding, var.dset);
-              break;
-            }
-
-            case ResourceType::Texture3D:
-            {
-              hlsl += fmt::format("Texture3D {}: register(t{}, space{});\n",
-                var.name, var.binding, var.dset);
-              break;
-            }
-
-            case ResourceType::TextureCube:
-            {
-              hlsl += fmt::format("TextureCube {}: register(t{}, space{});\n",
-                var.name, var.binding, var.dset);
-              break;
-            }
-
-            case ResourceType::RWStructuredBuffer:
-            {
-              hlsl += fmt::format("RWStructuredBuffer<{}> {}: register(u{}, space{});\n",
-                gapi::attributeType_to_string(var.uavElemType), var.name, var.binding, var.dset);
-              break;
-            }
-
-            case ResourceType::RWBuffer:
-            {
-              hlsl += fmt::format("RWBuffer<{}> {}: register(u{}, space{});\n",
-                gapi::attributeType_to_string(var.uavElemType), var.name, var.binding, var.dset);
-              break;
-            }
-            
-            case ResourceType::RWTexture3D:
-            {
-              hlsl += fmt::format("RWTexture3D<{}> {}: register(u{}, space{});\n",
-                gapi::attributeType_to_string(var.uavElemType), var.name, var.binding, var.dset);
-              break;
-            }
-
-            default:
-            {
-              ASSERT(!"unuspported");
-              break;
-            }
-          }
+          hlsl += fmt::format("{}{} {}: register({}{}, space{});\n",
+            to_hlsl_type(var.type), 
+            getStorageType(var.uavElemType),
+            var.name,
+            to_hlsl_register(var.type),
+            var.binding, var.dset);
         }
 
         return hlsl;
