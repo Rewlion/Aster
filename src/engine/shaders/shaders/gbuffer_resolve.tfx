@@ -45,7 +45,6 @@ technique ResolveGbuffer {
   USE_ATM_SPH();
 
   USE_SCREENSPACE_VIEW_BASE();
-  USE_FRAME_HELPERS();
   USE_ENVI_IBL();
   USE_MATERIALS_UNPACKING();
   USE_DEPTH_UTILS();
@@ -54,11 +53,10 @@ technique ResolveGbuffer {
   #hlsl
     float3 deferredLight(VsOutput input)
     {
-      float2 tc = get_screen_space_coords(input.pos.xy);
-
+      uint3 tc = uint3(input.pos.xy, 0);
       ProcessedMaterial mat = processMaterial(unpackMaterial(tc));
 
-      float depth = gbufferDepth.Sample(linearClampSampler, tc).r;
+      float depth = gbufferDepth.Load(tc).r;
       float3 worldPos = calcWorldPos(FrameScope.cameraPos, input.viewDir, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
 
       float3 N = mat.normal;

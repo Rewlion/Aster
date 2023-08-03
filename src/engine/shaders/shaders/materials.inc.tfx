@@ -78,11 +78,11 @@ technique_macro USE_MATERIALS_UNPACKING
     return lerp(float3(f0Dielectric,f0Dielectric,f0Dielectric), baseColor, metal);
   }
 
-  UnpackedMaterial unpackMaterial(float2 tc)
+  UnpackedMaterial unpackMaterial(uint3 tc)
   {
-    float3 albedo = gbufferAlbedo.Sample(modelSampler, tc).rgb;
-    float3 normal = gbufferNormal.Sample(modelSampler, tc).rgb / 0.5f - 1.0f;
-    float2 metalRoughness = gbufferMetalRoughness.Sample(modelSampler, tc).rg;
+    float3 albedo = gbufferAlbedo.Load(tc).rgb;
+    float3 normal = gbufferNormal.Load(tc).rgb / 0.5f - 1.0f;
+    float2 metalRoughness = gbufferMetalRoughness.Load(tc).rg;
 
     UnpackedMaterial o = (UnpackedMaterial)0;
     o.albedo = albedo;
