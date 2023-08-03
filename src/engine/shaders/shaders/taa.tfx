@@ -1,5 +1,6 @@
-#include "screen_space.inc.tfx"
+#include "color_spaces.inc.tfx"
 #include "frame.inc.tfx"
+#include "screen_space.inc.tfx"
 
 scope TAAScope
 {
@@ -18,13 +19,14 @@ technique TAA
 
   USE_SCREENSPACE_BASE();
   USE_FRAME_HELPERS();
+  USE_COLOR_SPACES();
 
   #hlsl
   float3 ps_main(VsOutput input) : SV_Target0
   {
     float2 uv = get_screen_space_coords(input.pos.xy - float2(0.5, 0.5));
-    float3 prev = taaPrevFrame.Sample(cubicClampSampler, uv).rgb;
-    float3 current = taaCurrentFrame.Load(uint3(input.pos.xy, 0)).rgb;
+    float3 prev = RGB2YCbCR(taaPrevFrame.Sample(cubicClampSampler, uv).rgb);
+    float3 current = RGB2YCbCR(taaCurrentFrame.Load(uint3(input.pos.xy, 0)).rgb);
     
     float3 bbMin = float3(1e3,1e3,1e3);
     float3 bbMax = float3(-1e3,-1e3,-1e3);
@@ -34,8 +36,8 @@ technique TAA
       [UNROLL]
       for (int j = -1; j <= 1; ++j)
       {
-        float2 pUV = get_screen_space_coords(input.pos.xy +  float2(i,j) - float2(0.5, 0.5));
-        float3 pColor = taaCurrentFrame.Sample(linearClampSampler, pUV).rgb;
+        float2 pUV = get_screen_space_coords(input.pos.xy + float2(i,j) - float2(0.5, 0.5));
+        float3 pColor = RGB2YCbCR(taaCurrentFrame.Sample(linearClampSampler, pUV).rgb);
         bbMin = min(pColor, bbMin);
         bbMax = max(pColor, bbMax);
       }
@@ -44,7 +46,7 @@ technique TAA
 
     float w = 0.75;
 
-    return lerp(current, prev, w);
+    return YCbCr2RGB(lerp(current, prev, w));
   }
   #end
 

@@ -63,3 +63,6 @@ PBR
     https://www.activision.com/cdn/research/siggraph_2018_opt.pdf
     https://advances.realtimerendering.com/s2018/MaterialAdvancesInWWII.pdf
     https://advances.realtimerendering.com/s2018/MaterialAdvancesInWWII-course_notes.pdf
+
+TAA:
+ - http://behindthepixels.io/assets/files/TemporalAA.pdf (TODO)
