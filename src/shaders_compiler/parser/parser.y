@@ -250,7 +250,7 @@
 %type <bval>                 BOOL_VALUE
 %type <f4val>                FLOAT4_VALUE
 %type <resourceType>         RESOURCE_TYPE
-%type <resourceType>         UAV_RESOURCE_TYPE
+%type <resourceType>         RESOURCE_TYPE_WITH_STORAGE
 %type <resourceAssignExp>    ASSIGN_EXP
 %type <targetProfile>        TARGET_PROFILE
 %type <inputBufferExp>       INPUT_BUFFER
@@ -772,8 +772,8 @@ SCOPE_EXP
   : "reserve" ":" RESOURCE_RESERVE_EXP_LIST[exps] {
     $$ = new ShadersResourcesReserveExp($exps);
   }
-  | UAV_RESOURCE_TYPE[uavType] "<" ATTRIBUTE_TYPE[uavElemType] ">" TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
-    $$ = new ResourceDeclarationExp($uavType, $uavElemType, $name, $exps);
+  | RESOURCE_TYPE_WITH_STORAGE[type] "<" ATTRIBUTE_TYPE[uavElemType] ">" TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
+    $$ = new ResourceDeclarationExp($type, $uavElemType, $name, $exps);
   }
   | RESOURCE_TYPE[type] TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
     $$ = new ResourceDeclarationExp($type, gapi::AttributeType::None, $name, $exps);
@@ -841,7 +841,7 @@ RESOURCE_TYPE
   }
   ;
 
-UAV_RESOURCE_TYPE
+RESOURCE_TYPE_WITH_STORAGE
   : "RWTexture3D" {
     $$ = ResourceType::RWTexture3D;
   }
@@ -850,6 +850,9 @@ UAV_RESOURCE_TYPE
   }
   | "RWStructuredBuffer" {
     $$ = ResourceType::RWStructuredBuffer;
+  }
+  | "Texture2D" {
+    $$ = ResourceType::Texture2D;
   }
   ;
 
