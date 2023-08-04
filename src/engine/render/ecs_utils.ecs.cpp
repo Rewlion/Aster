@@ -23,6 +23,14 @@ ECS_QUERY()
 static
 void query_render_settings(eastl::function<void(const int2 render_window_size)>);
 
+ECS_QUERY()
+static
+void query_render_prev_view_proj(eastl::function<void(float4x4& render_prev_view_proj)>);
+
+ECS_QUERY()
+static
+void query_render_prev_jitter(eastl::function<void(float2& render_prev_jitter)>);
+
 namespace Engine::Render
 {
   auto get_font_render() -> FontRender*
@@ -63,6 +71,38 @@ namespace Engine::Render
     int2 size{0,0};
     query_render_settings([&](const int2 render_window_size){ size = render_window_size; });
     return size;
+  }
+
+  auto get_prev_view_proj() -> float4x4
+  {
+    float4x4 m;
+    query_render_prev_view_proj([&](auto _m){
+      m = _m;
+    });
+    return m;
+  }
+
+  void set_prev_view_proj(const float4x4& m)
+  {
+    query_render_prev_view_proj([&](auto& _m){
+      _m = m;
+    });
+  }
+
+  auto get_prev_jitter() -> float2
+  {
+    float2 j;
+    query_render_prev_jitter([&](auto _j){
+      j = _j;
+    });
+    return j;
+  }
+
+  void set_prev_jitter(const float2 j)
+  {
+    query_render_prev_jitter([&](auto& _j){
+      _j = j;
+    });
   }
 
   namespace dbg

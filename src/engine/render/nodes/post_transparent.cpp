@@ -77,15 +77,20 @@ namespace Engine::Render
 
       auto taaCurrentFrame = reg.readTexture("final_target", gapi::TextureState::ShaderRead);
       auto taaPrevFrame = reg.readTexture("final_antialiased_target", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
-      auto rt = reg.createTexture("final_antialiased_target", allocDesc, gapi::TextureState::RenderTarget);
+      auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead);
+      auto gbufferDepth = reg.readTexture("gbuffer_depth", gapi::TextureState::ShaderRead);
 
+      auto rt = reg.createTexture("final_antialiased_target", allocDesc, gapi::TextureState::RenderTarget);
       reg.requestRenderPass()
          .addTarget(rt, gapi::LoadOp::DontCare, gapi::StoreOp::Store);
 
-      return [taaCurrentFrame, taaPrevFrame](gapi::CmdEncoder& encoder)
+      return [taaCurrentFrame, taaPrevFrame, motionBuf, gbufferDepth](gapi::CmdEncoder& encoder)
       {
         tfx::set_extern("taaCurrentFrame", taaCurrentFrame.get());
         tfx::set_extern("taaPrevFrame", taaPrevFrame.get());
+        tfx::set_extern("motionBuf", motionBuf.get());
+        tfx::set_extern("renderSize", encoder.getRenderSize());
+        tfx::set_extern("gbuffer_detph", gbufferDepth.get());
         tfx::activate_technique("TAA", encoder);
 
         encoder.updateResources();

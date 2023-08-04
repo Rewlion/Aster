@@ -10,6 +10,9 @@ scope FrameScope {
   sampler cubicClampSampler = extern(cubic_clamp_sampler);
   TextureCube enviMap = extern(envi_map);
 
+  float2 cameraPrevJitter = extern(cameraPrevJitter);
+  float2 cameraJitter = extern(cameraJitter);
+  float4x4 prevViewProj = extern(prev_view_proj);
   float4x4 viewProj = extern(view_proj);
   float3 cameraPos = extern(camera_pos);
   float3 ltView = extern(lt_view);

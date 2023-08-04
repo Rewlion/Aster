@@ -4,6 +4,10 @@ template @("name: CoreRender") {
   component @("ImGuiRender imgui_render") {}
 
   int2 render_window_size = 0, 0
+  
+  //TAA
+  mat4 render_prev_view_proj = [0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]
+  float2 render_prev_jitter = 0, 0
 }
 
 template @("name: CoreRenderDebug; extends: CoreRender") {

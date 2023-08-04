@@ -1,4 +1,5 @@
 #include "color_spaces.inc.tfx"
+#include "filters.inc.tfx"
 #include "frame.inc.tfx"
 #include "screen_space.inc.tfx"
 
@@ -6,10 +7,15 @@ scope TAAScope
 {
   reserve:
     descriptor_set(1);
-    register(texture, 0-1);
+    register(texture, 0-3);
+    register(buffer, 0);
 
   Texture2D taaPrevFrame = extern(taaPrevFrame);
   Texture2D taaCurrentFrame = extern(taaCurrentFrame);
+  Texture2D motionBuf = extern(motionBuf);
+  Texture2D gbufferDepth = extern(gbuffer_depth);
+
+  float2 renderSize = extern(renderSize);
 };
 
 technique TAA
@@ -20,33 +26,55 @@ technique TAA
   USE_SCREENSPACE_BASE();
   USE_FRAME_HELPERS();
   USE_COLOR_SPACES();
+  USE_FILTERS();
 
   #hlsl
   float3 ps_main(VsOutput input) : SV_Target0
   {
-    float2 uv = get_screen_space_coords(input.pos.xy - float2(0.5, 0.5));
-    float3 prev = RGB2YCbCR(taaPrevFrame.Sample(cubicClampSampler, uv).rgb);
-    float3 current = RGB2YCbCR(taaCurrentFrame.Load(uint3(input.pos.xy, 0)).rgb);
-    
     float3 bbMin = float3(1e3,1e3,1e3);
     float3 bbMax = float3(-1e3,-1e3,-1e3);
+    float closestDepth = 1000.0;
+    float3 closestNeighborTC = float3(0,0,0);
+
     [UNROLL]
     for (int i = -1; i <= 1; ++i)
     {
       [UNROLL]
       for (int j = -1; j <= 1; ++j)
       {
-        float2 pUV = get_screen_space_coords(input.pos.xy + float2(i,j) - float2(0.5, 0.5));
-        float3 pColor = RGB2YCbCR(taaCurrentFrame.Sample(linearClampSampler, pUV).rgb);
-        bbMin = min(pColor, bbMin);
-        bbMax = max(pColor, bbMax);
+        float3 nTC = float3(input.pos.xy + float2(i,j), 0);
+        nTC = clamp(nTC, 0.0, float3(TAAScope.renderSize - 1.0, 0.0));
+
+        float nDepth = gbufferDepth.Load(nTC).r;
+        if (nDepth < closestDepth)
+        {
+          closestDepth = nDepth;
+          closestNeighborTC = nTC;
+        }
+
+        float3 nColor = RGB2YCbCR(max(0.0, taaCurrentFrame.Load(nTC).rgb));
+        bbMin = min(nColor, bbMin);
+        bbMax = max(nColor, bbMax);
       }
     }
-    prev = clamp(prev, bbMin, bbMax);
 
-    float w = 0.75;
+    float2 motionVec = motionBuf.Load(closestNeighborTC).rg * float2(0.5, -0.5);
+    float3 tc = uint3(input.pos.xy, 0);
+    float2 uv = input.pos.xy / TAAScope.renderSize;
+    float2 historyUVReprojected = uv - motionVec;
 
-    return YCbCr2RGB(lerp(current, prev, w));
+    float3 curPixel = RGB2YCbCR(taaCurrentFrame.Load(tc).rgb);
+    if (any(historyUVReprojected != saturate(historyUVReprojected)))
+    {
+      return YCbCr2RGB(curPixel);
+    }
+
+    float3 historyPixel = RGB2YCbCR(SampleTextureCatmullRom(taaPrevFrame, linearClampSampler, historyUVReprojected, TAAScope.renderSize).rgb);
+    historyPixel = clamp(historyPixel, bbMin, bbMax);
+
+    float w = 0.9;
+
+    return YCbCr2RGB(lerp(curPixel, historyPixel, w));
   }
   #end
 

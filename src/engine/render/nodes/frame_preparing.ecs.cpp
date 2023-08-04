@@ -74,13 +74,17 @@ namespace Engine::Render
           float2(7.0f / 8.0f,  5.0f / 9.0f),
           float2(1.0f / 16.0f, 8.0f / 9.0f)
         };
-        const float jitterMul = 0.003;
-        const float3 cameraJitter = float3(haltonSequence[iFrame++ % haltonCount] - float2(0.5f, 0.5f), 0.0) * jitterMul;
+        const float2 jitterOffs = { 1.0 / (float)(2 * wndSize->x), 1.0 / (float)(2 * wndSize->y)};
+        const float2 cameraJitter = float2(haltonSequence[iFrame++ % haltonCount] * 2.0f - float2(1.0, 1.0)) * jitterOffs;
+        const float2 prevCameraJitter = get_prev_jitter();
+        set_prev_jitter(cameraJitter);
 
         const float aspect = (float)wndSize->x / (float)wndSize->y;
-        cameraData.get() = get_camera(aspect, cameraJitter);
+        cameraData.get() = get_camera(aspect, float3(cameraJitter, 0.0));
 
+        auto prevViewProjTm = get_prev_view_proj();
         auto viewProjTm = cameraData->proj * cameraData->view;
+        set_prev_view_proj(viewProjTm);
 
         auto viewRot = cameraData->view;
         viewRot[3] = float4(0,0,0,1);
@@ -98,6 +102,9 @@ namespace Engine::Render
         if (auto* dbgTextQueue = dbg::get_dbg_text_queue())
           dbgTextQueue->tick();
 
+        tfx::set_extern("cameraPrevJitter", prevCameraJitter);
+        tfx::set_extern("cameraJitter", cameraJitter);
+        tfx::set_extern("prev_view_proj", prevViewProjTm);
         tfx::set_extern("view_proj", viewProjTm);
         tfx::set_extern("camera_pos", cameraData->pos);
         tfx::set_extern("zNear_zFar", float2{cameraData->zNear, cameraData->zFar});

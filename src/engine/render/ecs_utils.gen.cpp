@@ -106,3 +106,43 @@ void query_render_settings (eastl::function<
     cb(render_window_size);
   });
 }
+
+
+const static DirectQueryRegistration query_render_prev_view_proj_queryReg{
+  {
+    DESCRIBE_QUERY_COMPONENT("render_prev_view_proj", float4x4)
+  },
+  "query_render_prev_view_proj"};
+const static query_id_t query_render_prev_view_proj_queryId = query_render_prev_view_proj_queryReg.getId();
+
+
+void query_render_prev_view_proj (eastl::function<
+  void(
+    float4x4& render_prev_view_proj)> cb)
+{
+  ecs::get_registry().query(query_render_prev_view_proj_queryId, [&](ComponentsAccessor& accessor)
+  {
+    float4x4& render_prev_view_proj = accessor.get<float4x4>(compile_ecs_name_hash("render_prev_view_proj"));
+    cb(render_prev_view_proj);
+  });
+}
+
+
+const static DirectQueryRegistration query_render_prev_jitter_queryReg{
+  {
+    DESCRIBE_QUERY_COMPONENT("render_prev_jitter", float2)
+  },
+  "query_render_prev_jitter"};
+const static query_id_t query_render_prev_jitter_queryId = query_render_prev_jitter_queryReg.getId();
+
+
+void query_render_prev_jitter (eastl::function<
+  void(
+    float2& render_prev_jitter)> cb)
+{
+  ecs::get_registry().query(query_render_prev_jitter_queryId, [&](ComponentsAccessor& accessor)
+  {
+    float2& render_prev_jitter = accessor.get<float2>(compile_ecs_name_hash("render_prev_jitter"));
+    cb(render_prev_jitter);
+  });
+}

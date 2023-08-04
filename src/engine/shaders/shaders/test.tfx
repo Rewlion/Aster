@@ -15,15 +15,21 @@ technique TestStaticMesh {
       float4 pos: SV_Position;
       float2 uv: TEXTURE0;
       float3 normal: TEXTURE1;
+      float4 prevPos : TEXTURE2;
+      float4 curPos : TEXTURE3;
     };
 
     VsOutput vs_main(TestStaticMesh_input input)
     {
       float4x4 mvp = FrameScope.viewProj;
+      float4x4 prevMvp = FrameScope.prevViewProj;
       mvp = mul(mvp, StaticModelScope.modelTm);
+      prevMvp = mul(prevMvp, StaticModelScope.modelTm);
 
       VsOutput output;
       output.pos = mul(mvp, float4(input.pos, 1.0));
+      output.prevPos = mul(prevMvp, float4(input.pos, 1.0));
+      output.curPos = output.pos;
       output.uv = input.uv;
       output.normal = normalize(mul(StaticModelScope.normalTm, float4(input.normal, 0.0)).xyz);
 
@@ -39,6 +45,7 @@ technique TestStaticMesh {
       initMetal(mat, 1.0);
       initRoughness(mat, 0.0);
       initNormal(mat, input.normal);
+      initMotionVector(mat, input.prevPos, input.curPos);
 
       return packMaterial(mat);
     }

@@ -65,4 +65,6 @@ PBR
     https://advances.realtimerendering.com/s2018/MaterialAdvancesInWWII-course_notes.pdf
 
 TAA:
- - http://behindthepixels.io/assets/files/TemporalAA.pdf (TODO)
+ - https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/
+ - https://alextardif.com/TAA.html
+ - http://behindthepixels.io/assets/files/TemporalAA.pdf

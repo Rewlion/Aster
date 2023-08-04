@@ -37,10 +37,14 @@ namespace Engine::Render
       allocDesc.format = gapi::TextureFormat::R32G32B32A32_S;
       auto gbuf2 = reg.createTexture("gbuf2", allocDesc, gapi::TextureState::RenderTarget);
 
+      allocDesc.format = gapi::TextureFormat::R32G32B32A32_S;
+      auto motionBuf = reg.createTexture("motionBuf", allocDesc, gapi::TextureState::RenderTarget);
+
       reg.requestRenderPass()
          .addTarget(gbuf0,  gapi::LoadOp::Clear, gapi::StoreOp::Store)
          .addTarget(gbuf1,  gapi::LoadOp::Clear, gapi::StoreOp::Store)
          .addTarget(gbuf2,  gapi::LoadOp::Clear, gapi::StoreOp::Store)
+         .addTarget(motionBuf,  gapi::LoadOp::Clear, gapi::StoreOp::Store)
          .addDepth(gbufDepth, gapi::LoadOp::Clear, gapi::StoreOp::Store,
                               gapi::LoadOp::DontCare, gapi::StoreOp::DontCare);
       return [](gapi::CmdEncoder& encoder)
