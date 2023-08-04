@@ -200,8 +200,11 @@ namespace ecs
       .isTrivial = is_trivial, \
       .isTrivialRelocatable = is_trivial_relocatable }}
 
+  #define DECLARE_TRIVIAL_ECS_COMPONENT_WITH_NAME(type, name) \
+          DECLARE_ECS_COMPONENT(type, name, ecs::TrivialTypeManager<type>, true, true)
+
   #define DECLARE_TRIVIAL_ECS_COMPONENT(type) \
-          DECLARE_ECS_COMPONENT(type, #type, ecs::TrivialTypeManager<type>, true, true)
+          DECLARE_TRIVIAL_ECS_COMPONENT_WITH_NAME(type, #type)
   
   #define DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT(type) \
           DECLARE_ECS_COMPONENT(type, #type, ecs::NonTrivialTypeManager<type>, false, true)

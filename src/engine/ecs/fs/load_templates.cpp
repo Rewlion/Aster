@@ -46,6 +46,7 @@ namespace ecs
         ADD_TMPL_COMP(Float2, float2)
         ADD_TMPL_COMP(Float3, float3)
         ADD_TMPL_COMP(Float4, float4)
+        ADD_TMPL_COMP(Mat4, mat4)
         ADD_TMPL_COMP(Text, string)
         ADD_TMPL_COMP(Bool, bool)
       }
