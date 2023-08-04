@@ -172,10 +172,12 @@ namespace fg
     const virt_res_id_t vResIdTo = to_virt_res_id(nameIdTo);
     const res_id_t resId = to_res_id(vResIdFrom);
 
+    auto& vResTo = m_VirtResources[vResIdTo];
     auto& vResFrom = m_VirtResources[vResIdFrom];
+
     if (vResFrom.consumedBy != INVALID_NODE_ID)
     {
-      logerror("FG: node `{}` tries to consume resource `{}` that was already created by node `{}`.",
+      logerror("FG: node `{}` tries to consume resource `{}` that was already consumed by node `{}`.",
         m_NodesNames.getString(to_name_id(m_CurrentExecNodeId)), 
         m_ResourcesNames.getString(to_name_id(vResIdFrom)),
         m_NodesNames.getString(to_name_id(vResFrom.createdBy)));
@@ -184,7 +186,6 @@ namespace fg
     vResFrom.consumedBy = m_CurrentExecNodeId;
     vResFrom.modificationChain.push_back(m_CurrentExecNodeId);
     
-    auto& vResTo = m_VirtResources[vResIdTo];
     vResTo.clonnedVResId = vResIdFrom;
     vResTo.createdBy = m_CurrentExecNodeId;
     vResTo.modificationChain.insert(0, m_CurrentExecNodeId);
