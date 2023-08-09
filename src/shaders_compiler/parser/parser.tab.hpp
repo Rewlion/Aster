@@ -280,9 +280,8 @@ union SHSTYPE
   gapi::LogicOp logicOp;
 
   TechniqueExp* techniqueExp;
-  TargetProfile targetProfile;
 
-#line 286 "src/shaders_compiler/parser/parser.tab.hpp"
+#line 285 "src/shaders_compiler/parser/parser.tab.hpp"
 
 };
 typedef union SHSTYPE SHSTYPE;

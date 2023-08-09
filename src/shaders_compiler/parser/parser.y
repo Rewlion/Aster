@@ -69,7 +69,6 @@
   gapi::LogicOp logicOp;
 
   TechniqueExp* techniqueExp;
-  TargetProfile targetProfile;
 }
 
 %token <fval> TFX_TOKEN_FLOAT_VAL
@@ -252,7 +251,6 @@
 %type <resourceType>         RESOURCE_TYPE
 %type <resourceType>         RESOURCE_TYPE_WITH_STORAGE
 %type <resourceAssignExp>    ASSIGN_EXP
-%type <targetProfile>        TARGET_PROFILE
 %type <inputBufferExp>       INPUT_BUFFER
 %type <inputBufferExp>       INPUT_BUFFER_LIST
 %type <inputAttributeExp>    INPUT_ATTRIBUTE
@@ -326,7 +324,7 @@ TECHNIQUE_EXP
   | "activate" "scope" TFX_TOKEN_NAME_VAL[name] ";" {
     $$ = new ScopeActivateExp($name);
   }
-  | "compile" "(" TARGET_PROFILE[target] "," TFX_TOKEN_NAME_VAL[entry] ")" ";" {
+  | "compile" "(" TFX_TOKEN_NAME_VAL[target] "," TFX_TOKEN_NAME_VAL[entry] ")" ";" {
     $$ = new CompileExp($target, $entry);
   }
   | TFX_TOKEN_HLSL_CODE[code] {
@@ -904,80 +902,6 @@ INT_VALUE
 BOOL_VALUE
   : TFX_TOKEN_BOOL_VAL[v] {
     $$ = $v;
-  }
-
-TARGET_PROFILE
-  : "vs_6_0" {
-    $$ = TargetProfile::VS_6_0;
-  }
-  | "vs_6_1" {
-    $$ = TargetProfile::VS_6_1;
-  }
-  | "vs_6_2" {
-    $$ = TargetProfile::VS_6_2;
-  }
-  | "vs_6_3" {
-    $$ = TargetProfile::VS_6_3;
-  }
-  | "vs_6_4" {
-    $$ = TargetProfile::VS_6_4;
-  }
-  | "vs_6_5" {
-    $$ = TargetProfile::VS_6_5;
-  }
-  | "vs_6_6" {
-    $$ = TargetProfile::VS_6_6;
-  }
-  | "vs_6_7" {
-    $$ = TargetProfile::VS_6_7;
-  }
-  | "ps_6_0" {
-    $$ = TargetProfile::PS_6_0;
-  }
-  | "ps_6_1" {
-    $$ = TargetProfile::PS_6_1;
-  }
-  | "ps_6_2" {
-    $$ = TargetProfile::PS_6_2;
-  }
-  | "ps_6_3" {
-    $$ = TargetProfile::PS_6_3;
-  }
-  | "ps_6_4" {
-    $$ = TargetProfile::PS_6_4;
-  }
-  | "ps_6_5" {
-    $$ = TargetProfile::PS_6_5;
-  }
-  | "ps_6_6" {
-    $$ = TargetProfile::PS_6_6;
-  }
-  | "ps_6_7" {
-    $$ = TargetProfile::PS_6_7;
-  }
-  | "cs_6_0" {
-    $$ = TargetProfile::CS_6_0;
-  }
-  | "cs_6_1" {
-    $$ = TargetProfile::CS_6_1;
-  }
-  | "cs_6_2" {
-    $$ = TargetProfile::CS_6_2;
-  }
-  | "cs_6_3" {
-    $$ = TargetProfile::CS_6_3;
-  }
-  | "cs_6_4" {
-    $$ = TargetProfile::CS_6_4;
-  }
-  | "cs_6_5" {
-    $$ = TargetProfile::CS_6_5;
-  }
-  | "cs_6_6" {
-    $$ = TargetProfile::CS_6_6;
-  }
-  | "cs_6_7" {
-    $$ = TargetProfile::CS_6_7;
   }
 
 %%

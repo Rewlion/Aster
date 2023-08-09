@@ -1,12 +1,15 @@
 #include "compiler.h"
 #include "spirv.h"
 
-#include <engine/log.h>
 #include <engine/gapi/vulkan/resources.h>
+#include <engine/log.h>
+#include <engine/utils/string.h>
 
 #include <Unknwn.h>
 #include <dxc/dxcapi.h>
 
+#include <algorithm>
+#include <charconv>
 #include <exception>
 #include <filesystem>
 #include <wrl/client.h>
@@ -17,85 +20,8 @@ namespace ShadersSystem
 {
   namespace
   {
-    gapi::ShaderStage target_profile_to_shader_stage(const TargetProfile target)
-    {
-      switch (target)
-      {
-        case TargetProfile::VS_6_0:
-        case TargetProfile::VS_6_1:
-        case TargetProfile::VS_6_2:
-        case TargetProfile::VS_6_3:
-        case TargetProfile::VS_6_4:
-        case TargetProfile::VS_6_5:
-        case TargetProfile::VS_6_6:
-        case TargetProfile::VS_6_7: return gapi::ShaderStage::Vertex;
-
-        case TargetProfile::PS_6_0:
-        case TargetProfile::PS_6_1:
-        case TargetProfile::PS_6_2:
-        case TargetProfile::PS_6_3:
-        case TargetProfile::PS_6_4:
-        case TargetProfile::PS_6_5:
-        case TargetProfile::PS_6_6:
-        case TargetProfile::PS_6_7: return gapi::ShaderStage::Fragment;
-
-        case TargetProfile::CS_6_0:
-        case TargetProfile::CS_6_1:
-        case TargetProfile::CS_6_2:
-        case TargetProfile::CS_6_3:
-        case TargetProfile::CS_6_4:
-        case TargetProfile::CS_6_5:
-        case TargetProfile::CS_6_6:
-        case TargetProfile::CS_6_7: return gapi::ShaderStage::Compute;
-
-        default:
-        {
-          ASSERT(!"unknown stage");
-          return {};
-        }
-      }
-    }
-    inline const wchar_t* target_profile_to_wtext(const TargetProfile target)
-    {
-      switch(target)
-      {
-        case TargetProfile::VS_6_0: return L"vs_6_0";
-        case TargetProfile::VS_6_1: return L"vs_6_1";
-        case TargetProfile::VS_6_2: return L"vs_6_2";
-        case TargetProfile::VS_6_3: return L"vs_6_3";
-        case TargetProfile::VS_6_4: return L"vs_6_4";
-        case TargetProfile::VS_6_5: return L"vs_6_5";
-        case TargetProfile::VS_6_6: return L"vs_6_6";
-        case TargetProfile::VS_6_7: return L"vs_6_7";
-
-        case TargetProfile::PS_6_0: return L"ps_6_0";
-        case TargetProfile::PS_6_1: return L"ps_6_1";
-        case TargetProfile::PS_6_2: return L"ps_6_2";
-        case TargetProfile::PS_6_3: return L"ps_6_3";
-        case TargetProfile::PS_6_4: return L"ps_6_4";
-        case TargetProfile::PS_6_5: return L"ps_6_5";
-        case TargetProfile::PS_6_6: return L"ps_6_6";
-        case TargetProfile::PS_6_7: return L"ps_6_7";
-
-        case TargetProfile::CS_6_0: return L"cs_6_0";
-        case TargetProfile::CS_6_1: return L"cs_6_1";
-        case TargetProfile::CS_6_2: return L"cs_6_2";
-        case TargetProfile::CS_6_3: return L"cs_6_3";
-        case TargetProfile::CS_6_4: return L"cs_6_4";
-        case TargetProfile::CS_6_5: return L"cs_6_5";
-        case TargetProfile::CS_6_6: return L"cs_6_6";
-        case TargetProfile::CS_6_7: return L"cs_6_7";
-
-        default:
-        {
-          ASSERT(!"stage is not supported");
-          return L"";
-        }
-      }
-    }
-
     ShaderBlob compile_shader_stage(const string& hlsl,
-                                    const TargetProfile target, const gapi::ShaderStage stage,
+                                    const string& target, const gapi::ShaderStage stage,
                                     const string& shaderName,
                                     const string& entryName, const string& currentDir,
                                     const bool debug)
@@ -113,6 +39,7 @@ namespace ShadersSystem
       ComPtr<IDxcIncludeHandler> pIncludeHandler;
       pUtils->CreateDefaultIncludeHandler(&pIncludeHandler);
 
+      const std::wstring wTarget(target.begin(), target.end());
       const std::wstring entry(entryName.begin(), entryName.end());
       const std::wstring dir(currentDir.begin(), currentDir.end());
 
@@ -124,7 +51,7 @@ namespace ShadersSystem
       args.push_back(L"-E");
       args.push_back(entry.c_str());
       args.push_back(L"-T");
-      args.push_back(target_profile_to_wtext(target));
+      args.push_back(wTarget.c_str());
       args.push_back(L"-I");
       args.push_back(dir.c_str());
       args.push_back(L"-Zi");
@@ -203,21 +130,24 @@ namespace ShadersSystem
           if (m_Stages == 0)
             throw std::runtime_error("there are no stages declared");
 
-          const auto graphics = gapi::ShaderStage::Vertex | gapi::ShaderStage::Fragment;
+          const auto graphicsBase = gapi::ShaderStage::Vertex | gapi::ShaderStage::Fragment;
+          const auto geometry = gapi::ShaderStage::Geometry;
+          const auto tesselation = gapi::ShaderStage::TessellationControl | gapi::ShaderStage::TessellationEvaluation;
           const auto compute = gapi::ShaderStage::Compute;
-          const auto all = graphics | compute;
+          const auto all = graphicsBase | compute;
 
-          if ((m_Stages & all) == all)
-            throw std::runtime_error("there are conflicting stages");
-
-          const auto graphicsStages = m_Stages & graphics;
+          const auto tesselationStages = m_Stages & tesselation;
+          const auto allGraphicsStages = m_Stages & (graphicsBase | tesselation | geometry);
           const auto computeStage = m_Stages & compute;
 
-          if (graphicsStages && computeStage)
+          if (allGraphicsStages && computeStage)
             throw std::runtime_error("technique can't have compute and graphics stages in the same time");
+          
+          if (tesselationStages && ((tesselationStages & tesselation) != tesselation))
+            throw std::runtime_error("tesselation stages are not complete. missing HS or DS");
 
-          if (graphicsStages && ((graphicsStages & graphics) != graphics))
-            throw std::runtime_error("graphics stages are not complete");
+          if (allGraphicsStages && ((allGraphicsStages & graphicsBase) != graphicsBase))
+            throw std::runtime_error("graphics stages are not complete. missing VS or PS");
         }
 
         void generateReflections()
@@ -320,10 +250,78 @@ namespace ShadersSystem
           m_Hlsl += string(hlslExp.code);
         }
 
+
+        struct ParsedTargetProfile
+        {
+          string targetProfile;
+          gapi::ShaderStage stage;
+        };
+        auto parseTargetProfile(string_view target) -> ParsedTargetProfile
+        {
+          auto throwErr = [&](const char* txt = ""){ throw std::runtime_error(fmt::format("invalid compilation target {}: {}", target, txt)); };
+          
+          struct StageInfo
+          {
+            string_view stageStr;
+            gapi::ShaderStage stage;
+          };
+
+          auto getShaderStage = [&]() -> StageInfo
+          {
+            if (target.length() < 2 || target[1] != 's')
+              throwErr("invalid profile format");
+
+            string_view stage = target.substr(0, 2);
+            switch(stage[0])
+            {
+              case 'v': return {stage, gapi::ShaderStage::Vertex};
+              case 'p': return {stage, gapi::ShaderStage::Fragment};
+              case 'c': return {stage, gapi::ShaderStage::Compute};
+              case 'h': return {stage, gapi::ShaderStage::TessellationControl};
+              case 'd': return {stage, gapi::ShaderStage::TessellationEvaluation};
+              default: throwErr("unknown shader");
+            }
+            return {};
+          };
+
+          auto toNumOrThrow = [&](string_view v)
+          {
+            int i = 0;
+            auto res = std::from_chars(v.data(), v.data() + v.size(), i);
+            if (res.ec == std::errc::invalid_argument)
+              throwErr("invalid version");
+            return (size_t)i;
+          };
+
+          struct MajorMinor{size_t major; size_t minor;};
+          auto getMajorMinorVersion = [&]() -> MajorMinor
+          {
+            auto shMajorMinor = Utils::split_view(target, '_');
+
+            if (shMajorMinor.size() == 1)
+              return {6, 1};
+            else if (shMajorMinor.size() == 3)
+            {
+              size_t major = toNumOrThrow(shMajorMinor[1]);
+              size_t minor = toNumOrThrow(shMajorMinor[2]);
+              return {major, minor};
+            }
+            else
+              throwErr("invalid format. Valid example: {vs_6_1 or vs}");
+          };
+
+          auto [stageStr, gapiStage] = getShaderStage();
+          auto [major, minor] = getMajorMinorVersion();
+          return {
+            .targetProfile = fmt::format("{}_{}_{}", stageStr, major, minor),
+            .stage = gapiStage,
+          };
+        }
+
         void processCompile(const CompileExp& compileExp)
         {
-          const gapi::ShaderStage stage = target_profile_to_shader_stage(compileExp.targetProfile);
-          const string shaderName = fmt::format("{}_{}", m_TechniqueName, gapi::ShaderStageToText(stage));
+          const auto [targetProfile, stage] = parseTargetProfile(compileExp.targetProfile);
+          const string shaderName = fmt::format("{}_{}", m_TechniqueName, targetProfile);
 
           if (m_Stages & stage)
             throw std::runtime_error(fmt::format("failed to compile technique: `{}`, this stage is already compiled", shaderName));
@@ -337,7 +335,7 @@ namespace ShadersSystem
           {
             const string currentDir = fs::path(m_Compiler.getCurrentFileName()).parent_path().string();
             const bool debug = m_Compiler.getFlags() & COMPILE_DEBUG;
-            ShaderBlob blob = compile_shader_stage(m_Hlsl, compileExp.targetProfile, stage, shaderName, compileExp.entry, currentDir, debug);
+            ShaderBlob blob = compile_shader_stage(m_Hlsl, targetProfile, stage, shaderName, compileExp.entry, currentDir, debug);
             m_Shaders.push_back(std::move(blob));
           }
           catch (std::exception&)

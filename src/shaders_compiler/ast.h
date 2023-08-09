@@ -553,10 +553,10 @@ namespace ShadersSystem
 
   struct CompileExp: public TechniqueExp
   {
-    TargetProfile targetProfile;
+    const char* targetProfile;
     const char* entry;
 
-    CompileExp(const TargetProfile targetProfile, const char* entry)
+    CompileExp(const char* targetProfile, const char* entry)
       : TechniqueExp(TechniqueExp::Type::Compile)
       , targetProfile(targetProfile)
       , entry(entry)
@@ -569,6 +569,11 @@ namespace ShadersSystem
       {
         delete entry;
         entry = nullptr;
+      }
+      if (targetProfile)
+      {
+        delete targetProfile;
+        targetProfile = nullptr;
       }
     }
   };
