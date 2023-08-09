@@ -158,7 +158,8 @@ namespace fg
         if (readRq.timeline == Timeline::Previous)
           continue;
 
-        const node_id_t prevNodeId = m_Registry.m_VirtResources[readRq.vResId].modificationChain.back();
+        const auto& vRes = m_Registry.m_VirtResources[readRq.vResId];
+        const node_id_t prevNodeId = vRes.modificationChain.empty() ? vRes.createdBy : vRes.modificationChain.back();
         nodesTree[(size_t)prevNodeId].followingNodes.insert(nodeId);
 
         const Pins inputPins = nodesTree[(size_t)nodeId].getResourcePin(readRq.vResId, INPUT, &pinReserveId);
