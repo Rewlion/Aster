@@ -31,6 +31,8 @@ namespace ecs
       template<BasedFromEcsEvent T>
       void broadcastEvent(T&& event);
       template<BasedFromEcsEvent T>
+      void broadcastEventSync(T&& event);
+      template<BasedFromEcsEvent T>
       void sendEvent(T&& event, const EntityId eid);
 
       template<BasedFromEcsEvent T>
@@ -89,6 +91,15 @@ namespace ecs
       m_EventsQueue.pushEvent(eastl::forward<T>(event));
     else
       logerror("can't broadcast event `{}`, it is not registered.", event.eventNameHash);
+  }
+
+  template<BasedFromEcsEvent T>
+  void Registry::broadcastEventSync(T&& event)
+  {
+    if (m_EventHandleQueries.find(event.eventNameHash) == m_EventHandleQueries.end())
+      logerror("can't broadcast event `{}`, it is not registered.", event.eventNameHash);
+
+    processBroadcastEvent(&event);
   }
 
   template<BasedFromEcsEvent T>
