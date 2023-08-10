@@ -25,7 +25,9 @@ namespace Engine
 {
   void register_engine_events()
   {
-    ecs::get_registry().registerEvent<ecs::OnEntityCreated>();
+    auto& registry = ecs::get_registry();
+    registry.registerEvent<ecs::OnEntityCreated>();
+    registry.registerEvent<ecs::OnGameTick>();
   }
 
   void init_input()
@@ -80,7 +82,10 @@ namespace Engine
       Window::poll_wnd_messages();
       Input::Manager::processInput();
 
-      ecs::get_registry().tick();
+      auto& ecsRegistry = ecs::get_registry();
+      ecsRegistry.tick();
+      ecsRegistry.broadcastEventSync(ecs::OnGameTick{});
+
       gui::Gui::tick();
 
       imgui::Manager::tick();

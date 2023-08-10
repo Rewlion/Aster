@@ -11,5 +11,11 @@ namespace ecs
     EVENT_CONSTRUCTOR(OnEntityCreated)
     {}
   };
+
+  struct OnGameTick : public Event
+  {
+    EVENT_CONSTRUCTOR(OnGameTick)
+    {}
+  };
 }
 
