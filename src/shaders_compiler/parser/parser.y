@@ -232,6 +232,7 @@
 %token TFX_TOKEN_INT2 "int2"
 %token TFX_TOKEN_INT3 "int3"
 %token TFX_TOKEN_INT4 "int4"
+%token TFX_TOKEN_ROBUFFER "Buffer"
 %token TFX_TOKEN_RWSTRUCTUREDBUFFER "RWStructuredBuffer"
 %token TFX_TOKEN_RWBUFFER "RWBuffer"
 %token TFX_TOKEN_TEXTURE2D "Texture2D"
@@ -851,6 +852,9 @@ RESOURCE_TYPE_WITH_STORAGE
   }
   | "Texture2D" {
     $$ = ResourceType::Texture2D;
+  }
+  | "Buffer" {
+    $$ = ResourceType::Buffer;
   }
   ;
 

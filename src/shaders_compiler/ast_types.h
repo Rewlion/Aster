@@ -14,6 +14,7 @@ namespace ShadersSystem
   {
     None,
     Cbuffer,
+    Buffer,
     Texture2D,
     Texture3D,
     TextureCube,
@@ -29,6 +30,7 @@ namespace ShadersSystem
   {
     switch (type)
     {
+      case ResourceType::Buffer :             return "Buffer";
       case ResourceType::Texture2D :          return "Texture2D";
       case ResourceType::Texture3D :          return "Texture3D";
       case ResourceType::TextureCube :        return "TextureCube";
@@ -45,6 +47,7 @@ namespace ShadersSystem
   {
     switch (type)
     {
+      case ResourceType::Buffer :
       case ResourceType::Texture2D :
       case ResourceType::Texture3D :
       case ResourceType::TextureCube :        return "t";

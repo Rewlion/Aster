@@ -142,6 +142,7 @@ namespace ShadersSystem
         switch (resourceDeclaration.resourceType)
         {
           case ResourceType::Sampler:
+          case ResourceType::Buffer:
           case ResourceType::Texture2D:
           case ResourceType::Texture3D:
           case ResourceType::TextureCube:
@@ -267,6 +268,7 @@ namespace ShadersSystem
               break;
             }
 
+            case ResourceType::Buffer:
             case ResourceType::RWStructuredBuffer:
             case ResourceType::RWBuffer:
             {
@@ -471,6 +473,7 @@ namespace ShadersSystem
               break;
             }
             case ResourceType::Sampler:
+            case ResourceType::Buffer:
             case ResourceType::Texture2D:
             case ResourceType::Texture3D:
             case ResourceType::TextureCube:
