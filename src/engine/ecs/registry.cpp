@@ -286,7 +286,11 @@ namespace ecs
                                      const name_hash_t event,
                                      const QueryComponents& components)
   {
-    const  eastl::vector<archetype_id_t> desiredArchetypes = findDesiredArchetypes(components);
+    const bool isEventWithoutArchetype = components.empty();
+    const eastl::vector<archetype_id_t> desiredArchetypes = findDesiredArchetypes(components);
+
+    if (desiredArchetypes.empty() && !isEventWithoutArchetype)
+      return;
 
     auto it = m_EventHandleQueries.find(event);
     if (it != m_EventHandleQueries.end())
