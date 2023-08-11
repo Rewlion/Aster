@@ -21,7 +21,7 @@ namespace spirv
       {
         case ShadersSystem::ResourceType::Cbuffer: return vk::DescriptorType::eUniformBuffer;
         case ShadersSystem::ResourceType::Sampler: return vk::DescriptorType::eSampler;
-        case ShadersSystem::ResourceType::Buffer: return vk::DescriptorType::eStorageBuffer;
+        case ShadersSystem::ResourceType::Buffer: return vk::DescriptorType::eUniformTexelBuffer;
         case ShadersSystem::ResourceType::Texture2D: return vk::DescriptorType::eSampledImage;
         case ShadersSystem::ResourceType::Texture3D: return vk::DescriptorType::eSampledImage;
         case ShadersSystem::ResourceType::TextureCube: return vk::DescriptorType::eSampledImage;
