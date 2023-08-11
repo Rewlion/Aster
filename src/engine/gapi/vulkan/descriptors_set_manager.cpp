@@ -242,41 +242,40 @@ namespace gapi::vulkan
             }
           },
           [&](const TextureWriteInfo& info){
-            auto type = vk::DescriptorType::eSampledImage;
-            auto storageType = vk::DescriptorType::eStorageImage;
-            if(validateBindingType(info.binding, type))
-            {              
-              imgInfos[iImg].imageView = getImageView(info.texture, info.binding);
-              imgInfos[iImg].imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
-              addWriteInfo(info.binding, type, nullptr, &imgInfos[iImg]);
-              ++iImg;
-            }
-            else if (validateBindingType(info.binding, storageType))
+            auto addWrite = [&](const vk::DescriptorType type, vk::ImageLayout layout)
             {
-              imgInfos[iImg].imageView = getImageView(info.texture, info.binding);
-              imgInfos[iImg].imageLayout = vk::ImageLayout::eGeneral;
-              addWriteInfo(info.binding, storageType, nullptr, &imgInfos[iImg]);
-              ++iImg;
-            }
+              if(validateBindingType(info.binding, type))
+              {
+                imgInfos[iImg].imageView = getImageView(info.texture, info.binding);
+                imgInfos[iImg].imageLayout = layout;
+                addWriteInfo(info.binding, type, nullptr, &imgInfos[iImg]);
+                ++iImg;
+                return true;
+              }
+              return false;
+            };
+
+            if (!addWrite(vk::DescriptorType::eSampledImage, vk::ImageLayout::eShaderReadOnlyOptimal))
+              addWrite(vk::DescriptorType::eStorageImage, vk::ImageLayout::eGeneral);
           },
           [&](const UniformBufferWriteInfo& info){
-            auto type = vk::DescriptorType::eUniformBuffer;
-            auto storageType = vk::DescriptorType::eStorageBuffer;
-            if(validateBindingType(info.binding, type))
+            auto addWrite = [&](const vk::DescriptorType type)
             {
-              bufInfos[iBuf].buffer = info.buffer;
-              bufInfos[iBuf].offset = info.constOffset;
-              bufInfos[iBuf].range = VK_WHOLE_SIZE;
-              addWriteInfo(info.binding, type, &bufInfos[iBuf], nullptr);
-              ++iBuf;
-            } else if(validateBindingType(info.binding, storageType))
-            {
-              bufInfos[iBuf].buffer = info.buffer;
-              bufInfos[iBuf].offset = info.constOffset;
-              bufInfos[iBuf].range = VK_WHOLE_SIZE;
-              addWriteInfo(info.binding, storageType, &bufInfos[iBuf], nullptr);
-              ++iBuf;
-            }
+              if(validateBindingType(info.binding, type))
+              {
+                bufInfos[iBuf].buffer = info.buffer;
+                bufInfos[iBuf].offset = info.constOffset;
+                bufInfos[iBuf].range = VK_WHOLE_SIZE;
+                addWriteInfo(info.binding, type, &bufInfos[iBuf], nullptr);
+                ++iBuf;
+                return true;
+              }
+              return false;
+            };
+
+            if (!addWrite(vk::DescriptorType::eUniformBuffer))
+              //if (!addWrite(vk::DescriptorType::eUniformTexelBuffer)) //requires buffer view  T___T
+                addWrite(vk::DescriptorType::eStorageBuffer);
           },
           [&](const NullInfo&) {}
         }, wrInfo);
