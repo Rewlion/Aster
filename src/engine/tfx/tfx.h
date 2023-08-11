@@ -24,11 +24,12 @@ namespace tfx
     gapi::PrimitiveTopology topology = gapi::PrimitiveTopology::TriangleList;
     gapi::DepthStencilStateDescription depthStencil;
     gapi::BlendState blending;
+    uint32_t tsInputControlPatchCount = 0;
 
     bool operator==(const RenderState& rvl) const
     {
-      return std::tie(topology, ia, depthStencil, blending) ==
-             std::tie(rvl.topology, rvl.ia, rvl.depthStencil, rvl.blending);
+      return std::tie(topology, ia, depthStencil, blending, tsInputControlPatchCount) ==
+             std::tie(rvl.topology, rvl.ia, rvl.depthStencil, rvl.blending, rvl.tsInputControlPatchCount);
     }
   };
 

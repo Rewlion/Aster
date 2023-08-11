@@ -331,6 +331,9 @@ namespace ShadersSystem
                             gapi::PipelineType::Compute :
                             gapi::PipelineType::Graphics;
 
+          if (stage == gapi::ShaderStage::TessellationControl)
+            m_RenderState.tsInputControlPatchCount = 1;
+
           try
           {
             const string currentDir = fs::path(m_Compiler.getCurrentFileName()).parent_path().string();

@@ -107,6 +107,7 @@ namespace tfx
                     VERIFY_CASE(TextureHandle, Texture3D)          ||
                     VERIFY_CASE(TextureHandle, TextureCube)        ||
                     VERIFY_CASE(TextureHandle, RWTexture3D)        ||
+                    VERIFY_CASE(BufferHandler, Buffer)             ||
                     VERIFY_CASE(BufferHandler, RWStructuredBuffer) ||
                     VERIFY_CASE(BufferHandler, RWBuffer)           ||
                     VERIFY_CASE(SamplerHandler, Sampler);
@@ -124,6 +125,7 @@ namespace tfx
                 const auto h = std::get<gapi::SamplerHandler>(resource);
                 return (gapi::ResourceHandler)h;
               }
+              case ShadersSystem::ResourceType::Buffer:
               case ShadersSystem::ResourceType::RWStructuredBuffer:
               case ShadersSystem::ResourceType::RWBuffer:
               {
@@ -159,6 +161,7 @@ namespace tfx
               m_CmdEncoder->bindSampler((gapi::SamplerHandler)h, bc.dset, bc.binding);
               break;
             }
+            case ShadersSystem::ResourceType::Buffer:
             case ShadersSystem::ResourceType::RWStructuredBuffer:
             case ShadersSystem::ResourceType::RWBuffer:
             {
@@ -305,7 +308,8 @@ namespace tfx
           .cullMode = t.renderState.cullMode,
           .topology = t.renderState.topology,
           .depthStencilState = t.renderState.depthStencil,
-          .blendState = t.renderState.blending
+          .blendState = t.renderState.blending,
+          .tsInputControlPatchCount = t.renderState.tsInputControlPatchCount
         };
       }
       else

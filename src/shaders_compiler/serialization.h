@@ -58,7 +58,8 @@ namespace boost::serialization
       & st.cullMode
       & st.topology
       & make_binary_object(&st.depthStencil, sizeof(st.depthStencil))
-      & make_binary_object(&st.blending, sizeof(st.blending));
+      & make_binary_object(&st.blending, sizeof(st.blending))
+      & st.tsInputControlPatchCount;
   }
 
     template<class Archive>

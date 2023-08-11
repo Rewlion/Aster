@@ -93,6 +93,9 @@ namespace gapi::vulkan
     vk::PipelineInputAssemblyStateCreateInfo inputAssemblyCi;
     inputAssemblyCi.topology = get_primitive_topology(description.topology);
 
+    vk::PipelineTessellationStateCreateInfo tessCi;
+    tessCi.patchControlPoints = description.tsInputControlPatchCount;
+
     vk::PipelineViewportStateCreateInfo viewportCi;
     viewportCi.scissorCount = 1;
     viewportCi.viewportCount = 1;
@@ -128,7 +131,7 @@ namespace gapi::vulkan
     ci.pStages = cis.data();
     ci.pVertexInputState = &vertexInputCi;
     ci.pInputAssemblyState = &inputAssemblyCi;
-    ci.pTessellationState = nullptr;
+    ci.pTessellationState = &tessCi;
     ci.pViewportState = &viewportCi;
     ci.pRasterizationState = &rasterizationStateCi;
     ci.pMultisampleState = &multisampleCi;

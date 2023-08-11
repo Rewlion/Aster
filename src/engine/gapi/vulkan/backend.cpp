@@ -223,11 +223,16 @@ namespace gapi::vulkan
     for (const char* enabledExt: deviceExtensions)
       loginfo("  {}", enabledExt);
 
+    vk::PhysicalDeviceFeatures features;
+    features.geometryShader = true;
+    features.tessellationShader = true;
+
     const auto deviceCreateInfo = vk::DeviceCreateInfo()
         .setQueueCreateInfoCount(queueCreateInfos.size())
         .setPQueueCreateInfos(queueCreateInfos.data())
         .setPpEnabledExtensionNames(deviceExtensions.data())
-        .setEnabledExtensionCount(deviceExtensions.size());
+        .setEnabledExtensionCount(deviceExtensions.size())
+        .setPEnabledFeatures(&features);
 
     auto device =  m_PhysicalDevice.createDeviceUnique(deviceCreateInfo);
     VK_CHECK_RES(device);
