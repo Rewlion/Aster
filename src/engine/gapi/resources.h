@@ -163,6 +163,13 @@ namespace gapi
     CW   = 2
   };
 
+  enum class PolygonMode: uint8_t
+  {
+    Fill = 0,
+    Line = 1,
+    Point = 2
+  };
+
   enum class PrimitiveTopology: uint8_t
   {
     PointList                  = 0,
@@ -326,6 +333,7 @@ namespace gapi
     B8G8R8A8_UNORM,
     R8G8B8A8_SNORM,
     R8G8B8A8_UNORM,
+    R16_UNORM,
     R16G16B16A16_SFLOAT,
     R16G16B16A16_SINT,
     R16G16B16A16_SNORM,
@@ -428,7 +436,8 @@ namespace gapi
     BF_STATE_VERTEX           = 1 << 2,
     BF_STATE_TRANSFER_DST     = 1 << 3,
     BF_STATE_UAV_RW           = 1 << 4,
-    BF_STATE_LAST             = BF_STATE_TRANSFER_DST
+    BF_STATE_SRV              = 1 << 5,
+    BF_STATE_LAST
   };
 
   struct RenderPassAttachment
@@ -446,10 +455,10 @@ namespace gapi
     TextureHandle texture    = TextureHandle::Invalid;
     TextureState initialState = TextureState::Undefined;
     TextureState finalState   = TextureState::Undefined;
-    LoadOp depthLoadOp        = LoadOp::DontCare;
-    StoreOp depthStoreOp      = StoreOp::DontCare;
-    LoadOp stencilLoadOp      = LoadOp::DontCare;
-    StoreOp stencilStoreOp    = StoreOp::DontCare;
+    LoadOp depthLoadOp        = LoadOp::Load;
+    StoreOp depthStoreOp      = StoreOp::Store;
+    LoadOp stencilLoadOp      = LoadOp::Load;
+    StoreOp stencilStoreOp    = StoreOp::Store;
 
     bool operator==(const RenderPassDepthStencilAttachment& rvl) const
     {
@@ -551,9 +560,11 @@ namespace gapi
     eastl::vector<ShaderModuleHandler> shaders;
     VertexInputDescription             ia;
     CullMode                           cullMode;
+    PolygonMode                        polygonMode;
     PrimitiveTopology                  topology;
     DepthStencilStateDescription       depthStencilState;
     BlendState                         blendState;
+    uint32_t                           tsInputControlPatchCount;
 
     size_t hash() const;
   };

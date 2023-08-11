@@ -348,6 +348,22 @@ line_strip {
   return TFX_TOKEN_PT_LINE_STRIP;
 }
 
+polygon_mode {
+  return TFX_TOKEN_POLYGON_MODE;
+}
+
+line {
+  return TFX_TOKEN_LINE;
+}
+
+fill {
+  return TFX_TOKEN_FILL;
+}
+
+point {
+  return TFX_TOKEN_POINT;
+}
+
 triangle_list {
   return TFX_TOKEN_PT_TRIANGLE_LIST;
 }

@@ -21,6 +21,7 @@ namespace tfx
   {
     gapi::VertexInputDescription ia;
     gapi::CullMode cullMode = gapi::CullMode::CW;
+    gapi::PolygonMode polygonMode = gapi::PolygonMode::Fill;
     gapi::PrimitiveTopology topology = gapi::PrimitiveTopology::TriangleList;
     gapi::DepthStencilStateDescription depthStencil;
     gapi::BlendState blending;
@@ -28,8 +29,8 @@ namespace tfx
 
     bool operator==(const RenderState& rvl) const
     {
-      return std::tie(topology, ia, depthStencil, blending, tsInputControlPatchCount) ==
-             std::tie(rvl.topology, rvl.ia, rvl.depthStencil, rvl.blending, rvl.tsInputControlPatchCount);
+      return std::tie(polygonMode, topology, ia, depthStencil, blending, tsInputControlPatchCount) ==
+             std::tie(rvl.polygonMode, rvl.topology, rvl.ia, rvl.depthStencil, rvl.blending, rvl.tsInputControlPatchCount);
     }
   };
 

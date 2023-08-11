@@ -1,0 +1,4 @@
+#define TS_EDGE_FACTOR_LEFT  0
+#define TS_EDGE_FACTOR_RIGHT 1
+#define TS_EDGE_FACTOR_TOP   2
+#define TS_EDGE_FACTOR_BOT   3

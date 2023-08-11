@@ -59,6 +59,7 @@
 
   RenderStateExp* renderStateExp;
   gapi::CullMode cullMode;
+  gapi::PolygonMode polygonMode;
   gapi::PrimitiveTopology primitiveTopology;
   gapi::CompareOp compareOp;
   gapi::StencilOp stencilOp;
@@ -110,6 +111,10 @@
 %token TFX_TOKEN_NONE "none"
 %token TFX_TOKEN_CCW "ccw"
 %token TFX_TOKEN_CW "cw"
+%token TFX_TOKEN_POLYGON_MODE "polygon_mode"
+%token TFX_TOKEN_FILL "fill"
+%token TFX_TOKEN_LINE "line"
+%token TFX_TOKEN_POINT "point"
 %token TFX_TOKEN_PRIMITIVE_TOPOLOGY "primitive_topology"
 %token TFX_TOKEN_PT_POINT_LIST "point_list"
 %token TFX_TOKEN_PT_LINE_LIST "line_list"
@@ -197,30 +202,6 @@
 %token TFX_TOKEN_OR_INVERTED "or_inverted"
 %token TFX_TOKEN_NAND "nand"
 %token TFX_TOKEN_SET "set"
-%token TFX_TOKEN_TARGET_VS_6_0 "vs_6_0"
-%token TFX_TOKEN_TARGET_VS_6_1 "vs_6_1"
-%token TFX_TOKEN_TARGET_VS_6_2 "vs_6_2"
-%token TFX_TOKEN_TARGET_VS_6_3 "vs_6_3"
-%token TFX_TOKEN_TARGET_VS_6_4 "vs_6_4"
-%token TFX_TOKEN_TARGET_VS_6_5 "vs_6_5"
-%token TFX_TOKEN_TARGET_VS_6_6 "vs_6_6"
-%token TFX_TOKEN_TARGET_VS_6_7 "vs_6_7"
-%token TFX_TOKEN_TARGET_PS_6_0 "ps_6_0"
-%token TFX_TOKEN_TARGET_PS_6_1 "ps_6_1"
-%token TFX_TOKEN_TARGET_PS_6_2 "ps_6_2"
-%token TFX_TOKEN_TARGET_PS_6_3 "ps_6_3"
-%token TFX_TOKEN_TARGET_PS_6_4 "ps_6_4"
-%token TFX_TOKEN_TARGET_PS_6_5 "ps_6_5"
-%token TFX_TOKEN_TARGET_PS_6_6 "ps_6_6"
-%token TFX_TOKEN_TARGET_PS_6_7 "ps_6_7"
-%token TFX_TOKEN_TARGET_CS_6_0 "cs_6_0"
-%token TFX_TOKEN_TARGET_CS_6_1 "cs_6_1"
-%token TFX_TOKEN_TARGET_CS_6_2 "cs_6_2"
-%token TFX_TOKEN_TARGET_CS_6_3 "cs_6_3"
-%token TFX_TOKEN_TARGET_CS_6_4 "cs_6_4"
-%token TFX_TOKEN_TARGET_CS_6_5 "cs_6_5"
-%token TFX_TOKEN_TARGET_CS_6_6 "cs_6_6"
-%token TFX_TOKEN_TARGET_CS_6_7 "cs_6_7"
 
 %token TFX_TOKEN_FLOAT "float"
 %token TFX_TOKEN_FLOAT2 "float2"
@@ -259,6 +240,7 @@
 %type <attributeType>        ATTRIBUTE_TYPE
 %type <cullMode>             CULL_MODE
 %type <primitiveTopology>    PRIMITIVE_TOPOLOGY
+%type <polygonMode>          POLYGON_MODE
 %type <renderStateExp>       RENDER_STATE_EXP
 %type <renderStateExp>       RENDER_STATE_EXP_LIST
 %type <renderStateExp>       DEPTH_EXP
@@ -355,6 +337,9 @@ RENDER_STATE_EXP
   }
   | "primitive_topology" "=" PRIMITIVE_TOPOLOGY[v] ";"{
     $$ = new PrimitiveTopologyExp($v);
+  }
+  | "polygon_mode" "=" POLYGON_MODE[m] ";" {
+    $$ = new PolygonModeExp($m);
   }
   | "input" ":" INPUT_BUFFER_LIST[buffers] {
     $$ = new InputExp($buffers);
@@ -467,6 +452,18 @@ PRIMITIVE_TOPOLOGY
   }
   | "patch_list" {
     $$ = gapi::PrimitiveTopology::PatchList;
+  }
+  ;
+
+POLYGON_MODE
+  : "fill" {
+    $$ = gapi::PolygonMode::Fill;
+  }
+  | "line" {
+    $$ = gapi::PolygonMode::Line;
+  }
+  | "point" {
+    $$ = gapi::PolygonMode::Point;
   }
   ;
 

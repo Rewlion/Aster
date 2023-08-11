@@ -34,6 +34,11 @@ namespace gapi::vulkan
     return static_cast<vk::PrimitiveTopology>(topology);
   }
 
+  inline vk::PolygonMode get_polygon_mode(const PolygonMode pm)
+  {
+    return static_cast<vk::PolygonMode>(pm);
+  }
+
   inline vk::PipelineDepthStencilStateCreateInfo get_depth_stencil_state(const DepthStencilStateDescription& state)
   {
     vk::StencilOpState stencilOpState;
@@ -219,6 +224,7 @@ namespace gapi::vulkan
       case TextureFormat::B8G8R8A8_UNORM:      return vk::Format::eB8G8R8A8Unorm;
       case TextureFormat::R8G8B8A8_SNORM:      return vk::Format::eR8G8B8A8Snorm;
       case TextureFormat::R8G8B8A8_UNORM:      return vk::Format::eR8G8B8A8Unorm;
+      case TextureFormat::R16_UNORM:           return vk::Format::eR16Unorm;
       case TextureFormat::R16G16B16A16_SFLOAT: return vk::Format::eR16G16B16A16Sfloat;
       case TextureFormat::R16G16B16A16_SINT:   return vk::Format::eR16G16B16A16Sint;
       case TextureFormat::R16G16B16A16_SNORM:  return vk::Format::eR16G16B16A16Snorm;
@@ -263,6 +269,7 @@ namespace gapi::vulkan
       case vk::Format::eB8G8R8A8Srgb:
       case vk::Format::eR8G8B8A8Snorm:
       case vk::Format::eR8G8B8A8Unorm:
+      case vk::Format::eR16Unorm:
       case vk::Format::eR16G16B16A16Sfloat:
       case vk::Format::eR16G16B16A16Sint:
       case vk::Format::eR16G16B16A16Snorm:
@@ -410,6 +417,7 @@ namespace gapi::vulkan
           flags |= vk::PipelineStageFlagBits::eTransfer;
           break;
         }
+        case BF_STATE_SRV:
         case BF_STATE_UAV_RW:
         {
           flags |= vk::PipelineStageFlagBits::eAllGraphics | vk::PipelineStageFlagBits::eComputeShader;
@@ -448,6 +456,11 @@ namespace gapi::vulkan
         case BF_STATE_TRANSFER_DST:
         {
           flags |= vk::AccessFlagBits::eTransferWrite;
+          break;
+        }
+        case BF_STATE_SRV:
+        {
+          flags |= vk::AccessFlagBits::eShaderRead;
           break;
         }
         case BF_STATE_UAV_RW:

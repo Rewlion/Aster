@@ -21,4 +21,10 @@ namespace Utils
   {
     in = (T)(in ^ (1 << bit));
   }
+
+  inline
+  auto is_pow_of_2(const uint n) -> bool
+  {
+    return (n & (n - 1)) == 0;
+  }
 }

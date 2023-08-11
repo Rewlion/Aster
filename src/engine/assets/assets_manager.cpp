@@ -69,18 +69,32 @@ namespace Engine
     return false;
   }
 
+  auto AssetsManager::getTexture(const string& assetUri, TextureAsset& asset) -> bool
+  {
+    return getTexture(str_hash(assetUri), asset);
+  }
+
+  static
+  auto get_texture_asset_format(const DataBlock& asset) -> gapi::TextureFormat
+  {
+    const string format = asset.getText("format");
+    return format == "r16" ? gapi::TextureFormat::R16_UNORM
+                           : gapi::TextureFormat::R8G8B8A8_UNORM;
+  }
+
   void AssetsManager::loadTextureAsset(const DataBlock& asset, gapi::CmdEncoder& encoder)
   {
     const bool isCubeMap = asset.getBool("cubemap", false);
     const string file = asset.getText("bin");
     const string name = asset.getText("name");
+    const gapi::TextureFormat format = get_texture_asset_format(asset);
 
     loginfo("asset manager: loading texture: {} as {}", file, name);
     const string_hash nameHash = str_hash(name.c_str());
 
     TextureAsset textureAsset = isCubeMap ?
-                                  loadCubeMapTexture(file,encoder) :
-                                  loadTexture(file, encoder);
+                                  loadCubeMapTexture(file,encoder, format) :
+                                  loadTexture(file, encoder, format);
 
       m_Textures.insert({
         nameHash,

@@ -209,6 +209,9 @@ namespace ecs
   #define DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT(type) \
           DECLARE_ECS_COMPONENT(type, #type, ecs::NonTrivialTypeManager<type>, false, true)
 
+  #define DECLARE_INITABLE_ECS_OBJECT_COMPONENT(type) \
+          DECLARE_ECS_COMPONENT(type, #type, (ecs::NonTrivialTypeManager<type, ecs::INITABLE_TYPE>), false, true)
+
   class TypeMetaStorage
   {
     public:

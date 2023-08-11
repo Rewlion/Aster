@@ -56,6 +56,7 @@ namespace boost::serialization
   {
     a & st.ia
       & st.cullMode
+      & st.polygonMode
       & st.topology
       & make_binary_object(&st.depthStencil, sizeof(st.depthStencil))
       & make_binary_object(&st.blending, sizeof(st.blending))

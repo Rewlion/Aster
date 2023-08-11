@@ -32,6 +32,7 @@ add_ecs_library(
   engine_world_render
   FILES
     "${CMAKE_SOURCE_DIR}/src/engine/render/gui_render.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/terrain_render.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/world_render.cpp"
 
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/opaque.cpp"
@@ -40,6 +41,7 @@ add_ecs_library(
   ECS_FILES
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/frame_preparing.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes_ecs/atmosphere.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes_ecs/virtual_terrain.ecs.cpp"
 )
 
 set(FONT_SRC

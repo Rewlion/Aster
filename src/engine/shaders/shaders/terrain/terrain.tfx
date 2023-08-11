@@ -1,0 +1,210 @@
+#include "../frame.inc.tfx"
+#include "../materials.inc.tfx"
+
+scope TerrainScope
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0-1);
+    register(texture, 0-1);
+
+  RWStructuredBuffer<float4> terrainPatches = extern(terrainPatches);
+
+  Texture2D terrainHeightmap = channel(terrainHeightmap);
+  Texture2D terrainAlbedo = channel(terrainAlbedo);
+  float worldMapSize = channel(worldMapSize);
+  float2 terrainMinMaxHeightBorder = channel(terrainMinMaxHeightBorder);
+  float terrainMaxHeight = channel(terrainMaxHeight);
+};
+
+technique Terrain
+{
+  support scope FrameScope;
+  activate scope TerrainScope;
+
+  render_state:
+    polygon_mode = line;
+    primitive_topology = patch_list;
+
+  USE_MATERIALS_PACKING();
+
+  #hlsl
+  #include "edge_factor.hlsli"
+
+  struct HsInput
+  {
+    uint vertexId: TEXCOORD0;
+  };
+
+  HsInput vs_main(uint vertexId: SV_VertexID)
+  {
+    HsInput output;
+    output.vertexId = vertexId;
+
+    return output;
+  }
+
+  struct HsPatchData
+  {
+    float edges[4] : SV_TessFactor;
+    float inside[2] : SV_InsideTessFactor;
+  };
+
+  #define TessFactor 16.0
+
+  void getPatchParams(uint vertexId, out float2 world_xz, out float size, out uint edge_factor)
+  {
+    float4 params = terrainPatches.Load(vertexId);
+    world_xz = params.xy;
+    size = params.z;
+    edge_factor = (uint)params.w;
+  }
+
+  HsPatchData hs_constant_func(InputPatch<HsInput, 1> input)
+  {
+    float2 worldXZ;
+    float size;
+    uint edgeFactor;
+    getPatchParams(input[0].vertexId, worldXZ, size, edgeFactor);
+
+    uint leftEdge =  (edgeFactor >> TS_EDGE_FACTOR_LEFT) & 0x1;
+    uint rightEdge = (edgeFactor >> TS_EDGE_FACTOR_RIGHT) & 0x1;
+    uint topEdge =   (edgeFactor >> TS_EDGE_FACTOR_TOP) & 0x1;
+    uint botEdge =   (edgeFactor >> TS_EDGE_FACTOR_BOT) & 0x1;
+
+    HsPatchData o;
+    o.edges[0] = lerp(TessFactor, TessFactor/2, leftEdge);
+    o.edges[1] = lerp(TessFactor, TessFactor/2, topEdge);
+    o.edges[2] = lerp(TessFactor, TessFactor/2, rightEdge);
+    o.edges[3] = lerp(TessFactor, TessFactor/2, botEdge);
+    o.inside[0] = TessFactor;
+    o.inside[1] = TessFactor;
+
+    return o;
+  }
+
+  struct HsControlPoint
+  {
+    float4 pos : POSITION0;
+  };
+
+  float2 getHeightUV(float2 world_xz)
+  {
+    // Z               ---------> U
+    // ^               |
+    // |               |
+    // |               v
+    // |_________X     V
+    //
+    float hfSize = TerrainScope.worldMapSize * 0.5;
+    float2 uv = ((float2(world_xz.x, -world_xz.y) / hfSize) + 1.0) * 0.5;
+    return uv;
+  }
+
+  float getHeight(float2 uv)
+  {
+    float h = terrainHeightmap.SampleLevel(linearClampSampler, uv, 0).r;
+    
+    float minH = TerrainScope.terrainMinMaxHeightBorder.x;
+    float maxH = TerrainScope.terrainMinMaxHeightBorder.y;
+    h = (h - minH) / (maxH - minH) * TerrainScope.terrainMaxHeight;
+
+    return h;
+  }
+
+  float getHeightFromXZ(float2 world_xz)
+  {
+    return getHeight(getHeightUV(world_xz));
+  }
+
+  [domain("quad")]
+  [partitioning("integer")]
+  [outputtopology("triangle_ccw")]
+  [outputcontrolpoints(4)]
+  [patchconstantfunc("hs_constant_func")]
+  HsControlPoint hs_main(InputPatch<HsInput, 1> input, uint cpId: SV_OutputControlPointID)
+  {
+    float2 worldXZ;
+    float size;
+    uint edgeFactor;
+    getPatchParams(input[0].vertexId, worldXZ, size, edgeFactor);
+
+    // [1]------[2]
+    //  |        |
+    // [0]------[3]
+    float2 offsets[4] = {
+      float2(0.0, -1.0), 
+      float2(0.0, 0.0),
+      float2(1.0, 0.0),
+      float2(1.0, -1.0)
+    };
+
+    float2 cpWorldXZ = worldXZ + offsets[cpId] * size;
+
+    HsControlPoint o;
+    o.pos = float4(cpWorldXZ.x, 0.0, cpWorldXZ.y, 1.0);
+
+    return o;
+  }
+
+  struct VsOutput
+  {
+    float4 pos : SV_Position;
+    float3 normal : TEXTURE0;
+    float2 uv : TEXTURE1;
+    float4 prevPos : TEXTURE2;
+    float4 curPos : TEXTURE3;
+  };
+
+  float3 getPatchNormal(float2 uv)
+  {
+    float px = 1.0 / TerrainScope.worldMapSize;
+
+    float T = getHeight(uv + px * float2( 0,-1));
+    float B = getHeight(uv + px * float2( 0, 1));
+    float R = getHeight(uv + px * float2( 1, 0));
+    float L = getHeight(uv + px * float2(-1, 0));
+
+    return normalize(float3((R-L), 1.0, B-T));
+  }
+
+  [domain("quad")]
+  VsOutput ds_main(HsPatchData patch_data, const OutputPatch<HsControlPoint, 4> cpoints, float2 uv : SV_DomainLocation)
+  {
+    float4 bot = lerp(cpoints[0].pos, cpoints[3].pos, uv.x);
+    float4 top = lerp(cpoints[1].pos, cpoints[2].pos, uv.x);
+    float4 p = lerp(bot,top,uv.y);
+
+    float2 heightUV = getHeightUV(p.xz);
+    p.y = getHeight(heightUV);
+
+    VsOutput o;
+    o.pos = mul(FrameScope.viewProj, p);
+    o.normal = getPatchNormal(heightUV);
+    o.uv = heightUV;
+    o.prevPos = mul(FrameScope.prevViewProj, p);
+    o.curPos = o.pos;
+    return o;
+  }
+
+  PackedMaterial ps_main(VsOutput input)
+  {
+    UnpackedMaterial m = (UnpackedMaterial)0;
+
+    float3 albedoFallback = terrainAlbedo.Sample(linearClampSampler, input.uv).rgb;
+
+    initAlbedo(m, albedoFallback);
+    initMetal(m, 0);
+    initRoughness(m, 0.5);
+    initNormal(m, input.normal);
+    initMotionVector(m, input.prevPos, input.curPos);
+
+    return packMaterial(m);
+  }
+  #end
+
+  compile(vs, vs_main);
+  compile(hs, hs_main);
+  compile(ds, ds_main);
+  compile(ps, ps_main);
+};

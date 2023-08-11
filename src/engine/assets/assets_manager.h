@@ -51,12 +51,13 @@ namespace Engine
       ModelAsset* getModel(const string& assetName);
 
       bool getTexture(const string_hash assetUri, TextureAsset& asset);
+      auto getTexture(const string& assetUri, TextureAsset& asset) -> bool;
 
     private:
       void loadAssetsFromFs();
       StaticMesh loadGltf(const string& file, gapi::CmdEncoder& encoder);
-      TextureAsset loadTexture(const string& file, gapi::CmdEncoder& encoder);
-      TextureAsset loadCubeMapTexture(const string& file, gapi::CmdEncoder& encoder);
+      TextureAsset loadTexture(const string& file, gapi::CmdEncoder& encoder, const gapi::TextureFormat);
+      TextureAsset loadCubeMapTexture(const string& file, gapi::CmdEncoder& encoder, const gapi::TextureFormat);
       void loadTextureAsset(const DataBlock& asset, gapi::CmdEncoder& encoder);
       void loadStaticMesh(const DataBlock& asset, gapi::CmdEncoder& encoder);
       void loadModelAsset(const DataBlock& asset);

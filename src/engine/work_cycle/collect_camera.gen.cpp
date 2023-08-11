@@ -38,3 +38,26 @@ void query_camera (eastl::function<
     cb(pos,forward,camera_fov,camera_zNear,camera_zFar);
   });
 }
+
+
+const static DirectQueryRegistration query_camera_pos_queryReg{
+  {
+    DESCRIBE_QUERY_COMPONENT("pos", float3),
+    DESCRIBE_QUERY_COMPONENT("camera_fov", float)
+  },
+  "query_camera_pos"};
+const static query_id_t query_camera_pos_queryId = query_camera_pos_queryReg.getId();
+
+
+void query_camera_pos (eastl::function<
+  void(
+    const float3& pos,
+    const float& camera_fov)> cb)
+{
+  ecs::get_registry().query(query_camera_pos_queryId, [&](ComponentsAccessor& accessor)
+  {
+    const float3& pos = accessor.get<float3>(compile_ecs_name_hash("pos"));
+    const float& camera_fov = accessor.get<float>(compile_ecs_name_hash("camera_fov"));
+    cb(pos,camera_fov);
+  });
+}

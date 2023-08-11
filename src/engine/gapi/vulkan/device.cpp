@@ -223,7 +223,10 @@ namespace gapi::vulkan
     const size_t id = (size_t)buffer;
     ASSERT(m_AllocatedBuffers.contains(id));
 
+    Buffer b = std::move(m_AllocatedBuffers.get(id));
     m_AllocatedBuffers.remove(id);
+
+    m_FrameGc->addBuffer(std::move(b));
   }
 
   void* Device::mapBuffer(const BufferHandler buffer, const size_t offset, const size_t size, const int flags)

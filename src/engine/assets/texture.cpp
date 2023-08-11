@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-  TextureAsset AssetsManager::loadTexture(const string& file, gapi::CmdEncoder& encoder)
+  TextureAsset AssetsManager::loadTexture(const string& file, gapi::CmdEncoder& encoder, const gapi::TextureFormat format)
   {
     ktxTexture* texture;
 
@@ -26,7 +26,7 @@ namespace Engine
     TextureAsset asset;
     asset.texture = allocate_texture(
       gapi::TextureAllocationDescription{
-        .format = gapi::TextureFormat::R8G8B8A8_UNORM,
+        .format = format,
         .extent = int3{texture->baseWidth, texture->baseHeight, 1},
         .mipLevels = 1,
         .arrayLayers = 1,
@@ -44,7 +44,7 @@ namespace Engine
     return asset;
   }
 
-  TextureAsset AssetsManager::loadCubeMapTexture(const string& file, gapi::CmdEncoder& encoder)
+  TextureAsset AssetsManager::loadCubeMapTexture(const string& file, gapi::CmdEncoder& encoder, const gapi::TextureFormat format)
   {
     ktxTexture* texture;
 
@@ -66,7 +66,7 @@ namespace Engine
     TextureAsset asset;
     asset.texture = allocate_texture(
       gapi::TextureAllocationDescription{
-        .format = gapi::TextureFormat::R8G8B8A8_UNORM,
+        .format = format,
         .extent = int3{texture->baseWidth, texture->baseHeight, 1},
         .mipLevels = 1,
         .arrayLayers = 6,

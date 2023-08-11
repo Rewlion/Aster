@@ -4,62 +4,62 @@ scene
 {
   object
   {
-    float3 pos = 0.0 , 2.0 , 15.0
+    float3 pos = 0.0 , 602.0 , 15.0
     text model = "cube"
   }
 
   object
   {
-    float3 pos = 0.0 , 0.0 , 5.0
+    float3 pos = 0.0 , 600.0 , 5.0
     float3 rot = 90.0, 180.0, 0.0
     text model = "damaged_helmet"
   }
 
   object
   {
-    float3 pos = 5.0 , 0.0 , 5.0
+    float3 pos = 5.0 , 600.0 , 5.0
     float3 rot = 90.0, 180.0, 0.0
     text model = "damaged_helmet"
   }
 
   object
   {
-    float3 pos = 5.0 , 5.0 , 5.0
+    float3 pos = 5.0 , 605.0 , 5.0
     float3 rot = 90.0, 180.0, 0.0
     text model = "damaged_helmet"
   }
   
   object
   {
-    float3 pos = 5.0 , 0.0 , 0.0
+    float3 pos = 5.0 , 600.0 , 0.0
     float3 rot = 90.0, 180.0, 0.0
     text model = "damaged_helmet"
   }
 
   object
   {
-    float3 pos = 0.0 , 0.0 , -5.0
+    float3 pos = 0.0 , 600.0 , -5.0
     float3 rot = 90.0, 180.0, 0.0
     text model = "damaged_helmet"
   }
 
   object
   {
-    float3 pos = -5.0 , 0.0 , -5.0
+    float3 pos = -5.0 , 600.0 , -5.0
     float3 rot = 90.0, 180.0, 0.0
     text model = "damaged_helmet"
   }
 
   object
   {
-    float3 pos = -5.0 , -5.0 , -5.0
+    float3 pos = -5.0 , 595.0 , -5.0
     float3 rot = 90.0, 180.0, 0.0
     text model = "damaged_helmet"
   }
   
   object
   {
-    float3 pos = -5.0 , 0.0 , 0.0
+    float3 pos = -5.0 , 600.0 , 0.0
     float3 rot = 90.0, 180.0, 0.0
     text model = "damaged_helmet"
   }
@@ -86,10 +86,10 @@ entity @("template3")
 
 entity @("camera")
 {
-  float3 pos = 0.0, 0.0, 0.0
+  float3 pos = 0.0, 600.0, 0.0
   float camera_fov = 60.0
   float camera_zNear = 0.1
-  float camera_zFar = 100.0
+  float camera_zFar = 30000.0
   float2 camera_rotations = 0.0, 0.0
   float3 forward = 0.0, 0.0, 1.0
 }
@@ -102,4 +102,14 @@ entity @("Sun")
 {
   float sun_altitude = 20
   float sun_azimuth = 180
+}
+
+entity @("VirtualTerrain")
+{
+  text vterrain_name = "test_level"
+  float2 vterrain_heightmapMinMaxBorder = 0.28, 0.42
+  float vterrain_heightmapMaxHeight = 140
+
+  int vterrain_worldSize_meters = 2048
+  int vterrain_patchSideBits = 5
 }

@@ -16,9 +16,25 @@ static void query_camera(eastl::function<void(
   const float& camera_zNear,
   const float& camera_zFar)> cb);
 
+ECS_QUERY()
+static void query_camera_pos(eastl::function<void(
+  const float3& pos,
+  const float& camera_fov)> cb);
+
 namespace Engine
 {
-  CameraData get_camera(const float aspect, const float3 jitter)
+  auto get_camera_pos() -> float3
+  {
+    float3 pos;
+    query_camera_pos([&pos](auto _pos, auto unused)
+    {
+      pos = _pos;
+    });
+
+    return pos;
+  }
+
+  auto get_camera(const float aspect, const float3 jitter) -> CameraData
   {
     float3 pos;
     float3 forward;

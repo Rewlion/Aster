@@ -60,6 +60,7 @@ namespace gapi
     hash_combine(hash, topology);
     hash_combine(hash, depthStencilState.hash());
     hash_combine(hash, blendState.hash());
+    hash_combine(hash, tsInputControlPatchCount);
 
     return hash;
   }

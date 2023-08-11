@@ -146,6 +146,7 @@ namespace ShadersSystem
     enum class StateType
     {
       CullMode,
+      PolygonMode,
       PrimitiveTopology,
       DepthTest,
       DepthWrite,
@@ -264,6 +265,17 @@ namespace ShadersSystem
     CullModeExp(const gapi::CullMode cm)
       : RenderStateExp(RenderStateExp::StateType::CullMode)
       , cm(cm)
+    {
+    }
+  };
+
+  struct PolygonModeExp: public RenderStateExp
+  {
+    gapi::PolygonMode pm;
+
+    PolygonModeExp(const gapi::PolygonMode pm)
+      : RenderStateExp(RenderStateExp::StateType::PolygonMode)
+      , pm(pm)
     {
     }
   };
