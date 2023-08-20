@@ -299,9 +299,9 @@ namespace gapi::vulkan
     }
   }
 
-  void CmdEncoder::bindTexture(const TextureHandle texture, const size_t set, const size_t binding)
+  void CmdEncoder::bindTexture(const TextureHandle texture, const size_t set, const size_t binding, const size_t mip)
   {
-    m_DsetManager.setImage(texture, set, binding);
+    m_DsetManager.setImage(texture, set, binding, mip);
   }
 
   void CmdEncoder::bindSampler(const SamplerHandler h, const size_t set, const size_t binding)

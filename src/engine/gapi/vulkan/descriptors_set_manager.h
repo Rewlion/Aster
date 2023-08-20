@@ -50,6 +50,7 @@ namespace gapi::vulkan
       TextureHandle texture;
       size_t set;
       size_t binding;
+      size_t mip;
     };
   
     struct UniformBufferWriteInfo
@@ -74,7 +75,7 @@ namespace gapi::vulkan
 
         void setPipelineLayout(const vk::DescriptorSetLayout, const spirv::v2::DescriptorSet*, const bool acc_toggled = false);
 
-        void setTexture(const TextureHandle, const size_t binding);
+        void setTexture(const TextureHandle, const size_t binding, const size_t mip);
         void setSampler(const vk::Sampler, const size_t binding);
         void setUniformBuffer(const vk::Buffer, const size_t binding, const size_t constOffset);
 
@@ -92,7 +93,7 @@ namespace gapi::vulkan
         auto isCompatible(const spirv::v2::DescriptorSet*) const -> bool;
         auto getBindingId(const size_t binding) const -> int;
         auto validateBindingType(const size_t binding, const vk::DescriptorType) const -> bool;
-        auto getImageView(const TextureHandle, const size_t binding) const -> vk::ImageView;
+        auto getImageView(const TextureHandle, const size_t binding, const size_t mip) const -> vk::ImageView;
 
       private:
         Device& m_Device;
@@ -119,7 +120,7 @@ namespace gapi::vulkan
 
       void setPipelineLayout(const PipelineLayout* layout, const vk::PipelineBindPoint);
 
-      void setImage(TextureHandle, const size_t set, const size_t binding);
+      void setImage(TextureHandle, const size_t set, const size_t binding, const size_t mip);
       void setSampler(const vk::Sampler sampler, const size_t set, const size_t binding);
       void setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding, const size_t constOffset);
 

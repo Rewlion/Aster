@@ -125,13 +125,15 @@ namespace gapi::vulkan
   }
 
   void DescriptorsSetManager::SetManager::setTexture(const TextureHandle tex,
-                                                     const size_t binding)
+                                                     const size_t binding,
+                                                     const size_t mip)
   {
     fitWriteInfos(binding);
     m_WriteInfos[binding] = TextureWriteInfo{
       .texture = tex,
       .set = m_SetId,
-      .binding = binding
+      .binding = binding,
+      .mip = mip
     };
     m_Dirty = true;
   }
@@ -170,7 +172,9 @@ namespace gapi::vulkan
 
   extern auto get_resource_stub(ShadersSystem::ResourceType type) -> TextureHandle;
 
-  auto DescriptorsSetManager::SetManager::getImageView(const TextureHandle handle, const size_t binding) const -> vk::ImageView
+  auto DescriptorsSetManager::SetManager::getImageView(const TextureHandle handle,
+                                                       const size_t binding,
+                                                       const size_t mip) const -> vk::ImageView
   {
     const ShadersSystem::ResourceType expectedResourceType = (*m_Bindings)[binding].resourceType;
     if (handle != TextureHandle::Invalid)
@@ -178,7 +182,7 @@ namespace gapi::vulkan
       const vk::ImageViewType viewType = m_Device.getImageViewType(handle);
       const vk::ImageViewType expectedViewType = shaders_resource_to_img_view_type(expectedResourceType);
       if (viewType == expectedViewType)
-        return m_Device.getImageView(handle, true);
+        return m_Device.getImageView(handle, true, mip);
     }
 
     return m_Device.getImageView(get_resource_stub(expectedResourceType), true);
@@ -246,7 +250,7 @@ namespace gapi::vulkan
             {
               if(validateBindingType(info.binding, type))
               {
-                imgInfos[iImg].imageView = getImageView(info.texture, info.binding);
+                imgInfos[iImg].imageView = getImageView(info.texture, info.binding, info.mip);
                 imgInfos[iImg].imageLayout = layout;
                 addWriteInfo(info.binding, type, nullptr, &imgInfos[iImg]);
                 ++iImg;
@@ -311,10 +315,10 @@ namespace gapi::vulkan
   {
   }
 
-  void DescriptorsSetManager::setImage(TextureHandle tex, const size_t set, const size_t binding)
+  void DescriptorsSetManager::setImage(TextureHandle tex, const size_t set, const size_t binding, const size_t mip)
   {
     fitSetManagers(set);
-    m_SetManagers[set].setTexture(tex, binding);
+    m_SetManagers[set].setTexture(tex, binding, mip);
   }
 
   void DescriptorsSetManager::setSampler(const vk::Sampler sampler, const size_t set, const size_t binding)

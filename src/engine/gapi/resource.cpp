@@ -156,7 +156,7 @@ namespace gapi
       default:
       {
         ASSERT(!"unsupported type");
-        return 0;
+        return "";
       }
     }
   }
