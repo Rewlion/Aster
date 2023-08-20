@@ -9,11 +9,17 @@ namespace gapi
 
 namespace tfx
 {
+  struct Texture
+  {
+    gapi::TextureHandle h;
+    uint8_t mip = 0;
+  };
+
   typedef std::variant<
       int,int2,int3,int4,
       float,float2,float3,float4,
       float4x4,
-      gapi::TextureHandle,
+      gapi::TextureHandle, Texture,
       gapi::BufferHandler,
       gapi::SamplerHandler> Param;
 

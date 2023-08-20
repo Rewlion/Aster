@@ -98,9 +98,18 @@ namespace tfx
           };
         }
 
-        gapi::ResourceHandler getResource(const ShadersSystem::ShBindResource& bc)
+        void processByteCode(const ShadersSystem::ShBindResource& bc)
         {
-          const auto isValidType = [](const auto& res, const ShadersSystem::ResourceType type) {
+          const auto unwrapGapiHandle = [](const auto& p) -> Param
+          {
+            if (const Texture* tex = std::get_if<Texture>(&p))
+              return {tex->h};
+
+            return p;
+          };
+
+          const auto isValidType = [unwrapGapiHandle](const auto& wrapped_res, const ShadersSystem::ResourceType type) {
+            const auto res = unwrapGapiHandle(wrapped_res);
             #define VERIFY_CASE(handleType, resourceType) std::holds_alternative<gapi::handleType>(res) && (type == ShadersSystem::ResourceType::resourceType)
 
             return  VERIFY_CASE(TextureHandle, Texture2D)          ||
@@ -116,48 +125,13 @@ namespace tfx
           };
 
           const auto& [resource, resourceExist] = getParam(bc.accessType, bc.resourceName);
-          if (resourceExist && isValidType(resource, bc.type))
-          {
-            switch (bc.type)
-            {
-              case ShadersSystem::ResourceType::Sampler:
-              {
-                const auto h = std::get<gapi::SamplerHandler>(resource);
-                return (gapi::ResourceHandler)h;
-              }
-              case ShadersSystem::ResourceType::Buffer:
-              case ShadersSystem::ResourceType::RWStructuredBuffer:
-              case ShadersSystem::ResourceType::RWBuffer:
-              {
-                const auto h = std::get<gapi::BufferHandler>(resource);
-                return (gapi::ResourceHandler)h;
-              }
-              case ShadersSystem::ResourceType::Texture2D:
-              case ShadersSystem::ResourceType::Texture3D:
-              case ShadersSystem::ResourceType::TextureCube:
-              case ShadersSystem::ResourceType::RWTexture3D:
-              {
-                const auto h = std::get<gapi::TextureHandle>(resource);
-                return (gapi::ResourceHandler)h;
-              }
-              default:
-              {
-                ASSERT(!"unsupported");
-                break;
-              }
-            }
-          }
+          const auto resourceValid = resourceExist && isValidType(resource, bc.type);
 
-          return gapi::INVALID_RESOURCE_HANDLER;
-        }
-
-        void processByteCode(const ShadersSystem::ShBindResource& bc)
-        {
-          gapi::ResourceHandler h = getResource(bc);
           switch (bc.type)
           {
             case ShadersSystem::ResourceType::Sampler:
             {
+              const auto h = resourceValid ? std::get<gapi::SamplerHandler>(resource) : gapi::SamplerHandler::Invalid;
               m_CmdEncoder->bindSampler((gapi::SamplerHandler)h, bc.dset, bc.binding);
               break;
             }
@@ -165,7 +139,8 @@ namespace tfx
             case ShadersSystem::ResourceType::RWStructuredBuffer:
             case ShadersSystem::ResourceType::RWBuffer:
             {
-              m_CmdEncoder->bindBuffer((gapi::BufferHandler)h, bc.dset, bc.binding);
+              const auto h = resourceValid ? std::get<gapi::BufferHandler>(resource) : gapi::BufferHandler::Invalid;
+              m_CmdEncoder->bindBuffer(h, bc.dset, bc.binding);
               break;
             }
             case ShadersSystem::ResourceType::Texture2D:
@@ -173,7 +148,21 @@ namespace tfx
             case ShadersSystem::ResourceType::TextureCube:
             case ShadersSystem::ResourceType::RWTexture3D:
             {
-              m_CmdEncoder->bindTexture((gapi::TextureHandle)h, bc.dset, bc.binding);
+              gapi::TextureHandle h = gapi::TextureHandle::Invalid;
+              size_t mip = 0;
+
+              if (resourceValid)
+              {
+                if (const Texture* tex = std::get_if<Texture>(&resource))
+                {
+                  h = tex->h;
+                  mip = tex->mip;
+                }
+                else
+                  h = std::get<gapi::TextureHandle>(resource);
+              }
+
+              m_CmdEncoder->bindTexture(h, bc.dset, bc.binding, mip);
               break;
             }
             default:
