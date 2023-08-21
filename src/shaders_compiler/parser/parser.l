@@ -248,6 +248,22 @@ float4x4 {
   return TFX_TOKEN_FLOAT4X4;
 }
 
+uint {
+  return TFX_TOKEN_UINT;
+}
+
+uint2 {
+  return TFX_TOKEN_UINT2;
+}
+
+uint3 {
+  return TFX_TOKEN_UINT3;
+}
+
+uint4 {
+  return TFX_TOKEN_UINT4;
+}
+
 int {
   return TFX_TOKEN_INT;
 }

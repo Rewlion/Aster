@@ -116,15 +116,19 @@ namespace gapi
     {
       case AttributeType::Float4_u8:
       case AttributeType::Float:
+      case AttributeType::UInt:
       case AttributeType::Int:
         return 4;
       case AttributeType::Float2:
+      case AttributeType::UInt2:
       case AttributeType::Int2:
         return 8;
       case AttributeType::Float3:
+      case AttributeType::UInt3:
       case AttributeType::Int3:
         return 12;
       case AttributeType::Float4:
+      case AttributeType::UInt4:
       case AttributeType::Int4:
         return 16;
       case AttributeType::Float4x4:
@@ -143,13 +147,17 @@ namespace gapi
     switch (type)
     {
       case AttributeType::Float:        return "float";
+      case AttributeType::UInt:          return "uint";
       case AttributeType::Int:          return "int";
       case AttributeType::Float2:       return "float2";
+      case AttributeType::UInt2:         return "uint2";
       case AttributeType::Int2:         return "int2";
       case AttributeType::Float3:       return "float3";
+      case AttributeType::UInt3:         return "uint3";
       case AttributeType::Int3:         return "int3";
       case AttributeType::Float4:       return "float4";
       case AttributeType::Float4_u8:    return "float4";
+      case AttributeType::UInt4:         return "uint4";
       case AttributeType::Int4:         return "int4";
       case AttributeType::Float4x4:     return "float4x4";
 

@@ -205,18 +205,22 @@ extern int shdebug;
     TFX_TOKEN_FLOAT4 = 390,        /* "float4"  */
     TFX_TOKEN_FLOAT4_u8 = 391,     /* "float4_u8"  */
     TFX_TOKEN_FLOAT4X4 = 392,      /* "float4x4"  */
-    TFX_TOKEN_INT = 393,           /* "int"  */
-    TFX_TOKEN_INT2 = 394,          /* "int2"  */
-    TFX_TOKEN_INT3 = 395,          /* "int3"  */
-    TFX_TOKEN_INT4 = 396,          /* "int4"  */
-    TFX_TOKEN_ROBUFFER = 397,      /* "Buffer"  */
-    TFX_TOKEN_RWSTRUCTUREDBUFFER = 398, /* "RWStructuredBuffer"  */
-    TFX_TOKEN_RWBUFFER = 399,      /* "RWBuffer"  */
-    TFX_TOKEN_TEXTURE2D = 400,     /* "Texture2D"  */
-    TFX_TOKEN_TEXTURE3D = 401,     /* "Texture3D"  */
-    TFX_TOKEN_TEXTURE_CUBE = 402,  /* "TextureCube"  */
-    TFX_TOKEN_RWTEXTURE3D = 403,   /* "RWTexture3D"  */
-    TFX_TOKEN_RWTEXTURE2D = 404    /* "RWTexture2D"  */
+    TFX_TOKEN_UINT = 393,          /* "uint"  */
+    TFX_TOKEN_UINT2 = 394,         /* "uint2"  */
+    TFX_TOKEN_UINT3 = 395,         /* "uint3"  */
+    TFX_TOKEN_UINT4 = 396,         /* "uint4"  */
+    TFX_TOKEN_INT = 397,           /* "int"  */
+    TFX_TOKEN_INT2 = 398,          /* "int2"  */
+    TFX_TOKEN_INT3 = 399,          /* "int3"  */
+    TFX_TOKEN_INT4 = 400,          /* "int4"  */
+    TFX_TOKEN_ROBUFFER = 401,      /* "Buffer"  */
+    TFX_TOKEN_RWSTRUCTUREDBUFFER = 402, /* "RWStructuredBuffer"  */
+    TFX_TOKEN_RWBUFFER = 403,      /* "RWBuffer"  */
+    TFX_TOKEN_TEXTURE2D = 404,     /* "Texture2D"  */
+    TFX_TOKEN_TEXTURE3D = 405,     /* "Texture3D"  */
+    TFX_TOKEN_TEXTURE_CUBE = 406,  /* "TextureCube"  */
+    TFX_TOKEN_RWTEXTURE3D = 407,   /* "RWTexture3D"  */
+    TFX_TOKEN_RWTEXTURE2D = 408    /* "RWTexture2D"  */
   };
   typedef enum shtokentype shtoken_kind_t;
 #endif
@@ -264,7 +268,7 @@ union SHSTYPE
 
   TechniqueExp* techniqueExp;
 
-#line 268 "src/shaders_compiler/parser/parser.tab.hpp"
+#line 272 "src/shaders_compiler/parser/parser.tab.hpp"
 
 };
 typedef union SHSTYPE SHSTYPE;

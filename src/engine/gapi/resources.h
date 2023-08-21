@@ -520,6 +520,7 @@ namespace gapi
     None,
     Float, Float2, Float3, Float4, Float4_u8,
     Float4x4,
+    UInt, UInt2, UInt3, UInt4,
     Int, Int2, Int3, Int4,
   };
 

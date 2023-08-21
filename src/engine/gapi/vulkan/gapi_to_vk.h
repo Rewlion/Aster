@@ -562,6 +562,10 @@ namespace gapi::vulkan
        case gapi::AttributeType::Float3:      return vk::Format::eR32G32B32Sfloat;
        case gapi::AttributeType::Float4:      return vk::Format::eR32G32B32A32Sfloat;
        case gapi::AttributeType::Float4_u8:   return vk::Format::eR8G8B8A8Unorm;
+       case gapi::AttributeType::UInt:         return vk::Format::eR32Uint;
+       case gapi::AttributeType::UInt2:        return vk::Format::eR32G32Uint;
+       case gapi::AttributeType::UInt3:        return vk::Format::eR32G32B32Uint;
+       case gapi::AttributeType::UInt4:        return vk::Format::eR32G32B32A32Uint;
        case gapi::AttributeType::Int:         return vk::Format::eR32Sint;
        case gapi::AttributeType::Int2:        return vk::Format::eR32G32Sint;
        case gapi::AttributeType::Int3:        return vk::Format::eR32G32B32Sint;

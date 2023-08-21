@@ -328,6 +328,10 @@ namespace ShadersSystem
       {
         switch (type)
         {
+          case gapi::AttributeType::UInt:
+          case gapi::AttributeType::UInt2:
+          case gapi::AttributeType::UInt3:
+          case gapi::AttributeType::UInt4:
           case gapi::AttributeType::Int:
           case gapi::AttributeType::Int2:
           case gapi::AttributeType::Int3:
@@ -350,15 +354,19 @@ namespace ShadersSystem
       {
         switch (type)
         {
+          case gapi::AttributeType::UInt:
           case gapi::AttributeType::Int:
           case gapi::AttributeType::Float: return 3;
 
+          case gapi::AttributeType::UInt2:
           case gapi::AttributeType::Int2:
           case gapi::AttributeType::Float2: return 2;
 
+          case gapi::AttributeType::UInt3:
           case gapi::AttributeType::Int3:
           case gapi::AttributeType::Float3: return 1;
 
+          case gapi::AttributeType::UInt4:
           case gapi::AttributeType::Int4:
           case gapi::AttributeType::Float4x4:
           case gapi::AttributeType::Float4: return 0;
@@ -408,15 +416,19 @@ namespace ShadersSystem
                                 { return fmt::format("int{} {}{};", size, "__pad", i); };
         switch (type)
         {
+          case gapi::AttributeType::UInt:
           case gapi::AttributeType::Int:
           case gapi::AttributeType::Float: return getPadName(3);
 
+          case gapi::AttributeType::UInt2:
           case gapi::AttributeType::Int2:
           case gapi::AttributeType::Float2: return getPadName(2);
 
+          case gapi::AttributeType::UInt3:
           case gapi::AttributeType::Int3:
           case gapi::AttributeType::Float3: return getPadName(1);
 
+          case gapi::AttributeType::UInt4:
           case gapi::AttributeType::Int4:
           case gapi::AttributeType::Float4x4:
           case gapi::AttributeType::Float4: return "";

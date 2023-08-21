@@ -209,6 +209,10 @@
 %token TFX_TOKEN_FLOAT4 "float4"
 %token TFX_TOKEN_FLOAT4_u8 "float4_u8"
 %token TFX_TOKEN_FLOAT4X4 "float4x4"
+%token TFX_TOKEN_UINT  "uint"
+%token TFX_TOKEN_UINT2 "uint2"
+%token TFX_TOKEN_UINT3 "uint3"
+%token TFX_TOKEN_UINT4 "uint4"
 %token TFX_TOKEN_INT "int"
 %token TFX_TOKEN_INT2 "int2"
 %token TFX_TOKEN_INT3 "int3"
@@ -860,7 +864,19 @@ RESOURCE_TYPE_WITH_STORAGE
   ;
 
 ATTRIBUTE_TYPE
-  : TFX_TOKEN_INT {
+  : TFX_TOKEN_UINT {
+    $$ = gapi::AttributeType::UInt;
+  }
+  | TFX_TOKEN_UINT2 {
+    $$ = gapi::AttributeType::UInt2;
+  }
+  | TFX_TOKEN_UINT3 {
+    $$ = gapi::AttributeType::UInt3;
+  }
+  | TFX_TOKEN_UINT4 {
+    $$ = gapi::AttributeType::UInt4;
+  }
+  | TFX_TOKEN_INT {
     $$ = gapi::AttributeType::Int;
   }
   | TFX_TOKEN_INT2 {
