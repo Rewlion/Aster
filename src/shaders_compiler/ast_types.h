@@ -20,6 +20,7 @@ namespace ShadersSystem
     TextureCube,
     RWStructuredBuffer,
     RWBuffer,
+    RWTexture2D,
     RWTexture3D,
     CbufferVar,
     Sampler
@@ -36,6 +37,7 @@ namespace ShadersSystem
       case ResourceType::TextureCube :        return "TextureCube";
       case ResourceType::RWStructuredBuffer : return "RWStructuredBuffer";
       case ResourceType::RWBuffer :           return "RWBuffer";
+      case ResourceType::RWTexture2D :        return "RWTexture2D";
       case ResourceType::RWTexture3D :        return "RWTexture3D";
       case ResourceType::Sampler :            return "sampler";
       default: ASSERT_FMT_RETURN(false, "", "unsupported {}", (int)type);
@@ -53,6 +55,7 @@ namespace ShadersSystem
       case ResourceType::TextureCube :        return "t";
       case ResourceType::RWStructuredBuffer :
       case ResourceType::RWBuffer :
+      case ResourceType::RWTexture2D :
       case ResourceType::RWTexture3D :        return "u";
       case ResourceType::Sampler :            return "s";
       default: ASSERT_FMT_RETURN(false, "", "unsupported {}", (int)type);

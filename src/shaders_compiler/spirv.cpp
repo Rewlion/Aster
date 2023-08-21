@@ -27,6 +27,7 @@ namespace spirv
         case ShadersSystem::ResourceType::TextureCube: return vk::DescriptorType::eSampledImage;
         case ShadersSystem::ResourceType::RWStructuredBuffer: return vk::DescriptorType::eStorageBuffer;
         case ShadersSystem::ResourceType::RWBuffer: return vk::DescriptorType::eStorageTexelBuffer;
+        case ShadersSystem::ResourceType::RWTexture2D: return vk::DescriptorType::eStorageImage;
         case ShadersSystem::ResourceType::RWTexture3D: return vk::DescriptorType::eStorageImage;
         default:
         {

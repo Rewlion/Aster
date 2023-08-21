@@ -115,6 +115,7 @@ namespace tfx
             return  VERIFY_CASE(TextureHandle, Texture2D)          ||
                     VERIFY_CASE(TextureHandle, Texture3D)          ||
                     VERIFY_CASE(TextureHandle, TextureCube)        ||
+                    VERIFY_CASE(TextureHandle, RWTexture2D)        ||
                     VERIFY_CASE(TextureHandle, RWTexture3D)        ||
                     VERIFY_CASE(BufferHandler, Buffer)             ||
                     VERIFY_CASE(BufferHandler, RWStructuredBuffer) ||
@@ -146,6 +147,7 @@ namespace tfx
             case ShadersSystem::ResourceType::Texture2D:
             case ShadersSystem::ResourceType::Texture3D:
             case ShadersSystem::ResourceType::TextureCube:
+            case ShadersSystem::ResourceType::RWTexture2D:
             case ShadersSystem::ResourceType::RWTexture3D:
             {
               gapi::TextureHandle h = gapi::TextureHandle::Invalid;

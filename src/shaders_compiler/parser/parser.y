@@ -220,6 +220,7 @@
 %token TFX_TOKEN_TEXTURE3D "Texture3D"
 %token TFX_TOKEN_TEXTURE_CUBE "TextureCube"
 %token TFX_TOKEN_RWTEXTURE3D "RWTexture3D"
+%token TFX_TOKEN_RWTEXTURE2D "RWTexture2D"
 
 %type <techniqueExp>         TECHNIQUE_EXP
 %type <techniqueExp>         TECHNIQUE_EXP_LIST
@@ -840,6 +841,9 @@ RESOURCE_TYPE
 RESOURCE_TYPE_WITH_STORAGE
   : "RWTexture3D" {
     $$ = ResourceType::RWTexture3D;
+  }
+  | "RWTexture2D" {
+    $$ = ResourceType::RWTexture2D;
   }
   | "RWBuffer" {
     $$ = ResourceType::RWBuffer;

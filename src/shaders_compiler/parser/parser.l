@@ -288,6 +288,10 @@ TextureCube {
   return TFX_TOKEN_TEXTURE_CUBE;
 }
 
+RWTexture2D {
+  return TFX_TOKEN_RWTEXTURE2D;
+}
+
 RWTexture3D {
   return TFX_TOKEN_RWTEXTURE3D;
 }

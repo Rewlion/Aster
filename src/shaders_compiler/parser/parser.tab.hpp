@@ -215,7 +215,8 @@ extern int shdebug;
     TFX_TOKEN_TEXTURE2D = 400,     /* "Texture2D"  */
     TFX_TOKEN_TEXTURE3D = 401,     /* "Texture3D"  */
     TFX_TOKEN_TEXTURE_CUBE = 402,  /* "TextureCube"  */
-    TFX_TOKEN_RWTEXTURE3D = 403    /* "RWTexture3D"  */
+    TFX_TOKEN_RWTEXTURE3D = 403,   /* "RWTexture3D"  */
+    TFX_TOKEN_RWTEXTURE2D = 404    /* "RWTexture2D"  */
   };
   typedef enum shtokentype shtoken_kind_t;
 #endif
@@ -263,7 +264,7 @@ union SHSTYPE
 
   TechniqueExp* techniqueExp;
 
-#line 267 "src/shaders_compiler/parser/parser.tab.hpp"
+#line 268 "src/shaders_compiler/parser/parser.tab.hpp"
 
 };
 typedef union SHSTYPE SHSTYPE;
