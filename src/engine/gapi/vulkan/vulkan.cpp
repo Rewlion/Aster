@@ -16,7 +16,7 @@ namespace gapi
   extern void                  (*gapi_wait_gpu_idle)();
   extern void                  (*gapi_shutdown)();
   extern TextureHandle         (*gapi_get_backbuffer)();
-  extern BufferHandler         (*gapi_allocate_buffer)(const size_t size, const int usage);
+  extern BufferHandler         (*gapi_allocate_buffer)(const size_t size, const int usage, const char* name);
   extern void                  (*gapi_free_buffer)(const BufferHandler buffer);
   extern void                  (*gapi_free_texture)(const TextureHandle texture);
   extern void                  (*gapi_free_sampler)(const SamplerHandler sampler);
@@ -44,7 +44,7 @@ namespace gapi::vulkan
 
   void wait_gpu_idle()
   {
-    loginfo("vulkan: wait gpu idle");
+    //loginfo("vulkan: wait gpu idle");
     VK_CHECK(device->getDevice().waitIdle());
   }
 
@@ -64,9 +64,9 @@ namespace gapi::vulkan
     return device->getBackbuffer();
   }
 
-  BufferHandler allocate_buffer(const size_t size, const int usage)
+  BufferHandler allocate_buffer(const size_t size, const int usage, const char* name)
   {
-    return device->allocateBuffer(size, usage);
+    return device->allocateBuffer(size, usage, name);
   }
 
   void free_buffer(const BufferHandler buffer)

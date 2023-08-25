@@ -1,0 +1,48 @@
+#include "tile.inc.tfx"
+
+scope VTexIndirectionUpdateScope
+{
+  reserve:
+    descriptor_set(1);
+    register(texture, 0);
+    register(buffer, 0-1);
+
+  RWStructuredBuffer<uint4> updateBuffer = extern(vtexUpdateBuffer);
+  RWTexture2D<uint> indirectionTex = extern(vtexIndirectionTex);
+  uint updateCount = extern(vtexUpdateCount);
+};
+
+technique VTexIndirectionUpdate
+{
+  support scope VTexIndirectionUpdateScope;
+
+  USE_VTEX_UNPACK();
+
+  #hlsl
+  [numthreads(64,1,1)]
+  void main_cs(uint3 id: SV_DispatchThreadID)
+  {
+    if (id.x < VTexIndirectionUpdateScope.updateCount)
+    {
+      uint2 vtile_ptile = updateBuffer[id.x].rg;
+      uint2 vtile_xy = unpack_tile(vtile_ptile.x).xy;
+
+      indirectionTex[vtile_xy] = vtile_ptile.y;
+    }
+  }
+  #end
+
+  compile(cs, main_cs);
+};
+
+// scope VTexPageTableUpdateScope
+// {
+//   reserve:
+//     descriptor_set(1);
+//     register(buffer, 0);
+// };
+
+// technique VTexPageTableUpdate
+// {
+
+// };

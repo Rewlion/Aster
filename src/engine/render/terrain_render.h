@@ -1,5 +1,7 @@
 #pragma once
 
+#include <engine/render/virtual_texture/virtual_texture.h>
+
 #include <engine/types.h>
 #include <engine/gapi/resource_wrappers.h>
 
@@ -16,18 +18,27 @@ namespace Engine::Render
                     const int patch_side_bits,
                     const int world_size_meters,
                     const float2 vterrain_heightmap_min_max_border,
-                    const float vterrain_heightmap_max_height);
+                    const float vterrain_heightmap_max_height,
+                    const string& vterrain_detail);
 
       TerrainRender(TerrainRender&&) = default;
       TerrainRender& operator=(TerrainRender&&) = default;
 
       void setView(const float3 view_pos);
       void updateGpuData(gapi::CmdEncoder&);
-      void render(gapi::CmdEncoder&);
+      void render(gapi::CmdEncoder&, const gapi::TextureHandle feedback_buf, const int2 feedback_size);
+      void updateVTex(gapi::CmdEncoder&, const gapi::TextureHandle feedback_buf, const int2 feedback_size);
+
+    private:
+      auto copyFeedbackFromGpu(gapi::CmdEncoder& encoder,
+                               const gapi::TextureHandle feedback_buf,
+                               const size_t feedback_size) -> gapi::BufferWrapper;
+      auto analyzeFeedback(eastl::span<VTile> unprocessed_feedback) const -> eastl::vector<VTile>;
 
     private:
       string m_TerrainAlbedo;
       string m_TerrainHeightmap;
+      string m_TerrainDetailAlbedo;
 
       int m_PatchSideBits;
       int m_PatchSideSize;
@@ -42,5 +53,9 @@ namespace Engine::Render
       };
       eastl::vector<Patch> m_CulledPatches;
       gapi::BufferWrapper m_PatchesBufInfo;
+
+      VirtualTexture m_VirtualTexture;
+      gapi::BufferWrapper m_Feedback;
+      std::unique_ptr<gapi::Fence> m_FeedbackFence;
   };
 }

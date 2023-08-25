@@ -1,12 +1,15 @@
 #include "terrain_render.h"
 
 #include <engine/assets/assets_manager.h>
+#include <engine/debug_marks.h>
 #include <engine/ecs/type_meta.h>
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/tfx/tfx.h>
 
 #include <engine/shaders/shaders/terrain/edge_factor.hlsli>
 
+#include <EASTL/span.h>
+#include <EASTL/vector_set.h>
 
 //todo: cull by frustum
 
@@ -21,9 +24,11 @@ namespace Engine::Render
                                const int patch_side_bits,
                                const int world_size_meters,
                                const float2 vterrain_heightmap_min_max_border,
-                               const float vterrain_heightmap_max_height)
+                               const float vterrain_heightmap_max_height,
+                               const string& vterrain_detail)
     : m_TerrainAlbedo(vterrain_name + ".albedo")
     , m_TerrainHeightmap(vterrain_name + ".heightmap")
+    , m_TerrainDetailAlbedo(vterrain_detail + ".albedo")
     , m_PatchSideBits(patch_side_bits)
     , m_PatchSideSize(1<<patch_side_bits)
     , m_WorldSizeMeters(world_size_meters)
@@ -31,6 +36,10 @@ namespace Engine::Render
     , m_MinMaxHeightBorder(vterrain_heightmap_min_max_border)
     , m_MaxHeight(vterrain_heightmap_max_height)
   {
+    std::unique_ptr<gapi::CmdEncoder> encoder{gapi::allocate_cmd_encoder()};
+    const float texelSizeM = 0.01; 
+    m_VirtualTexture.init(*encoder, world_size_meters, texelSizeM);
+    encoder->flush();
   }
 
   void TerrainRender::setView(const float3 view_pos)
@@ -154,7 +163,7 @@ namespace Engine::Render
   void TerrainRender::updateGpuData(gapi::CmdEncoder& encoder)
   {
     const size_t patchesBufSize = m_CulledPatches.size() * sizeof(m_CulledPatches[0]);
-    gapi::BufferHandler patchesBuf = gapi::allocate_buffer(patchesBufSize, gapi::BF_GpuVisible | gapi::BF_BindUAV);
+    gapi::BufferHandler patchesBuf = gapi::allocate_buffer(patchesBufSize, gapi::BF_GpuVisible | gapi::BF_BindUAV, "patchesBuf");
     m_PatchesBufInfo = gapi::BufferWrapper{patchesBuf};
 
     encoder.writeBuffer(m_PatchesBufInfo, m_CulledPatches.data(), 0, patchesBufSize);
@@ -163,21 +172,101 @@ namespace Engine::Render
     tfx::set_extern("terrainPatches", (gapi::BufferHandler)m_PatchesBufInfo);
   }
 
-  void TerrainRender::render(gapi::CmdEncoder& encoder)
+  void TerrainRender::render(gapi::CmdEncoder& encoder, const gapi::TextureHandle feedback_buf, const int2 feedback_size)
   {
+    GAPI_MARK("terrain render", encoder);
+
+    tfx::set_extern("terrainFeedbackBuf", feedback_buf);
+    tfx::set_extern("terrainFeedbackSize", (float2)feedback_size);
+    tfx::set_extern("terrainVTexSideSize", (float)m_VirtualTexture.getSideSize());
+    tfx::set_extern("terrainVTexTileSize", (float)VirtualTexture::getTileSize());
+    tfx::set_extern("terrainVTexMaxMip", (uint)m_VirtualTexture.getMaxMip());
+    tfx::set_extern("terrainTileCache", m_VirtualTexture.getPhysTilesCache());
+
     Engine::TextureAsset asset;
     Engine::assets_manager.getTexture(m_TerrainHeightmap, asset);
     tfx::set_channel("terrainHeightmap", asset.texture);
     Engine::assets_manager.getTexture(m_TerrainAlbedo, asset);
     tfx::set_channel("terrainAlbedo", asset.texture);
 
-    tfx::set_channel("worldMapSize", (float)m_WorldSizeMeters);
+    tfx::set_channel("worldMapSize", (float)(m_WorldSizeMeters));
     tfx::set_channel("terrainMinMaxHeightBorder", m_MinMaxHeightBorder);
     tfx::set_channel("terrainMaxHeight", m_MaxHeight);
 
     tfx::activate_technique("Terrain", encoder);
     encoder.updateResources();
     encoder.draw(m_CulledPatches.size(), 1, 0, 0);
+  }
+
+  auto TerrainRender::copyFeedbackFromGpu(gapi::CmdEncoder& encoder,
+                                          const gapi::TextureHandle feedback_buf,
+                                          const size_t feedback_size) -> gapi::BufferWrapper
+  {
+    if (m_Feedback.valid())
+    {
+      //m_FeedbackFence->wait();
+      gapi::wait_gpu_idle();
+      return std::move(m_Feedback);
+    }
+
+    m_Feedback = gapi::allocate_buffer(feedback_size, gapi::BF_CpuVisible, "feedbackDst");
+    encoder.copyTextureToBuffer(feedback_buf, m_Feedback);
+
+    return {};
+    //m_FeedbackFence.reset(gapi::allocate_fence());
+  }
+
+  auto TerrainRender::analyzeFeedback(eastl::span<VTile> unprocessed_feedback) const -> eastl::vector<VTile>
+  {
+    eastl::vector_set<uint32_t> fbSet;
+    eastl::vector<VTile> feedback;
+
+    for (VTile t: unprocessed_feedback)
+    {
+      if ((t.r == (uint32_t)~0) || (fbSet.find(t.r) != fbSet.end()))
+        continue;
+
+      fbSet.insert(t.r);
+      feedback.push_back(t);
+
+      //todo histogram
+    }
+
+    return feedback;
+  }
+
+  void TerrainRender::updateVTex(gapi::CmdEncoder& encoder,
+                                 const gapi::TextureHandle feedback_buf,
+                                 const int2 feedback_size)
+  {
+    GAPI_MARK("Terrain update vtex", encoder);
+
+    const size_t bufSize = feedback_size.x * feedback_size.y * sizeof(VTile);
+    gapi::BufferWrapper feedback = copyFeedbackFromGpu(encoder, feedback_buf, bufSize);
+    if (!feedback.valid())
+      return;
+
+    VTile* pfeedbackTiles = reinterpret_cast<VTile*>(gapi::map_buffer(feedback, 0, bufSize, 0));
+    eastl::vector<VTile> feedbackTiles = analyzeFeedback({pfeedbackTiles, bufSize / sizeof(VTile)});
+    gapi::unmap_buffer(feedback);
+
+    if (feedbackTiles.empty())
+      return;
+
+    const auto tileRender = [this](gapi::CmdEncoder& encoder){
+      Engine::TextureAsset asset;
+      Engine::assets_manager.getTexture(m_TerrainDetailAlbedo, asset);
+
+      tfx::set_channel("terrainDetailAlbedo", asset.texture);
+      tfx::set_channel("terrainDetailSize", (float)VirtualTexture::getTileSize());
+      tfx::set_channel("terrainSize", (float)m_WorldSizeMeters);
+      tfx::activate_scope("TerrainTileScope", encoder);
+      tfx::activate_technique("TerrainTile", encoder);
+      encoder.updateResources();
+      encoder.draw(4, 1, 0, 0);
+    };
+
+    m_VirtualTexture.update(encoder, feedbackTiles, tileRender);
   }
 
   DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT(TerrainRender);

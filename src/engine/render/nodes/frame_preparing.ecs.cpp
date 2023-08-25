@@ -57,8 +57,15 @@ namespace Engine::Render
         .addressModeV = gapi::SamplerAddressMode::ClampToEdge,
         .addressModeW = gapi::SamplerAddressMode::ClampToEdge,
       });
+      auto pointClampSampler = reg.createSampler("point_clamp_sampler", {
+        .magFilter = gapi::ImageFilter::Nearest,
+        .minFilter = gapi::ImageFilter::Nearest,
+        .addressModeU = gapi::SamplerAddressMode::ClampToEdge,
+        .addressModeV = gapi::SamplerAddressMode::ClampToEdge,
+        .addressModeW = gapi::SamplerAddressMode::ClampToEdge,
+      });
 
-      return [linearClampSampler, cubicClampSampler, modelSampler, cameraData, wndSize](gapi::CmdEncoder& encoder)
+      return [linearClampSampler, cubicClampSampler, pointClampSampler, modelSampler, cameraData, wndSize](gapi::CmdEncoder& encoder)
       {
         wndSize.get() = get_render_size();
 
@@ -116,6 +123,7 @@ namespace Engine::Render
         tfx::set_extern("sec_since_start", Time::get_sec_since_start());
 
         tfx::set_extern("model_sampler", modelSampler.get());
+        tfx::set_extern("point_clamp_sampler", pointClampSampler.get());
         tfx::set_extern("linear_clamp_sampler", linearClampSampler.get());
         tfx::set_extern("cubic_clamp_sampler", cubicClampSampler.get());
 

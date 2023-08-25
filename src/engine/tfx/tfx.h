@@ -12,10 +12,11 @@ namespace tfx
   struct Texture
   {
     gapi::TextureHandle h;
-    uint8_t mip = 0;
+    size_t mip = 0;
   };
 
   typedef std::variant<
+      uint,uint2,uint3,uint4,
       int,int2,int3,int4,
       float,float2,float3,float4,
       float4x4,

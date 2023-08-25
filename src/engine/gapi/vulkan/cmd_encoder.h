@@ -24,7 +24,8 @@ namespace gapi::vulkan
   struct GraphicsPipelineState
   {
     GraphicsPipelineDescription description;
-    vk::Extent2D viewport;
+    vk::Viewport viewport;
+    //vk::Extent2D viewport;
     vk::Rect2D scissor;
   };
 
@@ -44,6 +45,10 @@ namespace gapi::vulkan
       void setScissor(const Scissor) override;
 
       auto getScissor() -> Scissor override;
+
+      void setViewport(const Viewport&) override;
+
+      auto getViewport() -> Viewport const override;
 
       void draw(const uint32_t vertexCount, const uint32_t instanceCount,
                         const uint32_t firstVertex, const uint32_t firstInstance) override;
@@ -80,6 +85,8 @@ namespace gapi::vulkan
 
       void writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags) override;
 
+      void copyTextureToBuffer(const TextureHandle src, const BufferHandler dst) override;
+
       void copyBufferToTexture(const TextureHandle texture, const void* src, const size_t size) override;
 
       void copyBufferToTexture(const void* buffer_src, const size_t buffer_size,
@@ -97,6 +104,10 @@ namespace gapi::vulkan
       void dispatch(const uint32_t group_count_x, const uint32_t group_count_y, const uint32_t group_count_z) override;
 
       auto getRenderSize() const -> float2 override { return m_RenderSize; };
+
+      void clearColorTexture(const TextureHandle, const TextureState current_state, const TextureState final_state,
+                             const ClearColorValue&, const TextureSubresourceRange&) override;
+
     private:
       vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) const;
       vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil);

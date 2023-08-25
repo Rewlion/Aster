@@ -64,7 +64,7 @@ namespace Engine
       return true;
     }
 
-    ASSERT(!"asset not found");
+    ASSERT_FMT(false, "asset {} not found", assetUri);
 
     return false;
   }

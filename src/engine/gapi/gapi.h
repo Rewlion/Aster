@@ -11,7 +11,7 @@ namespace gapi
   void                     shutdown();
   TextureHandle            get_backbuffer();
   DepthStencilStateHandler create_depth_stencil_state(const DepthStencilStateDescription& desc);
-  BufferHandler            allocate_buffer(const size_t size, const int usage);
+  BufferHandler            allocate_buffer(const size_t size, const int usage, const char* name = "");
   void*                    map_buffer(const BufferHandler buffer, const size_t offset, const size_t size, const int flags);
   void                     unmap_buffer(const BufferHandler buffer);
   TextureHandle            allocate_texture(const TextureAllocationDescription& allocDesc);

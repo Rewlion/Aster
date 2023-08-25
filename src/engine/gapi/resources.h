@@ -5,6 +5,7 @@
 
 #include <variant>
 #include <EASTL/vector.h>
+#include <array>
 
 namespace gapi
 {
@@ -333,6 +334,7 @@ namespace gapi
     B8G8R8A8_UNORM,
     R8G8B8A8_SNORM,
     R8G8B8A8_UNORM,
+    R8G8B8A8_UINT,
     R16_UNORM,
     R16G16B16A16_SFLOAT,
     R16G16B16A16_SINT,
@@ -340,6 +342,7 @@ namespace gapi
     R16G16B16A16_UINT,
     R16G16B16A16_UNORM,
     R32G32B32A32_S,
+    R32_UINT,
     D24_UNORM_S8_UINT,
   };
 
@@ -397,16 +400,18 @@ namespace gapi
   {
     size_t      size = 0;
     BufferUsage usage;
+    const char* name = nullptr;
   };
 
   struct TextureAllocationDescription
   {
     TextureFormat  format = TextureFormat::R8G8B8A8_UNORM;
     uint3          extent = {0,0,0};
-    uint32_t       mipLevels = 0;
-    uint32_t       arrayLayers = 0;
+    uint32_t       mipLevels = 1;
+    uint32_t       arrayLayers = 1;
     TextureSamples samplesPerPixel = TextureSamples::s1;
     int            usage = TEX_USAGE_NONE;
+    const char*    name = nullptr;
   };
 
   enum class TextureState: uint32_t
@@ -495,6 +500,15 @@ namespace gapi
     uint32_t layerCount = 0;
   };
 
+  struct TextureSubresourceRange
+  {
+    uint32_t aspects = ASPECT_COLOR;
+    uint32_t baseMipLevel = 0;
+    uint32_t levelCount = ~0;
+    uint32_t baseArrayLayer = 0;
+    uint32_t layerCount = 1;
+  };
+
   struct TextureBlit
   {
     TextureSubresourceLayers srcSubresource;
@@ -566,6 +580,7 @@ namespace gapi
     DepthStencilStateDescription       depthStencilState;
     BlendState                         blendState;
     uint32_t                           tsInputControlPatchCount;
+    string                             name;
 
     size_t hash() const;
   };
@@ -574,8 +589,17 @@ namespace gapi
   {
     PipelineLayoutHandler layout;
     ShaderModuleHandler   shader;
+    string                name;
 
     size_t hash() const;
+  };
+
+  struct Viewport
+  {
+    float2 pos;
+    float2 size;
+    float  minDepth = 0.0;
+    float  maxDepth = 1.0;
   };
 
   struct Scissor
@@ -589,5 +613,25 @@ namespace gapi
     virtual ~Fence(){}
     virtual void wait() = 0;
     virtual void reset() = 0;
+  };
+
+  union ClearColorValue
+  {
+    std::array<float, 4>    float32;
+    std::array<int32_t, 4>  int32;
+    std::array<uint32_t, 4> uint32;
+
+    ClearColorValue(const float v)
+    {
+      float32 = {v,v,v,v};
+    }
+    ClearColorValue(const int32_t v)
+    {
+      int32 = {v,v,v,v};
+    }
+    ClearColorValue(const uint32_t v)
+    {
+      uint32 = {v,v,v,v};
+    }
   };
 }

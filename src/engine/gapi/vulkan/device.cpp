@@ -122,8 +122,8 @@ namespace gapi::vulkan
       ASSERT(m_AllocatedTextures.contains(h.as.typed.id));
       auto& tex = m_AllocatedTextures.get(h.as.typed.id);
       
-      if (srv)
-        return is_depth_format(tex.format) ? tex.depthView.get() : tex.srvView.get();
+      if (srv && is_depth_format(tex.format))
+        return tex.depthView.get();
 
       return tex.viewsPerMip[mip].get();
     }
@@ -207,9 +207,10 @@ namespace gapi::vulkan
     m_SemaphoresToWaitBeforePresent.clear();
   }
 
-  BufferHandler Device::allocateBuffer(const size_t size, const int usage)
+  BufferHandler Device::allocateBuffer(const size_t size, const int usage, const char* name)
   {
     Buffer buffer = allocateBufferInternal(size, usage);
+    setDbgUtilsObjName(name, (uint64_t)(VkBuffer)*buffer.buffer, vk::ObjectType::eBuffer);
 
     size_t id = (size_t)(~0);
     const bool allocated = m_AllocatedBuffers.add(std::move(buffer), id);
@@ -437,6 +438,8 @@ namespace gapi::vulkan
     resource.img = std::move(img.value);
     resource.format = ci.format;
 
+    setDbgUtilsObjName(allocDesc.name, (uint64_t)(VkImage)*resource.img, vk::ObjectType::eImage);
+
     const vk::MemoryRequirements memRec = m_Device->getImageMemoryRequirements(resource.img.get());
 
     vk::MemoryAllocateInfo allocInfo;
@@ -476,6 +479,12 @@ namespace gapi::vulkan
       auto res = m_Device->createImageViewUnique(viewCi);
       VK_CHECK_RES(res);
       imgViewsPerMip[i] = std::move(res.value);
+
+      if (allocDesc.name)
+      {
+        string viewName = fmt::format("{}_mip_view_{}", allocDesc.name, i);
+        setDbgUtilsObjName(viewName.c_str(), (uint64_t)(VkImageView)*imgViewsPerMip[i], vk::ObjectType::eImageView);
+      }
     }
     viewCi.subresourceRange.baseMipLevel = 0;
     viewCi.subresourceRange.levelCount = VK_REMAINING_ARRAY_LAYERS;
@@ -487,6 +496,12 @@ namespace gapi::vulkan
       auto depthView = m_Device->createImageViewUnique(viewCi);
       VK_CHECK_RES(depthView);
       resource.depthView = std::move(depthView.value);
+
+      if (allocDesc.name)
+      {
+        string viewName = fmt::format("{}_depth_view", allocDesc.name);
+        setDbgUtilsObjName(viewName.c_str(), (uint64_t)(VkImageView)*resource.depthView, vk::ObjectType::eImageView);
+      }
     }
     resource.viewType = viewCi.viewType;
 
@@ -608,5 +623,18 @@ namespace gapi::vulkan
     f->fence = std::move(fence.value);
     VK_CHECK(m_Device->resetFences(1, &f->fence.get()));
     return f;
+  }
+
+  void Device::setDbgUtilsObjName(const char* name, const uint64_t obj, const vk::ObjectType type)
+  {
+    if (checkCapability(CapabilitiesBits::DebugMarks) && name)
+    {
+      vk::DebugUtilsObjectNameInfoEXT nI;
+      nI.objectHandle = (uint64_t)obj;
+      nI.pObjectName = name;
+      nI.objectType = type;
+
+      VK_CHECK(m_Device->setDebugUtilsObjectNameEXT(&nI));
+    }
   }
 }

@@ -32,6 +32,8 @@ namespace gapi
       BufferWrapper& operator=(BufferWrapper&&);
       inline operator BufferHandler() const { return m_Handle; }
 
+      auto valid() const -> bool { return m_Handle != gapi::BufferHandler::Invalid; }
+
     private:
       gapi::BufferHandler m_Handle;
   };

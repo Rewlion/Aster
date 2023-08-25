@@ -1,20 +1,27 @@
 #include "../frame.inc.tfx"
 #include "../materials.inc.tfx"
+#include "tile.inc.tfx"
 
 scope TerrainScope
 {
   reserve:
     descriptor_set(1);
     register(buffer, 0-1);
-    register(texture, 0-1);
-
-  RWStructuredBuffer<float4> terrainPatches = extern(terrainPatches);
+    register(texture, 0-3);
 
   Texture2D terrainHeightmap = channel(terrainHeightmap);
   Texture2D terrainAlbedo = channel(terrainAlbedo);
   float worldMapSize = channel(worldMapSize);
   float2 terrainMinMaxHeightBorder = channel(terrainMinMaxHeightBorder);
   float terrainMaxHeight = channel(terrainMaxHeight);
+
+  RWStructuredBuffer<float4> terrainPatches = extern(terrainPatches);
+  RWTexture2D<uint> terrainFeedbackBuf = extern(terrainFeedbackBuf);
+  float2 terrainFeedbackSize = extern(terrainFeedbackSize);
+  float terrainVTexSideSize = extern(terrainVTexSideSize);
+  float terrainVTexTileSize = extern(terrainVTexTileSize);
+  uint terrainVTexMaxMip = extern(terrainVTexMaxMip);
+  Texture2D terrainTileCache = extern(terrainTileCache);
 };
 
 technique Terrain
@@ -23,10 +30,11 @@ technique Terrain
   activate scope TerrainScope;
 
   render_state:
-    polygon_mode = line;
+    polygon_mode = fill;
     primitive_topology = patch_list;
 
   USE_MATERIALS_PACKING();
+  USE_VTEX_UNPACK();
 
   #hlsl
   #include "edge_factor.hlsli"
@@ -50,7 +58,7 @@ technique Terrain
     float inside[2] : SV_InsideTessFactor;
   };
 
-  #define TessFactor 16.0
+  #define TessFactor 64.0
 
   void getPatchParams(uint vertexId, out float2 world_xz, out float size, out uint edge_factor)
   {
@@ -106,7 +114,7 @@ technique Terrain
     float h = terrainHeightmap.SampleLevel(linearClampSampler, uv, 0).r;
     
     float minH = TerrainScope.terrainMinMaxHeightBorder.x;
-    float maxH = TerrainScope.terrainMinMaxHeightBorder.y;
+    float maxH = TerrainScope.terrainMinMaxHeightBorder.y -0.03;
     h = (h - minH) / (maxH - minH) * TerrainScope.terrainMaxHeight;
 
     return h;
@@ -154,6 +162,7 @@ technique Terrain
     float2 uv : TEXTURE1;
     float4 prevPos : TEXTURE2;
     float4 curPos : TEXTURE3;
+    float3 worldPos: TEXTURE4;
   };
 
   float3 getPatchNormal(float2 uv)
@@ -165,7 +174,7 @@ technique Terrain
     float R = getHeight(uv + px * float2( 1, 0));
     float L = getHeight(uv + px * float2(-1, 0));
 
-    return normalize(float3((R-L), 1.0, B-T));
+    return normalize(float3((R-L), 1.0 , B-T));
   }
 
   [domain("quad")]
@@ -184,6 +193,7 @@ technique Terrain
     o.uv = heightUV;
     o.prevPos = mul(FrameScope.prevViewProj, p);
     o.curPos = o.pos;
+    o.worldPos = p.xyz;
     return o;
   }
 
@@ -193,7 +203,40 @@ technique Terrain
 
     float3 albedoFallback = terrainAlbedo.Sample(linearClampSampler, input.uv).rgb;
 
-    initAlbedo(m, albedoFallback);
+    float halfWorldSize = TerrainScope.worldMapSize*0.5;
+    float2 worldUV = saturate((((input.worldPos.xz) / TerrainScope.worldMapSize) + 1.0)*0.5);
+    float2 tc = worldUV * TerrainScope.terrainVTexSideSize;
+    float2 dx = ddx(tc);
+    float2 dy = ddy(tc);
+    float mip = clamp(0, TerrainScope.terrainVTexMaxMip, 0.5 * log2( max(dot(dx,dx), dot(dy,dy)) ));
+
+    float3 mipColors[11] = {
+      float3(0.7,0.7,0.7),
+      float3(0.7, 0.0, 0.0),
+      float3(0.0, 0.7, 0.0),
+      float3(0, 0, 0.7),
+      float3(0.7, 0.7, 0),
+
+      float3(0.4,0.4,0.2),
+      float3(0.4, 0.0, 0.0),
+      float3(0.0, 0.4, 0.0),
+      float3(0, 0, 0.4),
+      float3(0.4, 0.4, 0),
+
+      float3(0.4, 0.0, 0.2)
+    };
+
+    uint2 vtileXY = (uint2)(tc / ((uint)TerrainScope.terrainVTexTileSize << (uint)mip));
+    uint packedVTile = pack_tile(uint3(vtileXY, (uint)mip));
+    
+    uint2 feedbackTC = (input.pos.xy - float2(0.5, 0.5)) / FrameScope.viewPortSize * TerrainScope.terrainFeedbackSize;
+    terrainFeedbackBuf[feedbackTC] = packedVTile;
+
+    float3 color = mipColors[ clamp(uint(mip), 0, 11) ];
+    color += terrainTileCache.Sample(linearClampSampler, float2(0,0)).rgb;
+
+    initAlbedo(m, color);
+    //initAlbedo(m, albedoFallback);
     initMetal(m, 0);
     initRoughness(m, 0.5);
     initNormal(m, input.normal);

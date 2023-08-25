@@ -33,6 +33,9 @@ add_ecs_library(
   FILES
     "${CMAKE_SOURCE_DIR}/src/engine/render/gui_render.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/terrain_render.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/virtual_texture/page_table.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/virtual_texture/virtual_texture.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/virtual_texture/vtile_lru.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/world_render.cpp"
 
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/opaque.cpp"

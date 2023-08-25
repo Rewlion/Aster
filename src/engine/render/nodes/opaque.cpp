@@ -106,7 +106,7 @@ namespace Engine::Render
       auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead);
       auto gbuf2 = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead);
       auto gbufDepth = reg.readTexture("gbuffer_depth", gapi::TextureState::ShaderRead);
-      auto atmParams = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_UAV_RW);
+      auto atmParams = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_SRV);
       auto enviSpecular = reg.readTexture("atm_envi_specular", gapi::TextureState::ShaderRead, true);
       auto enviBRDF = reg.readTexture("atm_envi_brdf", gapi::TextureState::ShaderRead, true);
 

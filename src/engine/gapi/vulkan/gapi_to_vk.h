@@ -224,6 +224,7 @@ namespace gapi::vulkan
       case TextureFormat::B8G8R8A8_UNORM:      return vk::Format::eB8G8R8A8Unorm;
       case TextureFormat::R8G8B8A8_SNORM:      return vk::Format::eR8G8B8A8Snorm;
       case TextureFormat::R8G8B8A8_UNORM:      return vk::Format::eR8G8B8A8Unorm;
+      case TextureFormat::R8G8B8A8_UINT:       return vk::Format::eR8G8B8A8Uint;
       case TextureFormat::R16_UNORM:           return vk::Format::eR16Unorm;
       case TextureFormat::R16G16B16A16_SFLOAT: return vk::Format::eR16G16B16A16Sfloat;
       case TextureFormat::R16G16B16A16_SINT:   return vk::Format::eR16G16B16A16Sint;
@@ -231,6 +232,7 @@ namespace gapi::vulkan
       case TextureFormat::R16G16B16A16_UINT:   return vk::Format::eR16G16B16A16Uint;
       case TextureFormat::R16G16B16A16_UNORM:  return vk::Format::eR16G16B16A16Unorm;
       case TextureFormat::R32G32B32A32_S:      return vk::Format::eR32G32B32A32Sfloat;
+      case TextureFormat::R32_UINT:            return vk::Format::eR32Uint;
       case TextureFormat::D24_UNORM_S8_UINT:   return vk::Format::eD24UnormS8Uint;
       default: ASSERT_FMT_RETURN(false, vk::Format::eUndefined, "get_image_format doesn't support the format {}", (int)(format));
     }
@@ -269,12 +271,14 @@ namespace gapi::vulkan
       case vk::Format::eB8G8R8A8Srgb:
       case vk::Format::eR8G8B8A8Snorm:
       case vk::Format::eR8G8B8A8Unorm:
+      case vk::Format::eR8G8B8A8Uint:
       case vk::Format::eR16Unorm:
       case vk::Format::eR16G16B16A16Sfloat:
       case vk::Format::eR16G16B16A16Sint:
       case vk::Format::eR16G16B16A16Snorm:
       case vk::Format::eR16G16B16A16Uint:
       case vk::Format::eR16G16B16A16Unorm:
+      case vk::Format::eR32Uint:
       case vk::Format::eR32G32B32A32Sfloat: return vk::ImageAspectFlagBits::eColor;
       case vk::Format::eD24UnormS8Uint: return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
       default: {
@@ -388,8 +392,8 @@ namespace gapi::vulkan
       case TextureState::StencilWrite:
       case TextureState::DepthWrite:         return vk::PipelineStageFlagBits::eEarlyFragmentTests | vk::PipelineStageFlagBits::eLateFragmentTests;
       case TextureState::RenderTarget:       return vk::PipelineStageFlagBits::eColorAttachmentOutput;
-      case TextureState::ShaderRead:         return vk::PipelineStageFlagBits::eAllGraphics;
-      case TextureState::ShaderReadWrite:    return vk::PipelineStageFlagBits::eAllGraphics;
+      case TextureState::ShaderRead:         return vk::PipelineStageFlagBits::eAllGraphics | vk::PipelineStageFlagBits::eComputeShader;
+      case TextureState::ShaderReadWrite:    return vk::PipelineStageFlagBits::eAllGraphics | vk::PipelineStageFlagBits::eComputeShader;
       case TextureState::Present:            return vk::PipelineStageFlagBits::eColorAttachmentOutput;
       case TextureState::TransferSrc:        return vk::PipelineStageFlagBits::eTransfer;
       case TextureState::TransferDst:        return vk::PipelineStageFlagBits::eTransfer;
@@ -591,6 +595,11 @@ namespace gapi::vulkan
   inline vk::ImageSubresourceLayers get_image_subresource_layers(const TextureSubresourceLayers& l)
   {
     return vk::ImageSubresourceLayers(vk::ImageAspectFlags(l.aspects), l.mipLevel, l.baseArrayLayer, l.layerCount);
+  }
+
+  inline vk::ImageSubresourceRange get_image_subresource_range(const TextureSubresourceRange& r)
+  {
+    return vk::ImageSubresourceRange{vk::ImageAspectFlags{r.aspects}, r.baseMipLevel, r.levelCount, r.baseArrayLayer, r.layerCount};
   }
 
   inline vk::Offset3D get_offset3d(const int3 offset)

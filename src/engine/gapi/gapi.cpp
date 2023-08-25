@@ -10,7 +10,7 @@ namespace gapi
   void                     (*gapi_shutdown)();
   TextureHandle            (*gapi_get_backbuffer)();
   DepthStencilStateHandler (*gapi_create_depth_stencil_state)(const DepthStencilStateDescription& desc);
-  BufferHandler            (*gapi_allocate_buffer)(const size_t size, const int usage);
+  BufferHandler            (*gapi_allocate_buffer)(const size_t size, const int usage, const char* name);
   void                     (*gapi_free_buffer)(const BufferHandler buffer);
   void                     (*gapi_free_texture)(const TextureHandle texture);
   void                     (*gapi_free_sampler)(const SamplerHandler sampler);
@@ -57,9 +57,9 @@ namespace gapi
     return gapi_create_depth_stencil_state(desc);
   }
 
-  BufferHandler allocate_buffer(const size_t size, const int usage)
+  BufferHandler allocate_buffer(const size_t size, const int usage, const char* name)
   {
-    return gapi_allocate_buffer(size, usage);
+    return gapi_allocate_buffer(size, usage, name);
   }
 
   void* map_buffer(BufferHandler buffer, const size_t offset, const size_t size, const int flags)

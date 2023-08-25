@@ -1,0 +1,62 @@
+#include "../screen_space.inc.tfx"
+#include "../frame.inc.tfx"
+#include "tile.inc.tfx"
+
+scope TerrainTileScope
+{
+  reserve:
+    descriptor_set(2);
+    register(texture, 0);
+    register(buffer, 0);
+
+  Texture2D terrainDetailAlbedo = channel(terrainDetailAlbedo);
+  float terrainDetailSize = channel(terrainDetailSize);
+  float terrainSize = channel(terrainSize);
+};
+
+scope VirtualTextureScope
+{
+  reserve:
+    descriptor_set(1);
+    register(texture, 0);
+    register(buffer, 0);
+
+  float tileSize = extern(vtexTileSize);
+  uint packedVTile = extern(packedVTile);
+  uint packedPTile = extern(packedPTile);
+  uint vtexMip = extern(vtexMip);
+  float vtexTexelSize = extern(vtexTexelSize);
+};
+
+technique TerrainTile
+{
+  support scope FrameScope;
+  support scope TerrainTileScope;
+  support scope VirtualTextureScope;
+
+  USE_SCREENSPACE_BASE();
+
+  USE_VTEX_UNPACK();
+
+  #hlsl
+  float3 ps_main(VsOutput input) : SV_Target0
+  {
+    uint2 vtile = unpack_tile(VirtualTextureScope.packedVTile).xy;
+    uint2 ptile = unpack_tile(VirtualTextureScope.packedPTile).xy;
+
+    float2 tileTC = input.pos.xy - float2(0.5,0.5) - ptile * VirtualTextureScope.tileSize;
+    float worldTexel = (VirtualTextureScope.vtexTexelSize * ( 1u << VirtualTextureScope.vtexMip));
+    float2 tileWorldPos = worldTexel * tileTC;
+    float2 vtileWorldPosOrigin = (vtile * VirtualTextureScope.tileSize) * worldTexel;
+
+    float2 worldPos = vtileWorldPosOrigin + tileWorldPos - float2(TerrainTileScope.terrainSize, TerrainTileScope.terrainSize)*0.5;
+    float2 uv = worldPos / (TerrainTileScope.terrainDetailSize * VirtualTextureScope.vtexTexelSize); //world size ?
+    
+    float3 albedo = terrainDetailAlbedo.Sample(modelSampler, uv).rgb;
+    return albedo;
+  }
+  #end
+
+  compile(ps, ps_main);
+  compile(vs, vs_main);
+};

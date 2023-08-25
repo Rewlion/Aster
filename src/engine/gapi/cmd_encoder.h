@@ -25,6 +25,12 @@ namespace gapi
       auto getScissor() -> Scissor = 0;
 
       virtual
+      void setViewport(const Viewport&) = 0;
+
+      virtual
+      auto getViewport() -> Viewport const = 0;
+
+      virtual
       void draw(const uint32_t vertexCount, const uint32_t instanceCount,
                 const uint32_t firstVertex, const uint32_t firstInstance) = 0;
 
@@ -80,6 +86,9 @@ namespace gapi
       void writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags = 0) = 0;
 
       virtual
+      void copyTextureToBuffer(const TextureHandle src, const BufferHandler dst) = 0;
+
+      virtual
       void copyBufferToTexture(const TextureHandle texture, const void* src, const size_t size) = 0;
 
       virtual
@@ -101,5 +110,9 @@ namespace gapi
 
       virtual
       auto getRenderSize() const -> float2 = 0;
+
+      virtual
+      void clearColorTexture(const TextureHandle, const TextureState current_state, const TextureState final_state,
+                             const ClearColorValue&, const TextureSubresourceRange&) = 0;
   };
 }

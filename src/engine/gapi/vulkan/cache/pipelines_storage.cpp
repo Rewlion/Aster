@@ -148,6 +148,8 @@ namespace gapi::vulkan
 
     vk::Pipeline pipeline = result.value.get();
 
+    m_Device->setDbgUtilsObjName(description.name.c_str(), (uint64_t)(VkPipeline)pipeline, vk::ObjectType::ePipeline);
+
     m_Pipelines.insert({
       pipelineHash,
       std::move(result.value)
@@ -175,6 +177,8 @@ namespace gapi::vulkan
       logerror("failed to create compute pipeline");
 
     vk::Pipeline pipeline = result.value.get();
+    m_Device->setDbgUtilsObjName(description.name.c_str(), (uint64_t)(VkPipeline)pipeline, vk::ObjectType::ePipeline);
+
 
     m_ComputePipelines.insert({
       pipelineHash,

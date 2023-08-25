@@ -208,6 +208,10 @@ namespace tfx
 
           switch (bc.type)
           {
+            SETUP_CBUFFER_VAR(UInt,     uint,     0)
+            SETUP_CBUFFER_VAR(UInt2,    uint2,    (uint2{0,0}))
+            SETUP_CBUFFER_VAR(UInt3,    uint3,    (uint3{0,0,0}))
+            SETUP_CBUFFER_VAR(UInt4,    uint4,    (uint4{0,0,0,0}))
             SETUP_CBUFFER_VAR(Int,      int,      0)
             SETUP_CBUFFER_VAR(Int2,     int2,     (int2{0,0}))
             SETUP_CBUFFER_VAR(Int3,     int3,     (int3{0,0,0}))
@@ -301,14 +305,16 @@ namespace tfx
           .topology = t.renderState.topology,
           .depthStencilState = t.renderState.depthStencil,
           .blendState = t.renderState.blending,
-          .tsInputControlPatchCount = t.renderState.tsInputControlPatchCount
+          .tsInputControlPatchCount = t.renderState.tsInputControlPatchCount,
+          .name = t.name
         };
       }
       else
       {
         technique.pipelineDesc = gapi::ComputePipelineDescription{
           .layout = layout,
-          .shader = modules[0]
+          .shader = modules[0],
+          .name = t.name
         };
       }
 

@@ -63,7 +63,7 @@ namespace fg
     ASSERT(std::holds_alternative<std::monostate>(res));
 
     res = BufferResource{
-      .buffer = gapi::allocate_buffer(alloc_desc.size, alloc_desc.usage),
+      .buffer = gapi::allocate_buffer(alloc_desc.size, alloc_desc.usage, alloc_desc.name),
       .currentState = init_state
     };
   }

@@ -4,4 +4,5 @@ assets
   #include "bin/assets/damaged_helmet/asset.blk"
   #include "bin/assets/skybox/asset.blk"
   #include "bin/assets/level/asset.blk"
+  #include "bin/assets/level/detail/asset.blk"
 }

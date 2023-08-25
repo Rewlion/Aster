@@ -57,8 +57,16 @@ namespace gapi::vulkan
     insureActiveCmd();
     m_CmdBuf.beginRenderPass(rpBeginInfo, vk::SubpassContents::eInline);
 
-    m_GraphicsPipelineState.viewport = renderArea.extent;
-    m_GraphicsPipelineState.scissor = {{0,0}, m_GraphicsPipelineState.viewport};
+    vk::Viewport vp;
+    vp.x = 0;
+    vp.y = 0;
+    vp.width = renderArea.extent.width;
+    vp.height = renderArea.extent.height;
+    vp.minDepth = 0;
+    vp.maxDepth = 1;
+
+    m_GraphicsPipelineState.viewport = vp;
+    m_GraphicsPipelineState.scissor = {{0,0}, renderArea.extent};
 
     m_GraphicsPipelineState.description.blendState.attachments.clear();
     for (const auto& rt: renderTargets)
@@ -185,6 +193,31 @@ namespace gapi::vulkan
     };
   }
 
+  void CmdEncoder::setViewport(const Viewport& vp)
+  {
+    vk::Viewport old = m_GraphicsPipelineState.viewport;
+
+    m_GraphicsPipelineState.viewport.x = vp.pos.x;
+    m_GraphicsPipelineState.viewport.y = vp.pos.y;
+    m_GraphicsPipelineState.viewport.width = vp.size.x;
+    m_GraphicsPipelineState.viewport.height = vp.size.y;
+    m_GraphicsPipelineState.viewport.minDepth = vp.minDepth;
+    m_GraphicsPipelineState.viewport.maxDepth = vp.maxDepth;
+
+    if (old != m_GraphicsPipelineState.viewport)
+      m_CmdBuf.setViewport(0, 1, &m_GraphicsPipelineState.viewport);
+  }
+
+  auto CmdEncoder::getViewport() -> Viewport const
+  {
+    return {
+      .pos = {m_GraphicsPipelineState.viewport.x, m_GraphicsPipelineState.viewport.y},
+      .size = {m_GraphicsPipelineState.viewport.width, m_GraphicsPipelineState.viewport.height},
+      .minDepth = m_GraphicsPipelineState.viewport.minDepth,
+      .maxDepth = m_GraphicsPipelineState.viewport.maxDepth
+    };
+  }
+
   void CmdEncoder::draw(const uint32_t vertexCount, const uint32_t instanceCount,
                         const uint32_t firstVertex, const uint32_t firstInstance)
   {
@@ -243,12 +276,12 @@ namespace gapi::vulkan
     m_CmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 
     vk::Viewport vp;
-    vp.x = 0;
-    vp.y = (float)m_GraphicsPipelineState.viewport.height;
-    vp.width =  (float)m_GraphicsPipelineState.viewport.width;
-    vp.height = -(float)m_GraphicsPipelineState.viewport.height;
-    vp.minDepth = 0;
-    vp.maxDepth = 1;
+    vp.x = m_GraphicsPipelineState.viewport.x;
+    vp.y = m_GraphicsPipelineState.viewport.height + m_GraphicsPipelineState.viewport.y;
+    vp.width = m_GraphicsPipelineState.viewport.width;
+    vp.height = -m_GraphicsPipelineState.viewport.height;
+    vp.minDepth = m_GraphicsPipelineState.viewport.minDepth;
+    vp.maxDepth = m_GraphicsPipelineState.viewport.maxDepth;
 
     m_CmdBuf.setViewport(0, 1, &vp);
     m_CmdBuf.setScissor(0, 1, &m_GraphicsPipelineState.scissor);
@@ -404,6 +437,26 @@ namespace gapi::vulkan
     m_FrameGc.addBuffer(std::move(staging));
   }
 
+  void CmdEncoder::copyTextureToBuffer(const TextureHandle src, const BufferHandler dst)
+  {
+    insureActiveCmd();
+    Texture& t = m_Device.getAllocatedTexture(src);
+    Buffer& b = *m_Device.getAllocatedBuffer(dst);
+
+    vk::BufferImageCopy copyDesc;
+    copyDesc.bufferOffset = 0;
+    copyDesc.bufferRowLength = 0;
+    copyDesc.bufferImageHeight = 0;
+    copyDesc.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+    copyDesc.imageSubresource.mipLevel = 0;
+    copyDesc.imageSubresource.baseArrayLayer = 0;
+    copyDesc.imageSubresource.layerCount = 1;
+    copyDesc.imageOffset = vk::Offset3D{0,0,0};
+    copyDesc.imageExtent = vk::Extent3D{(uint32_t)t.size.x, (uint32_t)t.size.y, 1};
+
+    m_CmdBuf.copyImageToBuffer(t.img.get(), vk::ImageLayout::eTransferSrcOptimal, b.buffer.get(), 1, &copyDesc);
+  }
+
   void CmdEncoder::copyBufferToTexture(const TextureHandle texture, const void* src, const size_t size)
   {
     insureActiveCmd();
@@ -493,5 +546,32 @@ namespace gapi::vulkan
   {
     insureActiveCmd();
     m_CmdBuf.dispatch(group_count_x, group_count_y, group_count_z);
+  }
+
+  void CmdEncoder::clearColorTexture(const TextureHandle tex, const TextureState current_state, const TextureState final_state,
+                                     const ClearColorValue& color, const TextureSubresourceRange& range)
+  {
+    insureActiveCmd();
+
+    const auto transitState = [&](const TextureState from, const TextureState to)
+    {
+      transitTextureState(tex, from, to,
+                          range.baseMipLevel, range.levelCount,
+                          range.baseArrayLayer, range.layerCount);
+    };
+
+    if (current_state != TextureState::TransferDst)
+      transitState(current_state, TextureState::TransferDst);
+
+    const vk::Image img = m_Device.getImage(tex);
+    const vk::ImageLayout currentLayout = get_image_layout_for_texture_state(TextureState::TransferDst);
+    const auto& vkColors = reinterpret_cast<const vk::ClearColorValue&>(color);
+    
+    vk::ImageSubresourceRange vkRange = get_image_subresource_range(range);
+
+    m_CmdBuf.clearColorImage(img, currentLayout, &vkColors, 1, &vkRange);
+
+    if (final_state != TextureState::TransferDst)
+      transitState(TextureState::TransferDst, final_state);
   }
 }

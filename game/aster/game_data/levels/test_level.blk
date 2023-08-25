@@ -112,4 +112,6 @@ entity @("VirtualTerrain")
 
   int vterrain_worldSize_meters = 2048
   int vterrain_patchSideBits = 5
+
+  text vterrain_detail = "test_level.detail"
 }

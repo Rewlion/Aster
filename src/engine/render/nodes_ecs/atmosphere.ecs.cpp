@@ -47,28 +47,34 @@ static void atmosphere_creation_handler(const ecs::OnEntityCreated& evt, float a
     .extent = uint3{TR_LUT_SIZE, 1},
     .mipLevels = 1,
     .arrayLayers = 1,
-    .usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV
+    .usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV,
+    .name = "trLUT"
   };
   gapi::TextureHandle trLUT = gapi::allocate_texture(allocDesc);
 
   allocDesc.extent = uint3{SKY_LUT_SIZE, 1};
+  allocDesc.name = "skyLUT";
   gapi::TextureHandle skyLUT = gapi::allocate_texture(allocDesc);
 
   allocDesc.extent = uint3{MS_LUT_SIZE, 1};
+  allocDesc.name = "msLUT";
   gapi::TextureHandle msLUT = gapi::allocate_texture(allocDesc);
 
   allocDesc.extent = uint3{256, 256, 1};
+  allocDesc.name = "enviBRDF";
   gapi::TextureHandle enviBRDF = gapi::allocate_texture(allocDesc);
 
   const int2 enviSpecularSize = int2(512,256);
   int enviMips = std::min(std::bit_width((uint)enviSpecularSize.x), 5u);
   allocDesc.extent = uint3{enviSpecularSize, 1};
   allocDesc.mipLevels = enviMips;
+  allocDesc.name = "enviSpecularLUT";
   gapi::TextureHandle enviSpecularLUT = gapi::allocate_texture(allocDesc);
   allocDesc.mipLevels = 1;
 
   allocDesc.extent = uint3{AP_LUT_SIZE};
   allocDesc.usage = gapi::TEX_USAGE_SRV | gapi::TEX_USAGE_UAV;
+  allocDesc.name = "apLUT";
   gapi::TextureHandle apLUT = gapi::allocate_texture(allocDesc);
 
   std::unique_ptr<gapi::CmdEncoder> encoder{gapi::allocate_cmd_encoder()};

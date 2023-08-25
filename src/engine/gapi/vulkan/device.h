@@ -90,7 +90,7 @@ namespace gapi::vulkan
 
       void presentSurfaceImage();
 
-      BufferHandler allocateBuffer(const size_t size, const int usage);
+      BufferHandler allocateBuffer(const size_t size, const int usage, const char* name);
       void freeBuffer(const BufferHandler buffer);
 
       void* mapBuffer(const BufferHandler buffer, const size_t offset, const size_t size, const int flags = 0);
@@ -130,6 +130,9 @@ namespace gapi::vulkan
       VulkanFence* allocateFence();
 
       void prepareSrvStubs(gapi::CmdEncoder&);
+
+      void setDbgUtilsObjName(const char* name, const uint64_t obj, const vk::ObjectType type);
+
     private:
       void copyBuffersSync(const vk::Buffer src, const size_t srcOffset, const vk::Buffer dst, const size_t dstOffset, const size_t size);
       void writeToStagingBuffer(const Buffer& buffer, const void* src, const size_t offset, const size_t size);

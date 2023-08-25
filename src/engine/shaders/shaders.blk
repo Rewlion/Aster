@@ -14,6 +14,8 @@ shaders_list
   "shaders/post_process.tfx" {}
   "shaders/scene_opaque.tfx" {}
   "shaders/taa.tfx" {}
+  "shaders/terrain/cache.tfx" {}
   "shaders/terrain/terrain.tfx" {}
+  "shaders/terrain/virtual_texture.tfx" {}
   "shaders/test.tfx" {}
 }

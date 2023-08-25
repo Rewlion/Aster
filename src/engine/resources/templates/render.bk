@@ -41,6 +41,8 @@ template @("name: VirtualTerrain") {
   float vterrain_heightmapMaxHeight = 30
   int vterrain_patchSideBits = 5 // 32x32 meters tile
   int vterrain_worldSize_meters = 1024
+
+  text vterrain_detail = ""
 }
 
 template @("name: VirtualTerrainRender") {

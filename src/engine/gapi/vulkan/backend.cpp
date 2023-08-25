@@ -227,6 +227,7 @@ namespace gapi::vulkan
     features.geometryShader = true;
     features.tessellationShader = true;
     features.fillModeNonSolid = true;
+    features.fragmentStoresAndAtomics = true;
 
     const auto deviceCreateInfo = vk::DeviceCreateInfo()
         .setQueueCreateInfoCount(queueCreateInfos.size())
