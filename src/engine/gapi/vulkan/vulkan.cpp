@@ -54,17 +54,17 @@ namespace gapi::vulkan
     frameGc.clearAllFrames();
   }
 
-  vk::Device& get_device()
+  auto get_device() -> vk::Device&
   {
     return device->getDevice();
   }
 
-  TextureHandle get_backbuffer()
+  auto get_backbuffer() -> TextureHandle
   {
     return device->getBackbuffer();
   }
 
-  BufferHandler allocate_buffer(const size_t size, const int usage, const char* name)
+  auto allocate_buffer(const size_t size, const int usage, const char* name) -> BufferHandler
   {
     return device->allocateBuffer(size, usage, name);
   }
@@ -100,12 +100,12 @@ namespace gapi::vulkan
     device->unmapBuffer(buffer);
   }
 
-  TextureHandle allocate_texture(const TextureAllocationDescription& allocDesc)
+  auto allocate_texture(const TextureAllocationDescription& allocDesc) -> TextureHandle
   {
     return device->allocateTexture(allocDesc);
   }
 
-  SamplerHandler allocate_sampler(const SamplerAllocationDescription& allocDesc)
+  auto allocate_sampler(const SamplerAllocationDescription& allocDesc) -> SamplerHandler
   {
     return device->allocateSampler(allocDesc);
   }
@@ -120,26 +120,26 @@ namespace gapi::vulkan
     device->acquireBackbuffer(f);
   }
 
-  ShaderModuleHandler add_module(void* blob)
+  auto add_module(void* blob) -> ShaderModuleHandler
   {
     const ShadersSystem::ShaderBlob* b = reinterpret_cast<const ShadersSystem::ShaderBlob*>(blob);
     return pipelinesStorage.addModule(*b);
   }
 
-  PipelineLayoutHandler add_pipeline_layout(void* ds)
+  auto add_pipeline_layout(void* ds) -> PipelineLayoutHandler
   {
     const eastl::vector<spirv::v2::DescriptorSet>* dsets =
       reinterpret_cast<const eastl::vector<spirv::v2::DescriptorSet>*>(ds);
     return pipelinesStorage.addPipelineLayout(*dsets);
   }
 
-  gapi::CmdEncoder* allocate_cmd_encoder()
+  auto allocate_cmd_encoder() -> gapi::CmdEncoder*
   {
     vk::UniqueCommandPool cmdPool = device->allocateCmdPool();
     return new CmdEncoder(*device, frameGc, rpStorage, pipelinesStorage, std::move(cmdPool));
   }
 
-  Fence* allocate_fence()
+  auto allocate_fence() -> Fence*
   {
     return device->allocateFence();
   }

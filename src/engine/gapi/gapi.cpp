@@ -47,22 +47,22 @@ namespace gapi
     gapi_shutdown();
   }
 
-  TextureHandle get_backbuffer()
+  auto get_backbuffer() -> TextureHandle
   {
     return gapi_get_backbuffer();
   }
 
-  DepthStencilStateHandler create_depth_stencil_state(const DepthStencilStateDescription& desc)
+  auto create_depth_stencil_state(const DepthStencilStateDescription& desc) -> DepthStencilStateHandler
   {
     return gapi_create_depth_stencil_state(desc);
   }
 
-  BufferHandler allocate_buffer(const size_t size, const int usage, const char* name)
+  auto allocate_buffer(const size_t size, const int usage, const char* name) -> BufferHandler
   {
     return gapi_allocate_buffer(size, usage, name);
   }
 
-  void* map_buffer(BufferHandler buffer, const size_t offset, const size_t size, const int flags)
+  auto map_buffer(BufferHandler buffer, const size_t offset, const size_t size, const int flags) -> void*
   {
     return gapi_map_buffer(buffer, offset, size, flags);
   }
@@ -72,12 +72,12 @@ namespace gapi
     return gapi_unmap_buffer(buffer);
   }
 
-  TextureHandle allocate_texture(const TextureAllocationDescription& allocDesc)
+  auto allocate_texture(const TextureAllocationDescription& allocDesc) -> TextureHandle
   {
     return gapi_allocate_texture(allocDesc);
   }
 
-  SamplerHandler allocate_sampler(const SamplerAllocationDescription& allocDesc)
+  auto allocate_sampler(const SamplerAllocationDescription& allocDesc) -> SamplerHandler
   {
     return gapi_allocate_sampler(allocDesc);
   }
@@ -112,22 +112,22 @@ namespace gapi
     gapi_acquire_backbuffer();
   }
 
-  ShaderModuleHandler add_module(void* blob)
+  auto add_module(void* blob) -> ShaderModuleHandler
   {
     return gapi_add_module(blob);
   }
 
-  PipelineLayoutHandler add_pipeline_layout(void* dsets)
+  auto add_pipeline_layout(void* dsets) -> PipelineLayoutHandler
   {
     return gapi_add_pipeline_layout(dsets);
   }
 
-  CmdEncoder* allocate_cmd_encoder()
+  auto allocate_cmd_encoder() -> CmdEncoder*
   {
     return gapi_allocate_cmd_encoder();
   }
 
-  Fence* allocate_fence()
+  auto allocate_fence() -> Fence*
   {
     return gapi_allocate_fence();
   }
