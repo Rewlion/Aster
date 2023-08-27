@@ -13,6 +13,7 @@ shaders_list
   "shaders/imgui.tfx" {}
   "shaders/post_process.tfx" {}
   "shaders/scene_opaque.tfx" {}
+  "shaders/show_tex.tfx" {}
   "shaders/taa.tfx" {}
   "shaders/terrain/cache.tfx" {}
   "shaders/terrain/terrain.tfx" {}

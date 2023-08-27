@@ -105,6 +105,22 @@ void virtual_terrain_creation_handler(
       });
     };
   });
+
+  fg::register_node("terrain_vtx_dbg_import", FG_FILE_DECL,
+    [](fg::Registry& reg)
+  {
+    reg.orderMeAfter("terrain_update_vtex");
+    reg.importTextureProducer("terrain_vtex", [&](){
+      gapi::TextureHandle tex = gapi::TextureHandle::Invalid;
+      query_vterrain([&](auto& terrain)
+      {
+        tex = terrain.getVTexPhysTex();
+      });
+
+      return fg::TextureImport{tex, gapi::TextureState::ShaderRead};
+    });
+    return [](gapi::CmdEncoder&) {};
+  });
 }
 
 ECS_EVENT_SYSTEM()

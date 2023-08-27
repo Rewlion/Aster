@@ -35,6 +35,8 @@ namespace Engine::Render
       static
       auto getTileSize() -> size_t { return TILE_SIZE; }
 
+      auto getPhysTex() -> gapi::TextureHandle { return m_PhysTilesCache; }
+
     private:
       class VTileLRU
       {

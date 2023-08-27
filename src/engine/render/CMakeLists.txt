@@ -41,6 +41,8 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/opaque.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/post_transparent.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/post_process.cpp"
+
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes_cmd/show_tex.cpp"
   ECS_FILES
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/frame_preparing.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes_ecs/atmosphere.ecs.cpp"

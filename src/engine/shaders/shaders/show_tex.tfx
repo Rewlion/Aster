@@ -1,0 +1,61 @@
+#include "frame.inc.tfx"
+
+scope ShowTexScope
+{
+  reserve:
+    descriptor_set(1);
+    register(texture, 0);
+
+  Texture2D texToShow = extern(texToShow);
+};
+
+technique ShowTex
+{
+  support scope FrameScope;
+  activate scope ShowTexScope;
+
+  render_state:
+  cull_mode = none;
+  primitive_topology = triangle_strip;
+  depth:
+   test = no;
+   write = no;
+
+  #hlsl
+   struct VsOutput
+   {
+     float4 pos: SV_Position;
+     float2 uv: TEXTURE0;
+   };
+
+   VsOutput vs_main(uint id: SV_VertexID)
+   {
+      float2 vertices[4] = {
+        float2(1.0f, -1.0f),
+        float2(-1.0f, -1.0f),
+        float2(1.0f, 1.0f),
+        float2(-1.0f, 1.0f)
+      };
+
+      float2 uv[4] = {
+        float2(1.0, 0.0),
+        float2(0.0, 0.0),
+        float2(1.0, 1.0),
+        float2(0.0, 1.0)
+      };
+
+      VsOutput o;
+      o.pos = float4(vertices[id], 0, 1.0);
+      o.uv = uv[id];
+     return o;
+   }
+
+   float3 ps_main(VsOutput input) : SV_Target0
+   {
+    return texToShow.Sample(pointClampSampler, input.uv).rgb;
+   }
+  #end
+
+  compile(vs, vs_main);
+  compile(ps, ps_main);
+};

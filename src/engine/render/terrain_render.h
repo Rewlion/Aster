@@ -29,6 +29,8 @@ namespace Engine::Render
       void render(gapi::CmdEncoder&, const gapi::TextureHandle feedback_buf, const int2 feedback_size);
       void updateVTex(gapi::CmdEncoder&, const gapi::TextureHandle feedback_buf, const int2 feedback_size);
 
+      auto getVTexPhysTex() -> gapi::TextureHandle { return m_VirtualTexture.getPhysTex(); }
+
     private:
       auto copyFeedbackFromGpu(gapi::CmdEncoder& encoder,
                                const gapi::TextureHandle feedback_buf,
