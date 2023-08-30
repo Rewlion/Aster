@@ -16,7 +16,7 @@
 
 namespace Engine::Render 
 {
-  using TileRenderCB = fu2::function<void(gapi::CmdEncoder&) const>;
+  using TileRenderCB = fu2::function<void(gapi::CmdEncoder&, const uint2 packed_vtile_ptile) const>;
 
   class VirtualTexture
   {
@@ -28,18 +28,9 @@ namespace Engine::Render
       void init(gapi::CmdEncoder&, const float side_size_meter, const float texel_size_meter);
       void update(gapi::CmdEncoder&, eastl::span<VTile> feedback, const TileRenderCB&);
       void invalidate(gapi::CmdEncoder&);
-      auto getSideSize() const -> size_t { return m_VTexSideSize; }
-      auto getMaxMip() const -> size_t { return m_MaxMip; }
-      auto getPhysTilesCache() const -> gapi::TextureHandle { return m_PhysTilesCache; }
 
-      static
-      auto getTileSize() -> size_t { return TILE_SIZE; }
-
-      auto getPhysTex() const -> gapi::TextureHandle { return m_PhysTilesCache; }
-      auto getPhysTexSize() const -> uint { return m_PhysTexSideSide; }
-      auto getIndirectionTex() const -> gapi::TextureHandle { return m_PageTable.getIndirectionTex(); }
-      auto getIndirectionTexSize() const -> uint { return m_PageTable.getIndirectionTexSize(); }
-
+      auto getTilesStorage() const -> gapi::TextureHandle { return m_TilesStorage; }
+      void setVTexTfxExterns(gapi::CmdEncoder&) const;
     private:
       class VTileLRU
       {
@@ -99,15 +90,13 @@ namespace Engine::Render
       };
 
     private:
-      size_t m_VTexSize = 0;
       size_t m_MaxMip = 0;
       size_t m_VTexSideSize = 0;
-      size_t m_PhysSideSizeMeters = 0;
-      size_t m_PhysTexSideSide = 0;
-      float m_TexelPerMeter = 0.0;
+      size_t m_TileStorageSideSize = 0;
+      float m_TexelSizeMeter = 0.0;
 
       VTileLRU m_VTileLRU;
       PageTable m_PageTable;
-      gapi::TextureWrapper m_PhysTilesCache;
+      gapi::TextureWrapper m_TilesStorage;
   };
 }

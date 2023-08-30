@@ -19,7 +19,8 @@ namespace Engine::Render
                     const int world_size_meters,
                     const float2 vterrain_heightmap_min_max_border,
                     const float vterrain_heightmap_max_height,
-                    const string& vterrain_detail);
+                    const string& vterrain_detail,
+                    const int vterrain_detailSize);
 
       TerrainRender(TerrainRender&&) = default;
       TerrainRender& operator=(TerrainRender&&) = default;
@@ -29,7 +30,7 @@ namespace Engine::Render
       void render(gapi::CmdEncoder&, const gapi::TextureHandle feedback_buf, const int2 feedback_size);
       void updateVTex(gapi::CmdEncoder&, const gapi::TextureHandle feedback_buf, const int2 feedback_size);
 
-      auto getVTexPhysTex() -> gapi::TextureHandle { return m_VirtualTexture.getPhysTex(); }
+      auto getVTexTilesStorage() -> gapi::TextureHandle { return m_VirtualTexture.getTilesStorage(); }
 
     private:
       auto copyFeedbackFromGpu(gapi::CmdEncoder& encoder,
@@ -48,6 +49,7 @@ namespace Engine::Render
       int m_MaxLods;
       float2 m_MinMaxHeightBorder;
       float m_MaxHeight;
+      int m_DetailSize;
 
       struct Patch
       {

@@ -39,9 +39,10 @@ template @("name: VirtualTerrain") {
   text vterrain_name = ""
   float2 vterrain_heightmapMinMaxBorder = 0, 1 //texture values borders
   float vterrain_heightmapMaxHeight = 30
-  int vterrain_patchSideBits = 5 // 32x32 meters tile
+  int vterrain_patchSideBits = 5 // LOD 0 splits on 32x32 1meter patches
   int vterrain_worldSize_meters = 1024
 
+  int vterrain_detailSize = 256
   text vterrain_detail = ""
 }
 

@@ -23,6 +23,7 @@ void virtual_terrain_creation_handler(
   const float vterrain_heightmapMaxHeight,
   const int vterrain_patchSideBits,
   const int vterrain_worldSize_meters,
+  const int vterrain_detailSize,
   const string& vterrain_detail
   )
 {
@@ -39,7 +40,7 @@ void virtual_terrain_creation_handler(
   init["vterrain_render"] = Engine::Render::TerrainRender {
     vterrain_name, vterrain_patchSideBits, vterrain_worldSize_meters,
     vterrain_heightmapMinMaxBorder, vterrain_heightmapMaxHeight,
-    vterrain_detail};
+    vterrain_detail, vterrain_detailSize};
   ecs::get_registry().createEntity("VirtualTerrainRender", std::move(init));
 
   fg::register_node("terrain", FG_FILE_DECL,
@@ -114,7 +115,7 @@ void virtual_terrain_creation_handler(
       gapi::TextureHandle tex = gapi::TextureHandle::Invalid;
       query_vterrain([&](auto& terrain)
       {
-        tex = terrain.getVTexPhysTex();
+        tex = terrain.getVTexTilesStorage();
       });
 
       return fg::TextureImport{tex, gapi::TextureState::ShaderRead};

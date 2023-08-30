@@ -25,7 +25,8 @@ namespace Engine::Render
                                const int world_size_meters,
                                const float2 vterrain_heightmap_min_max_border,
                                const float vterrain_heightmap_max_height,
-                               const string& vterrain_detail)
+                               const string& vterrain_detail,
+                               const int vterrain_detailSize)
     : m_TerrainAlbedo(vterrain_name + ".albedo")
     , m_TerrainHeightmap(vterrain_name + ".heightmap")
     , m_TerrainDetailAlbedo(vterrain_detail + ".albedo")
@@ -35,6 +36,7 @@ namespace Engine::Render
     , m_MaxLods(5)
     , m_MinMaxHeightBorder(vterrain_heightmap_min_max_border)
     , m_MaxHeight(vterrain_heightmap_max_height)
+    , m_DetailSize(vterrain_detailSize)
   {
     std::unique_ptr<gapi::CmdEncoder> encoder{gapi::allocate_cmd_encoder()};
     const float texelSizeM = 0.01; 
@@ -174,17 +176,12 @@ namespace Engine::Render
 
   void TerrainRender::render(gapi::CmdEncoder& encoder, const gapi::TextureHandle feedback_buf, const int2 feedback_size)
   {
-    GAPI_MARK("terrain render", encoder);
+    m_VirtualTexture.setVTexTfxExterns(encoder);
+    tfx::activate_scope("VTexParamsScope", encoder);
+    tfx::activate_scope("VTexSampleScope", encoder);
 
     tfx::set_extern("terrainFeedbackBuf", feedback_buf);
     tfx::set_extern("terrainFeedbackSize", (float2)feedback_size);
-    tfx::set_extern("terrainVTexSideSize", (float)m_VirtualTexture.getSideSize());
-    tfx::set_extern("terrainVTexTileSize", (float)VirtualTexture::getTileSize());
-    tfx::set_extern("terrainVTexMaxMip", (uint)m_VirtualTexture.getMaxMip());
-    tfx::set_extern("terrainTileCache", m_VirtualTexture.getPhysTilesCache());
-    tfx::set_extern("terrainTileCacheSideSize", m_VirtualTexture.getPhysTexSize());
-    tfx::set_extern("terrainVTexIndirection", m_VirtualTexture.getIndirectionTex());
-    tfx::set_extern("terrainVTexIndirectionSize", m_VirtualTexture.getIndirectionTexSize());
 
     Engine::TextureAsset asset;
     Engine::assets_manager.getTexture(m_TerrainHeightmap, asset);
@@ -257,12 +254,13 @@ namespace Engine::Render
     if (feedbackTiles.empty())
       return;
 
-    const auto tileRender = [this](gapi::CmdEncoder& encoder){
+    const auto tileRender = [this](gapi::CmdEncoder& encoder, const uint2 packed_vtile_ptile){
       Engine::TextureAsset asset;
       Engine::assets_manager.getTexture(m_TerrainDetailAlbedo, asset);
-
+      tfx::set_extern("packedVTile", packed_vtile_ptile.x);
+      tfx::set_extern("packedPTile", packed_vtile_ptile.y);
       tfx::set_channel("terrainDetailAlbedo", asset.texture);
-      tfx::set_channel("terrainDetailSize", (float)VirtualTexture::getTileSize());
+      tfx::set_channel("terrainDetailSize", (float)m_DetailSize);
       tfx::set_channel("terrainSize", (float)m_WorldSizeMeters);
       tfx::activate_scope("TerrainTileScope", encoder);
       tfx::activate_technique("TerrainTile", encoder);

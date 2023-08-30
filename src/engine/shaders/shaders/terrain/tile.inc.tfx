@@ -1,20 +1,34 @@
 technique_macro USE_VTEX_UNPACK
 {
+
   #hlsl
+  #ifndef VTEX_UNPACK_GUARD
+  #define VTEX_UNPACK_GUARD
+
   //                     14bits
   #define VTILE_DIM_MASK 0x3FFF
   #define VTILE_DIM_BITS 14
   #define VTILE_MIP_MASK 0xF
 
-  uint3 unpack_tile(uint tile)
+  void unpack_tile(uint tile, out uint2 xy, out uint mip)
   {
-    uint3 xyMip = uint3(
-      tile & VTILE_DIM_MASK,
-      (tile >> VTILE_DIM_BITS) & VTILE_DIM_MASK,
-      (tile >> (VTILE_DIM_BITS*2)) & VTILE_MIP_MASK
-    );
+    uint x = tile & VTILE_DIM_MASK;
+    uint y = (tile >> VTILE_DIM_BITS) & VTILE_DIM_MASK;
+    mip = (tile >> (VTILE_DIM_BITS*2)) & VTILE_MIP_MASK;
+    xy = uint2(x,y);
+  }
 
-    return xyMip;
+  void unpack_vtile(uint tile, out uint2 xy, out uint mip)
+  {
+    unpack_tile(tile, xy, mip);
+  }
+
+  uint2 unpack_ptile(uint tile)
+  {
+    uint mip;
+    uint2 xy;
+    unpack_tile(tile, xy, mip);
+    return xy;
   }
 
   uint pack_tile(uint3 tile)
@@ -26,5 +40,6 @@ technique_macro USE_VTEX_UNPACK
     return r;
   }
 
+  #endif
   #end
 };

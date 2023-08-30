@@ -1,36 +1,31 @@
 #include "../frame.inc.tfx"
 #include "../materials.inc.tfx"
-#include "tile.inc.tfx"
+#include "virtual_texture.tfx"
 
 scope TerrainScope
 {
   reserve:
-    descriptor_set(1);
+    descriptor_set(2);
     register(buffer, 0-1);
     register(texture, 0-4);
 
-  Texture2D terrainHeightmap = channel(terrainHeightmap);
-  Texture2D terrainAlbedo = channel(terrainAlbedo);
+  Texture2D heightmap = channel(terrainHeightmap);
+  Texture2D fallback = channel(terrainAlbedo);
   float worldMapSize = channel(worldMapSize);
-  float2 terrainMinMaxHeightBorder = channel(terrainMinMaxHeightBorder);
-  float terrainMaxHeight = channel(terrainMaxHeight);
+  float2 minMaxHeightBorder = channel(terrainMinMaxHeightBorder);
+  float maxHeight = channel(terrainMaxHeight);
 
-  RWStructuredBuffer<float4> terrainPatches = extern(terrainPatches);
-  RWTexture2D<uint> terrainFeedbackBuf = extern(terrainFeedbackBuf);
-  float2 terrainFeedbackSize = extern(terrainFeedbackSize);
-  float terrainVTexSideSize = extern(terrainVTexSideSize);
-  float terrainVTexTileSize = extern(terrainVTexTileSize);
-  uint terrainVTexMaxMip = extern(terrainVTexMaxMip);
-  Texture2D terrainTileCache = extern(terrainTileCache);
-  uint terrainTileCacheSideSize = extern(terrainTileCacheSideSize);
-  Texture2D<uint> terrainVTexIndirection = extern(terrainVTexIndirection);
-  uint terrainVTexIndirectionSize = extern(terrainVTexIndirectionSize);
+  RWStructuredBuffer<float4> patches = extern(terrainPatches);
+  RWTexture2D<uint> feedbackBuf = extern(terrainFeedbackBuf);
+  float2 feedbackSize = extern(terrainFeedbackSize);
 };
 
 technique Terrain
 {
   support scope FrameScope;
   activate scope TerrainScope;
+  support scope VTexParamsScope;
+  support scope VTexSampleScope;
 
   render_state:
     polygon_mode = fill;
@@ -65,7 +60,7 @@ technique Terrain
 
   void getPatchParams(uint vertexId, out float2 world_xz, out float size, out uint edge_factor)
   {
-    float4 params = terrainPatches.Load(vertexId);
+    float4 params = patches.Load(vertexId);
     world_xz = params.xy;
     size = params.z;
     edge_factor = (uint)params.w;
@@ -114,11 +109,11 @@ technique Terrain
 
   float getHeight(float2 uv)
   {
-    float h = terrainHeightmap.SampleLevel(linearClampSampler, uv, 0).r;
+    float h = heightmap.SampleLevel(linearClampSampler, uv, 0).r;
     
-    float minH = TerrainScope.terrainMinMaxHeightBorder.x;
-    float maxH = TerrainScope.terrainMinMaxHeightBorder.y -0.03;
-    h = (h - minH) / (maxH - minH) * TerrainScope.terrainMaxHeight;
+    float minH = TerrainScope.minMaxHeightBorder.x;
+    float maxH = TerrainScope.minMaxHeightBorder.y -0.03;
+    h = (h - minH) / (maxH - minH) * TerrainScope.maxHeight;
 
     return h;
   }
@@ -204,51 +199,34 @@ technique Terrain
   {
     UnpackedMaterial m = (UnpackedMaterial)0;
 
-    float3 albedoFallback = terrainAlbedo.Sample(linearClampSampler, input.uv).rgb;
+    float3 albedoFallback = fallback.Sample(linearClampSampler, input.uv).rgb;
 
-    float halfWorldSize = TerrainScope.worldMapSize*0.5;
     float2 worldUV = saturate(((input.worldPos.xz) / TerrainScope.worldMapSize) + 0.5);
-    float2 tc = worldUV * TerrainScope.terrainVTexSideSize;
+    float2 tc = worldUV * VTexParamsScope.vtexSize;
     float2 dx = ddx(tc);
     float2 dy = ddy(tc);
-    float rowMip = 0.5 * log2(max(dot(dx,dx), dot(dy,dy)));
-    uint mip = clamp(rowMip, 0.0, (float)TerrainScope.terrainVTexMaxMip);
+    float mipF = 0.5 * log2(max(dot(dx,dx), dot(dy,dy)));
+    uint mip = clamp(mipF, 0.0, VTexParamsScope.maxMip);
 
-    float3 mipColors[11] = {
-      float3(0.7,0.7,0.7),
-      float3(0.7, 0.0, 0.0),
-      float3(0.0, 0.7, 0.0),
-      float3(0, 0, 0.7),
-      float3(0.7, 0.7, 0),
-
-      float3(0.4,0.4,0.2),
-      float3(0.4, 0.0, 0.0),
-      float3(0.0, 0.4, 0.0),
-      float3(0, 0, 0.4),
-      float3(0.4, 0.4, 0),
-
-      float3(0.4, 0.0, 0.2)
-    };
-
-    uint vtexMipTileSize = (uint)TerrainScope.terrainVTexTileSize << (uint)mip;
+    uint vtexMipTileSize = VTexParamsScope.tileSize << mip;
     uint2 vtileXY = (uint2)(tc / vtexMipTileSize);
-    float2 vtileUV = tc / float((uint)TerrainScope.terrainVTexTileSize << (uint)mip) - vtileXY;
+    float2 vtileUV = tc / float(vtexMipTileSize) - vtileXY;
 
-    float indMipTexSize = (float)((uint)TerrainScope.terrainVTexIndirectionSize >> (uint)mip);
-    uint packedPTile =  asuint(terrainVTexIndirection.Load(int3(vtileXY, mip)).r);
-    uint3 ptile = unpack_tile(packedPTile);
-    float vtexToPhysTexScale = TerrainScope.terrainVTexTileSize / (float)TerrainScope.terrainTileCacheSideSize;
-    //float2 cacheUV = vtileUV * vtexToPhysTexScale + (float)(ptile.xy * vtexToPhysTexScale);
-    float2 cacheUV = ((float2)ptile.xy + vtileUV) * vtexToPhysTexScale;//vtileUV * vtexToPhysTexScale + (float)(ptile.xy * vtexToPhysTexScale);
-    float3 cachedColor = terrainTileCache.Sample(linearClampSampler, cacheUV).rgb;
+    uint packedPTile = asuint(indirection.Load(int3(vtileXY, mip)).r);
+    uint2 ptile = unpack_ptile(packedPTile);
 
+    float vtexToPhysTexScale = (float)VTexParamsScope.tileSize / VTexParamsScope.tileStorageSize;
+    float2 storageTC = ((float2)ptile + vtileUV) * VTexParamsScope.tileSize;
+    float2 storageUV = storageTC / VTexParamsScope.tileStorageSize;
+    float3 cachedColor = tileStorage.Sample(linearClampSampler, storageUV).rgb;
 
-    uint packedVTile = pack_tile(uint3(vtileXY, (uint)mip));
-    uint2 feedbackTC = (input.pos.xy - float2(0.5, 0.5)) / FrameScope.viewPortSize * TerrainScope.terrainFeedbackSize;
-    terrainFeedbackBuf[feedbackTC] = packedVTile;
+    uint packedVTile = pack_tile(uint3(vtileXY, mip));
+    uint2 feedbackTC = (input.pos.xy - float2(0.5, 0.5)) / FrameScope.viewPortSize * TerrainScope.feedbackSize;
+    feedbackBuf[feedbackTC] = packedVTile;
 
     bool hasCache = packedPTile != (uint)~0;
-    float3 color = hasCache ? cachedColor : float3(0.1,0.4,0.3);//mipColors[ clamp(uint(mip), 0, 11) ];
+    float3 fallback = float3(0.1,0.4,0.3);
+    float3 color = hasCache ? cachedColor : fallback;
 
     initAlbedo(m, color);
     //initAlbedo(m, albedoFallback);

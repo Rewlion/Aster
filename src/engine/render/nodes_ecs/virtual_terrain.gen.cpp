@@ -36,8 +36,9 @@ static void virtual_terrain_creation_handler_internal(Event* event, ComponentsAc
   float vterrain_heightmapMaxHeight = accessor.get<float>(compile_ecs_name_hash("vterrain_heightmapMaxHeight"));
   int vterrain_patchSideBits = accessor.get<int>(compile_ecs_name_hash("vterrain_patchSideBits"));
   int vterrain_worldSize_meters = accessor.get<int>(compile_ecs_name_hash("vterrain_worldSize_meters"));
+  int vterrain_detailSize = accessor.get<int>(compile_ecs_name_hash("vterrain_detailSize"));
   const string& vterrain_detail = accessor.get<string>(compile_ecs_name_hash("vterrain_detail"));
-  virtual_terrain_creation_handler(*casted_event, vterrain_name,vterrain_heightmapMinMaxBorder,vterrain_heightmapMaxHeight,vterrain_patchSideBits,vterrain_worldSize_meters,vterrain_detail);
+  virtual_terrain_creation_handler(*casted_event, vterrain_name,vterrain_heightmapMinMaxBorder,vterrain_heightmapMaxHeight,vterrain_patchSideBits,vterrain_worldSize_meters,vterrain_detailSize,vterrain_detail);
 }
 
 
@@ -50,6 +51,7 @@ static EventSystemRegistration virtual_terrain_creation_handler_registration(
     DESCRIBE_QUERY_COMPONENT("vterrain_heightmapMaxHeight", float),
     DESCRIBE_QUERY_COMPONENT("vterrain_patchSideBits", int),
     DESCRIBE_QUERY_COMPONENT("vterrain_worldSize_meters", int),
+    DESCRIBE_QUERY_COMPONENT("vterrain_detailSize", int),
     DESCRIBE_QUERY_COMPONENT("vterrain_detail", string)
   },
   "virtual_terrain_creation_handler"

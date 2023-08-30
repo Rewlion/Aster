@@ -1,5 +1,30 @@
 #include "tile.inc.tfx"
 
+scope VTexParamsScope
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0);
+    register(texture, 0-1);
+
+  float vtexSize = extern(VTexSize);
+  float maxMip = extern(VTexMaxMip);
+  uint tileSize = extern(VTileSize);
+  float tileStorageSize = extern(VTileStorageSize);
+  uint indirectionSize = extern(VTexIndirectionSize);
+  float texelSize = extern(VTexelSize);
+};
+
+scope VTexSampleScope
+{
+  reserve:
+    descriptor_set(1);
+    register(texture, 0-1);
+
+  Texture2D tileStorage = extern(VTexTileStorage);
+  Texture2D<uint> indirection = extern(VTexIndirection);
+};
+
 scope VTexIndirectionUpdateScope
 {
   reserve:
@@ -24,25 +49,14 @@ technique VTexIndirectionUpdate
   {
     if (id.x < VTexIndirectionUpdateScope.updateCount)
     {
-      uint2 vtile_ptile = updateBuffer[id.x].rg;
-      uint2 vtile_xy = unpack_tile(vtile_ptile.x).xy;
+      uint2 packedVTilePTile = updateBuffer[id.x].rg;
+      uint2 vtile; uint mip;
+      unpack_vtile(packedVTilePTile.x, vtile, mip);
 
-      indirectionTex[vtile_xy] = vtile_ptile.y;
+      indirectionTex[vtile] = packedVTilePTile.y;
     }
   }
   #end
 
   compile(cs, main_cs);
 };
-
-// scope VTexPageTableUpdateScope
-// {
-//   reserve:
-//     descriptor_set(1);
-//     register(buffer, 0);
-// };
-
-// technique VTexPageTableUpdate
-// {
-
-// };

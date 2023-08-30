@@ -17,13 +17,11 @@ namespace Engine::Render
     ASSERT_FMT(std::fmod(vTexF, (float)TILE_SIZE) == 0, 
       "VTEX: final Virtual Texture size must be multiple of tile size({}). Current Size: ({})", TILE_SIZE, side_size_meter);
 
-    m_VTexSize = (size_t)vTexF;
     m_VTexSideSize = (size_t)vTexF;
-    m_PhysSideSizeMeters = (size_t)side_size_meter;
-    m_PhysTexSideSide = TILE_SIZE * PHYSICAL_TILES;
-    m_TexelPerMeter = texel_size_meter;
+    m_TileStorageSideSize = TILE_SIZE * PHYSICAL_TILES;
+    m_TexelSizeMeter = texel_size_meter;
 
-    const size_t pageTableSize = m_VTexSize / TILE_SIZE;
+    const size_t pageTableSize = m_VTexSideSize / TILE_SIZE;
     ASSERT_FMT(pageTableSize <= MAX_INDIRECTION_SIZE,
       "VTEX: too big indirection texture size ({}), max: ({})", pageTableSize, MAX_INDIRECTION_SIZE);
 
@@ -34,15 +32,15 @@ namespace Engine::Render
     m_PageTable.init(encoder, pageTableSize, mipsCount);
     m_VTileLRU.init(PHYSICAL_TILES);
 
-    m_PhysTilesCache = {
+    m_TilesStorage = {
       gapi::allocate_texture({
         .format = gapi::TextureFormat::R8G8B8A8_UNORM,
-        .extent = {m_PhysTexSideSide, m_PhysTexSideSide, 1},
+        .extent = {m_TileStorageSideSize, m_TileStorageSideSize, 1},
         .mipLevels = 1,
         .usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV,
       })
     };
-    encoder.clearColorTexture(m_PhysTilesCache, gapi::TextureState::Undefined, gapi::TextureState::ShaderRead, {(uint32_t)~0}, {});
+    encoder.clearColorTexture(m_TilesStorage, gapi::TextureState::Undefined, gapi::TextureState::ShaderRead, {(uint32_t)~0}, {});
   }
 
   void VirtualTexture::update(gapi::CmdEncoder& encoder, eastl::span<VTile> feedback, const TileRenderCB& render_cb)
@@ -51,8 +49,8 @@ namespace Engine::Render
      if (!m_PageTable.hasPageFaults())
       return;
 
-    encoder.transitTextureState(m_PhysTilesCache, gapi::TextureState::ShaderRead, gapi::TextureState::RenderTarget);
-    encoder.beginRenderpass({gapi::RenderPassAttachment{m_PhysTilesCache}}, {});
+    encoder.transitTextureState(m_TilesStorage, gapi::TextureState::ShaderRead, gapi::TextureState::RenderTarget);
+    encoder.beginRenderpass({gapi::RenderPassAttachment{m_TilesStorage}}, {});
 
     const auto pageFaultHandler = [&](size_t mip, VTile vtile, VTile ptile)
     {
@@ -67,29 +65,35 @@ namespace Engine::Render
       encoder.setViewport(vp);
       encoder.setScissor(sc);
 
-      tfx::set_extern("vtexTileSize", (float)TILE_SIZE);
-      tfx::set_extern("packedVTile", (uint)vtile.r);
-      tfx::set_extern("packedPTile", (uint)ptile.r);
-      tfx::set_extern("vtexMip", (uint)mip);
-      tfx::set_extern("vtexTexelSize", m_TexelPerMeter);
-      tfx::activate_scope("VirtualTextureScope", encoder);
-
-      render_cb(encoder);
+      render_cb(encoder, uint2((uint)vtile.r, (uint)ptile.r));
     };
 
     m_PageTable.processPageFaults(pageFaultHandler, m_VTileLRU);
 
     encoder.endRenderpass();
-    encoder.transitTextureState(m_PhysTilesCache, gapi::TextureState::RenderTarget, gapi::TextureState::ShaderRead);
+    encoder.transitTextureState(m_TilesStorage, gapi::TextureState::RenderTarget, gapi::TextureState::ShaderRead);
 
     m_PageTable.processIndirectionClears(encoder);
   }
 
   void VirtualTexture::invalidate(gapi::CmdEncoder& encoder)
   {
-    encoder.clearColorTexture(m_PhysTilesCache, gapi::TextureState::ShaderRead, gapi::TextureState::ShaderRead, {(uint32_t)~0}, {});
+    encoder.clearColorTexture(m_TilesStorage, gapi::TextureState::ShaderRead, gapi::TextureState::ShaderRead, {(uint32_t)~0}, {});
 
     m_PageTable.invalidate(encoder);
     m_VTileLRU.invalidate();
+  }
+
+  void VirtualTexture::setVTexTfxExterns(gapi::CmdEncoder& encoder) const
+  {
+    tfx::set_extern("VTexSize", (float)m_VTexSideSize);
+    tfx::set_extern("VTexMaxMip", (float)m_MaxMip);
+    tfx::set_extern("VTileSize", (uint)TILE_SIZE);
+    tfx::set_extern("VTileStorageSize", (float)m_TileStorageSideSize);
+    tfx::set_extern("VTexIndirectionSize", m_PageTable.getIndirectionTexSize());
+    tfx::set_extern("VTexelSize", m_TexelSizeMeter);
+
+    tfx::set_extern("VTexTileStorage", m_TilesStorage);
+    tfx::set_extern("VTexIndirection", m_PageTable.getIndirectionTex());
   }
 }
