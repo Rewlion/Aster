@@ -125,7 +125,10 @@ namespace gapi::vulkan
       if (srv && is_depth_format(tex.format))
         return tex.depthView.get();
 
-      return tex.viewsPerMip[mip].get();
+      if (!srv || mip > 0)
+        return tex.viewsPerMip[mip].get();
+
+      return tex.srvView.get();
     }
 
     ASSERT(!"UNSUPPORTED");

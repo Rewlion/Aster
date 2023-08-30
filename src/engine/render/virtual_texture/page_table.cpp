@@ -13,6 +13,8 @@ namespace Engine::Render
 {
   void VirtualTexture::PageTable::init(gapi::CmdEncoder& encoder, const size_t tiles_per_dim, const size_t mips)
   {
+    m_TilesPerDim = tiles_per_dim;
+
     m_IndirectionTex = {
       gapi::allocate_texture({
         .format = gapi::TextureFormat::R32_UINT,

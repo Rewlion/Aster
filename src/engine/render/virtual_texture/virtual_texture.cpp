@@ -20,6 +20,7 @@ namespace Engine::Render
     m_VTexSize = (size_t)vTexF;
     m_VTexSideSize = (size_t)vTexF;
     m_PhysSideSizeMeters = (size_t)side_size_meter;
+    m_PhysTexSideSide = TILE_SIZE * PHYSICAL_TILES;
     m_TexelPerMeter = texel_size_meter;
 
     const size_t pageTableSize = m_VTexSize / TILE_SIZE;
@@ -33,11 +34,10 @@ namespace Engine::Render
     m_PageTable.init(encoder, pageTableSize, mipsCount);
     m_VTileLRU.init(PHYSICAL_TILES);
 
-    const size_t physTexSideSize = TILE_SIZE * PHYSICAL_TILES;
     m_PhysTilesCache = {
       gapi::allocate_texture({
         .format = gapi::TextureFormat::R8G8B8A8_UNORM,
-        .extent = {physTexSideSize, physTexSideSize, 1},
+        .extent = {m_PhysTexSideSide, m_PhysTexSideSide, 1},
         .mipLevels = 1,
         .usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV,
       })

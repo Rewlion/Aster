@@ -182,6 +182,9 @@ namespace Engine::Render
     tfx::set_extern("terrainVTexTileSize", (float)VirtualTexture::getTileSize());
     tfx::set_extern("terrainVTexMaxMip", (uint)m_VirtualTexture.getMaxMip());
     tfx::set_extern("terrainTileCache", m_VirtualTexture.getPhysTilesCache());
+    tfx::set_extern("terrainTileCacheSideSize", m_VirtualTexture.getPhysTexSize());
+    tfx::set_extern("terrainVTexIndirection", m_VirtualTexture.getIndirectionTex());
+    tfx::set_extern("terrainVTexIndirectionSize", m_VirtualTexture.getIndirectionTexSize());
 
     Engine::TextureAsset asset;
     Engine::assets_manager.getTexture(m_TerrainHeightmap, asset);
@@ -214,6 +217,7 @@ namespace Engine::Render
 
     return {};
     //m_FeedbackFence.reset(gapi::allocate_fence());
+    //todo: support vk events
   }
 
   auto TerrainRender::analyzeFeedback(eastl::span<VTile> unprocessed_feedback) const -> eastl::vector<VTile>

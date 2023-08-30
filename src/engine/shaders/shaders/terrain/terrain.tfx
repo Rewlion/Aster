@@ -7,7 +7,7 @@ scope TerrainScope
   reserve:
     descriptor_set(1);
     register(buffer, 0-1);
-    register(texture, 0-3);
+    register(texture, 0-4);
 
   Texture2D terrainHeightmap = channel(terrainHeightmap);
   Texture2D terrainAlbedo = channel(terrainAlbedo);
@@ -22,6 +22,9 @@ scope TerrainScope
   float terrainVTexTileSize = extern(terrainVTexTileSize);
   uint terrainVTexMaxMip = extern(terrainVTexMaxMip);
   Texture2D terrainTileCache = extern(terrainTileCache);
+  uint terrainTileCacheSideSize = extern(terrainTileCacheSideSize);
+  Texture2D<uint> terrainVTexIndirection = extern(terrainVTexIndirection);
+  uint terrainVTexIndirectionSize = extern(terrainVTexIndirectionSize);
 };
 
 technique Terrain
@@ -204,11 +207,12 @@ technique Terrain
     float3 albedoFallback = terrainAlbedo.Sample(linearClampSampler, input.uv).rgb;
 
     float halfWorldSize = TerrainScope.worldMapSize*0.5;
-    float2 worldUV = saturate((((input.worldPos.xz) / TerrainScope.worldMapSize) + 1.0)*0.5);
+    float2 worldUV = saturate(((input.worldPos.xz) / TerrainScope.worldMapSize) + 0.5);
     float2 tc = worldUV * TerrainScope.terrainVTexSideSize;
     float2 dx = ddx(tc);
     float2 dy = ddy(tc);
-    float mip = clamp(0, TerrainScope.terrainVTexMaxMip, 0.5 * log2( max(dot(dx,dx), dot(dy,dy)) ));
+    float rowMip = 0.5 * log2(max(dot(dx,dx), dot(dy,dy)));
+    uint mip = clamp(rowMip, 0.0, (float)TerrainScope.terrainVTexMaxMip);
 
     float3 mipColors[11] = {
       float3(0.7,0.7,0.7),
@@ -226,19 +230,30 @@ technique Terrain
       float3(0.4, 0.0, 0.2)
     };
 
-    uint2 vtileXY = (uint2)(tc / ((uint)TerrainScope.terrainVTexTileSize << (uint)mip));
+    uint vtexMipTileSize = (uint)TerrainScope.terrainVTexTileSize << (uint)mip;
+    uint2 vtileXY = (uint2)(tc / vtexMipTileSize);
+    float2 vtileUV = tc / float((uint)TerrainScope.terrainVTexTileSize << (uint)mip) - vtileXY;
+
+    float indMipTexSize = (float)((uint)TerrainScope.terrainVTexIndirectionSize >> (uint)mip);
+    uint packedPTile =  asuint(terrainVTexIndirection.Load(int3(vtileXY, mip)).r);
+    uint3 ptile = unpack_tile(packedPTile);
+    float vtexToPhysTexScale = TerrainScope.terrainVTexTileSize / (float)TerrainScope.terrainTileCacheSideSize;
+    //float2 cacheUV = vtileUV * vtexToPhysTexScale + (float)(ptile.xy * vtexToPhysTexScale);
+    float2 cacheUV = ((float2)ptile.xy + vtileUV) * vtexToPhysTexScale;//vtileUV * vtexToPhysTexScale + (float)(ptile.xy * vtexToPhysTexScale);
+    float3 cachedColor = terrainTileCache.Sample(linearClampSampler, cacheUV).rgb;
+
+
     uint packedVTile = pack_tile(uint3(vtileXY, (uint)mip));
-    
     uint2 feedbackTC = (input.pos.xy - float2(0.5, 0.5)) / FrameScope.viewPortSize * TerrainScope.terrainFeedbackSize;
     terrainFeedbackBuf[feedbackTC] = packedVTile;
 
-    float3 color = mipColors[ clamp(uint(mip), 0, 11) ];
-    color += terrainTileCache.Sample(linearClampSampler, float2(0,0)).rgb;
+    bool hasCache = packedPTile != (uint)~0;
+    float3 color = hasCache ? cachedColor : float3(0.1,0.4,0.3);//mipColors[ clamp(uint(mip), 0, 11) ];
 
     initAlbedo(m, color);
     //initAlbedo(m, albedoFallback);
     initMetal(m, 0);
-    initRoughness(m, 0.5);
+    initRoughness(m, 1.0);
     initNormal(m, input.normal);
     initMotionVector(m, input.prevPos, input.curPos);
 

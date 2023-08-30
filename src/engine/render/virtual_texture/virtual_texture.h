@@ -35,7 +35,10 @@ namespace Engine::Render
       static
       auto getTileSize() -> size_t { return TILE_SIZE; }
 
-      auto getPhysTex() -> gapi::TextureHandle { return m_PhysTilesCache; }
+      auto getPhysTex() const -> gapi::TextureHandle { return m_PhysTilesCache; }
+      auto getPhysTexSize() const -> uint { return m_PhysTexSideSide; }
+      auto getIndirectionTex() const -> gapi::TextureHandle { return m_PageTable.getIndirectionTex(); }
+      auto getIndirectionTexSize() const -> uint { return m_PageTable.getIndirectionTexSize(); }
 
     private:
       class VTileLRU
@@ -87,7 +90,10 @@ namespace Engine::Render
           void processPageFaults(PageFaultHandler, VTileLRU&);
           void processIndirectionClears(gapi::CmdEncoder&);
           void invalidate(gapi::CmdEncoder&);
+          auto getIndirectionTex() const -> gapi::TextureHandle { return m_IndirectionTex; }
+          auto getIndirectionTexSize() const -> uint { return m_TilesPerDim; }
         private:
+          size_t m_TilesPerDim;
           gapi::TextureWrapper m_IndirectionTex;
           eastl::vector<IndirectionMip> m_IndirectionMips;
       };
@@ -97,6 +103,7 @@ namespace Engine::Render
       size_t m_MaxMip = 0;
       size_t m_VTexSideSize = 0;
       size_t m_PhysSideSizeMeters = 0;
+      size_t m_PhysTexSideSide = 0;
       float m_TexelPerMeter = 0.0;
 
       VTileLRU m_VTileLRU;
