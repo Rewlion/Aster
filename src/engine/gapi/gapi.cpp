@@ -25,6 +25,7 @@ namespace gapi
   PipelineLayoutHandler    (*gapi_add_pipeline_layout)(void* dsets);
   CmdEncoder*              (*gapi_allocate_cmd_encoder)();
   Fence*                   (*gapi_allocate_fence)();
+  CmdPromise*              (*gapi_allocate_cmd_promise)();
   void                     (*gapi_present_backbuffer_and_finalize_frame)();
   void                     (*gapi_wait_fence)(Fence* fence);
 
@@ -130,6 +131,11 @@ namespace gapi
   auto allocate_fence() -> Fence*
   {
     return gapi_allocate_fence();
+  }
+
+  auto allocate_cmd_promise() -> CmdPromise*
+  {
+    return gapi_allocate_cmd_promise();
   }
 
   void present_backbuffer_and_finalize_frame()

@@ -574,4 +574,11 @@ namespace gapi::vulkan
     if (final_state != TextureState::TransferDst)
       transitState(TextureState::TransferDst, final_state);
   }
+
+  void CmdEncoder::setCmdPromise(const gapi::CmdPromise& gapi_promise, const BufferState bf_state)
+  {
+    auto& promise = static_cast<const VulkanCmdPromise&>(gapi_promise);
+    m_CmdBuf.setEvent(promise.event.get(),
+      get_pipeline_stage_for_buffer_state(bf_state));
+  }
 }

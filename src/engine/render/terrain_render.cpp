@@ -42,6 +42,8 @@ namespace Engine::Render
     const float texelSizeM = 0.01; 
     m_VirtualTexture.init(*encoder, world_size_meters, texelSizeM);
     encoder->flush();
+
+    m_FeedbackPromise.reset(gapi::allocate_cmd_promise());
   }
 
   void TerrainRender::setView(const float3 view_pos)
@@ -204,17 +206,20 @@ namespace Engine::Render
   {
     if (m_Feedback.valid())
     {
-      //m_FeedbackFence->wait();
-      gapi::wait_gpu_idle();
-      return std::move(m_Feedback);
+      if (m_FeedbackPromise->isReady())
+      {
+        m_FeedbackPromise->reset();
+        return std::move(m_Feedback);
+      }
+      else
+        return {};
     }
 
     m_Feedback = gapi::allocate_buffer(feedback_size, gapi::BF_CpuVisible, "feedbackDst");
     encoder.copyTextureToBuffer(feedback_buf, m_Feedback);
+    encoder.setCmdPromise(*m_FeedbackPromise, gapi::BufferState::BF_STATE_TRANSFER_DST);
 
     return {};
-    //m_FeedbackFence.reset(gapi::allocate_fence());
-    //todo: support vk events
   }
 
   auto TerrainRender::analyzeFeedback(eastl::span<VTile> unprocessed_feedback) const -> eastl::vector<VTile>

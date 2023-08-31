@@ -108,6 +108,8 @@ namespace gapi::vulkan
       void clearColorTexture(const TextureHandle, const TextureState current_state, const TextureState final_state,
                              const ClearColorValue&, const TextureSubresourceRange&) override;
 
+      void setCmdPromise(const gapi::CmdPromise&, const BufferState) override;
+
     private:
       vk::Extent2D getMinRenderSize(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) const;
       vk::RenderPass getRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil);

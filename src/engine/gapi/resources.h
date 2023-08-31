@@ -442,6 +442,7 @@ namespace gapi
     BF_STATE_TRANSFER_DST     = 1 << 3,
     BF_STATE_UAV_RW           = 1 << 4,
     BF_STATE_SRV              = 1 << 5,
+    BF_STATE_HOST_READ        = 1 << 6,
     BF_STATE_LAST
   };
 
@@ -613,6 +614,16 @@ namespace gapi
     virtual ~Fence(){}
     virtual void wait() = 0;
     virtual void reset() = 0;
+  };
+
+  struct CmdPromise
+  {
+    virtual
+    ~CmdPromise(){}
+    virtual
+    auto isReady() const -> bool = 0;
+    virtual
+    void reset() = 0;
   };
 
   union ClearColorValue

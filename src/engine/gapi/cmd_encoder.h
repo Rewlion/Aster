@@ -114,5 +114,8 @@ namespace gapi
       virtual
       void clearColorTexture(const TextureHandle, const TextureState current_state, const TextureState final_state,
                              const ClearColorValue&, const TextureSubresourceRange&) = 0;
+
+      virtual
+      void setCmdPromise(const gapi::CmdPromise&, const BufferState) = 0;
   };
 }

@@ -129,6 +129,8 @@ namespace gapi::vulkan
 
       VulkanFence* allocateFence();
 
+      auto allocateCmdPromise() -> VulkanCmdPromise*;
+
       void prepareSrvStubs(gapi::CmdEncoder&);
 
       void setDbgUtilsObjName(const char* name, const uint64_t obj, const vk::ObjectType type);

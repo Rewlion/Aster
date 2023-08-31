@@ -73,6 +73,11 @@ namespace gapi::vulkan
         frameResources[frameId].cmdPools.push_back(std::move(cmdPool));
       }
 
+      inline void addEvent(vk::UniqueEvent&& event)
+      {
+        frameResources[frameId].events.push_back(std::move(event));
+      }
+
       inline void nextFrame()
       {
         frameId = (frameId + 1) % GC_FRAMES;
@@ -93,6 +98,7 @@ namespace gapi::vulkan
         frameResources[frameId].framebuffers.clear();
         frameResources[frameId].dsetManagers.clear();
         frameResources[frameId].cmdPools.clear();
+        frameResources[frameId].events.clear();
       }
 
       inline
@@ -114,6 +120,7 @@ namespace gapi::vulkan
         eastl::vector<vk::UniqueFramebuffer> framebuffers;
         eastl::vector<DescriptorsSetManager> dsetManagers;
         eastl::vector<vk::UniqueCommandPool> cmdPools;
+        eastl::vector<vk::UniqueEvent> events;
       };
 
       Device* device = nullptr;

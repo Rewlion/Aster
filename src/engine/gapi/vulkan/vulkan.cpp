@@ -30,6 +30,7 @@ namespace gapi
   extern PipelineLayoutHandler (*gapi_add_pipeline_layout)(void* dsets);
   extern gapi::CmdEncoder*     (*gapi_allocate_cmd_encoder)();
   extern Fence*                (*gapi_allocate_fence)();
+  extern CmdPromise*           (*gapi_allocate_cmd_promise)();
   extern void                  (*gapi_wait_fence)(Fence* fence);
   extern void                  (*gapi_present_backbuffer_and_finalize_frame)();
 }
@@ -144,6 +145,11 @@ namespace gapi::vulkan
     return device->allocateFence();
   }
 
+  auto allocate_cmd_promise() -> CmdPromise*
+  {
+    return device->allocateCmdPromise();
+  }
+
   void wait_fence(Fence* fence)
   {
     VulkanFence* f = reinterpret_cast<VulkanFence*>(fence);
@@ -241,6 +247,11 @@ namespace gapi::vulkan
     encoder->flush();
   }
 
+  void free_cmd_promise(VulkanCmdPromise* promise)
+  {
+    frameGc.addEvent(std::move(promise->event));
+  }
+
   void init()
   {
     gapi_wait_gpu_idle = wait_gpu_idle;
@@ -260,6 +271,7 @@ namespace gapi::vulkan
     gapi_add_pipeline_layout = add_pipeline_layout;
     gapi_allocate_cmd_encoder = allocate_cmd_encoder;
     gapi_allocate_fence = allocate_fence;
+    gapi_allocate_cmd_promise = allocate_cmd_promise;
     gapi_wait_fence = wait_fence;
     gapi_present_backbuffer_and_finalize_frame = present_backbuffer_and_finalize_frame;
 

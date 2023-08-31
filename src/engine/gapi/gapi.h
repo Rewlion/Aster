@@ -25,6 +25,7 @@ namespace gapi
   auto add_pipeline_layout(void* dsets) -> PipelineLayoutHandler;
   auto allocate_cmd_encoder() -> CmdEncoder*;
   auto allocate_fence() -> Fence*;
+  auto allocate_cmd_promise() -> CmdPromise*;
   void present_backbuffer_and_finalize_frame();
   void wait_fence(Fence* fence);
 }

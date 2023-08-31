@@ -99,15 +99,37 @@ namespace gapi::vulkan
 
   struct VulkanFence: public gapi::Fence
   {
-    virtual ~VulkanFence() override {}
-    virtual void wait() override
+    ~VulkanFence() override {}
+    void wait() override
     {
       VK_CHECK(get_device().waitForFences(1, &fence.get(), true, ~0));
     }
-    virtual void reset() override
+    void reset() override
     {
       VK_CHECK(get_device().resetFences(1, &fence.get()));
     }
     vk::UniqueFence fence;
+  };
+
+  struct VulkanCmdPromise: public gapi::CmdPromise
+  {
+    ~VulkanCmdPromise() override
+    {
+      extern void free_cmd_promise(VulkanCmdPromise* promise);
+      free_cmd_promise(this);
+    }
+
+    auto isReady() const -> bool override
+    {
+      auto res = get_device().getEventStatus(event.get());
+      return res == vk::Result::eEventSet;
+    }
+
+    void reset() override
+    {
+      get_device().resetEvent(event.get());
+    }
+
+    vk::UniqueEvent event;
   };
 }

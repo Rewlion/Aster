@@ -416,6 +416,7 @@ namespace gapi::vulkan
           flags |= vk::PipelineStageFlagBits::eVertexInput;
           break;
         }
+        case BF_STATE_HOST_READ:
         case BF_STATE_TRANSFER_DST:
         {
           flags |= vk::PipelineStageFlagBits::eTransfer;
@@ -455,6 +456,11 @@ namespace gapi::vulkan
         case BF_STATE_INDEX:
         {
           flags |= vk::AccessFlagBits::eIndexRead;
+          break;
+        }
+        case BF_STATE_HOST_READ:
+        {
+          flags |= vk::AccessFlagBits::eHostRead;
           break;
         }
         case BF_STATE_TRANSFER_DST:

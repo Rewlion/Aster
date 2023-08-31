@@ -628,6 +628,19 @@ namespace gapi::vulkan
     return f;
   }
 
+  auto Device::allocateCmdPromise() -> VulkanCmdPromise*
+  {
+    VulkanCmdPromise* p = new VulkanCmdPromise{};
+    
+    auto event = m_Device->createEventUnique({});
+    VK_CHECK_RES(event);
+
+    p->event = std::move(event.value);
+    VK_CHECK(m_Device->resetEvent(p->event.get()));
+
+    return p;
+  }
+
   void Device::setDbgUtilsObjName(const char* name, const uint64_t obj, const vk::ObjectType type)
   {
     if (checkCapability(CapabilitiesBits::DebugMarks) && name)

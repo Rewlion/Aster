@@ -60,6 +60,6 @@ namespace Engine::Render
 
       VirtualTexture m_VirtualTexture;
       gapi::BufferWrapper m_Feedback;
-      std::unique_ptr<gapi::Fence> m_FeedbackFence;
+      std::unique_ptr<gapi::CmdPromise> m_FeedbackPromise;
   };
 }
