@@ -57,8 +57,8 @@ namespace fg
           auto addTarget(const char*, const gapi::LoadOp = gapi::LoadOp::Load) && -> RpBuilder&&;
           auto addRODepth(const char*, const gapi::LoadOp = gapi::LoadOp::Load) && -> RpBuilder&&;
           auto addDepth(const TextureRequest, 
-                        const gapi::LoadOp depth_load, const gapi::StoreOp depth_store,
-                        const gapi::LoadOp stencil_load, const gapi::StoreOp stencil_store) && -> RpBuilder&&;
+                        const gapi::LoadOp depth_load = gapi::LoadOp::Load, const gapi::StoreOp depth_store = gapi::StoreOp::Store,
+                        const gapi::LoadOp stencil_load = gapi::LoadOp::Load, const gapi::StoreOp stencil_store = gapi::StoreOp::Store) && -> RpBuilder&&;
       };
 
     public:

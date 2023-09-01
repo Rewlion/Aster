@@ -187,17 +187,8 @@ namespace fg
             dfs_impl(createdBy, dfs_impl);
         };
 
-        for (const auto& vResId: node.modifies)
-          dfsCreation(vResId);
-
-        for (const auto& readRq: node.reads)
-        {
-          if (readRq.timeline == Timeline::Previous)
-            continue;
-
-          dfsCreation(readRq.vResId);
-
-          const auto& vRes = m_Registry.m_VirtResources[readRq.vResId];
+        auto dfsClonning = [&](auto virt_res_id) {
+          const auto& vRes = m_Registry.m_VirtResources[virt_res_id];
           if (vRes.clonnedVResId != INVALID_VIRT_RES_ID)
           {
             fg::virt_res_id_t clonnedFrom = vRes.clonnedVResId;
@@ -205,13 +196,29 @@ namespace fg
             {
               const auto& clonnedVRes = m_Registry.m_VirtResources[clonnedFrom];
               for (const auto prevNode: clonnedVRes.modificationChain)
-              if (processed[prevNode] == 0)
-                dfs_impl(prevNode, dfs_impl);
+                if (processed[prevNode] == 0)
+                  dfs_impl(prevNode, dfs_impl);
               
               clonnedFrom = clonnedVRes.clonnedVResId;
             }
           }
+        };
 
+        for (const auto& vResId: node.modifies)
+        {
+          dfsClonning(vResId);
+          dfsCreation(vResId);
+        }
+
+        for (const auto& readRq: node.reads)
+        {
+          if (readRq.timeline == Timeline::Previous)
+            continue;
+
+          dfsClonning(readRq.vResId);
+          dfsCreation(readRq.vResId);
+
+          const auto& vRes = m_Registry.m_VirtResources[readRq.vResId];
           for (const auto prevNode: vRes.modificationChain)
             if (processed[prevNode] == 0)
               dfs_impl(prevNode, dfs_impl);
@@ -377,14 +384,23 @@ namespace fg
     encoder->flush();
   }
 
+  auto Manager::getResourceId(const virt_res_id_t virt_res_id)  -> res_id_t
+  {
+    const auto& vRes = m_Registry.m_VirtResources[virt_res_id];
+    const auto clonnedVResId = vRes.clonnedVResId;
+    return clonnedVResId != INVALID_VIRT_RES_ID ?
+             m_Registry.m_VirtResources[clonnedVResId].resourceId :
+             vRes.resourceId;
+  }
+
   auto Manager::getTexture(const virt_res_id_t virt_res_id, const Timeline timeline) -> gapi::TextureHandle
   {
     if (timeline == Timeline::Previous && m_iFrame == 0) [[unlikely]]
       return gapi::TextureHandle::Invalid;
 
-    auto& vRes = m_Registry.m_VirtResources[virt_res_id];
-    if (vRes.resourceId != INVALID_RES_ID)
-      return getStorage(timeline).getTexture(vRes.resourceId);
+    const auto resId = getResourceId(virt_res_id);
+    if (resId != INVALID_RES_ID)
+      return getStorage(timeline).getTexture(resId);
     
     return gapi::TextureHandle::Invalid;
   }
@@ -392,19 +408,19 @@ namespace fg
   auto Manager::getTextureAllocDescription(const virt_res_id_t virt_res_id)
     -> const gapi::TextureAllocationDescription&
   {
-    const auto& vRes = m_Registry.m_VirtResources[virt_res_id];
-    if (vRes.resourceId != INVALID_RES_ID)
+    const auto resId = getResourceId(virt_res_id);
+    if (resId != INVALID_RES_ID)
       return std::get<Registry::TextureResource>(
-        m_Registry.m_Resources[vRes.resourceId]).allocDesc;
+        m_Registry.m_Resources[resId]).allocDesc;
     
     return m_DefaultTexAllocDesc;
   }
 
   auto Manager::getSampler(const virt_res_id_t virt_res_id) -> gapi::SamplerHandler
   {
-    auto& vRes = m_Registry.m_VirtResources[virt_res_id];
-    if (vRes.resourceId != INVALID_RES_ID)
-      return getStorage().getSampler(vRes.resourceId);
+    const auto resId = getResourceId(virt_res_id);
+    if (resId != INVALID_RES_ID)
+      return getStorage().getSampler(resId);
     
     return gapi::SamplerHandler::Invalid;
   }
@@ -412,39 +428,39 @@ namespace fg
   auto Manager::getSamplerAllocDescription(const virt_res_id_t virt_res_id)
     -> const gapi::SamplerAllocationDescription&
   {
-    const auto& vRes = m_Registry.m_VirtResources[virt_res_id];
-    if (vRes.resourceId != INVALID_RES_ID)
+    const auto resId = getResourceId(virt_res_id);
+    if (resId != INVALID_RES_ID)
       return std::get<Registry::SamplerResource>(
-        m_Registry.m_Resources[vRes.resourceId]).allocDesc;
+        m_Registry.m_Resources[resId]).allocDesc;
     
     return m_DefaultSamplerAllocDesc;
   }
 
   auto Manager::getBuffer(const virt_res_id_t virt_res_id) -> gapi::BufferHandler
   {
-    auto& vRes = m_Registry.m_VirtResources[virt_res_id];
-    if (vRes.resourceId != INVALID_RES_ID)
-      return getStorage().getBuffer(vRes.resourceId);
+    const auto resId = getResourceId(virt_res_id);
+    if (resId != INVALID_RES_ID)
+      return getStorage().getBuffer(resId);
     
     return gapi::BufferHandler::Invalid;
   }
 
   auto Manager::getBufferAllocDescription(const virt_res_id_t virt_res_id) -> const gapi::BufferAllocationDescription&
   {
-    const auto& vRes = m_Registry.m_VirtResources[virt_res_id];
-    if (vRes.resourceId != INVALID_RES_ID)
+    const auto resId = getResourceId(virt_res_id);
+    if (resId != INVALID_RES_ID)
       return std::get<Registry::BufferResource>(
-        m_Registry.m_Resources[vRes.resourceId]).allocDesc;
+        m_Registry.m_Resources[resId]).allocDesc;
     
     return m_DefaultBufferAllocDesc;
   }
 
   auto Manager::getBlob(const virt_res_id_t virt_res_id) -> std::byte*
   {
-    auto& vRes = m_Registry.m_VirtResources[virt_res_id];
-    if (vRes.resourceId != INVALID_RES_ID)
+    const auto resId = getResourceId(virt_res_id);
+    if (resId != INVALID_RES_ID)
     {
-      auto& blobRes = std::get<Registry::BlobResource>(m_Registry.m_Resources[vRes.resourceId]);
+      auto& blobRes = std::get<Registry::BlobResource>(m_Registry.m_Resources[resId]);
       return getStorage().getBlob(blobRes.bufferStart);
     }
     

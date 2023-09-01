@@ -30,6 +30,7 @@ namespace fg
       void imGuiDrawFramegraph();
 
     private:
+      auto getResourceId(const virt_res_id_t) -> res_id_t;
       auto getStorage(const Timeline = Timeline::Current) -> ResourceStorage&;
       void compile();
       void validateResources();

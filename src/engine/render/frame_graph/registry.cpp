@@ -98,7 +98,16 @@ namespace fg
     const name_id_t nameId = m_ResourcesNames.storeString(name);
     const virt_res_id_t vResId = to_virt_res_id(nameId);
 
-    m_VirtResources[vResId].modificationChain.push_back(m_CurrentExecNodeId); //todo: should be pushed at the begining because of the consumer at the end
+    auto& vRes = m_VirtResources[vResId];
+    auto& mChain = vRes.modificationChain;
+    
+    const size_t prevSize = mChain.size();
+    mChain.push_back(m_CurrentExecNodeId);
+    if ((vRes.consumedBy != INVALID_NODE_ID) && (prevSize > 1))
+    {
+      const size_t prevId = prevSize;
+      std::swap(mChain[prevId-1], mChain[prevId]);
+    }
 
     auto& node = m_Nodes[m_CurrentExecNodeId];
     node.modifies.push_back(vResId);
@@ -194,7 +203,7 @@ namespace fg
     
     vResTo.clonnedVResId = vResIdFrom;
     vResTo.createdBy = m_CurrentExecNodeId;
-    vResTo.modificationChain.insert(0, m_CurrentExecNodeId);
+    vResTo.modificationChain.insert(vResTo.modificationChain.begin(), m_CurrentExecNodeId);
     vResTo.resourceId = vResFrom.resourceId;
 
     auto& node = m_Nodes[m_CurrentExecNodeId];
