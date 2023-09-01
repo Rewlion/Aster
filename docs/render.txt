@@ -68,3 +68,13 @@ TAA:
  - https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/
  - https://alextardif.com/TAA.html
  - http://behindthepixels.io/assets/files/TemporalAA.pdf
+
+Virtual Texture, Terrain:
+ - https://www.youtube.com/watch?v=MejJL87yNgI&ab_channel=SeanBarrett (main)
+   http://silverspaceship.com/src/svt/
+ - https://www.youtube.com/watch?v=kzthHcbG9IM&ab_channel=Sergreinforcedcc
+   Ghost Recon Wildlands Terrain Tools and Technology
+ - https://www.youtube.com/watch?v=SVPMhGteeuE&t=2860s&ab_channel=GDC
+   Adaptive Virtual Texture Rendering in Far Cry 4
+ - https://www.youtube.com/watch?v=q67RHk3QLr4&t=1459s&ab_channel=JavidMamedov
+   Terrain in Battlefield 3: A Modern, Complete and Scalable System (Mattias Widmark)
