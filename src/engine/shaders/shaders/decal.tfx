@@ -1,0 +1,112 @@
+#include "frame.inc.tfx"
+#include "depth.inc.tfx"
+
+scope DecalScope
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0);
+    register(texture, 0-1);
+
+  Texture2D depthTex = extern(depthTex);
+
+  float4x4 modelTm = channel(modelTm);
+  float4x4 invModelTm = channel(invModelTm);
+  Texture2D decalTex = channel(decalTex);
+};
+
+technique Decal
+{
+  support scope FrameScope;
+  support scope DecalScope;
+
+  render_state:
+    cull_mode = none;
+    primitive_topology = triangle_strip;
+  depth:
+    test = true;
+    write = false;
+  blending:
+      mrt(0):
+        has_blending = yes;
+        src_color_blend_factor = src_alpha;
+        dst_color_blend_factor = one_minus_src_alpha;
+        color_blend_op = add;
+        src_alpha_blend_factor = one;
+        dst_alpha_blend_factor = zero;
+        alpha_blend_op = add;
+
+  USE_DEPTH_UTILS();
+
+  #hlsl
+  struct VsOutput
+  {
+    float4 pos: SV_Position;
+    float3 viewDir: POSITION0;
+    float3 worldPos : POSITION1;
+  };
+
+  VsOutput vs_main(int id: SV_VertexID)
+  {
+    float3 vertex[14] = {
+      -0.5f, 0.5f, 0.5f,  
+      0.5f, 0.5f, 0.5f,   
+      -0.5f, -0.5f, 0.5f, 
+      0.5f, -0.5f, 0.5f,  
+      0.5f, -0.5f, -0.5f, 
+      0.5f, 0.5f, 0.5f,   
+      0.5f, 0.5f, -0.5f,  
+      -0.5f, 0.5f, 0.5f,  
+      -0.5f, 0.5f, -0.5f, 
+      -0.5f, -0.5f, 0.5f, 
+      -0.5f, -0.5f, -0.5f,
+      0.5f, -0.5f, -0.5f, 
+      -0.5f, 0.5f, -0.5f, 
+      0.5f, 0.5f, -0.5f   
+    };
+
+    float4 modelPos = float4(vertex[id], 1.0);
+    float3 worldPos = mul(DecalScope.modelTm, modelPos).xyz;
+    float3 viewDir = normalize(worldPos - FrameScope.cameraPos);
+
+    float4x4 mvp = FrameScope.viewProj;
+    mvp = mul(mvp, DecalScope.modelTm);
+
+    VsOutput o;
+    o.pos = mul(mvp, modelPos);
+    o.viewDir = viewDir;
+    o.worldPos = worldPos;
+
+    return o;
+  }
+
+  float4 ps_main(VsOutput input) : SV_Target0
+  {
+    float2 screenUV = float2(input.pos.x, input.pos.y) / FrameScope.viewPortSize;
+    float3 viewPlaneVec = FrameScope.ltView
+                        + (FrameScope.rtView - FrameScope.ltView) * screenUV.x 
+                        + (FrameScope.lbView - FrameScope.ltView) * screenUV.y;
+
+    float3 viewDir = normalize(input.viewDir);
+
+    uint3 tc = uint3(input.pos.xy, 0);
+    float depth = depthTex.Load(tc).r;
+    if (depth == 0.0)
+      discard;
+
+    float3 worldPos = calcWorldPos(FrameScope.cameraPos, viewPlaneVec, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+    float3 modelPos = mul(DecalScope.invModelTm, float4(worldPos, 1.0)).xyz;
+    if (any(modelPos > 0.5 || modelPos < -0.5))
+      discard;
+
+    float2 uv = (modelPos.xy + 0.5);
+    uv.y = 1.0 - uv.y;
+    float4 albedo = decalTex.Sample(linearClampSampler, uv);
+
+    return albedo.rgba;
+  }
+  #end
+
+  compile(vs, vs_main);
+  compile(ps, ps_main);
+};

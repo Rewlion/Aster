@@ -27,6 +27,13 @@ namespace ecs
     init_meta_storage();
 
     loginfo("ecs: init templates");
+    for (const char* p: {
+      "@engine_res/templates/render.bk"})
+    {
+      loginfo("ecs: reading templates from {}", p);
+      add_templates_from_blk(*registry, p);
+    }
+
     DataBlock* templates = settings->getChildBlock("entity_templates");
     for(const auto& attr: templates->getAttributes())
     {
@@ -37,13 +44,6 @@ namespace ecs
 
         add_templates_from_blk(*registry, blkWithTemplates);
       }
-    }
-
-    for (const char* p: {
-      "@engine_res/templates/render.bk"})
-    {
-      loginfo("ecs: reading templates from {}", p);
-      add_templates_from_blk(*registry, p);
     }
   }
 

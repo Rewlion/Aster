@@ -1,5 +1,7 @@
 #include "descriptors_set_manager.h"
+
 #include "compiler_to_vk.h"
+#include "gapi_to_vk.h"
 #include "pipeline_layout.h"
 #include "result.h"
 
@@ -259,8 +261,11 @@ namespace gapi::vulkan
               return false;
             };
 
-            if (!addWrite(vk::DescriptorType::eSampledImage, vk::ImageLayout::eShaderReadOnlyOptimal))
-              addWrite(vk::DescriptorType::eStorageImage, vk::ImageLayout::eGeneral);
+            const bool isDepth = (info.texture != gapi::TextureHandle::Invalid) && is_depth_format(m_Device.getTextureFormat(info.texture));
+
+            if (!(isDepth && addWrite(vk::DescriptorType::eSampledImage, vk::ImageLayout::eDepthStencilReadOnlyOptimal)))
+              if (!addWrite(vk::DescriptorType::eSampledImage, vk::ImageLayout::eShaderReadOnlyOptimal))
+                addWrite(vk::DescriptorType::eStorageImage, vk::ImageLayout::eGeneral);
           },
           [&](const UniformBufferWriteInfo& info){
             auto addWrite = [&](const vk::DescriptorType type)

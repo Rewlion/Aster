@@ -25,7 +25,7 @@ namespace Engine::Render
       allocDesc.arrayLayers = 1;
       allocDesc.usage = gapi::TEX_USAGE_DEPTH_STENCIL | gapi::TEX_USAGE_SRV;
 
-      auto gbufDepth = reg.createTexture("gbuffer_depth", allocDesc, gapi::TextureState::DepthWriteStencilWrite);
+      auto gbufDepth = reg.createTexture("opaque_depth", allocDesc, gapi::TextureState::DepthWriteStencilWrite);
 
       allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
       allocDesc.usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV;
@@ -105,7 +105,7 @@ namespace Engine::Render
       auto gbuf0 = reg.readTexture("gbuf0", gapi::TextureState::ShaderRead);
       auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead);
       auto gbuf2 = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead);
-      auto gbufDepth = reg.readTexture("gbuffer_depth", gapi::TextureState::ShaderRead);
+      auto gbufDepth = reg.renameTexture("depth_for_resolve", "gbuffer_depth", gapi::TextureState::DepthReadStencilRead);
       auto atmParams = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_SRV);
       auto enviSpecular = reg.readTexture("atm_envi_specular", gapi::TextureState::ShaderRead, true);
       auto enviBRDF = reg.readTexture("atm_envi_brdf", gapi::TextureState::ShaderRead, true);

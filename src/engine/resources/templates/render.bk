@@ -49,3 +49,9 @@ template @("name: VirtualTerrain") {
 template @("name: VirtualTerrainRender") {
   component @("TerrainRender vterrain_render") {}
 }
+
+template @("name: Decal") {
+  text decal_name = ""
+  float3 size = 1, 1, 1
+  float3 pos = 0, 0, 0
+}

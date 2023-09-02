@@ -186,3 +186,43 @@ static SystemRegistration system_controller_registration(
   },
   "system_controller"
 );
+
+
+static void system_on_moving_decal_creation_internal(Event* event, ComponentsAccessor& accessor)
+{
+  OnEntityCreated* casted_event = reinterpret_cast<OnEntityCreated*>(event);
+  float3& center_pos = accessor.get<float3>(compile_ecs_name_hash("center_pos"));
+  const float3& pos = accessor.get<float3>(compile_ecs_name_hash("pos"));
+  system_on_moving_decal_creation(*casted_event, center_pos,pos);
+}
+
+
+static EventSystemRegistration system_on_moving_decal_creation_registration(
+  system_on_moving_decal_creation_internal,
+  compile_ecs_name_hash("OnEntityCreated"),
+  {
+    DESCRIBE_QUERY_COMPONENT("center_pos", float3),
+    DESCRIBE_QUERY_COMPONENT("pos", float3)
+  },
+  "system_on_moving_decal_creation"
+);
+
+
+static void moving_decal_controller_internal(ComponentsAccessor& accessor)
+{
+  bool moving_decal_flag = accessor.get<bool>(compile_ecs_name_hash("moving_decal_flag"));
+  const float3& center_pos = accessor.get<float3>(compile_ecs_name_hash("center_pos"));
+  float3& pos = accessor.get<float3>(compile_ecs_name_hash("pos"));
+  moving_decal_controller(moving_decal_flag,center_pos,pos);
+}
+
+
+static SystemRegistration moving_decal_controller_registration(
+  moving_decal_controller_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("moving_decal_flag", bool),
+    DESCRIBE_QUERY_COMPONENT("center_pos", float3),
+    DESCRIBE_QUERY_COMPONENT("pos", float3)
+  },
+  "moving_decal_controller"
+);

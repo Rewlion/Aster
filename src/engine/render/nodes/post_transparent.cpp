@@ -78,7 +78,7 @@ namespace Engine::Render
       auto taaCurrentFrame = reg.readTexture("final_target", gapi::TextureState::ShaderRead);
       auto taaPrevFrame = reg.readTexture("final_antialiased_target", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
       auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead);
-      auto gbufferDepth = reg.readTexture("gbuffer_depth", gapi::TextureState::ShaderRead);
+      auto gbufferDepth = reg.readTexture("gbuffer_depth", gapi::TextureState::DepthReadStencilRead);
 
       auto rt = reg.createTexture("final_antialiased_target", allocDesc, gapi::TextureState::RenderTarget);
       reg.requestRenderPass()

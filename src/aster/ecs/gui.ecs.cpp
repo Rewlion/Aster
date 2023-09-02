@@ -7,6 +7,7 @@
 #include <engine/console/cmd.h>
 #include <engine/console/console.h>
 #include <engine/ecs/ecs.h>
+#include <engine/time.h>
 
 // ECS_SYSTEM()
 // static void camera_rotation(
@@ -140,6 +141,21 @@ void system_controller(const ecs::EntityId pawn_eid, bool controller_flag)
   query_pawn(pawn_eid, [&](const float v){
     fv = v;
   });
+}
+
+ECS_EVENT_SYSTEM()
+static
+void system_on_moving_decal_creation(const ecs::OnEntityCreated& evt, float3& center_pos,  const float3& pos)
+{
+  center_pos = pos;
+}
+
+ECS_SYSTEM()
+static
+void moving_decal_controller(const bool moving_decal_flag, const float3& center_pos, float3& pos)
+{
+  float t = Engine::Time::get_sec_since_start();
+  pos.y = center_pos.y + 0.3 * std::cos(t);
 }
 
 CONSOLE_CMD("create_src", 0, 0, create_src);

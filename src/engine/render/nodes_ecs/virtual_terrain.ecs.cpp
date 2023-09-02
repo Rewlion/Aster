@@ -49,7 +49,7 @@ void virtual_terrain_creation_handler(
     auto gbuf0 = reg.modifyTexture("gbuf0", gapi::TextureState::RenderTarget);
     auto gbuf1 = reg.modifyTexture("gbuf1", gapi::TextureState::RenderTarget);
     auto gbuf2 = reg.modifyTexture("gbuf2", gapi::TextureState::RenderTarget);
-    auto gbufDepth = reg.modifyTexture("gbuffer_depth", gapi::TextureState::DepthWriteStencilWrite);
+    auto gbufDepth = reg.modifyTexture("opaque_depth", gapi::TextureState::DepthWriteStencilWrite);
 
     const int2 feedbackSize = Engine::Render::get_render_size() / 10;
     auto feedbackBuf = reg.createTexture("terrainFeedback", gapi::TextureAllocationDescription{

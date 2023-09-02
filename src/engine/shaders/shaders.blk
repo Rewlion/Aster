@@ -7,6 +7,7 @@ shaders_list
   "shaders/atmosphere/sky_lut.tfx" {}
   "shaders/atmosphere/sph.tfx" {}
   "shaders/atmosphere/transmittance_lut.tfx" {}
+  "shaders/decal.tfx" {}
   "shaders/font.tfx" {}
   "shaders/gbuffer_resolve.tfx" {}
   "shaders/gui.tfx" {}

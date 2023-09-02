@@ -292,7 +292,7 @@ static void atmosphere_render_creation_handler(
     auto apLUTtex = reg.readTexture("atm_ap_lut", gapi::TextureState::ShaderRead);
     auto skyLUTtex = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead);
     auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
-    auto gbufferDepth = reg.readTexture("gbuffer_depth", gapi::TextureState::ShaderRead);
+    auto gbufferDepth = reg.readTexture("gbuffer_depth", gapi::TextureState::DepthReadStencilRead);
 
     return [apLUTtex, skyLUTtex, trLUTtex, gbufferDepth](gapi::CmdEncoder& encoder)
     {

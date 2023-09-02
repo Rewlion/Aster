@@ -44,6 +44,7 @@ add_ecs_library(
 
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes_cmd/show_tex.cpp"
   ECS_FILES
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/decals.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/frame_preparing.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes_ecs/atmosphere.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes_ecs/virtual_terrain.ecs.cpp"

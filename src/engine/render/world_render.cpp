@@ -27,6 +27,7 @@ namespace Engine::Render
       mk_frame_preparing_node,
       mk_gbuffer_main_pass_node,
       mk_gbuffer_resolve_node,
+      mk_decals_node,
       mk_early_transparent_sync_node,
       mk_transparent_sync_node,
       mk_post_process_node,
