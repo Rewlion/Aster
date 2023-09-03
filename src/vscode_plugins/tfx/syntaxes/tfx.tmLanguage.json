@@ -9,6 +9,7 @@
 		{"include": "#keywords" },
 		{"include": "#strings" },
     {"include": "#names"},
+    {"include": "#comments"},
     {"include": "#operators"}
 	],
 	"repository": {
@@ -49,6 +50,14 @@
           "match": "\\b(add|subtract|reverse_subtract|min|max|clear|and|and_reverse|copy|and_inverted|no_op|xor|or|nor|equivalent|or_reverse|copy_inverted|or_inverted|nand|set)\\b"
         },
         {
+          "name": "constant.other.technique.cull_mode",
+          "match": "\\b(none|cw|ccw)\\b"
+        },
+        {
+          "name": "constant.other.technique.polygon_mode",
+          "match": "\\b(fill|line|point)\\b"
+        },
+        {
           "name": "constant.other.technique.primitive_topology",
           "match": "\\b(point_list|line_list|line_strip|triangle_strip|triangle_list|triangle_fan|line_list_with_adjacency|line_strip_with_adjacency|triangle_list_with_adjacency|triangle_strip_with_adjacency|patch_list)\\b"
         }
@@ -70,7 +79,7 @@
         },
         {
           "name": "entity.name.type.attribute",
-          "match": "\\b(void|float|float2|float3|float4|float4x4|int|int2|int3|int4|Texture2D|sampler|texture)\\b"
+          "match": "\\b(void|float|float2|float3|float4|float4_u8|float4x4|uint|uint2|uint3|uint4|int|int2|int3|int4|RWTexture2D|Texture2D|Texture3D|RWTexture3D|RWStructuredBuffer|sampler|texture)\\b"
         }
       ]
 		},
@@ -89,6 +98,12 @@
       "patterns": [{
         "match": "[a-zA-Z_][0-9a-zA-Z\\-_.]*",
         "name": "variable"
+      }]
+    },
+    "comments":{
+      "patterns": [{
+        "match": "(//).*$\n?",
+        "name": "punctuation.definition.comment"
       }]
     },
     "operators": {
