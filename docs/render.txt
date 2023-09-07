@@ -1,3 +1,6 @@
+TFX:
+ - https://advances.realtimerendering.com/destiny/gdc_2017/Destiny_shader_system_GDC_2017_v.4.0.pdf
+
 Atmosphere Scattering:
  - A Scalable and Production Ready Sky and Atmosphere Rendering Technique
    Sébastien Hillaire
