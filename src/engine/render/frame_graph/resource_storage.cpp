@@ -156,4 +156,20 @@ namespace fg
     m_Resources.clear();
     m_Blobs.clear();
   }
+
+  void PersistentResourceStorage::importResTo(const res_id_t res_id, ResourceStorage& to)
+  {
+    if (auto* tex = std::get_if<ResourceStorage::TextureResource>(&m_Storage.m_Resources[res_id]))
+    {
+      ASSERT(tex->texture != gapi::TextureHandle::Invalid);
+      to.importTexture(res_id, tex->texture, tex->currentState);
+    }
+  }
+
+  void PersistentResourceStorage::createOnce(const res_id_t res_id, const Registry::Resource& res_info)
+  {
+    ResourceStorage::Resource& res = m_Storage.m_Resources[res_id];
+    if (std::holds_alternative<std::monostate>(res))
+      m_Storage.create(res_id, res_info);
+  }
 }

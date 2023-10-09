@@ -14,6 +14,8 @@ namespace fg
 {
   class ResourceStorage
   {
+      friend class PersistentResourceStorage;
+
       struct TextureResource;
       struct SamplerResource;
       struct BufferResource;
@@ -62,5 +64,15 @@ namespace fg
         gapi::BufferHandler buffer = gapi::BufferHandler::Invalid;
         gapi::BufferState currentState = (gapi::BufferState)0;
       };
+  };
+
+  class PersistentResourceStorage
+  {
+    public:
+      void importResTo(const res_id_t, ResourceStorage&);
+      void createOnce(const res_id_t, const Registry::Resource&);
+      void reset() { m_Storage.reset(); }
+    private:
+      ResourceStorage m_Storage;
   };
 }

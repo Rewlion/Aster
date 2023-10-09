@@ -62,16 +62,20 @@ namespace fg
     });
   }
 
-  auto Registry::createTexture(const char* name, const gapi::TextureAllocationDescription& desc, const gapi::TextureState init_state) -> TextureRequest
+  auto Registry::createTexture(const char* name, const gapi::TextureAllocationDescription& desc,
+                               const gapi::TextureState init_state, const bool persistent) -> TextureRequest
   {
     if (!desc.name)
       const_cast<gapi::TextureAllocationDescription&>(desc).name = name;
 
-    return createResourceInternal(name, TextureResource{.allocDesc = desc}, [this, init_state](const virt_res_id_t virt_res_id, NodeInfo& node)
-    {
-      m_VirtResources[virt_res_id].modificationChain.insert(0, m_CurrentExecNodeId);
-      node.execState.textureBeginStates.push_back({virt_res_id, init_state});
-    });
+    return createResourceInternal(name, TextureResource{.allocDesc = desc},
+      [this, init_state, persistent](const virt_res_id_t virt_res_id, NodeInfo& node)
+      {
+        auto& vRes = m_VirtResources[virt_res_id];
+        vRes.persistent = persistent;
+        vRes.modificationChain.insert(0, m_CurrentExecNodeId);
+        node.execState.textureBeginStates.push_back({virt_res_id, init_state});
+      });
   }
 
   auto Registry::createResourceInternal(const char* name, Resource&& res, CreateCb&& cb) -> virt_res_id_t

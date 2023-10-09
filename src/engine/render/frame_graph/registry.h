@@ -16,6 +16,8 @@
 
 namespace fg
 {
+  constexpr bool PERSISTENT = true;
+
   class Registry;
 
   struct exec_function_capacity : fu2::capacity_fixed<64> {};
@@ -33,6 +35,7 @@ namespace fg
   {
     friend class Manager;
     friend class ResourceStorage;
+    friend class PersistentResourceStorage;
 
     struct ExecState;
     struct NodeInfo;
@@ -69,7 +72,7 @@ namespace fg
       auto modifyBuffer(const char* name, const gapi::BufferState state) -> BufferRequest;
       auto readBuffer(const char* name, const gapi::BufferState state, const bool optional = false) -> BufferRequest;
 
-      auto createTexture(const char* name, const gapi::TextureAllocationDescription&, const gapi::TextureState init_state) -> TextureRequest;
+      auto createTexture(const char* name, const gapi::TextureAllocationDescription&,const gapi::TextureState init_state, const bool persistent = false) -> TextureRequest;
       auto importTextureProducer(const char* name, TextureProduceFunction) -> TextureRequest;
       auto modifyTexture(const char* name, const gapi::TextureState state) -> TextureRequest;
       auto readTexture(const char* name, const gapi::TextureState state, const Timeline) -> TextureRequest;
@@ -214,6 +217,7 @@ namespace fg
 
         virt_res_id_t clonnedVResId = INVALID_VIRT_RES_ID;
 
+        bool persistent = false;
         node_id_t createdBy = INVALID_NODE_ID;
         node_id_t consumedBy = INVALID_NODE_ID;
         eastl::vector<node_id_t> modificationChain;

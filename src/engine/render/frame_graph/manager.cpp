@@ -54,6 +54,7 @@ namespace fg
   void Manager::compile()
   {
     m_Registry.reset();
+    m_PersistentResourceStorage.reset();
 
     for (size_t i = 0; auto& node: m_Registry.m_Nodes)
     {
@@ -350,7 +351,13 @@ namespace fg
           if (vRes.clonnedVResId == INVALID_VIRT_RES_ID)
           {
             auto& res = m_Registry.m_Resources[vRes.resourceId];
-            getStorage().create(vRes.resourceId, res);
+            if (vRes.persistent)
+            {
+              m_PersistentResourceStorage.createOnce(vRes.resourceId, res);
+              m_PersistentResourceStorage.importResTo(vRes.resourceId, getStorage());
+            }
+            else
+              getStorage().create(vRes.resourceId, res);
           }
         }
 
