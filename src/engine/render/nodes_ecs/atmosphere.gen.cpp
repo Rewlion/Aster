@@ -117,14 +117,8 @@ static EventSystemRegistration atmosphere_creation_handler_registration(
 static void atmosphere_render_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
 {
   OnEntityCreated* casted_event = reinterpret_cast<OnEntityCreated*>(event);
-  const gapi::TextureWrapper& atm_tr_lut = accessor.get<gapi::TextureWrapper>(compile_ecs_name_hash("atm_tr_lut"));
-  const gapi::TextureWrapper& atm_sky_lut = accessor.get<gapi::TextureWrapper>(compile_ecs_name_hash("atm_sky_lut"));
-  const gapi::TextureWrapper& atm_ms_lut = accessor.get<gapi::TextureWrapper>(compile_ecs_name_hash("atm_ms_lut"));
-  const gapi::TextureWrapper& atm_ap_lut = accessor.get<gapi::TextureWrapper>(compile_ecs_name_hash("atm_ap_lut"));
-  const gapi::TextureWrapper& atm_envi_specular = accessor.get<gapi::TextureWrapper>(compile_ecs_name_hash("atm_envi_specular"));
-  const gapi::TextureWrapper& atm_envi_brdf = accessor.get<gapi::TextureWrapper>(compile_ecs_name_hash("atm_envi_brdf"));
-  int atm_envi_mips = accessor.get<int>(compile_ecs_name_hash("atm_envi_mips"));
-  atmosphere_render_creation_handler(*casted_event, atm_tr_lut,atm_sky_lut,atm_ms_lut,atm_ap_lut,atm_envi_specular,atm_envi_brdf,atm_envi_mips);
+  int atm_render_tag = accessor.get<int>(compile_ecs_name_hash("atm_render_tag"));
+  atmosphere_render_creation_handler(*casted_event, atm_render_tag);
 }
 
 
@@ -132,13 +126,7 @@ static EventSystemRegistration atmosphere_render_creation_handler_registration(
   atmosphere_render_creation_handler_internal,
   compile_ecs_name_hash("OnEntityCreated"),
   {
-    DESCRIBE_QUERY_COMPONENT("atm_tr_lut", gapi::TextureWrapper),
-    DESCRIBE_QUERY_COMPONENT("atm_sky_lut", gapi::TextureWrapper),
-    DESCRIBE_QUERY_COMPONENT("atm_ms_lut", gapi::TextureWrapper),
-    DESCRIBE_QUERY_COMPONENT("atm_ap_lut", gapi::TextureWrapper),
-    DESCRIBE_QUERY_COMPONENT("atm_envi_specular", gapi::TextureWrapper),
-    DESCRIBE_QUERY_COMPONENT("atm_envi_brdf", gapi::TextureWrapper),
-    DESCRIBE_QUERY_COMPONENT("atm_envi_mips", int)
+    DESCRIBE_QUERY_COMPONENT("atm_render_tag", int)
   },
   "atmosphere_render_creation_handler"
 );

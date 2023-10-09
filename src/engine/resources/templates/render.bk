@@ -20,14 +20,8 @@ template @("name: Atmosphere") {
 }
 
 template @("name: AtmosphereRender") {
-  component @("texture atm_tr_lut") {}
-  component @("texture atm_ms_lut") {}
-  component @("texture atm_sky_lut") {}
-  component @("texture atm_ap_lut") {}
-  component @("texture atm_envi_specular") {}
-  component @("texture atm_envi_brdf") {}
-  int atm_envi_mips = 1
   int atm_lut_state = 0
+  int atm_render_tag = 0
 }
 
 template @("name: Sun") {
