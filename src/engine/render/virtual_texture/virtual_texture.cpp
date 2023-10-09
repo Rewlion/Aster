@@ -52,6 +52,9 @@ namespace Engine::Render
     encoder.transitTextureState(m_TilesStorage, gapi::TextureState::ShaderRead, gapi::TextureState::RenderTarget);
     encoder.beginRenderpass({gapi::RenderPassAttachment{m_TilesStorage}}, {});
 
+    setVTexTfxExterns(encoder);
+    tfx::activate_scope("VTexParamsScope", encoder);
+
     const auto pageFaultHandler = [&](size_t mip, VTile vtile, VTile ptile)
     {
       gapi::Scissor sc;
