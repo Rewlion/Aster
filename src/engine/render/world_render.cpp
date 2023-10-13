@@ -2,7 +2,6 @@
 #include "gui_render.h"
 
 #include <engine/ecs/ecs.h>
-#include <engine/render/debug_text_queue.h>
 #include <engine/render/font/font_render.h>
 #include <engine/render/frame_graph/frame_graph.h>
 #include <engine/render/imgui/imgui_render.h>

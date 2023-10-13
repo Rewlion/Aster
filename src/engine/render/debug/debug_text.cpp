@@ -1,6 +1,7 @@
 #include "debug_text.h"
 #include "debug_text_queue.h"
-#include "ecs_utils.h"
+
+#include <engine/render/ecs_utils.h>
 
 namespace Engine::dbg
 {

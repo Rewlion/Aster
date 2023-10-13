@@ -1,6 +1,6 @@
 #include "ecs_utils.h"
-#include "debug_text_queue.h"
 
+#include <engine/render/debug/debug_text_queue.h>
 #include <engine/ecs/macros.h>
 
 ECS_QUERY()

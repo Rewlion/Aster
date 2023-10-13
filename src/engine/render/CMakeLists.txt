@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.21)
 
 set(DBG_TEXT_SRC
-"${CMAKE_SOURCE_DIR}/src/engine/render/debug_text.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/debug_text_queue.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/debug/debug_text.cpp"
+  "${CMAKE_SOURCE_DIR}/src/engine/render/debug/debug_text_queue.cpp"
 )
 
-set(DBG_TEXT_STUB_SRC "${CMAKE_SOURCE_DIR}/src/engine/render/debug_text_stub.cpp")
+set(DBG_TEXT_STUB_SRC "${CMAKE_SOURCE_DIR}/src/engine/render/debug/debug_text_stub.cpp")
 
 include("${CMAKE_SOURCE_DIR}/src/cmake/ecs.cmake")
 add_ecs_library(

@@ -1,8 +1,10 @@
 #include "nodes.h"
 
+#include <engine/ecs/ecs.h>
 #include <engine/ecs/macros.h>
+#include <engine/events.h>
 #include <engine/gapi/gapi.h>
-#include <engine/render/debug_text_queue.h>
+#include <engine/render/debug/debug_text_queue.h>
 #include <engine/render/ecs_utils.h>
 #include <engine/render/frame_graph/frame_graph.h>
 #include <engine/render/imgui/imgui_render.h>
@@ -129,6 +131,8 @@ namespace Engine::Render
 
         tfx::set_extern("viewport_size", float2(wndSize->x, wndSize->y));
         tfx::activate_scope("FrameScope", encoder);
+
+        ecs::get_registry().broadcastEventSync(Engine::OnBeforeRender{});
 
         if (auto* imguiRender = get_imgui_render())
           imguiRender->beforeRender(encoder);

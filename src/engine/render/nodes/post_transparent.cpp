@@ -1,6 +1,6 @@
 #include "nodes.h"
 
-#include <engine/render/debug_text_queue.h>
+#include <engine/render/debug/debug_text_queue.h>
 #include <engine/render/ecs_utils.h>
 #include <engine/render/font/font_render.h>
 #include <engine/render/frame_graph/frame_graph.h>

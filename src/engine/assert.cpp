@@ -1,5 +1,5 @@
 #include "assert.h"
-#include "engine/render/debug_text.h"
+#include "engine/render/debug/debug_text.h"
 
 #include <engine/log.h>
 
