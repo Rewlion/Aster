@@ -32,11 +32,12 @@ class EventSystem(System):
     self.params = self.parseParams(param_cursors[1:])
     
     eventCursor = param_cursors[0]
-    self.eventName = utils.get_real_type(eventCursor.type).get_declaration().spelling
+    self.fullCastedEventName = utils.get_real_type(eventCursor.type).spelling         # const ecs::SomeEvent
+    self.eventName = utils.get_real_type(eventCursor.type).get_declaration().spelling # SomeEvent
   
   def generate(self):
     return "\n".join([
-      templates.generate_event_system_internal(self.name, self.eventName, self.params),
+      templates.generate_event_system_internal(self.name, self.fullCastedEventName, self.params),
       templates.generate_event_system_registration(self.name, self.eventName, self.params)
     ])
 

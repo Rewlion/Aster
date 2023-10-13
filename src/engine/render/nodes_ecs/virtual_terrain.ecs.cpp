@@ -1,11 +1,11 @@
 #include <engine/assert.h>
 #include <engine/assets/assets_manager.h>
 #include <engine/ecs/ecs.h>
-#include <engine/ecs/ecs_events.h>
 #include <engine/ecs/macros.h>
+#include <engine/events.h>
+#include <engine/render/ecs_utils.h>
 #include <engine/render/frame_graph/frame_graph.h>
 #include <engine/render/terrain_render.h>
-#include <engine/render/ecs_utils.h>
 #include <engine/tfx/tfx.h>
 #include <engine/utils/bits.h>
 #include <engine/work_cycle/camera.h>
@@ -122,12 +122,12 @@ void virtual_terrain_creation_handler(
     });
     return [](gapi::CmdEncoder&) {};
   });
-}
+} 
 
 ECS_EVENT_SYSTEM()
 static
 void virtual_terrain_on_tick(
-  const ecs::OnGameTick& evt,
+  const Engine::OnGameTick& evt,
   Engine::Render::TerrainRender& vterrain_render
 )
 {

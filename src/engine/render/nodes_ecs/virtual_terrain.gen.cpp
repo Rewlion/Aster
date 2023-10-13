@@ -30,7 +30,7 @@ void query_vterrain (eastl::function<
 
 static void virtual_terrain_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
 {
-  OnEntityCreated* casted_event = reinterpret_cast<OnEntityCreated*>(event);
+  const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
   const string& vterrain_name = accessor.get<string>(compile_ecs_name_hash("vterrain_name"));
   const float2& vterrain_heightmapMinMaxBorder = accessor.get<float2>(compile_ecs_name_hash("vterrain_heightmapMinMaxBorder"));
   float vterrain_heightmapMaxHeight = accessor.get<float>(compile_ecs_name_hash("vterrain_heightmapMaxHeight"));
@@ -60,7 +60,7 @@ static EventSystemRegistration virtual_terrain_creation_handler_registration(
 
 static void virtual_terrain_on_tick_internal(Event* event, ComponentsAccessor& accessor)
 {
-  OnGameTick* casted_event = reinterpret_cast<OnGameTick*>(event);
+  const Engine::OnGameTick* casted_event = reinterpret_cast<const Engine::OnGameTick*>(event);
   Engine::Render::TerrainRender& vterrain_render = accessor.get<Engine::Render::TerrainRender>(compile_ecs_name_hash("vterrain_render"));
   virtual_terrain_on_tick(*casted_event, vterrain_render);
 }

@@ -10,7 +10,7 @@ using namespace ecs;
 
 static void system_init_internal(Event* event, ComponentsAccessor& accessor)
 {
-  OnEntityCreated* casted_event = reinterpret_cast<OnEntityCreated*>(event);
+  ecs::OnEntityCreated* casted_event = reinterpret_cast<ecs::OnEntityCreated*>(event);
   float2 test_float2 = accessor.get<float2>(compile_ecs_name_hash("test_float2"));
   system_init(*casted_event, test_float2);
 }
@@ -134,7 +134,7 @@ static SystemRegistration system_flag_registration(
 
 static void system_on_pawn_creation_internal(Event* event, ComponentsAccessor& accessor)
 {
-  OnEntityCreated* casted_event = reinterpret_cast<OnEntityCreated*>(event);
+  const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
   float pawn_pos = accessor.get<float>(compile_ecs_name_hash("pawn_pos"));
   system_on_pawn_creation(*casted_event, pawn_pos);
 }
@@ -190,7 +190,7 @@ static SystemRegistration system_controller_registration(
 
 static void system_on_moving_decal_creation_internal(Event* event, ComponentsAccessor& accessor)
 {
-  OnEntityCreated* casted_event = reinterpret_cast<OnEntityCreated*>(event);
+  const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
   float3& center_pos = accessor.get<float3>(compile_ecs_name_hash("center_pos"));
   const float3& pos = accessor.get<float3>(compile_ecs_name_hash("pos"));
   system_on_moving_decal_creation(*casted_event, center_pos,pos);

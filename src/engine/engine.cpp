@@ -3,8 +3,10 @@
 #include <engine/assets/assets_manager.h>
 #include <engine/console/console.h>
 #include <engine/ecs/ecs.h>
-#include <engine/ecs/ecs_events.h>
+#include <engine/events.h>
 #include <engine/editor/editor.h>
+#include <engine/fs/file_watch.h>
+#include <engine/fs/vfs.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gui/gui.h>
 #include <engine/input/drivers/drivers.h>
@@ -17,8 +19,6 @@
 #include <engine/tfx/tfx.h>
 #include <engine/time.h>
 #include <engine/types.h>
-#include <engine/fs/file_watch.h>
-#include <engine/fs/vfs.h>
 #include <engine/window.h>
 
 namespace Engine
@@ -76,7 +76,7 @@ namespace Engine
 
       auto& ecsRegistry = ecs::get_registry();
       ecsRegistry.tick();
-      ecsRegistry.broadcastEventSync(ecs::OnGameTick{});
+      ecsRegistry.broadcastEventSync(OnGameTick{});
 
       gui::Gui::tick();
 

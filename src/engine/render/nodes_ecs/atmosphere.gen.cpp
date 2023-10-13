@@ -96,7 +96,7 @@ void query_atm_lut_state (eastl::function<
 
 static void atmosphere_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
 {
-  OnEntityCreated* casted_event = reinterpret_cast<OnEntityCreated*>(event);
+  const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
   float atm_radius_bot_km = accessor.get<float>(compile_ecs_name_hash("atm_radius_bot_km"));
   float atm_radius_top_km = accessor.get<float>(compile_ecs_name_hash("atm_radius_top_km"));
   atmosphere_creation_handler(*casted_event, atm_radius_bot_km,atm_radius_top_km);
@@ -116,7 +116,7 @@ static EventSystemRegistration atmosphere_creation_handler_registration(
 
 static void atmosphere_render_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
 {
-  OnEntityCreated* casted_event = reinterpret_cast<OnEntityCreated*>(event);
+  const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
   int atm_render_tag = accessor.get<int>(compile_ecs_name_hash("atm_render_tag"));
   atmosphere_render_creation_handler(*casted_event, atm_render_tag);
 }
