@@ -1,6 +1,15 @@
 #include "debug_text_queue.h"
 
 #include <engine/ecs/type_meta.h>
+#include <engine/ecs/macros.h>
+#include <engine/events.h>
+
+ECS_EVENT_SYSTEM()
+void dbg_queue_tick(const Engine::OnBeforeRender&,
+                    Engine::Render::dbg::TextDbgQueue& dbg_text_queue)
+{
+  dbg_text_queue.tick();
+}
 
 namespace Engine::Render::dbg
 {

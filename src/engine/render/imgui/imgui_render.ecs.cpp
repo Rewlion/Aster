@@ -1,12 +1,21 @@
 #include "imgui_render.h"
 #include "imgui.h"
 
+#include <engine/ecs/macros.h>
 #include <engine/ecs/type_meta.h>
+#include <engine/events.h>
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/tfx/tfx.h>
 #include <engine/window.h>
 
 #include <memory>
+
+ECS_EVENT_SYSTEM()
+void imgui_render_prepare(const Engine::OnBeforeRender& evt,
+                          Engine::Render::ImGuiRender& imgui_render)
+{
+  imgui_render.beforeRender(*evt.encoder);
+}
 
 namespace Engine::Render
 {

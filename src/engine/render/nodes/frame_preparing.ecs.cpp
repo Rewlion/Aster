@@ -108,9 +108,6 @@ namespace Engine::Render
         leftBotView  /= leftBotView.w;
         rightBotView /= rightBotView.w;
 
-        if (auto* dbgTextQueue = dbg::get_dbg_text_queue())
-          dbgTextQueue->tick();
-
         tfx::set_extern("cameraPrevJitter", prevCameraJitter);
         tfx::set_extern("cameraJitter", cameraJitter);
         tfx::set_extern("prev_view_proj", prevViewProjTm);
@@ -132,10 +129,9 @@ namespace Engine::Render
         tfx::set_extern("viewport_size", float2(wndSize->x, wndSize->y));
         tfx::activate_scope("FrameScope", encoder);
 
-        ecs::get_registry().broadcastEventSync(Engine::OnBeforeRender{});
-
-        if (auto* imguiRender = get_imgui_render())
-          imguiRender->beforeRender(encoder);
+        auto evt = Engine::OnBeforeRender{};
+        evt.encoder = &encoder;
+        ecs::get_registry().broadcastEventSync(std::move(evt));
       };
     });
   }

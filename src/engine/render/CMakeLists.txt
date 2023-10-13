@@ -1,23 +1,32 @@
 cmake_minimum_required(VERSION 3.21)
 
-set(DBG_TEXT_SRC
-  "${CMAKE_SOURCE_DIR}/src/engine/render/debug/debug_text.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/debug/debug_text_queue.cpp"
-)
+include("${CMAKE_SOURCE_DIR}/src/cmake/ecs.cmake")
+
+add_ecs_library(
+  engine_dbg_text
+  FILES
+    "${CMAKE_SOURCE_DIR}/src/engine/render/debug/debug_text.cpp"
+  ECS_FILES
+    "${CMAKE_SOURCE_DIR}/src/engine/render/debug/debug_text_queue.ecs.cpp"
+  )
 
 set(DBG_TEXT_STUB_SRC "${CMAKE_SOURCE_DIR}/src/engine/render/debug/debug_text_stub.cpp")
+add_library(engine_dbg_text_stub OBJECT ${DBG_TEXT_STUB_SRC})
 
-include("${CMAKE_SOURCE_DIR}/src/cmake/ecs.cmake")
 add_ecs_library(
   engine_render_ecs_utils
   ECS_FILES
   "${CMAKE_SOURCE_DIR}/src/engine/render/ecs_utils.ecs.cpp"
 )
 
-set(IMGUI_SRC
-  "${CMAKE_SOURCE_DIR}/src/engine/render/imgui/imgui.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/imgui/imgui_input.cpp"
-  "${CMAKE_SOURCE_DIR}/src/engine/render/imgui/imgui_render.cpp")
+add_ecs_library(
+  engine_imgui
+  FILES
+    "${CMAKE_SOURCE_DIR}/src/engine/render/imgui/imgui.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/imgui/imgui_input.cpp"
+  ECS_FILES
+    "${CMAKE_SOURCE_DIR}/src/engine/render/imgui/imgui_render.ecs.cpp"
+)
 
 set(FRAMEGRAPH_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/frame_graph/dbg_visualization.cpp"
@@ -53,8 +62,5 @@ add_ecs_library(
 set(FONT_SRC
   "${CMAKE_SOURCE_DIR}/src/engine/render/font/font_render.cpp")
 
-add_library(engine_dbg_text OBJECT ${DBG_TEXT_SRC})
-add_library(engine_dbg_text_stub OBJECT ${DBG_TEXT_STUB_SRC})
 add_library(engine_font_render OBJECT ${FONT_SRC})
 add_library(engine_framegraph OBJECT ${FRAMEGRAPH_SRC})
-add_library(engine_imgui OBJECT ${IMGUI_SRC})
