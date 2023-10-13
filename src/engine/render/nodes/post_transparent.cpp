@@ -90,7 +90,7 @@ namespace Engine::Render
         tfx::set_extern("taaPrevFrame", taaPrevFrame.get());
         tfx::set_extern("motionBuf", motionBuf.get());
         tfx::set_extern("renderSize", encoder.getRenderSize());
-        tfx::set_extern("gbuffer_detph", gbufferDepth.get());
+        tfx::set_extern("gbuffer_depth", gbufferDepth.get());
         tfx::activate_technique("TAA", encoder);
 
         encoder.updateResources();
