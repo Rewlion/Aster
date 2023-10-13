@@ -23,13 +23,6 @@
 
 namespace Engine
 {
-  void register_engine_events()
-  {
-    auto& registry = ecs::get_registry();
-    registry.registerEvent<ecs::OnEntityCreated>();
-    registry.registerEvent<ecs::OnGameTick>();
-  }
-
   void init_input()
   {
     Input::init_drivers();
@@ -58,7 +51,6 @@ namespace Engine
     tfx::load_materials_bin(matBinPath);
 
     ecs::init_from_settings();
-    register_engine_events();
 
     load_level(settings->getText("init_level") );
 

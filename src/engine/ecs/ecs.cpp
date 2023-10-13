@@ -45,6 +45,8 @@ namespace ecs
         add_templates_from_blk(*registry, blkWithTemplates);
       }
     }
+
+    registry->registerEvents();
   }
 
   void shutdown()

@@ -6,6 +6,8 @@
 
 #include <engine/algorithm/hash.h>
 
+#include <EASTL/vector.h>
+
 #include <type_traits>
 
 #ifdef __clang__
@@ -34,6 +36,46 @@ namespace ecs
 
   using EventDestructorPtr = void(Event*);
 
+  class StaticEventRegistrations
+  {
+    friend class Registry;
+    template<class EventType> friend class EventAutoRegistration;
+    class Event;
+
+    template<class EventType>
+    static
+    void registerEvent()
+    {
+      get().push_back(EventType::eventName);
+    }
+
+    static
+    auto get() -> eastl::vector<const char*>&
+    {
+      static eastl::vector<const char*> m_EventsNames;
+      return m_EventsNames;
+    }
+  };
+
+  template<class EventType>
+  class EventAutoRegistration
+  {
+    struct DoRegistration
+    {
+      DoRegistration()
+      {
+        StaticEventRegistrations::registerEvent<EventType>();
+      }
+    };
+    template<DoRegistration&> struct ForceInstantiation { };
+
+    static DoRegistration m_Registration;
+    static ForceInstantiation<m_Registration> m_ForceInstantiation;
+  };
+
+  template<typename D>
+  typename EventAutoRegistration<D>::DoRegistration EventAutoRegistration<D>::m_Registration;
+
   struct ECS_EVENT_BASE() Event
   {
     friend class EventsQueue;
@@ -60,3 +102,9 @@ namespace ecs
   template<class T>
   concept BasedFromEcsEvent = std::is_base_of_v<Event, T>;
 }
+
+#define ECS_EVENT_BEGIN(eventType) struct eventType : public ecs::Event, ecs::EventAutoRegistration<eventType>\
+{\
+  EVENT_CONSTRUCTOR(eventType){}
+#define ECS_EVENT_FIELD(field) field;
+#define ECS_EVENT_END() };

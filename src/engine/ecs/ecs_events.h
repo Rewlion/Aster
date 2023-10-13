@@ -4,18 +4,10 @@
 
 namespace ecs
 {
-  struct OnEntityCreated : public Event
-  {
-    EntityId eid;
-    
-    EVENT_CONSTRUCTOR(OnEntityCreated)
-    {}
-  };
+  ECS_EVENT_BEGIN(OnEntityCreated)
+    ECS_EVENT_FIELD(ecs::EntityId eid)
+  ECS_EVENT_END()
 
-  struct OnGameTick : public Event
-  {
-    EVENT_CONSTRUCTOR(OnGameTick)
-    {}
-  };
+  ECS_EVENT_BEGIN(OnGameTick)
+  ECS_EVENT_END()
 }
-

@@ -35,8 +35,7 @@ namespace ecs
       template<BasedFromEcsEvent T>
       void sendEvent(T&& event, const EntityId eid);
 
-      template<BasedFromEcsEvent T>
-      void registerEvent();
+      void registerEvents();
 
       void query(const query_id_t, DirectQueryCb);
       void query(const EntityId, DirectQueryCb);
@@ -50,6 +49,7 @@ namespace ecs
       void registerEventSystem(const EventQueryCb& cb,
                                const name_hash_t event,
                                const QueryComponents& components);
+      void registerEvent(const char* event_name);
 
       void processDirectEvent(Event*);
       void processBroadcastEvent(Event*);
@@ -110,20 +110,5 @@ namespace ecs
       m_EventsQueue.pushEvent(eastl::forward<T>(event));
     else
       logerror("can't send event `{}`, it is not registered.", event.eventNameHash);
-  }
-
-  template<BasedFromEcsEvent T>
-  void Registry::registerEvent()
-  {
-    loginfo("ecs: registering event `{}`", T::eventName);
-    const name_hash_t hash = compile_ecs_name_hash(T::eventName);
-
-    ASSERT_FMT(m_EventHandleQueries.find(hash) == m_EventHandleQueries.end(),
-      "ecs: can't register a new event `{}` it's already registered", T::eventName);
-
-    m_EventHandleQueries.insert({
-      hash,
-      eastl::vector<RegisteredEventQueryInfo>{}
-    });
   }
 }

@@ -1,11 +1,5 @@
 #include <engine/ecs/events.h>
 
-struct TestEvent: public ecs::Event
-{
-  string testString;
-
-  EVENT_CONSTRUCTOR(TestEvent)
-  {
-
-  }
-};
+ECS_EVENT_BEGIN(TestEvent)
+  ECS_EVENT_FIELD(string testString)
+ECS_EVENT_END()

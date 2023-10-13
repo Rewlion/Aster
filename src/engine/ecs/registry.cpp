@@ -302,6 +302,28 @@ namespace ecs
     }
   }
 
+  void Registry::registerEvents()
+  {
+    loginfo("ecs: registering events");
+    for (const char* eventName: StaticEventRegistrations::get())
+      registerEvent(eventName);
+  }
+
+  void Registry::registerEvent(const char* event_name)
+  {
+    const name_hash_t hash = ecs_name_hash(event_name);
+
+    ASSERT_FMT(m_EventHandleQueries.find(hash) == m_EventHandleQueries.end(),
+      "ecs: can't register a new event `{}` it's already registered", event_name);
+
+    m_EventHandleQueries.insert({
+      hash,
+      eastl::vector<RegisteredEventQueryInfo>{}
+    });
+    
+    loginfo("ecs: registered event `{}`", event_name);
+  }
+
   void Registry::query(const query_id_t query_id, DirectQueryCb cb)
   {
     DirectQuery& directQuery = m_RegisteredDirectQueries[query_id];
