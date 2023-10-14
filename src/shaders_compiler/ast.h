@@ -645,9 +645,10 @@ namespace ShadersSystem
   {
     enum class Type
     {
-      ShadersResourcesReserve = 0,
-      ResourceDeclaration = 1,
-      CbufferVarDeclaration = 2,
+      ShadersResourcesReserve,
+      HlslResourceDeclaration,
+      ResourceDeclaration,
+      CbufferVarDeclaration,
     };
     Type type;
     ScopeExp* next;
@@ -816,6 +817,26 @@ namespace ShadersSystem
       }
 
       return false;
+    }
+  };
+
+  struct HlslResourceDeclarationExp: public ScopeExp
+  {
+    const char* code;
+
+    HlslResourceDeclarationExp(const char* code)
+      : ScopeExp(ScopeExp::Type::HlslResourceDeclaration)
+      , code(code)
+    {
+    }
+
+    virtual ~HlslResourceDeclarationExp()
+    {
+      if (code)
+      {
+        delete code;
+        code = nullptr;
+      }
     }
   };
 

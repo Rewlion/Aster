@@ -40,23 +40,30 @@ namespace ShadersSystem
           {
             case ScopeExp::Type::ShadersResourcesReserve:
             {
-              const ShadersResourcesReserveExp* e = reinterpret_cast<const ShadersResourcesReserveExp*>(exp);
-              addShadersResourcesReserve(*e);
+              auto& e = *static_cast<const ShadersResourcesReserveExp*>(exp);
+              addShadersResourcesReserve(e);
+              break;
+            }
+
+            case ScopeExp::Type::HlslResourceDeclaration:
+            {
+              auto& e = *static_cast<const HlslResourceDeclarationExp*>(exp);
+              addHlslResourceDeclaration(e);
               break;
             }
 
             case ScopeExp::Type::ResourceDeclaration:
             {
-              const ResourceDeclarationExp* e = reinterpret_cast<const ResourceDeclarationExp*>(exp);
-              addResourceDeclaration(*e);
+              auto& e = *static_cast<const ResourceDeclarationExp*>(exp);
+              addResourceDeclaration(e);
               break;
             }
 
             case ScopeExp::Type::CbufferVarDeclaration:
             {
               m_Scope.cbuffer = CBUFFER_NOT_ASSIGNED;
-              const CbufferVarDeclarationExp* e = reinterpret_cast<const CbufferVarDeclarationExp*>(exp);
-              addCbufferVarDeclaration(*e);
+              auto& e = *static_cast<const CbufferVarDeclarationExp*>(exp);
+              addCbufferVarDeclaration(e);
               break;
             }
 
@@ -128,6 +135,11 @@ namespace ShadersSystem
           }
           exp = exp->next;
         }
+      }
+
+      void addHlslResourceDeclaration(const HlslResourceDeclarationExp& decl)
+      {
+        m_Scope.declaredHlslResources.push_back(decl.code);
       }
 
       void addResourceDeclaration(const ResourceDeclarationExp& resourceDeclaration)
@@ -449,6 +461,9 @@ namespace ShadersSystem
             fmt::format("<{}>", gapi::attributeType_to_string(t)) :
             "";
         };
+
+        for (const char* hlslCode : m_Scope.declaredHlslResources)
+          hlsl += hlslCode;
 
         for (auto& [_, var]: m_Scope.declaredResources)
         {
