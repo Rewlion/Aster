@@ -167,7 +167,7 @@ namespace ShadersSystem
               resNameHash,
               ResourceDeclaration{
                 .type = resourceDeclaration.resourceType,
-                .uavElemType = resourceDeclaration.uavElemType,
+                .elemStorageType = resourceDeclaration.elemStorageType,
                 .name = resourceDeclaration.name,
                 .dset = 0,
                 .binding = 0,
@@ -456,10 +456,17 @@ namespace ShadersSystem
       string generateHlslResourcesDecl() const
       {
         string hlsl;
-        const auto getStorageType = [&](auto t) {
-          return t != gapi::AttributeType::None ? 
-            fmt::format("<{}>", gapi::attributeType_to_string(t)) :
-            "";
+        const auto getStorageType = [](const ResourceElemStorageType& t) {
+          if (auto structName = std::get_if<const char*>(&t))
+          {
+            return fmt::format("<{}>", *structName);
+          }
+          else if (auto attrType = std::get_if<gapi::AttributeType>(&t))
+          {
+            return *attrType != gapi::AttributeType::None ? 
+                      fmt::format("<{}>", gapi::attributeType_to_string(*attrType)) :
+                      "";
+          }
         };
 
         for (const char* hlslCode : m_Scope.declaredHlslResources)
@@ -472,7 +479,7 @@ namespace ShadersSystem
 
           hlsl += fmt::format("{}{} {}: register({}{}, space{});\n",
             to_hlsl_type(var.type), 
-            getStorageType(var.uavElemType),
+            getStorageType(var.elemStorageType),
             var.name,
             to_hlsl_register(var.type),
             var.binding, var.dset);

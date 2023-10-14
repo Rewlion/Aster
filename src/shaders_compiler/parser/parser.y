@@ -773,8 +773,11 @@ SCOPE_EXP
   : "reserve" ":" RESOURCE_RESERVE_EXP_LIST[exps] {
     $$ = new ShadersResourcesReserveExp($exps);
   }
-  | RESOURCE_TYPE_WITH_STORAGE[type] "<" ATTRIBUTE_TYPE[uavElemType] ">" TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
-    $$ = new ResourceDeclarationExp($type, $uavElemType, $name, $exps);
+  | RESOURCE_TYPE_WITH_STORAGE[type] "<" ATTRIBUTE_TYPE[elemStorageType] ">" TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
+    $$ = new ResourceDeclarationExp($type, $elemStorageType, $name, $exps);
+  }
+  | RESOURCE_TYPE_WITH_STORAGE[type] "<" TFX_TOKEN_NAME_VAL[structName] ">" TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
+    $$ = new ResourceDeclarationExp($type, $structName, $name, $exps);
   }
   | TFX_TOKEN_HLSL_CODE[code] {
     $$ = new HlslResourceDeclarationExp($code);

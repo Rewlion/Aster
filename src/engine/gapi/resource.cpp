@@ -110,7 +110,7 @@ namespace gapi
     return hash;
   }
 
-  size_t attributeType_to_size(const AttributeType type)
+  auto attributeType_to_size(const AttributeType type) -> size_t
   {
     switch (type)
     {
@@ -142,22 +142,22 @@ namespace gapi
     }
   }
 
-  string attributeType_to_string(const AttributeType type)
+  auto attributeType_to_string(const AttributeType type) -> const char*
   {
     switch (type)
     {
       case AttributeType::Float:        return "float";
-      case AttributeType::UInt:          return "uint";
+      case AttributeType::UInt:         return "uint";
       case AttributeType::Int:          return "int";
       case AttributeType::Float2:       return "float2";
-      case AttributeType::UInt2:         return "uint2";
+      case AttributeType::UInt2:        return "uint2";
       case AttributeType::Int2:         return "int2";
       case AttributeType::Float3:       return "float3";
-      case AttributeType::UInt3:         return "uint3";
+      case AttributeType::UInt3:        return "uint3";
       case AttributeType::Int3:         return "int3";
       case AttributeType::Float4:       return "float4";
       case AttributeType::Float4_u8:    return "float4";
-      case AttributeType::UInt4:         return "uint4";
+      case AttributeType::UInt4:        return "uint4";
       case AttributeType::Int4:         return "int4";
       case AttributeType::Float4x4:     return "float4x4";
 

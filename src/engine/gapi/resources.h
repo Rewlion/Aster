@@ -539,8 +539,8 @@ namespace gapi
     Int, Int2, Int3, Int4,
   };
 
-  size_t attributeType_to_size(const AttributeType type);
-  string attributeType_to_string(const AttributeType type);
+  auto attributeType_to_size(const AttributeType type) -> size_t;
+  auto attributeType_to_string(const AttributeType type) -> const char*;
 
   struct VertexInputDescription
   {

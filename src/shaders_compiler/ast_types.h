@@ -1,15 +1,19 @@
 #pragma once
 
 #include <engine/assert.h>
+#include <engine/gapi/resources.h>
 
 #include <optional>
 #include <stdint.h>
+#include <variant>
 
 #include <EASTL/vector.h>
 #include <EASTL/vector_map.h>
 
 namespace ShadersSystem
 {
+  using ResourceElemStorageType = std::variant<std::monostate, gapi::AttributeType, const char*>;
+
   enum class ResourceType: uint8_t
   {
     None,

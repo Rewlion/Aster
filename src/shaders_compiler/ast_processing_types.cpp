@@ -13,6 +13,7 @@ namespace ShadersSystem
     return type == rvl.type &&
            name == rvl.name &&
            binding == rvl.binding &&
+           elemStorageType == rvl.elemStorageType &&
            ((assignExp == rvl.assignExp) || (assignExp && rvl.assignExp && *assignExp == *rvl.assignExp));
   }
 

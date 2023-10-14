@@ -843,15 +843,15 @@ namespace ShadersSystem
   struct ResourceDeclarationExp: public ScopeExp
   {
     ResourceType resourceType;
-    gapi::AttributeType uavElemType;
+    ResourceElemStorageType elemStorageType;
     const char* name;
     const ResourceAssignExp* assignExps;
-    ResourceDeclarationExp(const ResourceType resType, const gapi::AttributeType uavElType,
+    ResourceDeclarationExp(const ResourceType resType, const ResourceElemStorageType& elStorageType,
                            const char* name,
                            const ResourceAssignExp* assignExps)
       : ScopeExp(ScopeExp::Type::ResourceDeclaration)
       , resourceType(resType)
-      , uavElemType(uavElType)
+      , elemStorageType(elStorageType)
       , name(name)
       , assignExps(assignExps)
     {
@@ -867,6 +867,11 @@ namespace ShadersSystem
       {
         delete assignExps;
         assignExps = nullptr;
+      }
+      if (auto structName = std::get_if<const char*>(&elemStorageType))
+      {
+        delete *structName;
+        elemStorageType = std::monostate{};
       }
     }
   };
