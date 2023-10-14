@@ -20,4 +20,5 @@ shaders_list
   "shaders/terrain/terrain.tfx" {}
   "shaders/terrain/virtual_texture.tfx" {}
   "shaders/test.tfx" {}
+  "shaders/dbg_line.tfx" {}
 }

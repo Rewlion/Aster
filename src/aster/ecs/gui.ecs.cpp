@@ -6,6 +6,7 @@
 #include <engine/events.h>
 #include <engine/gui/gui.h>
 #include <engine/input/input.h>
+#include <engine/render/debug/render.h>
 #include <engine/time.h>
 #include <engine/types.h>
 
@@ -158,6 +159,20 @@ void moving_decal_controller(const bool moving_decal_flag, const float3& center_
   pos.y = center_pos.y + 0.3 * std::cos(t);
 }
 
+ECS_DESCRIBE_QUERY(query_camera, (
+  const float3& pos,
+  const float2& camera_rotations,
+  const float3& forward))
+
+static
+void draw_line_at_camera_pos(eastl::span<string_view> args)
+{
+  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
+    Engine::dbg::draw_line(pos, pos + forward * float3(100.0), float3(1.0, 0.0, 0.0), 10.0);
+  });
+}
+
+CONSOLE_CMD("draw_line", 0, 0, draw_line_at_camera_pos);
 CONSOLE_CMD("create_src", 0, 0, create_src);
 CONSOLE_CMD("recreate", 0, 0, recreate_src);
 CONSOLE_CMD("add", 0, 0, add_subt);

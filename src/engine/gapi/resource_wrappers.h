@@ -28,11 +28,12 @@ namespace gapi
       BufferWrapper(BufferWrapper&& h);
       ~BufferWrapper();
 
-      const BufferWrapper& operator=(const BufferWrapper&) = delete;
-      BufferWrapper& operator=(BufferWrapper&&);
-      inline operator BufferHandler() const { return m_Handle; }
+      auto operator=(const BufferWrapper&) -> const BufferWrapper& = delete;
+      auto operator=(BufferWrapper&&) -> BufferWrapper&;
+      operator BufferHandler() const { return m_Handle; }
 
       auto valid() const -> bool { return m_Handle != gapi::BufferHandler::Invalid; }
+      void reset(const gapi::BufferHandler h = gapi::BufferHandler::Invalid) { this->~BufferWrapper(); m_Handle = h; }
 
     private:
       gapi::BufferHandler m_Handle;

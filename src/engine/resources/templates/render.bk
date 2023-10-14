@@ -12,6 +12,7 @@ template @("name: CoreRender") {
 
 template @("name: CoreRenderDebug; extends: CoreRender") {
   component @("TextDbgQueue dbg_text_queue") {}
+  component @("DbgLineRenderer dbg_line_renderer") {}
 }
 
 template @("name: Atmosphere") {

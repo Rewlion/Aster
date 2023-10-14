@@ -6,8 +6,10 @@ add_ecs_library(
   engine_dbg_text
   FILES
     "${CMAKE_SOURCE_DIR}/src/engine/render/debug/debug_text.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/debug/line_render.cpp"
   ECS_FILES
     "${CMAKE_SOURCE_DIR}/src/engine/render/debug/debug_text_queue.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/debug/render.ecs.cpp"
   )
 
 set(DBG_TEXT_STUB_SRC "${CMAKE_SOURCE_DIR}/src/engine/render/debug/debug_text_stub.cpp")
@@ -56,6 +58,7 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/decals.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/frame_preparing.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes_ecs/atmosphere.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes_ecs/dbg_line_renderer.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes_ecs/virtual_terrain.ecs.cpp"
 )
 
