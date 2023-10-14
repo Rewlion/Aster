@@ -274,7 +274,7 @@ namespace fg
   void Manager::execNodes()
   {
     std::unique_ptr<gapi::CmdEncoder> encoder{gapi::allocate_cmd_encoder()};
-    const auto beginRp = [&encoder, &registry = m_Registry, &storage = getStorage()]
+    const auto beginRp = [&encoder, &registry = m_Registry, &storage = getStorage(), this]
       (const Registry::NodeInfo& node)
     {
       const Registry::ExecState::RenderPass& rp = node.execState.renderPass;
@@ -282,7 +282,7 @@ namespace fg
       gapi::RenderTargets mrts;
       for (const auto& rt: rp.mrt)
       {
-        const auto resId = registry.m_VirtResources[rt.vResId].resourceId;
+        const auto resId = getResourceId(rt.vResId);
         const auto [tex, currentState] = storage.getTextureAndCurrentState(resId);
 
         if (currentState != gapi::TextureState::RenderTarget)
@@ -307,7 +307,7 @@ namespace fg
       gapi::RenderPassDepthStencilAttachment depthStencil;
       if (rp.depth.vResId != INVALID_VIRT_RES_ID)
       {
-        const auto resId = registry.m_VirtResources[rp.depth.vResId].resourceId;
+        const auto resId = getResourceId(rp.depth.vResId);
         const auto [tex, currentState] = storage.getTextureAndCurrentState(resId);
 
         if (!gapi::is_depth_rp_state(currentState))
