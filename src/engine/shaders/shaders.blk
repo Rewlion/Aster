@@ -7,6 +7,8 @@ shaders_list
   "shaders/atmosphere/sky_lut.tfx" {}
   "shaders/atmosphere/sph.tfx" {}
   "shaders/atmosphere/transmittance_lut.tfx" {}
+  "shaders/dbg_line.tfx" {}
+  "shaders/dbg_poly.tfx" {}
   "shaders/decal.tfx" {}
   "shaders/font.tfx" {}
   "shaders/gbuffer_resolve.tfx" {}
@@ -20,5 +22,4 @@ shaders_list
   "shaders/terrain/terrain.tfx" {}
   "shaders/terrain/virtual_texture.tfx" {}
   "shaders/test.tfx" {}
-  "shaders/dbg_line.tfx" {}
 }

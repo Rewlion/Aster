@@ -9,6 +9,7 @@
 #include <engine/render/debug/render.h>
 #include <engine/time.h>
 #include <engine/types.h>
+#include <engine/work_cycle/camera.h>
 
 // ECS_SYSTEM()
 // static void camera_rotation(
@@ -172,7 +173,19 @@ void draw_line_at_camera_pos(eastl::span<string_view> args)
   });
 }
 
+static
+void draw_aabbs_at_camera_pos(eastl::span<string_view>)
+{
+  query_camera([](const float3& pos, const float2&, const float3& forward){
+    float3 cubeCenter = pos + forward * float3(2.0);
+    Engine::dbg::draw_aabb(cubeCenter, float3{1,1,1}, float4(0, 1.0, 0.0, 0.1), 20.0);
+
+    Engine::dbg::draw_aabb(cubeCenter, float3{0.5,2,0.5}, float4(0, 0.0, 1.0, 0.1), 20.0);
+  });
+}
+
 CONSOLE_CMD("draw_line", 0, 0, draw_line_at_camera_pos);
+CONSOLE_CMD("draw_aabb", 0, 0, draw_aabbs_at_camera_pos);
 CONSOLE_CMD("create_src", 0, 0, create_src);
 CONSOLE_CMD("recreate", 0, 0, recreate_src);
 CONSOLE_CMD("add", 0, 0, add_subt);

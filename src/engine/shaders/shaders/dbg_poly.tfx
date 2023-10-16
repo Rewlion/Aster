@@ -1,0 +1,60 @@
+#include "frame.inc.tfx"
+#include "materials.inc.tfx"
+
+technique DebugPoly {
+  support scope FrameScope;
+
+  render_state:
+    cull_mode = none;
+    primitive_topology = triangle_list;
+    depth:
+      test = true;
+      write = no;
+    input:
+      buffer(0):
+        float3 worldPos: POSITION0;
+        float4 color: TEXTURE0;
+    blending:
+      mrt(0):
+        has_blending = yes;
+        src_color_blend_factor = src_alpha;
+        dst_color_blend_factor = one_minus_src_alpha;
+        color_blend_op = add;
+        src_alpha_blend_factor = one;
+        dst_alpha_blend_factor = one_minus_src_alpha;
+        alpha_blend_op = add;
+
+  USE_MATERIALS_PACKING();
+
+  #hlsl
+  struct VsOutput
+  {
+    float4 pos: SV_Position;
+    float4 color: TEXTURE2;
+  };
+
+  VsOutput vs_main(DebugPoly_input input)
+  {
+      VsOutput output;
+      output.pos = mul(FrameScope.viewProj, float4(input.worldPos, 1.0));
+      output.color = input.color;
+
+      return output;
+  }
+
+  struct PsOutput
+  {
+    float4 color : SV_Target0;
+  };
+
+  PsOutput ps_main(VsOutput input)
+  {
+    PsOutput o;
+    o.color = input.color;
+    return o;
+  }
+  #end
+
+  compile(vs, vs_main);
+  compile(ps, ps_main);
+};

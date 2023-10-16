@@ -26,3 +26,23 @@ void query_line_renderer (eastl::function<
     cb(dbg_line_renderer);
   });
 }
+
+
+const static DirectQueryRegistration query_poly_renderer_queryReg{
+  {
+    DESCRIBE_QUERY_COMPONENT("dbg_poly_renderer", Engine::dbg::PolyRenderer)
+  },
+  "query_poly_renderer"};
+const static query_id_t query_poly_renderer_queryId = query_poly_renderer_queryReg.getId();
+
+
+void query_poly_renderer (eastl::function<
+  void(
+    Engine::dbg::PolyRenderer& dbg_poly_renderer)> cb)
+{
+  ecs::get_registry().query(query_poly_renderer_queryId, [&](ComponentsAccessor& accessor)
+  {
+    Engine::dbg::PolyRenderer& dbg_poly_renderer = accessor.get<Engine::dbg::PolyRenderer>(compile_ecs_name_hash("dbg_poly_renderer"));
+    cb(dbg_poly_renderer);
+  });
+}
