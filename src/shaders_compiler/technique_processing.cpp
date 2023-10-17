@@ -205,10 +205,10 @@ namespace ShadersSystem
           }
         }
 
-        void processInputExp(const InputExp& exp)
+        void processInput(const InputExp* exp)
         {
           m_RenderState.ia = gapi::VertexInputDescription{};
-          const InputBufferExp* bExp = exp.buffers;
+          const InputBufferExp* bExp = exp->buffers;
 
           string sp = "  ";
           string hlsl = fmt::format("struct {}_input{{\n", m_TechniqueName.c_str());
@@ -398,6 +398,53 @@ namespace ShadersSystem
           }
         }
 
+        void processDepth(const DepthExp* exp)
+        {
+          #define SET_RENDER_STATE(type, state, nodeType, nodeParam) case DepthExp::Type::type:\
+          {\
+            m_RenderState.state = static_cast<const nodeType*>(exp)->nodeParam;\
+            break;\
+          }
+
+          while (exp)
+          {
+            switch (exp->type)
+            {
+              SET_RENDER_STATE(Test,  depthStencil.depthTestEnabled,  DepthTestExp,  enabled);
+              SET_RENDER_STATE(Write, depthStencil.depthWriteEnabled, DepthWriteExp, enabled);
+              SET_RENDER_STATE(Op,    depthStencil.depthOp,           DepthOpExp,    op);
+            }
+            exp = exp->next;
+          }
+
+          #undef SET_RENDER_STATE
+        }
+
+        void processStencil(const StencilExp* exp)
+        {
+          #define SET_RENDER_STATE(type, state, nodeType, nodeParam) case StencilExp::Type::type:\
+          {\
+            m_RenderState.state = static_cast<const nodeType*>(exp)->nodeParam;\
+            break;\
+          }
+
+          while (exp)
+          {
+            switch (exp->type)
+            {
+              SET_RENDER_STATE(Test,           depthStencil.stencilTestEnabled,    StencilTestExp,           enabled);
+              SET_RENDER_STATE(FailOp,         depthStencil.stencilFailOp,         StencilFailOpExp,         op);
+              SET_RENDER_STATE(PassOp,         depthStencil.stencilPassOp,         StencilPassOpExp,         op);
+              SET_RENDER_STATE(DepthFailOp,    depthStencil.stencilDepthFailOp,    StencilDepthFailOpExp,    op);
+              SET_RENDER_STATE(CompareOp,      depthStencil.stencilCompareOp,      StencilCompareOpExp,      op);
+              SET_RENDER_STATE(ReferenceValue, depthStencil.stencilReferenceValue, StencilReferenceValueExp, value);
+            }
+            exp = exp->next;
+          }
+
+          #undef SET_RENDER_STATE
+        }
+
         void processBlending(const BlendingExp* exp)
         {
           #define SET_RENDER_STATE(type, state, nodeType, nodeParam) case BlendingExp::Type::type:\
@@ -411,8 +458,8 @@ namespace ShadersSystem
             switch (exp->blendingStateType)
             {
               SET_RENDER_STATE(LogicOpEnabling, blending.logicOpEnabled, LogicOpEnablingExp, enabled)
-              SET_RENDER_STATE(LogicOp, blending.logicOp, LogicOpExp, op)
-              SET_RENDER_STATE(BlendConstants, blending.blendConstants, BlendConstants, val)
+              SET_RENDER_STATE(LogicOp,         blending.logicOp,        LogicOpExp,         op)
+              SET_RENDER_STATE(BlendConstants,  blending.blendConstants, BlendConstants,     val)
               case BlendingExp::Type::MrtState:
               {
                 const MrtBlendingExp* mrtBlendingExp = reinterpret_cast<const MrtBlendingExp*>(exp);
@@ -429,9 +476,18 @@ namespace ShadersSystem
 
         void processRenderState(const RenderStateExp* exp)
         {
-          #define SET_RENDER_STATE(type, state, nodeType, nodeParam) case RenderStateExp::StateType::type:\
+          #define SET_RENDER_STATE(type, state, nodeType, nodeParam) \
+            case RenderStateExp::StateType::type:\
+            {\
+              m_RenderState.state = static_cast<const nodeType*>(exp)->nodeParam;\
+              break;\
+            }
+
+          #define PROCESS_STATE(type) \
+          case RenderStateExp::StateType::type:\
           {\
-            m_RenderState.state = reinterpret_cast<const nodeType*>(exp)->nodeParam;\
+            const auto* e = static_cast<const type ## Exp*>(exp);\
+            process ## type(e);\
             break;\
           }
 
@@ -442,27 +498,10 @@ namespace ShadersSystem
               SET_RENDER_STATE(CullMode, cullMode, CullModeExp, cm);
               SET_RENDER_STATE(PolygonMode, polygonMode, PolygonModeExp, pm);
               SET_RENDER_STATE(PrimitiveTopology, topology, PrimitiveTopologyExp, tp);
-              SET_RENDER_STATE(DepthTest, depthStencil.depthTestEnabled, DepthTestExp, enabled);
-              SET_RENDER_STATE(DepthWrite, depthStencil.depthWriteEnabled, DepthWriteExp, enabled);
-              SET_RENDER_STATE(DepthOp, depthStencil.depthOp, DepthOpExp, op);
-              SET_RENDER_STATE(StencilTest, depthStencil.stencilTestEnabled, StencilTestExp, enabled);
-              SET_RENDER_STATE(StencilFailOp, depthStencil.stencilFailOp, StencilFailOpExp, op);
-              SET_RENDER_STATE(StencilPassOp, depthStencil.stencilPassOp, StencilPassOpExp, op);
-              SET_RENDER_STATE(StencilDepthFailOp, depthStencil.stencilDepthFailOp, StencilDepthFailOpExp, op);
-              SET_RENDER_STATE(StencilCompareOp, depthStencil.stencilCompareOp, StencilCompareOpExp, op);
-              SET_RENDER_STATE(StencilReferenceValue, depthStencil.stencilReferenceValue, StencilReferenceValueExp, value);
-              case RenderStateExp::StateType::Blending:
-              {
-                const BlendingExp* blendingExp = reinterpret_cast<const BlendingExp*>(exp);
-                processBlending(blendingExp);
-                break;
-              }
-              case RenderStateExp::StateType::Input:
-              {
-                const InputExp* inputExp = reinterpret_cast<const InputExp*>(exp);
-                processInputExp(*inputExp);
-                break;
-              }
+              PROCESS_STATE(Depth);
+              PROCESS_STATE(Stencil);
+              PROCESS_STATE(Blending);
+              PROCESS_STATE(Input);
             }
             exp = exp->next;
           }
@@ -470,6 +509,7 @@ namespace ShadersSystem
           processMrtBlendings();
 
           #undef SET_RENDER_STATE
+          #undef PROCESS_STATE
         }
 
         void processExps(const TechniqueExp& exps)

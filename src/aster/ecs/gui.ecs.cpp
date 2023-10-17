@@ -179,8 +179,7 @@ void draw_aabbs_at_camera_pos(eastl::span<string_view>)
   query_camera([](const float3& pos, const float2&, const float3& forward){
     float3 cubeCenter = pos + forward * float3(2.0);
     Engine::dbg::draw_aabb(cubeCenter, float3{1,1,1}, float4(0, 1.0, 0.0, 0.1), 20.0);
-
-    Engine::dbg::draw_aabb(cubeCenter, float3{0.5,2,0.5}, float4(0, 0.0, 1.0, 0.1), 20.0);
+    Engine::dbg::draw_aabb(cubeCenter, float3{0.5,2,0.5}, float4(0, 0.0, 1.0, 0.3), 20.0);
   });
 }
 

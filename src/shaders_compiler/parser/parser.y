@@ -63,6 +63,8 @@
   gapi::PrimitiveTopology primitiveTopology;
   gapi::CompareOp compareOp;
   gapi::StencilOp stencilOp;
+  DepthExp* depthExp;
+  StencilExp* stencilExp;
   BlendingExp* blendingExp;
   MrtBlendingExp* mrtBlendingExp;
   gapi::BlendFactor blendFactor;
@@ -248,10 +250,10 @@
 %type <polygonMode>          POLYGON_MODE
 %type <renderStateExp>       RENDER_STATE_EXP
 %type <renderStateExp>       RENDER_STATE_EXP_LIST
-%type <renderStateExp>       DEPTH_EXP
-%type <renderStateExp>       DEPTH_EXP_LIST
-%type <renderStateExp>       STENCIL_EXP
-%type <renderStateExp>       STENCIL_EXP_LIST
+%type <depthExp>             DEPTH_EXP
+%type <depthExp>             DEPTH_EXP_LIST
+%type <stencilExp>           STENCIL_EXP
+%type <stencilExp>           STENCIL_EXP_LIST
 %type <compareOp>            COMPARE_OP
 %type <stencilOp>            STENCIL_OP
 %type <blendingExp>          BLENDING_EXP

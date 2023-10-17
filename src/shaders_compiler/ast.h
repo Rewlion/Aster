@@ -148,15 +148,8 @@ namespace ShadersSystem
       CullMode,
       PolygonMode,
       PrimitiveTopology,
-      DepthTest,
-      DepthWrite,
-      DepthOp,
-      StencilTest,
-      StencilFailOp,
-      StencilPassOp,
-      StencilDepthFailOp,
-      StencilCompareOp,
-      StencilReferenceValue,
+      Depth,
+      Stencil,
       Blending,
       Input
     };
@@ -291,10 +284,39 @@ namespace ShadersSystem
     }
   };
 
-  struct DepthTestExp: public RenderStateExp
+  struct DepthExp : public RenderStateExp
+  {
+    enum class Type
+    {
+      Test,
+      Write,
+      Op
+    };
+
+    DepthExp(const Type t)
+      : RenderStateExp(RenderStateExp::StateType::Depth)
+      , type(t)
+      , next(nullptr)
+    {
+    }
+
+    ~DepthExp()
+    {
+      if (next)
+      {
+        delete next;
+        next = nullptr;
+      }
+    }
+
+    Type type;
+    DepthExp* next;
+  };
+
+  struct DepthTestExp: public DepthExp
   {
     DepthTestExp(const bool enabled)
-      : RenderStateExp(RenderStateExp::StateType::DepthTest)
+      : DepthExp(DepthExp::Type::Test)
       , enabled(enabled)
     {
     }
@@ -302,10 +324,10 @@ namespace ShadersSystem
     bool enabled;
   };
 
-  struct DepthWriteExp: public RenderStateExp
+  struct DepthWriteExp: public DepthExp
   {
     DepthWriteExp(const bool enabled)
-      : RenderStateExp(RenderStateExp::StateType::DepthWrite)
+      : DepthExp(DepthExp::Type::Write)
       , enabled(enabled)
     {
     }
@@ -313,10 +335,10 @@ namespace ShadersSystem
     bool enabled;
   };
 
-  struct DepthOpExp: public RenderStateExp
+  struct DepthOpExp: public DepthExp
   {
     DepthOpExp(const gapi::CompareOp op)
-      : RenderStateExp(RenderStateExp::StateType::DepthOp)
+      : DepthExp(DepthExp::Type::Op)
       , op(op)
     {
     }
@@ -324,10 +346,42 @@ namespace ShadersSystem
     gapi::CompareOp op;
   };
 
-  struct StencilTestExp: public RenderStateExp
+  struct StencilExp : public RenderStateExp
+  {
+    enum class Type
+    {
+      Test,
+      FailOp,
+      PassOp,
+      DepthFailOp,
+      CompareOp,
+      ReferenceValue,
+    };
+
+    StencilExp(const Type t)
+      : RenderStateExp(RenderStateExp::StateType::Stencil)
+      , type(t)
+      , next(nullptr)
+    {
+    }
+
+    ~StencilExp()
+    {
+      if (next)
+      {
+        delete next;
+        next = nullptr;
+      }
+    }
+
+    Type type;
+    StencilExp* next;
+  };
+
+  struct StencilTestExp: public StencilExp
   {
     StencilTestExp(const bool enabled)
-      : RenderStateExp(RenderStateExp::StateType::StencilTest)
+      : StencilExp(StencilExp::Type::Test)
       , enabled(enabled)
     {
     }
@@ -335,10 +389,10 @@ namespace ShadersSystem
     bool enabled;
   };
 
-  struct StencilFailOpExp: public RenderStateExp
+  struct StencilFailOpExp: public StencilExp
   {
     StencilFailOpExp(const gapi::StencilOp op)
-      : RenderStateExp(RenderStateExp::StateType::StencilFailOp)
+      : StencilExp(StencilExp::Type::FailOp)
       , op(op)
     {
     }
@@ -346,10 +400,10 @@ namespace ShadersSystem
     const gapi::StencilOp op;
   };
 
-  struct StencilPassOpExp: public RenderStateExp
+  struct StencilPassOpExp: public StencilExp
   {
     StencilPassOpExp(const gapi::StencilOp op)
-      : RenderStateExp(RenderStateExp::StateType::StencilPassOp)
+      : StencilExp(StencilExp::Type::PassOp)
       , op(op)
     {
     }
@@ -357,10 +411,10 @@ namespace ShadersSystem
     const gapi::StencilOp op;
   };
 
-  struct StencilDepthFailOpExp: public RenderStateExp
+  struct StencilDepthFailOpExp: public StencilExp
   {
     StencilDepthFailOpExp(const gapi::StencilOp op)
-      : RenderStateExp(RenderStateExp::StateType::StencilDepthFailOp)
+      : StencilExp(StencilExp::Type::DepthFailOp)
       , op(op)
     {
     }
@@ -368,10 +422,10 @@ namespace ShadersSystem
     const gapi::StencilOp op;
   };
 
-  struct StencilCompareOpExp: public RenderStateExp
+  struct StencilCompareOpExp: public StencilExp
   {
     StencilCompareOpExp(const gapi::CompareOp op)
-      : RenderStateExp(RenderStateExp::StateType::StencilCompareOp)
+      : StencilExp(StencilExp::Type::CompareOp)
       , op(op)
     {
     }
@@ -379,10 +433,10 @@ namespace ShadersSystem
     const gapi::CompareOp op;
   };
 
-  struct StencilReferenceValueExp: public RenderStateExp
+  struct StencilReferenceValueExp: public StencilExp
   {
     StencilReferenceValueExp(const uint32_t value)
-      : RenderStateExp(RenderStateExp::StateType::StencilReferenceValue)
+      : StencilExp(StencilExp::Type::ReferenceValue)
       , value(value)
     {
     }

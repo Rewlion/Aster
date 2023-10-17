@@ -260,6 +260,8 @@ union SHSTYPE
   gapi::PrimitiveTopology primitiveTopology;
   gapi::CompareOp compareOp;
   gapi::StencilOp stencilOp;
+  DepthExp* depthExp;
+  StencilExp* stencilExp;
   BlendingExp* blendingExp;
   MrtBlendingExp* mrtBlendingExp;
   gapi::BlendFactor blendFactor;
@@ -268,7 +270,7 @@ union SHSTYPE
 
   TechniqueExp* techniqueExp;
 
-#line 272 "src/shaders_compiler/parser/parser.tab.hpp"
+#line 274 "src/shaders_compiler/parser/parser.tab.hpp"
 
 };
 typedef union SHSTYPE SHSTYPE;
