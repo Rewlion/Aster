@@ -300,7 +300,8 @@ namespace fg
           .initialState = gapi::TextureState::RenderTarget,
           .finalState = gapi::TextureState::RenderTarget,
           .loadOp = rt.loadOp,
-          .storeOp = rt.storeOp
+          .storeOp = rt.storeOp,
+          .clearColor = rt.clearColor
         });
       }
 

@@ -56,8 +56,12 @@ namespace fg
         ExecState& m_State;
         public:
           RpBuilder(Registry& reg, ExecState& state) : m_Registry(reg), m_State(state) {}
-          auto addTarget(const TextureRequest, const gapi::LoadOp, const gapi::StoreOp) && -> RpBuilder&&;
-          auto addTarget(const char*, const gapi::LoadOp = gapi::LoadOp::Load) && -> RpBuilder&&;
+          auto addTarget(const TextureRequest, const gapi::LoadOp, const gapi::StoreOp,
+                         const gapi::ClearColorValue& = gapi::ClearColorValue{uint32_t{0}}) && -> RpBuilder&&;
+          auto addTarget(const TextureRequest, const gapi::ClearColorValue&) && -> RpBuilder&&;
+          auto addTarget(const char*, const gapi::LoadOp = gapi::LoadOp::Load,
+                         const gapi::ClearColorValue& = gapi::ClearColorValue{uint32_t{0}}) && -> RpBuilder&&;
+          auto addTarget(const char*, const gapi::ClearColorValue&) && -> RpBuilder&&;
           auto addRODepth(const char*, const gapi::LoadOp = gapi::LoadOp::Load) && -> RpBuilder&&;
           auto addDepth(const TextureRequest, 
                         const gapi::LoadOp depth_load = gapi::LoadOp::Load, const gapi::StoreOp depth_store = gapi::StoreOp::Store,
@@ -133,6 +137,7 @@ namespace fg
           virt_res_id_t vResId = INVALID_VIRT_RES_ID;
           gapi::LoadOp  loadOp = gapi::LoadOp::DontCare;
           gapi::StoreOp storeOp = gapi::StoreOp::DontCare;;
+          gapi::ClearColorValue clearColor = gapi::ClearColorValue{uint32_t{0}};
         };
 
         struct DepthTarget

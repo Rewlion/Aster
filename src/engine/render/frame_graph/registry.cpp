@@ -229,16 +229,31 @@ namespace fg
     return {*this, m_Nodes[m_CurrentExecNodeId].execState};
   }
 
-  auto Registry::RpBuilder::addTarget(const TextureRequest tex_req, const gapi::LoadOp load, const gapi::StoreOp store) && -> RpBuilder&&
+  auto Registry::RpBuilder::addTarget(const TextureRequest tex_req, const gapi::LoadOp load, const gapi::StoreOp store,
+                                      const gapi::ClearColorValue& clear_color) && -> RpBuilder&&
   {
-    m_State.renderPass.mrt.push({tex_req.m_Id, load, store});
+    m_State.renderPass.mrt.push({tex_req.m_Id, load, store, clear_color});
     return std::move(*this);
   }
 
-  auto Registry::RpBuilder::addTarget(const char* tex_name, const gapi::LoadOp load) && -> RpBuilder&&
+  auto Registry::RpBuilder::addTarget(const TextureRequest tex_req,
+                                      const gapi::ClearColorValue& clear_color) && -> RpBuilder&&
+  {
+    return std::move(*this).addTarget(tex_req, gapi::LoadOp::Clear, gapi::StoreOp::Store, clear_color);
+  }
+
+  auto Registry::RpBuilder::addTarget(const char* tex_name, const gapi::LoadOp load,
+                                      const gapi::ClearColorValue& clear_color) && -> RpBuilder&&
   {
     auto tex = m_Registry.modifyTexture(tex_name, gapi::TextureState::RenderTarget);
-    return std::move(*this).addTarget(tex, load, gapi::StoreOp::Store);
+    return std::move(*this).addTarget(tex, load, gapi::StoreOp::Store, clear_color);
+  }
+
+  auto Registry::RpBuilder::addTarget(const char* tex_name,
+                                      const gapi::ClearColorValue& clear_color) && -> RpBuilder&&
+  {
+    auto tex = m_Registry.modifyTexture(tex_name, gapi::TextureState::RenderTarget);
+    return std::move(*this).addTarget(tex, gapi::LoadOp::Clear, gapi::StoreOp::Store, clear_color);
   }
 
   auto Registry::RpBuilder::addDepth(const TextureRequest tex_req, 
