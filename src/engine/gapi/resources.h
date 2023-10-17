@@ -88,6 +88,26 @@ namespace gapi
     DontCare = 1
   };
 
+  union ClearColorValue
+  {
+    std::array<float, 4>    float32;
+    std::array<int32_t, 4>  int32;
+    std::array<uint32_t, 4> uint32;
+
+    ClearColorValue(const float v)
+    {
+      float32 = {v,v,v,v};
+    }
+    ClearColorValue(const int32_t v)
+    {
+      int32 = {v,v,v,v};
+    }
+    ClearColorValue(const uint32_t v)
+    {
+      uint32 = {v,v,v,v};
+    }
+  };
+
   struct ColorAttachment
   {
     TextureHandle texture = TextureHandle::Invalid;
@@ -448,12 +468,13 @@ namespace gapi
 
   struct RenderPassAttachment
   {
-    TextureHandle texture     = TextureHandle::Invalid;
-    uint32_t mipLevel         = 0;
-    TextureState initialState = TextureState::RenderTarget;
-    TextureState finalState   = TextureState::RenderTarget;
-    LoadOp loadOp             = LoadOp::Load;
-    StoreOp storeOp           = StoreOp::Store;
+    TextureHandle texture      = TextureHandle::Invalid;
+    uint32_t mipLevel          = 0;
+    TextureState initialState  = TextureState::RenderTarget;
+    TextureState finalState    = TextureState::RenderTarget;
+    LoadOp loadOp              = LoadOp::Load;
+    StoreOp storeOp            = StoreOp::Store;
+    ClearColorValue clearColor = ClearColorValue{int32_t(0)};
   };
 
   struct RenderPassDepthStencilAttachment
@@ -624,25 +645,5 @@ namespace gapi
     auto isReady() const -> bool = 0;
     virtual
     void reset() = 0;
-  };
-
-  union ClearColorValue
-  {
-    std::array<float, 4>    float32;
-    std::array<int32_t, 4>  int32;
-    std::array<uint32_t, 4> uint32;
-
-    ClearColorValue(const float v)
-    {
-      float32 = {v,v,v,v};
-    }
-    ClearColorValue(const int32_t v)
-    {
-      int32 = {v,v,v,v};
-    }
-    ClearColorValue(const uint32_t v)
-    {
-      uint32 = {v,v,v,v};
-    }
   };
 }

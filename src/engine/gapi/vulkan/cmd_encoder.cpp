@@ -40,11 +40,10 @@ namespace gapi::vulkan
     m_RenderPassState.rp = m_RenderPassStorage.getRenderPass(renderTargets, depthStencil);
     m_RenderPassState.fb = getFramebuffer(renderArea.extent, renderTargets, depthStencil);
 
-    std::array<uint32_t,4> clearColor{0,0,0,0};
-    vk::ClearValue clearValue;
-    clearValue.color = clearColor;
-
-    vk::ClearValue clearValues[MAX_RENDER_TARGETS+1] {clearValue};
+    vk::ClearValue clearValues[MAX_RENDER_TARGETS+1];
+    const size_t rtCount = renderTargets.getSize();
+    for (size_t i = 0; i < rtCount ; ++i)
+      clearValues[i].color = reinterpret_cast<const vk::ClearColorValue&>(renderTargets.get(i));
     clearValues[renderTargets.getSize()] = vk::ClearDepthStencilValue(0.0, 0);
 
     auto rpBeginInfo = vk::RenderPassBeginInfo();
