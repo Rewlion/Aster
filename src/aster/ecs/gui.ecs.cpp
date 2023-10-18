@@ -9,6 +9,7 @@
 #include <engine/render/debug/render.h>
 #include <engine/time.h>
 #include <engine/types.h>
+#include <engine/utils/collision.h>
 #include <engine/work_cycle/camera.h>
 
 // ECS_SYSTEM()
@@ -184,7 +185,31 @@ void draw_aabbs_at_camera_pos(eastl::span<string_view>)
   });
 }
 
+static
+void draw_line_plane_at_camera_pos(eastl::span<string_view>)
+{
+  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
+    
+    const float3 plPos = pos + forward * float3(2.0);
+    Utils::Plane p{plPos, glm::normalize(float3{0.0, 1.0, 1.0})};
+    Engine::dbg::draw_line_plane(p, plPos, 0.4, float3(1.0, 0.0, 0.0), 10.0, true);
+  });
+}
+
+static
+void draw_plane_at_camera_pos(eastl::span<string_view>)
+{
+  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
+    
+    const float3 plPos = pos + forward * float3(2.0);
+    Utils::Plane p{plPos, glm::normalize(float3{0.0, 1.0, 1.0})};
+    Engine::dbg::draw_plane(p, plPos, 0.4, float4(1.0, 1.0, 1.0, 0.5), 10.0, true);
+  });
+}
+
 CONSOLE_CMD("draw_line", 0, 0, draw_line_at_camera_pos);
+CONSOLE_CMD("draw_line_plane", 0, 0, draw_line_plane_at_camera_pos);
+CONSOLE_CMD("draw_plane", 0, 0, draw_plane_at_camera_pos);
 CONSOLE_CMD("draw_aabb", 0, 0, draw_aabbs_at_camera_pos);
 CONSOLE_CMD("create_src", 0, 0, create_src);
 CONSOLE_CMD("recreate", 0, 0, recreate_src);

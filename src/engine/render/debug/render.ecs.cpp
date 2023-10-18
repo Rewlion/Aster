@@ -3,6 +3,7 @@
 #include "poly_render.h"
 
 #include <engine/ecs/macros.h>
+#include <engine/utils/collision.h>
 
 #include <EASTL/vector.h>
 
@@ -27,7 +28,7 @@ namespace Engine::dbg
     });
   }
 
-  void draw_aabb(const float3& center, const float3& extent, const float4& color, float lifetime_sec)
+  void draw_aabb(const float3& center, const float3& extent, const float4& color, const float lifetime_sec)
   {
     const float3 halfExtent = extent * 0.5f;
 
@@ -86,6 +87,56 @@ namespace Engine::dbg
 
       draw_poly(a,b,c, color, lifetime_sec);
       draw_poly(c,b,d, color, lifetime_sec);
+    }
+  }
+
+  void draw_line_plane(const Utils::Plane& plane, const float3& pos, const float size,
+                       const float3& color, const float lifetime_sec, const bool draw_basis)
+  {
+    const auto[e1, e2, e3] = plane.getBasis();
+
+    const float halfSize = size*0.5f;
+    const float3 center = pos;
+
+    const float3 a = center + (-e1-e3)*halfSize;
+    const float3 b = center + (-e1+e3)*halfSize;
+    const float3 c = center + (e1+e3)*halfSize;
+    const float3 d = center + (e1-e3)*halfSize;
+
+    draw_line(a, b, color, lifetime_sec);
+    draw_line(b, c, color, lifetime_sec);
+    draw_line(c, d, color, lifetime_sec);
+    draw_line(d, a, color, lifetime_sec);
+
+    if (draw_basis)
+    {
+      draw_line(center, center + e1*size*0.1f, float3(1.0, 0.0, 0.0), lifetime_sec);
+      draw_line(center, center + e2*size*0.1f, float3(0.0, 1.0, 0.0), lifetime_sec);
+      draw_line(center, center + e3*size*0.1f, float3(0.0, 0.0, 1.0), lifetime_sec);
+    }
+  }
+
+  void draw_plane(const Utils::Plane& plane, const float3& pos, const float size,
+                  const float4& color, const float lifetime_sec, const bool draw_basis)
+  {
+    const auto[e1, e2, e3] = plane.getBasis();
+
+    const float halfSize = size*0.5f;
+    const float3 center = pos;
+
+    const float3 a = center + (-e1-e3)*halfSize;
+    const float3 b = center + (-e1+e3)*halfSize;
+    const float3 c = center + (e1+e3)*halfSize;
+    const float3 d = center + (e1-e3)*halfSize;
+
+    draw_poly(a,b,c, color, lifetime_sec);
+    draw_poly(c,d,a, color, lifetime_sec);
+
+    if (draw_basis)
+    {
+      draw_line(center, center + e1*size*0.1f, float3(1.0, 0.0, 0.0), lifetime_sec);
+      draw_line(center, center + e2*size*0.1f, float3(0.0, 1.0, 0.0), lifetime_sec);
+      draw_line(center, center + e3*size*0.1f, float3(0.0, 0.0, 1.0), lifetime_sec);
     }
   }
 }
