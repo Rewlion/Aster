@@ -4,8 +4,10 @@
 
 #include <engine/ecs/macros.h>
 #include <engine/utils/collision.h>
+#include <engine/utils/math.h>
 
 #include <EASTL/vector.h>
+#include <numbers>
 
 ECS_DESCRIBE_QUERY(query_line_renderer, (Engine::dbg::LineRenderer& dbg_line_renderer))
 ECS_DESCRIBE_QUERY(query_poly_renderer, (Engine::dbg::PolyRenderer& dbg_poly_renderer))
@@ -137,6 +139,32 @@ namespace Engine::dbg
       draw_line(center, center + e1*size*0.1f, float3(1.0, 0.0, 0.0), lifetime_sec);
       draw_line(center, center + e2*size*0.1f, float3(0.0, 1.0, 0.0), lifetime_sec);
       draw_line(center, center + e3*size*0.1f, float3(0.0, 0.0, 1.0), lifetime_sec);
+    }
+  }
+
+  void draw_line_sphere(const Utils::Sphere& sphere, const float3& color, const float lifetime_sec)
+  {
+    const size_t Ni = 9;
+    const size_t Nj = Ni+2;
+
+    const auto calcPhi = [Ni](const int i){ return 2.0 * std::numbers::pi_v<float> * (float)i / (float)Ni; };
+    const auto calcTheta = [Nj](const int j){ return std::numbers::pi_v<float> * (float)j / (float)Nj; };
+
+    for (size_t i = 0; i < Ni; ++i)
+      for (size_t j = 0; j < Nj; ++j)
+    {
+      const float phi  = calcPhi(i);
+      const float phi2  = calcPhi(i+1);
+
+      const float theta  = calcTheta(j);
+      const float theta2 = calcTheta(j+1);
+
+      const float3 begin = sphere.center + Utils::spherical_to_decartian(theta, phi) * sphere.r;
+      const float3 endVertical = sphere.center + Utils::spherical_to_decartian(theta2, phi) * sphere.r;
+      const float3 endHorizontal = sphere.center + Utils::spherical_to_decartian(theta, phi2) * sphere.r;
+
+      draw_line(begin, endVertical, color, lifetime_sec);
+      draw_line(begin, endHorizontal, color, lifetime_sec);
     }
   }
 }

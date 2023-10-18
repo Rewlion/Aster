@@ -18,4 +18,10 @@ namespace Utils
       float3 N = float3(0.0, 1.0, 0.0);
       float D = 0.0;
   };
+
+  struct Sphere
+  {
+    float3 center;
+    float r;
+  };
 }

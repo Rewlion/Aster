@@ -207,9 +207,21 @@ void draw_plane_at_camera_pos(eastl::span<string_view>)
   });
 }
 
+static
+void draw_sphere_at_camera_pos(eastl::span<string_view>)
+{
+  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
+    
+    const float3 center = pos + forward * float3(2.0);
+    Utils::Sphere sp{center, 1.0};
+    Engine::dbg::draw_line_sphere(sp, float3(0.0, 0.0, 1.0), 20.0);
+  });
+}
+
 CONSOLE_CMD("draw_line", 0, 0, draw_line_at_camera_pos);
 CONSOLE_CMD("draw_line_plane", 0, 0, draw_line_plane_at_camera_pos);
 CONSOLE_CMD("draw_plane", 0, 0, draw_plane_at_camera_pos);
+CONSOLE_CMD("draw_sphere", 0, 0, draw_sphere_at_camera_pos);
 CONSOLE_CMD("draw_aabb", 0, 0, draw_aabbs_at_camera_pos);
 CONSOLE_CMD("create_src", 0, 0, create_src);
 CONSOLE_CMD("recreate", 0, 0, recreate_src);

@@ -5,6 +5,7 @@
 namespace Utils
 {
   struct Plane;
+  struct Sphere;
 }
 
 namespace Engine::dbg
@@ -20,4 +21,5 @@ namespace Engine::dbg
                        const float3& color, const float lifetime_sec, const bool draw_basis=false);
   void draw_plane(const Utils::Plane&, const float3& pos, const float size,
                   const float4& color, const float lifetime_sec, const bool draw_basis=false);
+  void draw_line_sphere(const Utils::Sphere&, const float3& color, const float lifetime_sec);
 }
