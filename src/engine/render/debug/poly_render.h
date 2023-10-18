@@ -33,6 +33,7 @@ namespace Engine::dbg
       void tick();
       void beforeRender(gapi::CmdEncoder& encoder);
       void render(gapi::CmdEncoder& encoder);
+      void combine(gapi::CmdEncoder& encoder);
 
     private:
       bool m_Dirty = false;

@@ -81,3 +81,8 @@ Virtual Texture, Terrain:
    Adaptive Virtual Texture Rendering in Far Cry 4
  - https://www.youtube.com/watch?v=q67RHk3QLr4&t=1459s&ab_channel=JavidMamedov
    Terrain in Battlefield 3: A Modern, Complete and Scalable System (Mattias Widmark)
+
+Order-Independent Transparency
+ Weighted Blended OIT
+ - https://casual-effects.blogspot.com/2015/03/implemented-weighted-blended-order.html
+ - https://casual-effects.blogspot.com/2014/03/weighted-blended-order-independent.html

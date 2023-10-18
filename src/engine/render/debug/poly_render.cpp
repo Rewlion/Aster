@@ -65,7 +65,17 @@ namespace Engine::dbg
       tfx::activate_technique("DebugPoly", encoder);
       encoder.bindVertexBuffer(m_VertexBuffer);
       encoder.updateResources();
-      encoder.draw(m_StagingVertices.size() * 3, 4, 0, 0);
+      encoder.draw(m_StagingVertices.size() * 3, 1, 0, 0);
+    }
+  }
+
+  void PolyRenderer::combine(gapi::CmdEncoder& encoder)
+  {
+    if (m_VertexBuffer != gapi::BufferHandler::Invalid)
+    {
+      tfx::activate_technique("DebugPolyCombine", encoder);
+      encoder.updateResources();
+      encoder.draw(4, 1, 0, 0);
     }
   }
 

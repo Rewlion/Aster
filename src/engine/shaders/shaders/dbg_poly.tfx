@@ -1,5 +1,6 @@
 #include "frame.inc.tfx"
 #include "materials.inc.tfx"
+#include "screen_space.inc.tfx"
 
 technique DebugPoly {
   support scope FrameScope;
@@ -17,11 +18,19 @@ technique DebugPoly {
     blending:
       mrt(0):
         has_blending = yes;
-        src_color_blend_factor = src_alpha;
-        dst_color_blend_factor = one_minus_src_alpha;
+        src_color_blend_factor = one;
+        dst_color_blend_factor = one;
         color_blend_op = add;
         src_alpha_blend_factor = one;
-        dst_alpha_blend_factor = one_minus_src_alpha;
+        dst_alpha_blend_factor = one;
+        alpha_blend_op = add;
+      mrt(1):
+        has_blending = yes;
+        src_color_blend_factor = zero;
+        dst_color_blend_factor = one_minus_src_color;
+        color_blend_op = add;
+        src_alpha_blend_factor = zero;
+        dst_alpha_blend_factor = zero;
         alpha_blend_op = add;
 
   USE_MATERIALS_PACKING();
@@ -30,7 +39,7 @@ technique DebugPoly {
   struct VsOutput
   {
     float4 pos: SV_Position;
-    float4 color: TEXTURE2;
+    float4 color: TEXTURE0;
   };
 
   VsOutput vs_main(DebugPoly_input input)
@@ -44,13 +53,74 @@ technique DebugPoly {
 
   struct PsOutput
   {
+    float4 acc : SV_Target0;
+    float revealage : SV_Target1;
+  };
+
+  PsOutput ps_main(VsOutput input)
+  {
+    float4 color = input.color;
+
+    float weight = max(min(1.0, max(max(color.r, color.g), color.b) * color.a), color.a)
+                    * clamp(0.03 / (1e-5 + pow(input.pos.z / 200.0, 4.0)), 1e-2, 3e3);
+
+    PsOutput o;
+    o.acc = float4(color.rgb * color.a, color.a) * weight;
+    o.revealage = color.a;
+    return o;
+  }
+  #end
+
+  compile(vs, vs_main);
+  compile(ps, ps_main);
+};
+
+scope DebugPolyCombineScope {
+  reserve:
+    descriptor_set(1);
+    register(texture, 0-1);
+
+  Texture2D dbgPolyAcc = extern(dbgPolyAcc);
+  Texture2D dbgPolyRevealage = extern(dbgPolyRevealage);
+};
+
+technique DebugPolyCombine {
+  support scope FrameScope;
+  activate scope DebugPolyCombineScope;
+
+  USE_SCREENSPACE_BASE();
+  render_state:
+    blending:
+      mrt(0):
+        has_blending = yes;
+        src_color_blend_factor = src_alpha;
+        dst_color_blend_factor = one_minus_src_alpha;
+        color_blend_op = add;
+        src_alpha_blend_factor = src_alpha;
+        dst_alpha_blend_factor = one_minus_src_alpha;
+        alpha_blend_op = add;
+
+  #hlsl
+  struct PsOutput
+  {
     float4 color : SV_Target0;
   };
 
   PsOutput ps_main(VsOutput input)
   {
+    float3 tc = float3(input.pos.xy, 0.0);
+
+    float revealage = dbgPolyRevealage.Load(tc).r;
+    if (revealage == 1.0)
+      discard;
+
+    float4 accum = dbgPolyAcc.Load(tc);
+    float3 averageColor = accum.rgb / accum.a;
+    float4 color = float4(averageColor, 1.0f - revealage);
+
     PsOutput o;
-    o.color = input.color;
+    o.color = color;
+
     return o;
   }
   #end
