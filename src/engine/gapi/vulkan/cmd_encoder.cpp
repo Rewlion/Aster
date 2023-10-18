@@ -43,7 +43,7 @@ namespace gapi::vulkan
     vk::ClearValue clearValues[MAX_RENDER_TARGETS+1];
     const size_t rtCount = renderTargets.getSize();
     for (size_t i = 0; i < rtCount ; ++i)
-      clearValues[i].color = reinterpret_cast<const vk::ClearColorValue&>(renderTargets.get(i));
+      clearValues[i].color.setUint32(renderTargets.get(i).clearColor.uint32);
     clearValues[renderTargets.getSize()] = vk::ClearDepthStencilValue(0.0, 0);
 
     auto rpBeginInfo = vk::RenderPassBeginInfo();
