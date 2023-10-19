@@ -92,6 +92,14 @@ namespace Engine::dbg
     }
   }
 
+  static
+  void draw_line_basis(const float3& e1, const float3& e2, const float3& e3, const float3& pos, const float size, const float lifetime_sec)
+  {
+    draw_line(pos, pos + e1*size, float3(1.0, 0.0, 0.0), lifetime_sec);
+    draw_line(pos, pos + e2*size, float3(0.0, 1.0, 0.0), lifetime_sec);
+    draw_line(pos, pos + e3*size, float3(0.0, 0.0, 1.0), lifetime_sec);
+  }
+
   void draw_line_plane(const Utils::Plane& plane, const float3& pos, const float size,
                        const float3& color, const float lifetime_sec, const bool draw_basis)
   {
@@ -111,11 +119,7 @@ namespace Engine::dbg
     draw_line(d, a, color, lifetime_sec);
 
     if (draw_basis)
-    {
-      draw_line(center, center + e1*size*0.1f, float3(1.0, 0.0, 0.0), lifetime_sec);
-      draw_line(center, center + e2*size*0.1f, float3(0.0, 1.0, 0.0), lifetime_sec);
-      draw_line(center, center + e3*size*0.1f, float3(0.0, 0.0, 1.0), lifetime_sec);
-    }
+      draw_line_basis(e1,e2,e3, center, size*0.1f, lifetime_sec);
   }
 
   void draw_plane(const Utils::Plane& plane, const float3& pos, const float size,
@@ -135,11 +139,7 @@ namespace Engine::dbg
     draw_poly(c,d,a, color, lifetime_sec);
 
     if (draw_basis)
-    {
-      draw_line(center, center + e1*size*0.1f, float3(1.0, 0.0, 0.0), lifetime_sec);
-      draw_line(center, center + e2*size*0.1f, float3(0.0, 1.0, 0.0), lifetime_sec);
-      draw_line(center, center + e3*size*0.1f, float3(0.0, 0.0, 1.0), lifetime_sec);
-    }
+      draw_line_basis(e1,e2,e3, center, size*0.1f, lifetime_sec);
   }
 
   void draw_line_sphere(const Utils::Sphere& sphere, const float3& color, const float lifetime_sec)
@@ -165,6 +165,59 @@ namespace Engine::dbg
 
       draw_line(begin, endVertical, color, lifetime_sec);
       draw_line(begin, endHorizontal, color, lifetime_sec);
+    }
+  }
+
+  void draw_frustum(const Utils::Frustum& fr, const float4& color, const float lifetime_sec, const bool draw_basis)
+  {
+    //    f____g
+    //  / |   /|
+    // b-----c |
+    // |  e_ | h
+    // a-----d/
+    using Utils::Frustum;
+    const float3 a = Utils::calc_intersect_point(fr.planes[Frustum::NEAR], fr.planes[Frustum::BOT], fr.planes[Frustum::LEFT]).value();
+    const float3 b = Utils::calc_intersect_point(fr.planes[Frustum::NEAR], fr.planes[Frustum::TOP], fr.planes[Frustum::LEFT]).value();
+    const float3 c = Utils::calc_intersect_point(fr.planes[Frustum::NEAR], fr.planes[Frustum::TOP], fr.planes[Frustum::RIGHT]).value();
+    const float3 d = Utils::calc_intersect_point(fr.planes[Frustum::NEAR], fr.planes[Frustum::BOT], fr.planes[Frustum::RIGHT]).value();
+
+    const float3 e = Utils::calc_intersect_point(fr.planes[Frustum::FAR], fr.planes[Frustum::BOT], fr.planes[Frustum::LEFT]).value();
+    const float3 f = Utils::calc_intersect_point(fr.planes[Frustum::FAR], fr.planes[Frustum::TOP], fr.planes[Frustum::LEFT]).value();
+    const float3 g = Utils::calc_intersect_point(fr.planes[Frustum::FAR], fr.planes[Frustum::TOP], fr.planes[Frustum::RIGHT]).value();
+    const float3 h = Utils::calc_intersect_point(fr.planes[Frustum::FAR], fr.planes[Frustum::BOT], fr.planes[Frustum::RIGHT]).value();
+
+    draw_poly(a,b,c, color, lifetime_sec);
+    draw_poly(c,d,a, color, lifetime_sec);
+
+    draw_poly(e,f,g, color, lifetime_sec);
+    draw_poly(g,h,e, color, lifetime_sec);
+
+    draw_poly(b,f,g, color, lifetime_sec);
+    draw_poly(g,c,b, color, lifetime_sec);
+
+    draw_poly(d,c,g, color, lifetime_sec);
+    draw_poly(g,h,d, color, lifetime_sec);
+
+    draw_poly(a,b,f, color, lifetime_sec);
+    draw_poly(f,e,a, color, lifetime_sec);
+
+    draw_poly(a,e,h, color, lifetime_sec);
+    draw_poly(h,d,a, color, lifetime_sec);
+
+    if (draw_basis)
+    {
+      float3 centers[Frustum::LAST_PLANE];
+      centers[Frustum::LEFT]  = (a+f)*0.5f;
+      centers[Frustum::RIGHT] = (d+g)*0.5f;
+      centers[Frustum::BOT]   = (e+d)*0.5f;
+      centers[Frustum::TOP]   = (b+g)*0.5f;
+      centers[Frustum::NEAR]  = (a+c)*0.5f;
+      centers[Frustum::FAR]   = (e+g)*0.5f;
+      for (int i = 0; i < Frustum::LAST_PLANE; ++i)
+      {
+        const auto[e1,e2,e3] = fr.planes[i].getBasis();
+        draw_line_basis(e1,e2,e3, centers[i], 0.1f, lifetime_sec);
+      }
     }
   }
 }

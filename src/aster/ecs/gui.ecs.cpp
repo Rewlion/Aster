@@ -6,6 +6,7 @@
 #include <engine/events.h>
 #include <engine/gui/gui.h>
 #include <engine/input/input.h>
+#include <engine/math.h>
 #include <engine/render/debug/render.h>
 #include <engine/time.h>
 #include <engine/types.h>
@@ -285,11 +286,27 @@ void tick_collision_tests(Engine::OnGameTick&, const bool collision_test_tag, co
   }
 }
 
+static
+void draw_frustum_at_camera_pos(eastl::span<string_view>)
+{
+  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
+    float4x4 view = math::look_at(pos + forward * 2.0f, pos);
+    float4x4 proj = math::perspective(45.0f, 1980.0f / 1024.0, 1.0f, 5.0f);
+
+    Utils::Frustum frustum{proj * view};
+    Utils::Sphere camPoint{pos, 0.05f};
+
+    Engine::dbg::draw_line_sphere(camPoint, float3(1.0f, 0.0f, 0.0f), 20.0f);
+    Engine::dbg::draw_frustum(frustum, float4(1.0f, 1.0f, 1.0f, 0.3f), 20.0f, true);
+  });
+}
+
 CONSOLE_CMD("draw_line", 0, 0, draw_line_at_camera_pos);
 CONSOLE_CMD("draw_line_plane", 0, 0, draw_line_plane_at_camera_pos);
 CONSOLE_CMD("draw_plane", 0, 0, draw_plane_at_camera_pos);
 CONSOLE_CMD("draw_sphere", 0, 0, draw_sphere_at_camera_pos);
 CONSOLE_CMD("draw_aabb", 0, 0, draw_aabbs_at_camera_pos);
+CONSOLE_CMD("draw_frustum", 0, 0, draw_frustum_at_camera_pos);
 CONSOLE_CMD("test_collision", 0, 0, spawn_collision_tests);
 CONSOLE_CMD("create_src", 0, 0, create_src);
 CONSOLE_CMD("recreate", 0, 0, recreate_src);

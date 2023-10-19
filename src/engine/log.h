@@ -3,6 +3,10 @@
 #include <engine/render/debug/debug_text.h>
 
 #include <spdlog/spdlog.h>
+#undef NEAR
+#undef FAR
+#undef near
+#undef far
 
 namespace Engine
 {

@@ -24,6 +24,53 @@ namespace Utils
     };
   }
 
+  Frustum::Frustum(const float4x4& view_projection)
+  {
+    //https://www8.cs.umu.se/kurser/5DV051/HT12/lab/plane_extraction.pdf
+
+    planes[LEFT].N = {
+      view_projection[0][3] + view_projection[0][0],
+      view_projection[1][3] + view_projection[1][0],
+      view_projection[2][3] + view_projection[2][0]
+    };
+    planes[LEFT].D = -(view_projection[3][3] + view_projection[3][0]);
+
+    planes[RIGHT].N = {
+      view_projection[0][3] - view_projection[0][0],
+      view_projection[1][3] - view_projection[1][0],
+      view_projection[2][3] - view_projection[2][0]
+    };
+    planes[RIGHT].D = -(view_projection[3][3] - view_projection[3][0]);
+
+    planes[BOT].N = {
+      view_projection[0][3] + view_projection[0][1],
+      view_projection[1][3] + view_projection[1][1],
+      view_projection[2][3] + view_projection[2][1]
+    };
+    planes[BOT].D = -(view_projection[3][3] + view_projection[3][1]);
+
+    planes[TOP].N = {
+      view_projection[0][3] - view_projection[0][1],
+      view_projection[1][3] - view_projection[1][1],
+      view_projection[2][3] - view_projection[2][1]
+    };
+    planes[TOP].D = -(view_projection[3][3] - view_projection[3][1]);
+
+    planes[NEAR].N = {
+      view_projection[0][2],
+      view_projection[1][2],
+      view_projection[2][2],
+    };
+    planes[NEAR].D = -view_projection[3][2];
+
+    planes[FAR].N = {
+      view_projection[0][3] - view_projection[0][2],
+      view_projection[1][3] - view_projection[1][2],
+      view_projection[2][3] - view_projection[2][2],
+    };
+    planes[FAR].D = -(view_projection[3][3] - view_projection[3][2]);
+  }
+
   auto calc_sign_distance(const Plane& pl, const float3& p) -> float
   {
     return glm::dot(p, pl.N) - pl.D;
