@@ -21,4 +21,36 @@ namespace Utils
       .e3 = BT
     };
   }
+
+  auto calc_sign_distance(const Plane& pl, const float3& p) -> float
+  {
+    return glm::dot(p, pl.N) - pl.D;
+  }
+
+  auto calc_abs_distance(const Plane& pl, const float3& p) -> float
+  {
+    return std::abs(calc_sign_distance(pl, p));
+  }
+
+  auto calc_abs_distance(const Sphere& s1, const Sphere& s2) -> float
+  {
+    return std::sqrt(calc_abs_distance_squared(s1, s2));
+  }
+
+  auto calc_abs_distance_squared(const Sphere& s1, const Sphere& s2) -> float
+  {
+    const float3 dl = s2.center - s1.center;
+    return std::abs(glm::dot(dl, dl));
+  }
+
+  auto test_intersection(const Plane& pl, const Sphere& s) -> bool
+  {
+    return calc_abs_distance(pl, s.center) <= s.r;
+  }
+
+  auto test_intersection(const Sphere& s1, const Sphere& s2) -> bool
+  {
+    const float r1r2 = s1.r + s2.r;
+    return calc_abs_distance_squared(s1, s2) <= (r1r2*r1r2);
+  }
 }

@@ -218,11 +218,61 @@ void draw_sphere_at_camera_pos(eastl::span<string_view>)
   });
 }
 
+static
+void spawn_collision_tests(eastl::span<string_view>)
+{
+  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
+    
+    const float3 center = pos + forward * float3(2.0);
+    ecs::EntityComponents init;
+    init["center"] = pos + forward * 2.0f;
+    ecs::get_registry().createEntity("CollisionTests", std::move(init));
+  });
+}
+
+ECS_EVENT_SYSTEM()
+void tick_collision_tests(Engine::OnGameTick&, const bool collision_test_tag, const float3& center)
+{
+  float3 cameraForward;
+
+  query_camera([&cameraForward](const float3& pos, const float2& rotation, const float3& forward){
+    cameraForward = forward;
+  });
+
+  {
+    Utils::Sphere sp{center + cameraForward * 2.0f, 0.3f };
+    const float3 plPos = sp.center + float3{0.0, 1.0, 0.0};
+    Utils::Plane pl{plPos, glm::normalize(float3{1.0, -1.0, 0.0})};
+    sp.center += (float3{0.0, 2.0, 0.0} * std::abs(std::sin(Engine::Time::get_sec_since_start())));
+
+    Engine::dbg::draw_plane(pl, plPos, 2.0, float4(1.0, 1.0, 1.0, 0.8f), 0.0f, true);
+
+    if (Utils::test_intersection(pl, sp))
+      Engine::dbg::draw_line_sphere(sp, float3{1.0, 0.0, 0.0}, 0.0f);
+    else
+      Engine::dbg::draw_line_sphere(sp, float3{0.0, 0.0, 1.0}, 0.0f);
+  }
+
+  {
+    Utils::Sphere s1{center + cameraForward * 2.0f + float3{-1.0, 0.0, 0.0}, 0.3f };
+    Utils::Sphere s2 = s1;
+    s2.r = 0.4;
+    s1.center += (float3{0.0, 1.0, 0.0} * std::sin(Engine::Time::get_sec_since_start()));
+
+    Engine::dbg::draw_line_sphere(s1, float3{0.0, 1.0, 0.0}, 0.0f);
+    if (Utils::test_intersection(s1,s2))
+      Engine::dbg::draw_line_sphere(s2, float3{1.0, 0.0, 0.0}, 0.0f);
+    else
+      Engine::dbg::draw_line_sphere(s2, float3{0.0, 0.0, 1.0}, 0.0f);
+  }
+}
+
 CONSOLE_CMD("draw_line", 0, 0, draw_line_at_camera_pos);
 CONSOLE_CMD("draw_line_plane", 0, 0, draw_line_plane_at_camera_pos);
 CONSOLE_CMD("draw_plane", 0, 0, draw_plane_at_camera_pos);
 CONSOLE_CMD("draw_sphere", 0, 0, draw_sphere_at_camera_pos);
 CONSOLE_CMD("draw_aabb", 0, 0, draw_aabbs_at_camera_pos);
+CONSOLE_CMD("test_collision", 0, 0, spawn_collision_tests);
 CONSOLE_CMD("create_src", 0, 0, create_src);
 CONSOLE_CMD("recreate", 0, 0, recreate_src);
 CONSOLE_CMD("add", 0, 0, add_subt);

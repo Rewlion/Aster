@@ -57,3 +57,9 @@ template @("name: MovingDecal; extends: Decal")
   bool moving_decal_flag = true
   float3 center_pos = 0, 0, 0
 }
+
+template @("name: CollisionTests")
+{
+  bool collision_test_tag = true
+  float3 center = 0, 0, 0
+}

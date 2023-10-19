@@ -24,4 +24,12 @@ namespace Utils
     float3 center;
     float r;
   };
+
+  auto calc_sign_distance(const Plane&, const float3&) -> float;
+  auto calc_abs_distance(const Plane&, const float3&) -> float;
+  auto calc_abs_distance(const Sphere&, const Sphere&) -> float;
+  auto calc_abs_distance_squared(const Sphere&, const Sphere&) -> float;
+
+  auto test_intersection(const Plane&, const Sphere&) -> bool;
+  auto test_intersection(const Sphere&, const Sphere&) -> bool;
 }

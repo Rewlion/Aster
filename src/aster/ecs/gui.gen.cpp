@@ -252,3 +252,23 @@ void query_camera (eastl::function<
     cb(pos,camera_rotations,forward);
   });
 }
+
+
+static void tick_collision_tests_internal(Event* event, ComponentsAccessor& accessor)
+{
+  Engine::OnGameTick* casted_event = reinterpret_cast<Engine::OnGameTick*>(event);
+  bool collision_test_tag = accessor.get<bool>(compile_ecs_name_hash("collision_test_tag"));
+  const float3& center = accessor.get<float3>(compile_ecs_name_hash("center"));
+  tick_collision_tests(*casted_event, collision_test_tag,center);
+}
+
+
+static EventSystemRegistration tick_collision_tests_registration(
+  tick_collision_tests_internal,
+  compile_ecs_name_hash("OnGameTick"),
+  {
+    DESCRIBE_QUERY_COMPONENT("collision_test_tag", bool),
+    DESCRIBE_QUERY_COMPONENT("center", float3)
+  },
+  "tick_collision_tests"
+);
