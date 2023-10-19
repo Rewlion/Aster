@@ -1,5 +1,7 @@
 #include "collision.h"
 
+#include <engine/assert.h>
+
 namespace Utils
 {
   Plane::Plane(const float3& pos, const float3& unit_normal)
@@ -8,7 +10,7 @@ namespace Utils
     D = glm::dot(unit_normal, pos);
   }
 
-  Basis Plane::getBasis() const
+  auto Plane::getBasis() const -> Basis
   {
     const float3 up = std::abs(N.y) != 1.0 ?
                         float3(0.0, 1.0, 0.0) :
@@ -52,5 +54,26 @@ namespace Utils
   {
     const float r1r2 = s1.r + s2.r;
     return calc_abs_distance_squared(s1, s2) <= (r1r2*r1r2);
+  }
+
+  auto calc_intersect_point(const Plane& p1, const Plane& p2, const Plane& p3) -> std::optional<float3>
+  {
+    const float3 c1{p1.N.x, p2.N.x, p3.N.x};
+    const float3 c2{p1.N.y, p2.N.y, p3.N.y};
+    const float3 c3{p1.N.z, p2.N.z, p3.N.z};
+    const float3 c4{p1.D,   p2.D,   p3.D};
+
+    float3 u = glm::cross(c2,c3);
+    float3 v = glm::cross(c1,c4);
+    
+    const float dMain = glm::dot(c1, u);
+    if (std::abs(dMain) < 0.0001)
+      return std::nullopt;
+
+    const float d1 = glm::dot(c4,u);
+    const float d2 = glm::dot(c3,v);
+    const float d3 = -glm::dot(c2,v);
+
+    return float3{d1, d2, d3} / dMain;
   }
 }

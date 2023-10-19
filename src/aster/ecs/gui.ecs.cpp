@@ -239,8 +239,9 @@ void tick_collision_tests(Engine::OnGameTick&, const bool collision_test_tag, co
     cameraForward = forward;
   });
 
+  //sphere-plane
   {
-    Utils::Sphere sp{center + cameraForward * 2.0f, 0.3f };
+    Utils::Sphere sp{center + float3{0.0, 0.0, 1.0} * 2.0f, 0.3f };
     const float3 plPos = sp.center + float3{0.0, 1.0, 0.0};
     Utils::Plane pl{plPos, glm::normalize(float3{1.0, -1.0, 0.0})};
     sp.center += (float3{0.0, 2.0, 0.0} * std::abs(std::sin(Engine::Time::get_sec_since_start())));
@@ -253,8 +254,9 @@ void tick_collision_tests(Engine::OnGameTick&, const bool collision_test_tag, co
       Engine::dbg::draw_line_sphere(sp, float3{0.0, 0.0, 1.0}, 0.0f);
   }
 
+  //sphere-sphere
   {
-    Utils::Sphere s1{center + cameraForward * 2.0f + float3{-1.0, 0.0, 0.0}, 0.3f };
+    Utils::Sphere s1{center + float3{0.0, 0.0, 1.0} * 2.0f + float3{-1.0, 0.0, 0.0}, 0.3f };
     Utils::Sphere s2 = s1;
     s2.r = 0.4;
     s1.center += (float3{0.0, 1.0, 0.0} * std::sin(Engine::Time::get_sec_since_start()));
@@ -264,6 +266,22 @@ void tick_collision_tests(Engine::OnGameTick&, const bool collision_test_tag, co
       Engine::dbg::draw_line_sphere(s2, float3{1.0, 0.0, 0.0}, 0.0f);
     else
       Engine::dbg::draw_line_sphere(s2, float3{0.0, 0.0, 1.0}, 0.0f);
+  }
+
+  //3 planes
+  {
+    const float3 planesOrigin = center + float3{0.0, 0.0, 1.0} * 2.0f + float3(2.0, 0.0,0.0);
+    Utils::Plane p1{planesOrigin, glm::normalize(float3{1.0, 0.0, 0.0})};
+    const float3 p2Origin = planesOrigin + float3{0.0, 0.1, 0.0} * std::sin(Engine::Time::get_sec_since_start());
+    Utils::Plane p2{p2Origin, glm::normalize(float3{1.0, 1.0, 0.0})};
+    Utils::Plane p3{planesOrigin, glm::normalize(float3{0.0, 0.0, 1.0})};
+
+    const float3 intPoint = Utils::calc_intersect_point(p1,p2,p3).value();
+
+    Engine::dbg::draw_aabb(intPoint, {0.05, 0.05, 0.05}, float4{1.0, 1.0, 0.0, 1.0}, 0.0);
+    Engine::dbg::draw_plane(p1, planesOrigin, 1.0, float4{1.0, 0.0, 0.0, 0.5}, 0.0f);
+    Engine::dbg::draw_plane(p2, p2Origin, 1.0, float4{0.0, 1.0, 0.0, 0.5}, 0.0f);
+    Engine::dbg::draw_plane(p3, planesOrigin, 1.0, float4{0.0, 0.0, 1.0, 0.5}, 0.0f);
   }
 }
 

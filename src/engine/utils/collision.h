@@ -2,6 +2,8 @@
 
 #include <engine/types.h>
 
+#include <optional>
+
 namespace Utils
 {
   struct Basis
@@ -12,7 +14,7 @@ namespace Utils
   struct Plane
   {
       Plane(const float3& pos, const float3& unit_normal);
-      Basis getBasis() const;
+      auto getBasis() const -> Basis;
 
       //Ax+By+Cz-D=0
       float3 N = float3(0.0, 1.0, 0.0);
@@ -32,4 +34,6 @@ namespace Utils
 
   auto test_intersection(const Plane&, const Sphere&) -> bool;
   auto test_intersection(const Sphere&, const Sphere&) -> bool;
+  auto calc_intersect_point(const Plane& p1, const Plane& p2, const Plane& p3) -> std::optional<float3>;
+
 }
