@@ -284,6 +284,39 @@ void tick_collision_tests(Engine::OnGameTick&, const bool collision_test_tag, co
     Engine::dbg::draw_plane(p2, p2Origin, 1.0, float4{0.0, 1.0, 0.0, 0.5}, 0.0f);
     Engine::dbg::draw_plane(p3, planesOrigin, 1.0, float4{0.0, 0.0, 1.0, 0.5}, 0.0f);
   }
+
+  //sphere- half space
+  {
+    const float3 spCenter = center + float3{-3.0f, 0.0f, 1.0f};
+    Utils::Sphere sp{spCenter + float3{0.0f, 0.0f, 1.0f} * 2.0f, 0.3f };
+    const float3 plPos = sp.center + float3{0.0f, 1.0f, 0.0f};
+    Utils::Plane pl{plPos, glm::normalize(float3{1.0f, -1.0f, 0.0f})};
+    sp.center += (float3{0.0f, 2.0f, 0.0f} * std::abs(std::sin(Engine::Time::get_sec_since_start())));
+
+    Engine::dbg::draw_plane(pl, plPos, 2.0f, float4(1.0f, 1.0f, 1.0f, 0.8f), 0.0f, true);
+
+    if (Utils::test_half_space(pl, sp))
+      Engine::dbg::draw_line_sphere(sp, float3{1.0f, 0.0f, 0.0f}, 0.0f);
+    else
+      Engine::dbg::draw_line_sphere(sp, float3{0.0f, 0.0f, 1.0f}, 0.0f);
+  }
+
+  //sphere-frustum
+  {
+    const float3 spCenter = center + float3{-3.0f, -2.0f, 1.0f};
+
+    float4x4 view = math::look_at(spCenter + glm::normalize(float3{-1.0f, -1.0f, 0.0f}) * 2.0f, spCenter);
+    float4x4 proj = math::perspective(45.0f, 1980.0f / 1024.0, 1.0f, 3.0f);
+
+    Utils::Frustum frustum{proj * view};
+    Engine::dbg::draw_frustum(frustum, float4{1.0f, 1.0f, 1.0f, 0.3f}, 0.0f);
+
+    Utils::Sphere sp{spCenter + float3{-5.0, -5.0, -5.0} * std::abs(std::sin(Engine::Time::get_sec_since_start())), 0.2f};
+    if (Utils::test_intersection(frustum, sp))
+      Engine::dbg::draw_line_sphere(sp, float3{1.0, 0.0, 0.0}, 0.0f);
+    else
+      Engine::dbg::draw_line_sphere(sp, float3{0.0, 0.0, 1.0}, 0.0f);
+  }
 }
 
 static

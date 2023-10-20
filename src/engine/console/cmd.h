@@ -37,4 +37,4 @@ namespace console
 
 #include "cmd.inc.hpp"
 
-#define CONSOLE_CMD(name, min_args, max_args, cb) console::CmdRegistration NAME_WITH_LINE(cmdReg)(name, min_args, max_args, cb)
+#define CONSOLE_CMD(name, min_args, max_args, cb) static console::CmdRegistration NAME_WITH_LINE(cmdReg)(name, min_args, max_args, cb)

@@ -53,7 +53,11 @@ namespace Utils
   auto calc_abs_distance(const Sphere&, const Sphere&) -> float;
   auto calc_abs_distance_squared(const Sphere&, const Sphere&) -> float;
 
+  auto test_half_space(const Plane&, const Sphere&) -> bool;
+
   auto test_intersection(const Plane&, const Sphere&) -> bool;
   auto test_intersection(const Sphere&, const Sphere&) -> bool;
+  auto test_intersection(const Frustum&, const Sphere&) -> bool;
+
   auto calc_intersect_point(const Plane& p1, const Plane& p2, const Plane& p3) -> std::optional<float3>;
 }

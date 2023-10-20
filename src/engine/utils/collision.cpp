@@ -1,6 +1,7 @@
 #include "collision.h"
 
 #include <engine/assert.h>
+#include <engine/utils/math.h>
 
 namespace Utils
 {
@@ -92,6 +93,11 @@ namespace Utils
     return std::abs(glm::dot(dl, dl));
   }
 
+  auto test_half_space(const Plane& p, const Sphere& s) -> bool
+  {
+    return calc_sign_distance(p, s.center) + s.r >= 0;
+  }
+
   auto test_intersection(const Plane& pl, const Sphere& s) -> bool
   {
     return calc_abs_distance(pl, s.center) <= s.r;
@@ -101,6 +107,18 @@ namespace Utils
   {
     const float r1r2 = s1.r + s2.r;
     return calc_abs_distance_squared(s1, s2) <= (r1r2*r1r2);
+  }
+
+  auto test_intersection(const Frustum& f, const Sphere& s) -> bool
+  {
+    for (size_t i = 0; i < 6; ++i)
+    {
+      const Plane& p = f.planes[i];
+      if (!test_half_space(p, s))
+        return false;
+    }
+
+    return true;
   }
 
   auto calc_intersect_point(const Plane& p1, const Plane& p2, const Plane& p3) -> std::optional<float3>
