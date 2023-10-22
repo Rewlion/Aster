@@ -29,7 +29,9 @@ namespace Engine::dbg
       PolyRenderer(const PolyRenderer& ecs_tmpl) {}
 
       void addPoly(const float3& a, const float3& b, const float3& c,
-                   const float4& color, float lifetime_sec);
+                   const float4& color, const float lifetime_sec);
+      void addPoly(const float3* triangles, const float4* colors,
+                   const size_t count, const float lifetime_sec);
       void tick();
       void beforeRender(gapi::CmdEncoder& encoder);
       void render(gapi::CmdEncoder& encoder);

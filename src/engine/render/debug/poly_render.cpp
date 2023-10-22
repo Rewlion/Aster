@@ -20,6 +20,20 @@ namespace Engine::dbg
     m_Dirty = true;
   }
 
+  void PolyRenderer::addPoly(const float3* triangles, const float4* colors,
+                             const size_t count, const float lifetime_sec)
+  {
+    const size_t curPolyN = m_PolyDeathTimeSec.size();
+    m_StagingVertices.reserve(curPolyN + count);
+    m_PolyDeathTimeSec.reserve(curPolyN + count);
+
+    for (size_t iTri = 0; iTri < count; ++iTri)
+    {
+      const float3* positions = &triangles[iTri*3];
+      addPoly(positions[0], positions[1], positions[2], colors[iTri], lifetime_sec);
+    }
+  }
+
   void PolyRenderer::tick()
   {
     const float curTimeSec = Time::get_sec_since_start();

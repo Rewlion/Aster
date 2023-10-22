@@ -337,7 +337,7 @@ static
 void draw_clustered_frustum_at_camera_pos(eastl::span<string_view>)
 {
   query_camera([](const float3& pos, const float2& rotation, const float3& forward){
-    const int3 N = {4,4,8};
+    const int3 N = {32,32,16};
 
     const float3 camPos = pos;
     const float near = 1.0f;
@@ -398,22 +398,27 @@ void draw_clustered_frustum_at_camera_pos(eastl::span<string_view>)
     frustums.resize(N.x * N.y * N.z);
 
     for (size_t z = 0; z < N.z; ++z)
-    for (size_t y = 0; y < N.y; ++y)
-    for (size_t x = 0; x < N.x; ++x)
-    {
-      const size_t idx = x + y * N.x + z * N.x * N.y;
-      frustums[idx] = {
-        xPlanes[x], xPlanes[x+1].inv(), yPlanes[y], yPlanes[y+1].inv(), zPlanes[z], zPlanes[z+1].inv()
-      };
-    }
+      for (size_t y = 0; y < N.y; ++y)
+        for (size_t x = 0; x < N.x; ++x)
+        {
+          const size_t idx = x + y * N.x + z * N.x * N.y;
+          frustums[idx] = {
+            xPlanes[x], xPlanes[x+1].inv(), yPlanes[y], yPlanes[y+1].inv(), zPlanes[z], zPlanes[z+1].inv()
+          };
+        }
 
+    eastl::vector<float4> frustumColors;
+    frustumColors.resize(N.x * N.y * N.z);
+    
     for (size_t z = 0; z < N.z; ++z)
-    for (size_t y = 0; y < N.y; ++y)
-    for (size_t x = 0; x < N.x; ++x)
-    {
-      const size_t idx = x + y * N.x + z * N.x * N.y;
-      Engine::dbg::draw_frustum(frustums[idx], float4{(float)(x+1) / (float)N.x , (float)(y+1) / (float)N.y, (float)(z+1) / (float)N.z, 0.1}, 200.0f);
-    }
+      for (size_t y = 0; y < N.y; ++y)
+        for (size_t x = 0; x < N.x; ++x)
+        {
+          const size_t idx = x + y * N.x + z * N.x * N.y;
+          frustumColors[idx] = float4{(float)(x+1) / (float)N.x , (float)(y+1) / (float)N.y, (float)(z+1) / (float)N.z, 0.1};
+        }
+
+    Engine::dbg::draw_frustums(frustums.data(), frustumColors.data(), frustums.size(), 60.0f);
   });
 }
 

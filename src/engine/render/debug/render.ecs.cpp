@@ -30,6 +30,14 @@ namespace Engine::dbg
     });
   }
 
+  void draw_poly(const float3* triangles, const float4* colors,
+                 const size_t count, const float lifetime_sec)
+  {
+    query_poly_renderer([&](auto& renderer){
+      renderer.addPoly(triangles, colors, count, lifetime_sec);
+    });
+  }
+
   void draw_aabb(const float3& center, const float3& extent, const float4& color, const float lifetime_sec)
   {
     const float3 halfExtent = extent * 0.5f;
@@ -219,5 +227,66 @@ namespace Engine::dbg
         draw_line_basis(e1,e2,e3, centers[i], 0.1f, lifetime_sec);
       }
     }
+  }
+
+  void draw_frustums(const Utils::Frustum* frustums, const float4* colors, const size_t count, const float lifetime_sec)
+  {
+    //    f____g
+    //  / |   /|
+    // b-----c |
+    // |  e_ | h
+    // a-----d/
+    using Utils::Frustum;
+
+    const size_t verticesPerFrustum = 6 * 6;
+    const size_t colorsPerFrustum = 6 * 2;
+  
+    eastl::vector<float3> triVertices;
+    eastl::vector<float4> triColors;
+    triVertices.reserve(verticesPerFrustum * count);
+    triColors.reserve(colorsPerFrustum * count);
+
+    for (size_t iFrustum = 0; iFrustum < count ; ++iFrustum)
+    {
+      const Frustum& fr = frustums[iFrustum];
+      const float4& color = colors[iFrustum];
+
+      const float3 a = Utils::calc_intersect_point(fr.planes[Frustum::NEAR], fr.planes[Frustum::BOT], fr.planes[Frustum::LEFT]).value();
+      const float3 b = Utils::calc_intersect_point(fr.planes[Frustum::NEAR], fr.planes[Frustum::TOP], fr.planes[Frustum::LEFT]).value();
+      const float3 c = Utils::calc_intersect_point(fr.planes[Frustum::NEAR], fr.planes[Frustum::TOP], fr.planes[Frustum::RIGHT]).value();
+      const float3 d = Utils::calc_intersect_point(fr.planes[Frustum::NEAR], fr.planes[Frustum::BOT], fr.planes[Frustum::RIGHT]).value();
+
+      const float3 e = Utils::calc_intersect_point(fr.planes[Frustum::FAR], fr.planes[Frustum::BOT], fr.planes[Frustum::LEFT]).value();
+      const float3 f = Utils::calc_intersect_point(fr.planes[Frustum::FAR], fr.planes[Frustum::TOP], fr.planes[Frustum::LEFT]).value();
+      const float3 g = Utils::calc_intersect_point(fr.planes[Frustum::FAR], fr.planes[Frustum::TOP], fr.planes[Frustum::RIGHT]).value();
+      const float3 h = Utils::calc_intersect_point(fr.planes[Frustum::FAR], fr.planes[Frustum::BOT], fr.planes[Frustum::RIGHT]).value();
+
+      #define ADD_POLY(a,b,c,color)\
+        triVertices.push_back(a);\
+        triVertices.push_back(b);\
+        triVertices.push_back(c);\
+        triColors.push_back(color)
+
+        ADD_POLY(a,b,c, color);
+        ADD_POLY(c,d,a, color);
+
+        ADD_POLY(e,f,g, color);
+        ADD_POLY(g,h,e, color);
+
+        ADD_POLY(b,f,g, color);
+        ADD_POLY(g,c,b, color);
+
+        ADD_POLY(d,c,g, color);
+        ADD_POLY(g,h,d, color);
+
+        ADD_POLY(a,b,f, color);
+        ADD_POLY(f,e,a, color);
+
+        ADD_POLY(a,e,h, color);
+        ADD_POLY(h,d,a, color);
+      #undef ADD_POLY
+    }
+
+    draw_poly(triVertices.data(), triColors.data(), verticesPerFrustum / 3 * count, lifetime_sec);
   }
 }
