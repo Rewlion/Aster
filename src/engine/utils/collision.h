@@ -14,8 +14,10 @@ namespace Utils
   struct Plane
   {
     Plane() = default;
+    Plane(const float3& unit_normal, const float D);
     Plane(const float3& pos, const float3& unit_normal);
     auto getBasis() const -> Basis;
+    auto inv() const -> Plane;
 
     //Ax+By+Cz-D=0
     float3 N = float3(0.0, 1.0, 0.0);

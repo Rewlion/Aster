@@ -5,6 +5,12 @@
 
 namespace Utils
 {
+  Plane::Plane(const float3& unit_normal, const float D)
+    : N(unit_normal)
+    , D(D)
+  {
+  }
+
   Plane::Plane(const float3& pos, const float3& unit_normal)
   {
     N = unit_normal;
@@ -23,6 +29,11 @@ namespace Utils
       .e2 = N,
       .e3 = BT
     };
+  }
+
+  auto Plane::inv() const -> Plane
+  {
+    return Plane{N*D, -N};
   }
 
   Frustum::Frustum(const float4x4& view_projection)
@@ -70,6 +81,15 @@ namespace Utils
       view_projection[2][3] - view_projection[2][2],
     };
     planes[FAR].D = -(view_projection[3][3] - view_projection[3][2]);
+
+    for (int i = 0; i < 6; ++i)
+    {
+      Plane& pl = planes[i];
+      const float Nlen2 = glm::dot(pl.N, pl.N);
+      const float3 p = pl.N * pl.D / Nlen2;
+      pl.N = pl.N / std::sqrt(Nlen2);
+      pl.D = dot(pl.N, p);
+    }
   }
 
   auto calc_sign_distance(const Plane& pl, const float3& p) -> float

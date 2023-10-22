@@ -4,6 +4,7 @@
 #include <engine/ecs/macros.h>
 #include <engine/events.h>
 #include <engine/gapi/gapi.h>
+#include <engine/math.h>
 #include <engine/render/debug/debug_text_queue.h>
 #include <engine/render/ecs_utils.h>
 #include <engine/render/frame_graph/frame_graph.h>
@@ -95,18 +96,8 @@ namespace Engine::Render
         auto viewProjTm = cameraData->proj * cameraData->view;
         set_prev_view_proj(viewProjTm);
 
-        auto viewRot = cameraData->view;
-        viewRot[3] = float4(0,0,0,1);
-
-        auto invViewRotProj = glm::inverse(cameraData->proj * viewRot);
-        auto leftTopView =  float4(invViewRotProj * glm::vec4(-1,1,0,1));
-        auto rightTopView = float4(invViewRotProj * glm::vec4(1,1,0,1));
-        auto leftBotView =  float4(invViewRotProj * glm::vec4(-1,-1,0,1));
-        auto rightBotView = float4(invViewRotProj * glm::vec4(1,-1,0,1));
-        leftTopView  /= leftTopView.w;
-        rightTopView /= rightTopView.w;
-        leftBotView  /= leftBotView.w;
-        rightBotView /= rightBotView.w;
+        const math::FarPlanePoints fpView =
+          math::get_far_plane_points_view_space(cameraData->proj, cameraData->view);
 
         tfx::set_extern("cameraPrevJitter", prevCameraJitter);
         tfx::set_extern("cameraJitter", cameraJitter);
@@ -114,10 +105,10 @@ namespace Engine::Render
         tfx::set_extern("view_proj", viewProjTm);
         tfx::set_extern("camera_pos", cameraData->pos);
         tfx::set_extern("zNear_zFar", float2{cameraData->zNear, cameraData->zFar});
-        tfx::set_extern("lt_view", float3(leftTopView));
-        tfx::set_extern("rt_view", float3(rightTopView));
-        tfx::set_extern("lb_view", float3(leftBotView));
-        tfx::set_extern("rb_view", float3(rightBotView));
+        tfx::set_extern("lt_view", float3(fpView.leftTop));
+        tfx::set_extern("rt_view", float3(fpView.rightTop));
+        tfx::set_extern("lb_view", float3(fpView.leftBot));
+        tfx::set_extern("rb_view", float3(fpView.rightBot));
 
         tfx::set_extern("sec_since_start", Time::get_sec_since_start());
 

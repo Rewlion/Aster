@@ -26,6 +26,11 @@ namespace math
     return m;
   }
 
+  mat4 perspective_inv_z(float fov, float aspect, float zNear, float zFar)
+  {
+    return perspective(fov, aspect, zFar, zNear);
+  }
+
   glm::mat4 look_at(const glm::vec3& at, const glm::vec3& from)
   {
     const glm::vec3 z = glm::normalize(at - from);
@@ -50,5 +55,40 @@ namespace math
   float3 get_right(const float radians)
   {
     return glm::rotate(radians, float3{0.0, 1.0, 0.0}) * float4{1.0, 0.0, 0.0, 0.0};
+  }
+
+  static
+  auto get_far_plane_points(const float4x4& proj, const float4x4& view) -> FarPlanePoints
+  {
+    const float4x4 invViewRotProj = glm::inverse(proj * view);
+
+    float4 leftTopView =  invViewRotProj * float4(-1.0f, 1.0f, 0.0f, 1.0f);
+    float4 rightTopView = invViewRotProj * float4( 1.0f, 1.0f, 0.0f, 1.0f);
+    float4 leftBotView =  invViewRotProj * float4(-1.0f,-1.0f, 0.0f, 1.0f);
+    float4 rightBotView = invViewRotProj * float4( 1.0f,-1.0f, 0.0f, 1.0f);
+    leftTopView  /= leftTopView.w;
+    rightTopView /= rightTopView.w;
+    leftBotView  /= leftBotView.w;
+    rightBotView /= rightBotView.w;
+
+    return {
+      .leftTop = leftTopView,
+      .rightTop = rightTopView,
+      .leftBot = leftBotView,
+      .rightBot = rightBotView
+    };
+  }
+
+  auto get_far_plane_points_world_space(const float4x4& proj, const float4x4& view) -> FarPlanePoints
+  {
+    return get_far_plane_points(proj, view);
+  }
+
+  auto get_far_plane_points_view_space(const float4x4& proj, const float4x4& view) -> FarPlanePoints
+  {
+    auto viewRot = view;
+    viewRot[3] = float4(0,0,0,1);
+
+    return get_far_plane_points(proj, viewRot);
   }
 }

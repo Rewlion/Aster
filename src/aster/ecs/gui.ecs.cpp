@@ -11,8 +11,8 @@
 #include <engine/time.h>
 #include <engine/types.h>
 #include <engine/utils/collision.h>
+#include <engine/utils/math.h>
 #include <engine/work_cycle/camera.h>
-
 // ECS_SYSTEM()
 // static void camera_rotation(
 //   const float2& camera_rotations
@@ -334,12 +334,99 @@ void draw_frustum_at_camera_pos(eastl::span<string_view>)
   });
 }
 
+static
+void draw_clustered_frustum_at_camera_pos(eastl::span<string_view>)
+{
+  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
+    const int3 N = {4,4,8};
+
+    const float3 camPos = pos;
+    const float near = 1.0f;
+    const float far = 10.0f;
+
+    const float4x4 view = math::look_at(camPos + forward * 2.0f, camPos);
+    const float4x4 proj = math::perspective_inv_z(45.0f, 1980.0f / 1024.0, near, far);
+    Utils::Frustum frustum{proj * view};
+
+    const math::FarPlanePoints fpWorld =
+          math::get_far_plane_points_world_space(proj, view);
+
+    const float3 farCenter = (fpWorld.leftBot + fpWorld.rightTop) * 0.5f;
+    const float3 originToFarCenterDir = glm::normalize(farCenter - camPos);
+    const float3 nearCenter = camPos + originToFarCenterDir * near;
+
+    Utils::Plane xPlanes[N.x+1];
+    Utils::Plane yPlanes[N.y+1];
+    Utils::Plane zPlanes[N.z+1];
+
+    const float3 up = glm::normalize(fpWorld.leftTop - fpWorld.leftBot);
+    const float3 right = glm::normalize(fpWorld.rightTop - fpWorld.leftTop);
+
+    for (int i = 0; i <= N.x; ++i)
+    {
+      const float t = (float)i / (float)N.x;
+      const float3 p = glm::mix(fpWorld.leftTop, fpWorld.rightTop, t);
+      
+      const float3 e2 = up;
+      const float3 e3{p-camPos};
+      const float3 N = glm::normalize(glm::cross(e2, e3));
+
+      xPlanes[i] = Utils::Plane{p, N};
+    }
+
+    for (int i = 0; i <= N.y; ++i)
+    {
+      const float t = (float)i / (float)N.y;
+      const float3 p = glm::mix(fpWorld.leftBot, fpWorld.leftTop, t);
+      
+      const float3 e1 = right;
+      const float3 e3{p-camPos};
+      const float3 N = glm::normalize(glm::cross(e3, e1));
+
+      yPlanes[i] = Utils::Plane{p, N};
+    }
+
+    for (int i = 0; i <= N.z; ++i)
+    {
+      const float t = (float)i / (float)N.z;
+      const float3 p = glm::mix(nearCenter, farCenter, t);
+      
+      const float3 N = originToFarCenterDir;
+      zPlanes[i] = Utils::Plane{p, N};
+    }
+    
+    eastl::vector<Utils::Frustum> frustums;
+    frustums.resize(N.x * N.y * N.z);
+
+    for (size_t z = 0; z < N.z; ++z)
+    for (size_t y = 0; y < N.y; ++y)
+    for (size_t x = 0; x < N.x; ++x)
+    {
+      const size_t idx = x + y * N.x + z * N.x * N.y;
+      frustums[idx] = {
+        xPlanes[x], xPlanes[x+1].inv(), yPlanes[y], yPlanes[y+1].inv(), zPlanes[z], zPlanes[z+1].inv()
+      };
+    }
+
+    for (size_t z = 0; z < N.z; ++z)
+    for (size_t y = 0; y < N.y; ++y)
+    for (size_t x = 0; x < N.x; ++x)
+    {
+      const size_t idx = x + y * N.x + z * N.x * N.y;
+      Engine::dbg::draw_frustum(frustums[idx], float4{(float)(x+1) / (float)N.x , (float)(y+1) / (float)N.y, (float)(z+1) / (float)N.z, 0.1}, 200.0f);
+    }
+  });
+}
+
+
+
 CONSOLE_CMD("draw_line", 0, 0, draw_line_at_camera_pos);
 CONSOLE_CMD("draw_line_plane", 0, 0, draw_line_plane_at_camera_pos);
 CONSOLE_CMD("draw_plane", 0, 0, draw_plane_at_camera_pos);
 CONSOLE_CMD("draw_sphere", 0, 0, draw_sphere_at_camera_pos);
 CONSOLE_CMD("draw_aabb", 0, 0, draw_aabbs_at_camera_pos);
 CONSOLE_CMD("draw_frustum", 0, 0, draw_frustum_at_camera_pos);
+CONSOLE_CMD("draw_cl_frustum", 0, 0, draw_clustered_frustum_at_camera_pos);
 CONSOLE_CMD("test_collision", 0, 0, spawn_collision_tests);
 CONSOLE_CMD("create_src", 0, 0, create_src);
 CONSOLE_CMD("recreate", 0, 0, recreate_src);
