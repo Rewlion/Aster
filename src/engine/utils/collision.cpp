@@ -1,7 +1,6 @@
 #include "collision.h"
 
 #include <engine/assert.h>
-#include <engine/utils/math.h>
 
 namespace Utils
 {

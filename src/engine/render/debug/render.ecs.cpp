@@ -3,8 +3,8 @@
 #include "poly_render.h"
 
 #include <engine/ecs/macros.h>
+#include <engine/math.h>
 #include <engine/utils/collision.h>
-#include <engine/utils/math.h>
 
 #include <EASTL/vector.h>
 #include <numbers>
@@ -159,9 +159,9 @@ namespace Engine::dbg
       const float theta  = calcTheta(j);
       const float theta2 = calcTheta(j+1);
 
-      const float3 begin = sphere.center + Utils::spherical_to_decartian(theta, phi) * sphere.r;
-      const float3 endVertical = sphere.center + Utils::spherical_to_decartian(theta2, phi) * sphere.r;
-      const float3 endHorizontal = sphere.center + Utils::spherical_to_decartian(theta, phi2) * sphere.r;
+      const float3 begin = sphere.center + math::spherical_to_decartian(theta, phi) * sphere.r;
+      const float3 endVertical = sphere.center + math::spherical_to_decartian(theta2, phi) * sphere.r;
+      const float3 endHorizontal = sphere.center + math::spherical_to_decartian(theta, phi2) * sphere.r;
 
       draw_line(begin, endVertical, color, lifetime_sec);
       draw_line(begin, endHorizontal, color, lifetime_sec);

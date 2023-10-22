@@ -7,12 +7,12 @@
 
 namespace math
 {
-  float radians(float degree)
+  auto radians(float degree) -> float
   {
     return degree * float(M_PI) / 180.0f;
   }
 
-  mat4 perspective(float fov, float aspect, float zNear, float zFar)
+  auto perspective(float fov, float aspect, float zNear, float zFar) -> float4x4
   {
     const float tanA = std::tanf(radians(fov) / 2.0);
 
@@ -26,12 +26,12 @@ namespace math
     return m;
   }
 
-  mat4 perspective_inv_z(float fov, float aspect, float zNear, float zFar)
+  auto perspective_inv_z(float fov, float aspect, float zNear, float zFar) -> float4x4
   {
     return perspective(fov, aspect, zFar, zNear);
   }
 
-  glm::mat4 look_at(const glm::vec3& at, const glm::vec3& from)
+  auto look_at(const glm::vec3& at, const glm::vec3& from) -> float4x4
   {
     const glm::vec3 z = glm::normalize(at - from);
     const glm::vec3 x = glm::normalize(glm::cross(float3{0.0, 1.0, 0.0}, z));
@@ -52,7 +52,7 @@ namespace math
     return M;
   }
 
-  float3 get_right(const float radians)
+  auto get_right(const float radians) -> float3
   {
     return glm::rotate(radians, float3{0.0, 1.0, 0.0}) * float4{1.0, 0.0, 0.0, 0.0};
   }

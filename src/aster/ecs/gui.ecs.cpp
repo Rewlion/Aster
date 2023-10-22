@@ -11,7 +11,6 @@
 #include <engine/time.h>
 #include <engine/types.h>
 #include <engine/utils/collision.h>
-#include <engine/utils/math.h>
 #include <engine/work_cycle/camera.h>
 // ECS_SYSTEM()
 // static void camera_rotation(
