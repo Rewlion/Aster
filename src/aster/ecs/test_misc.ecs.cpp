@@ -341,7 +341,7 @@ void draw_clustered_frustum_at_camera_pos(eastl::span<string_view>)
 
     const float3 camPos = pos;
     const float near = 1.0f;
-    const float far = 10.0f;
+    const float far = 200.0f;
 
     const float4x4 view = math::look_at(camPos + forward * 2.0f, camPos);
     const float4x4 proj = math::perspective_inv_z(45.0f, 1980.0f / 1024.0, near, far);

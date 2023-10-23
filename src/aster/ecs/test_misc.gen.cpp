@@ -4,7 +4,7 @@
 #include <engine/ecs/components_accessor.h>
 #include <EASTL/functional.h>
 
-#include "gui.ecs.cpp" 
+#include "test_misc.ecs.cpp" 
 
 using namespace ecs;
 
