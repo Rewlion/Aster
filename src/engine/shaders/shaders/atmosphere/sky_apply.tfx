@@ -58,11 +58,11 @@ technique SkyApply {
 
     float4 applyAerialPerspective(VsOutput input, float depth)
     {
-      float3 vsPos = calcViewSpacePos(input.viewDir, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+      float3 vsPos = calcCameraWSPos(input.viewDir, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
       float vsPosDist_mm = length(vsPos) / 1e6;
 
-      float u = (input.viewDir.x - FrameScope.ltView.x) / (FrameScope.rtView.x - FrameScope.ltView.x);
-      float v = (input.viewDir.y - FrameScope.ltView.y) / (FrameScope.lbView.y - FrameScope.ltView.y);
+      float u = (input.viewDir.x - FrameScope.ltView_WS.x) / (FrameScope.rtView_WS.x - FrameScope.ltView_WS.x);
+      float v = (input.viewDir.y - FrameScope.ltView_WS.y) / (FrameScope.lbView_WS.y - FrameScope.ltView_WS.y);
       float w = saturate(vsPosDist_mm / SkyApplyScope.maxAerialDist_mm);
 
       return apLUT.Sample(linearClampSampler, float3(u,v,w));

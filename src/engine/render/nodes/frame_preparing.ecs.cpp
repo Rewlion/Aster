@@ -96,8 +96,12 @@ namespace Engine::Render
         auto viewProjTm = cameraData->proj * cameraData->view;
         set_prev_view_proj(viewProjTm);
 
+        
+        float4x4 viewRot = cameraData->view;
+        viewRot[3] = float4(0,0,0,1);
+
         const math::FarPlanePoints fpView =
-          math::get_far_plane_points_view_space(cameraData->proj, cameraData->view);
+          math::get_far_plane_points_world_space(cameraData->proj, viewRot);
 
         tfx::set_extern("cameraPrevJitter", prevCameraJitter);
         tfx::set_extern("cameraJitter", cameraJitter);
@@ -105,10 +109,10 @@ namespace Engine::Render
         tfx::set_extern("view_proj", viewProjTm);
         tfx::set_extern("camera_pos", cameraData->pos);
         tfx::set_extern("zNear_zFar", float2{cameraData->zNear, cameraData->zFar});
-        tfx::set_extern("lt_view", float3(fpView.leftTop));
-        tfx::set_extern("rt_view", float3(fpView.rightTop));
-        tfx::set_extern("lb_view", float3(fpView.leftBot));
-        tfx::set_extern("rb_view", float3(fpView.rightBot));
+        tfx::set_extern("ltView_WS", float3(fpView.leftTop));
+        tfx::set_extern("rtView_WS", float3(fpView.rightTop));
+        tfx::set_extern("lbView_WS", float3(fpView.leftBot));
+        tfx::set_extern("rbView_WS", float3(fpView.rightBot));
 
         tfx::set_extern("sec_since_start", Time::get_sec_since_start());
 

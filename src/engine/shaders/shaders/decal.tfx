@@ -83,9 +83,9 @@ technique Decal
   float4 ps_main(VsOutput input) : SV_Target0
   {
     float2 screenUV = float2(input.pos.x, input.pos.y) / FrameScope.viewPortSize;
-    float3 viewPlaneVec = FrameScope.ltView
-                        + (FrameScope.rtView - FrameScope.ltView) * screenUV.x 
-                        + (FrameScope.lbView - FrameScope.ltView) * screenUV.y;
+    float3 viewPlaneVec = FrameScope.ltView_WS
+                        + (FrameScope.rtView_WS - FrameScope.ltView_WS) * screenUV.x 
+                        + (FrameScope.lbView_WS - FrameScope.ltView_WS) * screenUV.y;
 
     float3 viewDir = normalize(input.viewDir);
 

@@ -51,10 +51,10 @@ render_state:
     };
 
     float3 frustumViews[4] = {
-      FrameScope.rbView,
-      FrameScope.lbView,
-      FrameScope.rtView,
-      FrameScope.ltView
+      FrameScope.rbView_WS,
+      FrameScope.lbView_WS,
+      FrameScope.rtView_WS,
+      FrameScope.ltView_WS
     };
 
     VsOutput output;

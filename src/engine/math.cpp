@@ -86,9 +86,6 @@ namespace math
 
   auto get_far_plane_points_view_space(const float4x4& proj, const float4x4& view) -> FarPlanePoints
   {
-    auto viewRot = view;
-    viewRot[3] = float4(0,0,0,1);
-
-    return get_far_plane_points(proj, viewRot);
+    return get_far_plane_points(proj, float4x4{1});
   }
 }

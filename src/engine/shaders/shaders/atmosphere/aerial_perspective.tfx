@@ -40,12 +40,12 @@ technique AerialPerspective {
     AtmosphereParams atmParams = getAtmosphereParams();
     float3 p0_mm = atmParams.posMM;
 
-    float3 ltViewDir = normalize(FrameScope.ltView);
-    float3 lbViewDir = normalize(FrameScope.lbView);
-    float3 rtViewDir = normalize(FrameScope.rtView);
+    float3 ltViewDir = normalize(FrameScope.ltView_WS);
+    float3 lbViewDir = normalize(FrameScope.lbView_WS);
+    float3 rtViewDir = normalize(FrameScope.rtView_WS);
 
-    float3 lrDir = normalize(FrameScope.rtView - FrameScope.ltView);
-    float3 tbDir = normalize(FrameScope.lbView - FrameScope.ltView);
+    float3 lrDir = normalize(FrameScope.rtView_WS - FrameScope.ltView_WS);
+    float3 tbDir = normalize(FrameScope.lbView_WS - FrameScope.ltView_WS);
 
     float3 k = float3(id + uint3(1,1,1)) / 32.0;
     float3 lt_mm = ltViewDir * AerialPerspectiveScope.maxAerialDist_mm * k.z;

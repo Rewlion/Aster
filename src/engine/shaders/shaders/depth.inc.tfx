@@ -5,14 +5,14 @@ technique_macro USE_DEPTH_UTILS {
       return zfar*znear / ( zfar - depth * (zfar - znear) ); //inverse z
     }
 
-    float3 calcViewSpacePos(float3 view_dir, const float depth, const float znear, const float zfar)
+    float3 calcCameraWSPos(float3 view_dir, const float depth, const float znear, const float zfar)
     {
       return view_dir * linearize_z(depth, znear, zfar) / znear;
     }
 
-    float3 calcWorldPos(const float3 camera_pos, float3 view_dir, const float depth, const float znear, const float zfar)
+    float3 calcWorldPos(const float3 camera_pos, float3 view_dir_ws, const float depth, const float znear, const float zfar)
     {
-      return camera_pos + calcViewSpacePos(view_dir, depth, znear, zfar);
+      return camera_pos + calcCameraWSPos(view_dir_ws, depth, znear, zfar);
     }
   #end
 };
