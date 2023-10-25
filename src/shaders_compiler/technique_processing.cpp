@@ -101,6 +101,7 @@ namespace ShadersSystem
         TechniqueProcessor(Compiler& compiler)
           : m_Compiler(compiler)
         {
+          m_Hlsl += "#define __preshader__\n\n";
         }
 
         void process(const TechniqueDeclarationExp& tDecl)
