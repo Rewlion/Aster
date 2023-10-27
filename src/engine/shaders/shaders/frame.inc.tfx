@@ -15,6 +15,7 @@ scope FrameScope {
   float2 cameraJitter = extern(cameraJitter);
   float4x4 prevViewProj = extern(prev_view_proj);
   float4x4 viewProj = extern(view_proj);
+  float4x4 view = extern(view);
   float3 cameraPos = extern(camera_pos);
 
   //vectors from camera origin to far plane points in world space
@@ -22,6 +23,11 @@ scope FrameScope {
   float3 rtView_WS = extern(rtView_WS);
   float3 lbView_WS = extern(lbView_WS);
   float3 rbView_WS = extern(rbView_WS);
+  //same for view space
+  float3 ltView_VS = extern(ltView_VS);
+  float3 rtView_VS = extern(rtView_VS);
+  float3 lbView_VS = extern(lbView_VS);
+  float3 rbView_VS = extern(rbView_VS);
 
   float2 zNear_zFar = extern(zNear_zFar);
 

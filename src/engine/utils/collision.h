@@ -30,6 +30,11 @@ namespace Utils
     float r;
   };
 
+  struct AABB
+  {
+    float3 min,max;
+  };
+
   struct Frustum
   {
     enum {LEFT,RIGHT,BOT,TOP,NEAR,FAR, LAST_PLANE};
@@ -60,6 +65,9 @@ namespace Utils
   auto test_intersection(const Plane&, const Sphere&) -> bool;
   auto test_intersection(const Sphere&, const Sphere&) -> bool;
   auto test_intersection(const Frustum&, const Sphere&) -> bool;
+  auto test_intersection(const AABB&, const Sphere&) -> bool;
 
   auto calc_intersect_point(const Plane& p1, const Plane& p2, const Plane& p3) -> std::optional<float3>;
+
+  auto calc_closest_point(const AABB&, const Sphere&) -> float3;
 }

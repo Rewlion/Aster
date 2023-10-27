@@ -1,0 +1,108 @@
+scope ClusterLightCullingScope
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0-4);
+
+  #hlsl
+  #include "utils.hlsl"
+  #end
+
+  RWStructuredBuffer<Cluster> frustumClusters = extern(frustumClusters);
+  RWStructuredBuffer<ClusterInfo> clustersInfoBuffer = extern(clustersInfoBuffer);
+  RWStructuredBuffer<ClusterIndirection> indirectionBuffer = extern(clustersIndirectionBuffer);
+  RWStructuredBuffer<uint> indirectionBufNextPos = extern(clustersIndirectionBufferNextPos);
+  RWStructuredBuffer<Light> lightBuffer = extern(clustersLightBuffer);
+};
+
+technique ClusterLightCulling
+{
+  support scope FrameScope;
+  activate scope ClusterLightCullingScope;
+
+  #hlsl
+  #include "../intersections.hlsl"
+
+  #define THREAD_BATCH_SIZE 16
+  #define TOTAL_BATCH_SIZE (THREADS_NUM * THREAD_BATCH_SIZE)
+
+  groupshared Light cachedBatchLights[TOTAL_BATCH_SIZE];
+
+  [numthreads(CLUSTERS_THREADS_X, CLUSTERS_THREADS_Y, CLUSTERS_THREADS_Z)]
+  void main_cs(uint3 dispatch_thread_id: SV_DispatchThreadID, uint group_id : SV_GroupIndex)
+  {
+    uint clusterId = dispatch_thread_id.x + dispatch_thread_id.y * CLUSTERS_DIM_X + dispatch_thread_id.z * CLUSTERS_DIM_X * CLUSTERS_DIM_Y;
+
+    uint NLights, lightsStride;
+    lightBuffer.GetDimensions(NLights, lightsStride);
+
+    if (NLights == 0)
+    {
+      clustersInfoBuffer[clusterId] = (ClusterInfo)0;
+      return;
+    }
+    Cluster aabb = frustumClusters[clusterId];
+
+    uint culledLightIdx[CLUSTER_MAX_ITEMS];
+    uint culledLightIdxCount = 0;
+
+    uint NBatches = 1 + NLights / TOTAL_BATCH_SIZE;
+    for (uint iBatch = 0; iBatch < NBatches; ++iBatch)
+    {
+      uint lightsStart = iBatch * TOTAL_BATCH_SIZE;
+      for (uint iLight = 0; iLight < THREAD_BATCH_SIZE; ++iLight)
+      {
+        uint localLightId = THREAD_BATCH_SIZE * iLight + group_id;
+        uint lightId = lightsStart + localLightId;
+        if (lightId < NLights)
+          cachedBatchLights[localLightId] = lightBuffer[lightId];
+        else
+          break;
+      }
+      GroupMemoryBarrierWithGroupSync();
+
+      uint batchSize = clamp(NLights - lightsStart, 0, TOTAL_BATCH_SIZE);
+      for (uint i = 0; i < batchSize; ++i)
+      {
+        Light light = cachedBatchLights[i];
+        uint lightType = unpack_light_type(light);
+
+        if (lightType == POINT_LIGHT_TYPE)
+        {
+          PointLight pointLight;
+          unpack_point_light(light, pointLight);
+
+          float3 pointLightPos_VS = mul(FrameScope.view, float4(pointLight.pos, 1.0)).xyz;
+
+          if (test_aabb_sphere_intersection(aabb.minPoint.xyz, aabb.maxPoint.xyz, pointLightPos_VS, pointLight.attenuationRadius))
+          {
+            culledLightIdx[culledLightIdxCount] = lightsStart + i;
+            ++culledLightIdxCount;
+          }
+        }
+
+        if ((culledLightIdxCount >= CLUSTER_MAX_ITEMS))
+          break;
+      }
+    }
+
+    uint indirectionOffset = 0;
+    InterlockedAdd(indirectionBufNextPos[0], culledLightIdxCount, indirectionOffset);
+
+    for (uint i = 0; i < culledLightIdxCount; ++i)
+    {
+      ClusterIndirection indirection = (ClusterIndirection)0;
+      indirection.lightIndex = culledLightIdx[i];
+
+      indirectionBuffer[indirectionOffset + i] = indirection;
+    }
+
+    ClusterInfo info = (ClusterInfo)0;
+    info.lightsCount = culledLightIdxCount;
+    info.indirectionOffset = indirectionOffset;
+    clustersInfoBuffer[clusterId] = info;
+  }
+  #end
+
+  compile(cs, main_cs);
+};

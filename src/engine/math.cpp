@@ -84,7 +84,7 @@ namespace math
     return get_far_plane_points(proj, view);
   }
 
-  auto get_far_plane_points_view_space(const float4x4& proj, const float4x4& view) -> FarPlanePoints
+  auto get_far_plane_points_view_space(const float4x4& proj) -> FarPlanePoints
   {
     return get_far_plane_points(proj, float4x4{1});
   }

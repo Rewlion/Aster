@@ -24,6 +24,7 @@ namespace Engine::dbg
   void draw_plane(const Utils::Plane&, const float3& pos, const float size,
                   const float4& color, const float lifetime_sec, const bool draw_basis=false);
   void draw_line_sphere(const Utils::Sphere&, const float3& color, const float lifetime_sec);
+  void draw_line_sphere(const float3& pos, const float r, const float3& color, const float lifetime_sec);
   void draw_frustum(const Utils::Frustum&, const float4& color, const float lifetime_sec, const bool draw_basis=false);
   void draw_frustums(const Utils::Frustum*, const float4* colors, const size_t count, const float lifetime_sec);
 }

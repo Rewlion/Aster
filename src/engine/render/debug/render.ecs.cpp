@@ -176,6 +176,11 @@ namespace Engine::dbg
     }
   }
 
+  void draw_line_sphere(const float3& pos, const float r, const float3& color, const float lifetime_sec)
+  {
+    draw_line_sphere({pos, r}, color, lifetime_sec);
+  }
+
   void draw_frustum(const Utils::Frustum& fr, const float4& color, const float lifetime_sec, const bool draw_basis)
   {
     //    f____g

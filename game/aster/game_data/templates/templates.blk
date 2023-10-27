@@ -63,3 +63,9 @@ template @("name: CollisionTests")
   bool collision_test_tag = true
   float3 center = 0, 0, 0
 }
+
+template @("name: MovingPointLight; extends: PointLight")
+{
+  float3 center_pos = 0, 0, 0
+  bool moving_point_light_tag = yes
+}

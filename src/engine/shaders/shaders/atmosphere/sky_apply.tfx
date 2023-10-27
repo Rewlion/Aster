@@ -58,7 +58,7 @@ technique SkyApply {
 
     float4 applyAerialPerspective(VsOutput input, float depth)
     {
-      float3 vsPos = calcCameraWSPos(input.viewDir, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+      float3 vsPos = interpolateFarPlanePoint(input.viewDir, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
       float vsPosDist_mm = length(vsPos) / 1e6;
 
       float u = (input.viewDir.x - FrameScope.ltView_WS.x) / (FrameScope.rtView_WS.x - FrameScope.ltView_WS.x);

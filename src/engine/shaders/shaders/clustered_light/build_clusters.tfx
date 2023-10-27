@@ -1,0 +1,86 @@
+#include "../depth.inc.tfx"
+
+scope BuildClustersScope
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0);
+
+  #hlsl
+  #include "utils.hlsl"
+  #end
+
+  RWStructuredBuffer<Cluster> frustumClusters = extern(frustumClusters);
+};
+
+technique BuildClusters
+{
+  support scope FrameScope;
+  activate scope BuildClustersScope;
+
+  USE_DEPTH_UTILS();
+
+  #hlsl
+
+  float3 calcSlicePoint(float3 far_plane_point, uint slice, uint n_slices, float z_near, float z_far)
+  {
+    //inv z
+    float zNear = z_far;
+    float zFar = z_near;
+
+    float sliceZ = zNear * pow(zFar / zNear, (float)slice / (float)n_slices);
+
+    return far_plane_point * (sliceZ / zFar);
+  }
+
+  [numthreads(CLUSTERS_THREADS_X, CLUSTERS_THREADS_Y, CLUSTERS_THREADS_Z)]
+  void main_cs(uint3 id: SV_DispatchThreadID)
+  {
+    float3 toRight = FrameScope.rtView_VS - FrameScope.ltView_VS;
+    float3 toBot = FrameScope.lbView_VS - FrameScope.ltView_VS;
+
+    float3 dt = float3(1.0, 1.0, 1.0) / float3(CLUSTERS_DIM_X, CLUSTERS_DIM_Y, CLUSTERS_DIM_Z);
+    float3 t0 = float3(id) * dt;
+    float3 t1 = float3(id+1) * dt;
+
+    float3 leftTopFarPlane  = FrameScope.ltView_VS + toBot * t0.y + toRight * t0.x;
+    float3 rightTopFarPlane = FrameScope.ltView_VS + toBot * t0.y + toRight * t1.x;
+
+    float3 leftBotFarPlane  = FrameScope.ltView_VS + toBot * t1.y + toRight * t0.x;
+    float3 rightBotFarPlane = FrameScope.ltView_VS + toBot * t1.y + toRight * t1.x;
+
+    float slice0 = id.z;
+    float slice1 = id.z+1;
+    float numSlices = CLUSTERS_DIM_Z;
+    
+    float zNear = FrameScope.zNear_zFar.x;
+    float zFar = FrameScope.zNear_zFar.y;
+
+    float3 leftTopSlice0  = calcSlicePoint(leftTopFarPlane,  slice0, numSlices, zNear, zFar);
+    float3 rightTopSlice0 = calcSlicePoint(rightTopFarPlane, slice0, numSlices, zNear, zFar);
+    float3 leftBotSlice0  = calcSlicePoint(leftBotFarPlane,  slice0, numSlices, zNear, zFar);
+    float3 rightBotSlice0 = calcSlicePoint(rightBotFarPlane, slice0, numSlices, zNear, zFar);
+
+    float3 leftTopSlice1  = calcSlicePoint(leftTopFarPlane,  slice1, numSlices, zNear, zFar);
+    float3 rightTopSlice1 = calcSlicePoint(rightTopFarPlane, slice1, numSlices, zNear, zFar);
+    float3 leftBotSlice1  = calcSlicePoint(leftBotFarPlane,  slice1, numSlices, zNear, zFar);
+    float3 rightBotSlice1 = calcSlicePoint(rightBotFarPlane, slice1, numSlices, zNear, zFar);
+
+    Cluster cluster = (Cluster)0;
+    cluster.minPoint.xyz = min(
+      min(min(leftTopSlice0, rightTopSlice0), min(leftBotSlice0, rightBotSlice0)),
+      min(min(leftTopSlice1, rightTopSlice1), min(leftBotSlice1, rightBotSlice1))
+    );
+    cluster.maxPoint.xyz = max(
+      max(max(leftTopSlice0, rightTopSlice0), max(leftBotSlice0, rightBotSlice0)),
+      max(max(leftTopSlice1, rightTopSlice1), max(leftBotSlice1, rightBotSlice1))
+    );
+
+    uint idx = id.x + id.y * CLUSTERS_DIM_X + id.z * CLUSTERS_DIM_X * CLUSTERS_DIM_Y;
+    frustumClusters[idx] = cluster;
+  }
+  #end
+
+  compile(cs, main_cs);
+};
+

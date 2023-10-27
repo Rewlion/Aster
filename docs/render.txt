@@ -86,3 +86,15 @@ Order-Independent Transparency
  Weighted Blended OIT
  - https://casual-effects.blogspot.com/2015/03/implemented-weighted-blended-order.html
  - https://casual-effects.blogspot.com/2014/03/weighted-blended-order-independent.html
+
+Clustered-Rendering
+ - https://www.humus.name/Articles/PracticalClusteredShading.pdf
+ - Siggraph2016 - The Devil is in the Details: idTech 666
+   https://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf
+ - Clustered Deferred and Forward Shading
+   Ola Olsson, Markus Billeter, and Ulf Assarsson
+   https://www.cse.chalmers.se/~uffe/clustered_shading_preprint.pdf
+ - https://www.aortiz.me/2018/12/21/CG.html#successful-implementations
+
+Memory
+ - https://therealmjp.github.io/posts/gpu-memory-pool/

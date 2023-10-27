@@ -2,6 +2,7 @@ template @("name: CoreRender") {
   component @("FontRender font_render") {}
   component @("GuiRender gui_render") {}
   component @("ImGuiRender imgui_render") {}
+  component @("ClusteredRenderer clustered_render") {}
 
   int2 render_window_size = 0, 0
   
@@ -50,4 +51,10 @@ template @("name: Decal") {
   text decal_name = ""
   float3 size = 1, 1, 1
   float3 pos = 0, 0, 0
+}
+
+template @("name: PointLight") {
+  float3 pos = 0, 0, 0
+  float point_light_attenuation_radius = 1
+  float3 point_light_color = 1, 1, 1
 }

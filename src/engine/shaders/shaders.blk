@@ -22,4 +22,7 @@ shaders_list
   "shaders/terrain/terrain.tfx" {}
   "shaders/terrain/virtual_texture.tfx" {}
   "shaders/test.tfx" {}
+  "shaders/clustered_light/build_clusters.tfx" {}
+  "shaders/clustered_light/debug.tfx" {}
+  "shaders/clustered_light/light_culling.tfx" {}
 }

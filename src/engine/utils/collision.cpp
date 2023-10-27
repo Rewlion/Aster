@@ -140,6 +140,13 @@ namespace Utils
     return true;
   }
 
+  auto test_intersection(const AABB& b, const Sphere& s) -> bool
+  {
+    const float3 cp = calc_closest_point(b, s);
+    const float3 dl = s.center - cp;
+    return glm::dot(dl, dl) <= (s.r * s.r);
+  }
+
   auto calc_intersect_point(const Plane& p1, const Plane& p2, const Plane& p3) -> std::optional<float3>
   {
     const float3 c1{p1.N.x, p2.N.x, p3.N.x};
@@ -159,5 +166,10 @@ namespace Utils
     const float d3 = -glm::dot(c2,v);
 
     return float3{d1, d2, d3} / dMain;
+  }
+
+  auto calc_closest_point(const AABB& b, const Sphere& s) -> float3
+  {
+    return glm::clamp(s.center, b.min, b.max);
   }
 }

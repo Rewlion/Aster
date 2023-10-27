@@ -7,7 +7,7 @@
 using int2 = glm::ivec2;
 using int3 = glm::ivec3;
 using int4 = glm::ivec4;
-using uint = unsigned int;
+using uint = uint32_t;
 using uint2 = glm::uvec2;
 using uint3 = glm::uvec3;
 using uint4 = glm::uvec4;

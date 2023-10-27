@@ -316,6 +316,26 @@ void tick_collision_tests(Engine::OnGameTick&, const bool collision_test_tag, co
     else
       Engine::dbg::draw_line_sphere(sp, float3{0.0, 0.0, 1.0}, 0.0f);
   }
+
+  //sphere-aabb
+  {
+    const float3 cubeCenter = center + float3{-3.0f, 5.0f, 1.0f};
+    const float3 cubeExtent{1.0f, 5.0f, 1.0f};
+    const Utils::AABB aabb{cubeCenter - cubeExtent*0.5f, cubeCenter + cubeExtent*0.5f};
+
+    const float time = Engine::Time::get_sec_since_start();
+     Utils::Sphere sp{cubeCenter + cos(time*2.0f)*3.0f*float3{sin(time), 0.0, cos(time)} + float3{0.0f, 2.0f*sin(time), 0.0f}, 0.1};
+
+    const float3 closestPoint = Utils::calc_closest_point(aabb, sp);
+
+    Engine::dbg::draw_aabb(cubeCenter, cubeExtent, float4{1.0f, 1.0f, 1.0f, 0.3f}, 0.0f);
+    Engine::dbg::draw_line_sphere(closestPoint, 0.03f, float3{1.0f, 0.0f, 0.0f}, 0.0f);
+    if (Utils::test_intersection(aabb, sp))
+      Engine::dbg::draw_line_sphere(sp, float3{0.0f, 1.0f, 1.0}, 1.0f);
+    else
+      Engine::dbg::draw_line_sphere(sp, float3{1.0f, 0.0f, 1.0}, 1.0f);
+    Engine::dbg::draw_line(sp.center, closestPoint, float3{1.0f, 1.0f, 0.0f}, 0.0f);
+  }
 }
 
 static
@@ -422,6 +442,32 @@ void draw_clustered_frustum_at_camera_pos(eastl::span<string_view>)
   });
 }
 
+ECS_SYSTEM()
+void move_point_light(const float3& center_pos, float3& pos, bool moving_point_light_tag)
+{
+  float time = Engine::Time::get_sec_since_start();
+  //pos = center_pos + float3{std::sin(time), 0.0, std::cos(time)}*2.0f;
+}
+
+static
+void spawn_moving_point_light_at_camera(eastl::span<string_view>)
+{
+  query_camera([](const float3& pos, const float2& rotation, const float3& forward)
+  {
+    for (float x = 0; x < 2; ++x)
+      for (float y = 0 ; y < 2; ++y)
+      {
+        const float3 initPos = pos + forward * 2.0f + float3(1.0, 0.0, 0.0) * x + float3(0.0f, 1.0f, 0.0f) * y;
+        ecs::EntityComponents init;
+        init["center_pos"] = initPos;
+        init["pos"] = initPos;
+        init["point_light_attenuation_radius"] = 0.3f;
+        init["point_light_color"] = float3{0.0f, 1.0f, 0.0f};
+
+        ecs::get_registry().createEntity("MovingPointLight", std::move(init));
+      }
+  });
+}
 
 
 CONSOLE_CMD("draw_line", 0, 0, draw_line_at_camera_pos);
@@ -432,6 +478,7 @@ CONSOLE_CMD("draw_aabb", 0, 0, draw_aabbs_at_camera_pos);
 CONSOLE_CMD("draw_frustum", 0, 0, draw_frustum_at_camera_pos);
 CONSOLE_CMD("draw_cl_frustum", 0, 0, draw_clustered_frustum_at_camera_pos);
 CONSOLE_CMD("test_collision", 0, 0, spawn_collision_tests);
+CONSOLE_CMD("test_point_light", 0, 0, spawn_moving_point_light_at_camera);
 CONSOLE_CMD("create_src", 0, 0, create_src);
 CONSOLE_CMD("recreate", 0, 0, recreate_src);
 CONSOLE_CMD("add", 0, 0, add_subt);

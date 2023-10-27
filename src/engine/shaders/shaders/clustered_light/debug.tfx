@@ -1,0 +1,70 @@
+#include "../frame.inc.tfx"
+#include "../screen_space.inc.tfx"
+
+scope DebugClustersScope
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0-2);
+
+  #hlsl
+  #include "utils.hlsl"
+  #end
+
+  RWStructuredBuffer<ClusterInfo> clustersInfoBuffer = extern(clustersInfoBuffer);
+};
+
+technique DebugClusters
+{
+  support scope FrameScope;
+  activate scope DebugClustersScope;
+
+  USE_SCREENSPACE_BASE();
+  render_state:
+    blending:
+      mrt(0):
+        has_blending = yes;
+        src_color_blend_factor = src_alpha;
+        dst_color_blend_factor = one_minus_src_alpha;
+        color_blend_op = add;
+        src_alpha_blend_factor = src_alpha;
+        dst_alpha_blend_factor = zero;
+        alpha_blend_op = add;
+
+  #hlsl
+  float4 ps_main(VsOutput input) : SV_Target0
+  {
+    float2 tileIDf = (float2)input.pos.xy / FrameScope.viewPortSize * float2(CLUSTERS_DIM_X, CLUSTERS_DIM_Y);
+    
+    float border = 0.01;
+    if (any((fmod(tileIDf, 1.0) <= border) || (fmod(tileIDf, 1.0) >= (100.0 - border))))
+      return float4(0.0, 0.0, 1.0, 0.8);
+
+    uint2 tileID = (uint2)tileIDf;
+
+    uint lightsCount = 0;
+    for (uint z = 0; z < CLUSTERS_DIM_Z; ++z)
+    {
+      uint clusterId = tileID.x + tileID.y * CLUSTERS_DIM_X + z * CLUSTERS_DIM_X * CLUSTERS_DIM_Y;
+      lightsCount += clustersInfoBuffer[clusterId].lightsCount;
+    }
+
+    float3 heatmap [7] = {
+      float3(38.0/256.0, 70.0/256.0, 83.0/256.0),
+      float3(42.0/256.0, 157.0/256.0, 143.0/256.0),
+      float3(233.0/256.0, 196.0/256.0, 106.0/256.0),
+      float3(244.0/256.0, 162.0/256.0, 97.0/256.0),
+      float3(231.0/256.0, 111.0/256.0, 81.0/256.0),
+      float3(1.0, 0.0, 0.0),
+      float3(1.0, 0.0, 1.0),
+    };
+
+    float alpha = lightsCount > 0 ? 0.7 : 0.2;
+    uint heatmapId = clamp(lightsCount, 0, 6);
+    return float4(heatmap[heatmapId], alpha);
+  }
+  #end
+
+  compile(vs, vs_main);
+  compile(ps, ps_main);
+};

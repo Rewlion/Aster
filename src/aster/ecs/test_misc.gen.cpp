@@ -272,3 +272,23 @@ static EventSystemRegistration tick_collision_tests_registration(
   },
   "tick_collision_tests"
 );
+
+
+static void move_point_light_internal(ComponentsAccessor& accessor)
+{
+  const float3& center_pos = accessor.get<float3>(compile_ecs_name_hash("center_pos"));
+  float3& pos = accessor.get<float3>(compile_ecs_name_hash("pos"));
+  bool moving_point_light_tag = accessor.get<bool>(compile_ecs_name_hash("moving_point_light_tag"));
+  move_point_light(center_pos,pos,moving_point_light_tag);
+}
+
+
+static SystemRegistration move_point_light_registration(
+  move_point_light_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("center_pos", float3),
+    DESCRIBE_QUERY_COMPONENT("pos", float3),
+    DESCRIBE_QUERY_COMPONENT("moving_point_light_tag", bool)
+  },
+  "move_point_light"
+);
