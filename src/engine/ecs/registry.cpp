@@ -302,6 +302,12 @@ namespace ecs
     }
   }
 
+  void Registry::initialRegistration()
+  {
+    registerEvents();
+    registerCppQueries();
+  }
+
   void Registry::registerEvents()
   {
     loginfo("ecs: registering events");

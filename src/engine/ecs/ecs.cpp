@@ -46,7 +46,7 @@ namespace ecs
       }
     }
 
-    registry->registerEvents();
+    registry->initialRegistration();
   }
 
   void shutdown()
