@@ -24,8 +24,7 @@ ECS_DESCRIBE_QUERY(query_dbg_poly_renderer,
 
 ECS_EVENT_SYSTEM()
 static
-void poly_renderer_creation_handler(const ecs::OnEntityCreated&,
-                                    Engine::dbg::PolyRenderer& dbg_poly_renderer)
+void poly_renderer_creation_handler(const Engine::OnFrameGraphInit&)
 {
   fg::register_node("dbg_poly_render", FG_FILE_DECL, [](fg::Registry& reg)
   {

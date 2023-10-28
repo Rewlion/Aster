@@ -16,8 +16,7 @@ static bool is_clustered_render_dbg_enabled = true;
 
 ECS_EVENT_SYSTEM()
 static
-void clustered_render_creation_handler(const ecs::OnEntityCreated&,
-                                    Engine::Render::ClusteredRenderer& clustered_render)
+void clustered_render_creation_handler(const Engine::OnFrameGraphInit&)
 {
   fg::register_node("dbg_clustered_render", FG_FILE_DECL, [](fg::Registry& reg)
   {

@@ -14,4 +14,7 @@ namespace Engine
   ECS_EVENT_BEGIN(OnBeforeRender)
     ECS_EVENT_FIELD(gapi::CmdEncoder* encoder)
   ECS_EVENT_END()
+
+  ECS_EVENT_BEGIN(OnFrameGraphInit)
+  ECS_EVENT_END()
 }

@@ -364,17 +364,17 @@ namespace fg
 
         for (auto texState: node.execState.textureBeginStates)
         {
-          const auto& vRes = m_Registry.m_VirtResources[texState.virtResId];
+          const res_id_t resId = getResourceId(texState.virtResId);
           const bool validTimeline = !(texState.timeline == Timeline::Previous && m_iFrame == 0);
-          if(vRes.resourceId != INVALID_RES_ID && validTimeline)
-            getStorage(texState.timeline).transitTextureState(vRes.resourceId, texState.state, *encoder);
+          if(resId != INVALID_RES_ID && validTimeline)
+            getStorage(texState.timeline).transitTextureState(resId, texState.state, *encoder);
         }
 
         for (auto bufState: node.execState.bufferBeginStates)
         {
-          const auto& vRes = m_Registry.m_VirtResources[bufState.virtResId];
-          if(vRes.resourceId != INVALID_RES_ID)
-            getStorage().transitBufferState(vRes.resourceId, bufState.state, *encoder);
+          const res_id_t resId = getResourceId(bufState.virtResId);
+          if(resId != INVALID_RES_ID)
+            getStorage().transitBufferState(resId, bufState.state, *encoder);
         }
 
         const bool declaredRp = (node.execState.renderPass.depth.vResId != INVALID_VIRT_RES_ID)
@@ -394,11 +394,11 @@ namespace fg
 
   auto Manager::getResourceId(const virt_res_id_t virt_res_id)  -> res_id_t
   {
-    const auto& vRes = m_Registry.m_VirtResources[virt_res_id];
-    const auto clonnedVResId = vRes.clonnedVResId;
-    return clonnedVResId != INVALID_VIRT_RES_ID ?
-             m_Registry.m_VirtResources[clonnedVResId].resourceId :
-             vRes.resourceId;
+    virt_res_id_t id = virt_res_id;
+    while(m_Registry.m_VirtResources[id].clonnedVResId != INVALID_VIRT_RES_ID)
+      id = m_Registry.m_VirtResources[id].clonnedVResId;
+
+    return m_Registry.m_VirtResources[id].resourceId;
   }
 
   auto Manager::getTexture(const virt_res_id_t virt_res_id, const Timeline timeline) -> gapi::TextureHandle

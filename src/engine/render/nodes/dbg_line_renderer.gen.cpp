@@ -66,17 +66,17 @@ void query_dbg_line_renderer (eastl::function<
 
 static void line_renderer_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
 {
-  const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
-  Engine::dbg::LineRenderer& dbg_line_renderer = accessor.get<Engine::dbg::LineRenderer>(compile_ecs_name_hash("dbg_line_renderer"));
-  line_renderer_creation_handler(*casted_event, dbg_line_renderer);
+  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+
+  line_renderer_creation_handler(*casted_event);
 }
 
 
 static EventSystemRegistration line_renderer_creation_handler_registration(
   line_renderer_creation_handler_internal,
-  compile_ecs_name_hash("OnEntityCreated"),
+  compile_ecs_name_hash("OnFrameGraphInit"),
   {
-    DESCRIBE_QUERY_COMPONENT("dbg_line_renderer", Engine::dbg::LineRenderer)
+
   },
   "line_renderer_creation_handler"
 );

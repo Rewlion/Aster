@@ -42,7 +42,8 @@ namespace fg
     return createResourceInternal(name, BufferResource{.allocDesc = desc, .initState = init_state},
       [this, init_state](const virt_res_id_t virt_res_id, NodeInfo& node)
     {
-      m_VirtResources[virt_res_id].modificationChain.insert(0, m_CurrentExecNodeId);
+      auto& mChain = m_VirtResources[virt_res_id].modificationChain;
+      mChain.insert(mChain.begin(), m_CurrentExecNodeId);
     });
   }
 
@@ -73,7 +74,7 @@ namespace fg
       {
         auto& vRes = m_VirtResources[virt_res_id];
         vRes.persistent = persistent;
-        vRes.modificationChain.insert(0, m_CurrentExecNodeId);
+        vRes.modificationChain.insert(vRes.modificationChain.begin(), m_CurrentExecNodeId);
         node.execState.textureBeginStates.push_back({virt_res_id, init_state});
       });
   }
@@ -142,7 +143,7 @@ namespace fg
     auto& vRes = m_VirtResources[vResId];
     vRes.resourceId = resId;
     vRes.createdBy = m_CurrentExecNodeId;
-    vRes.modificationChain.insert(0, m_CurrentExecNodeId);
+    vRes.modificationChain.insert(vRes.modificationChain.begin(), m_CurrentExecNodeId);
     
     auto& res = m_Resources[resId];
     res = TextureResource{
@@ -191,7 +192,6 @@ namespace fg
     const virt_res_id_t vResIdTo = to_virt_res_id(nameIdTo);
     const res_id_t resId = to_res_id(vResIdFrom);
 
-    auto& vResTo = m_VirtResources[vResIdTo];
     auto& vResFrom = m_VirtResources[vResIdFrom];
 
     if (vResFrom.consumedBy != INVALID_NODE_ID)
@@ -204,11 +204,12 @@ namespace fg
     }
     vResFrom.consumedBy = m_CurrentExecNodeId;
     vResFrom.modificationChain.push_back(m_CurrentExecNodeId);
-    
+
+    auto& vResTo = m_VirtResources[vResIdTo];
     vResTo.clonnedVResId = vResIdFrom;
     vResTo.createdBy = m_CurrentExecNodeId;
     vResTo.modificationChain.insert(vResTo.modificationChain.begin(), m_CurrentExecNodeId);
-    vResTo.resourceId = vResFrom.resourceId;
+    vResTo.resourceId = m_VirtResources[vResIdFrom].resourceId;
 
     auto& node = m_Nodes[m_CurrentExecNodeId];
     node.modifies.push_back(vResIdFrom);

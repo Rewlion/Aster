@@ -66,17 +66,17 @@ void query_dbg_poly_renderer (eastl::function<
 
 static void poly_renderer_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
 {
-  const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
-  Engine::dbg::PolyRenderer& dbg_poly_renderer = accessor.get<Engine::dbg::PolyRenderer>(compile_ecs_name_hash("dbg_poly_renderer"));
-  poly_renderer_creation_handler(*casted_event, dbg_poly_renderer);
+  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+
+  poly_renderer_creation_handler(*casted_event);
 }
 
 
 static EventSystemRegistration poly_renderer_creation_handler_registration(
   poly_renderer_creation_handler_internal,
-  compile_ecs_name_hash("OnEntityCreated"),
+  compile_ecs_name_hash("OnFrameGraphInit"),
   {
-    DESCRIBE_QUERY_COMPONENT("dbg_poly_renderer", Engine::dbg::PolyRenderer)
+
   },
   "poly_renderer_creation_handler"
 );

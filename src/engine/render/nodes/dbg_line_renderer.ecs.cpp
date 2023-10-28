@@ -21,8 +21,7 @@ ECS_DESCRIBE_QUERY(query_dbg_line_renderer, Engine::dbg::LineRenderer& dbg_line_
 
 ECS_EVENT_SYSTEM()
 static
-void line_renderer_creation_handler(const ecs::OnEntityCreated&,
-                                      Engine::dbg::LineRenderer& dbg_line_renderer)
+void line_renderer_creation_handler(const Engine::OnFrameGraphInit&)
 {
   fg::register_node("dbg_line_renderer", FG_FILE_DECL, [](fg::Registry& reg)
   {

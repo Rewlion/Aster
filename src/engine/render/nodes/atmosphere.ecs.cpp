@@ -2,13 +2,14 @@
 #include <engine/ecs/ecs.h>
 #include <engine/ecs/ecs_events.h>
 #include <engine/ecs/macros.h>
+#include <engine/events.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gapi/resource_wrappers.h>
 #include <engine/log.h>
 #include <engine/math.h>
+#include <engine/render/ecs_utils.h>
 #include <engine/render/frame_graph/frame_graph.h>
 #include <engine/render/imgui/imgui.h>
-#include <engine/render/ecs_utils.h>
 #include <engine/tfx/tfx.h>
 #include <engine/work_cycle/camera.h>
 
@@ -49,9 +50,9 @@ gapi::TextureState get_lut_init_state(const gapi::TextureState init_state)
 }
 
 ECS_EVENT_SYSTEM()
-static void atmosphere_render_creation_handler(
-  const ecs::OnEntityCreated& evt,
-  const int atm_render_tag)
+static
+void atmosphere_render_creation_handler(
+  Engine::OnFrameGraphInit&)
 {
   fg::register_node("atm_res_import", FG_FILE_DECL, [](fg::Registry& reg)
   {

@@ -74,3 +74,57 @@ static EventSystemRegistration virtual_terrain_on_tick_registration(
   },
   "virtual_terrain_on_tick"
 );
+
+
+static void virtual_terrain_node_internal(Event* event, ComponentsAccessor& accessor)
+{
+  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+
+  virtual_terrain_node(*casted_event);
+}
+
+
+static EventSystemRegistration virtual_terrain_node_registration(
+  virtual_terrain_node_internal,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+
+  },
+  "virtual_terrain_node"
+);
+
+
+static void virtual_terrain_update_vtex_node_internal(Event* event, ComponentsAccessor& accessor)
+{
+  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+
+  virtual_terrain_update_vtex_node(*casted_event);
+}
+
+
+static EventSystemRegistration virtual_terrain_update_vtex_node_registration(
+  virtual_terrain_update_vtex_node_internal,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+
+  },
+  "virtual_terrain_update_vtex_node"
+);
+
+
+static void virtual_terrain_vtx_dbg_import_node_internal(Event* event, ComponentsAccessor& accessor)
+{
+  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+
+  virtual_terrain_vtx_dbg_import_node(*casted_event);
+}
+
+
+static EventSystemRegistration virtual_terrain_vtx_dbg_import_node_registration(
+  virtual_terrain_vtx_dbg_import_node_internal,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+
+  },
+  "virtual_terrain_vtx_dbg_import_node"
+);

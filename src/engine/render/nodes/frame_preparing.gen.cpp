@@ -7,3 +7,38 @@
 #include "frame_preparing.ecs.cpp" 
 
 using namespace ecs;
+
+static void mk_backbuffer_acquiring_node_internal(Event* event, ComponentsAccessor& accessor)
+{
+  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+
+  mk_backbuffer_acquiring_node(*casted_event);
+}
+
+
+static EventSystemRegistration mk_backbuffer_acquiring_node_registration(
+  mk_backbuffer_acquiring_node_internal,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+
+  },
+  "mk_backbuffer_acquiring_node"
+);
+
+
+static void mk_frame_preparing_node_internal(Event* event, ComponentsAccessor& accessor)
+{
+  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+
+  mk_frame_preparing_node(*casted_event);
+}
+
+
+static EventSystemRegistration mk_frame_preparing_node_registration(
+  mk_frame_preparing_node_internal,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+
+  },
+  "mk_frame_preparing_node"
+);

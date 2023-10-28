@@ -42,7 +42,25 @@ void virtual_terrain_creation_handler(
     vterrain_heightmapMinMaxBorder, vterrain_heightmapMaxHeight,
     vterrain_detail, vterrain_detailSize};
   ecs::get_registry().createEntity("VirtualTerrainRender", std::move(init));
+}
 
+ECS_EVENT_SYSTEM()
+static
+void virtual_terrain_on_tick(
+  const Engine::OnGameTick& evt,
+  Engine::Render::TerrainRender& vterrain_render
+)
+{
+  float3 cameraPos = Engine::get_camera_pos();
+  vterrain_render.setView(cameraPos);
+}
+
+ECS_EVENT_SYSTEM()
+static
+void virtual_terrain_node(
+  const Engine::OnFrameGraphInit&
+)
+{
   fg::register_node("terrain", FG_FILE_DECL,
     [](fg::Registry& reg)
   {
@@ -86,7 +104,14 @@ void virtual_terrain_creation_handler(
       });
     };
   });
+}
 
+ECS_EVENT_SYSTEM()
+static
+void virtual_terrain_update_vtex_node(
+  const Engine::OnFrameGraphInit&
+)
+{
   fg::register_node("terrain_update_vtex", FG_FILE_DECL,
     [](fg::Registry& reg)
   {
@@ -106,7 +131,14 @@ void virtual_terrain_creation_handler(
       });
     };
   });
+}
 
+ECS_EVENT_SYSTEM()
+static
+void virtual_terrain_vtx_dbg_import_node(
+  const Engine::OnFrameGraphInit&
+)
+{
   fg::register_node("terrain_vtx_dbg_import", FG_FILE_DECL,
     [](fg::Registry& reg)
   {
@@ -122,15 +154,4 @@ void virtual_terrain_creation_handler(
     });
     return [](gapi::CmdEncoder&) {};
   });
-} 
-
-ECS_EVENT_SYSTEM()
-static
-void virtual_terrain_on_tick(
-  const Engine::OnGameTick& evt,
-  Engine::Render::TerrainRender& vterrain_render
-)
-{
-  float3 cameraPos = Engine::get_camera_pos();
-  vterrain_render.setView(cameraPos);
 }

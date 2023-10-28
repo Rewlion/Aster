@@ -32,3 +32,21 @@ void query_decals (eastl::function<
     cb(decal_name,size,pos);
   });
 }
+
+
+static void mk_decals_node_internal(Event* event, ComponentsAccessor& accessor)
+{
+  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+
+  mk_decals_node(*casted_event);
+}
+
+
+static EventSystemRegistration mk_decals_node_registration(
+  mk_decals_node_internal,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+
+  },
+  "mk_decals_node"
+);

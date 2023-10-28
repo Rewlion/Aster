@@ -28,17 +28,17 @@ static EventSystemRegistration clustered_render_prepare_registration(
 
 static void clustered_render_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
 {
-  const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
-  Engine::Render::ClusteredRenderer& clustered_render = accessor.get<Engine::Render::ClusteredRenderer>(compile_ecs_name_hash("clustered_render"));
-  clustered_render_creation_handler(*casted_event, clustered_render);
+  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+
+  clustered_render_creation_handler(*casted_event);
 }
 
 
 static EventSystemRegistration clustered_render_creation_handler_registration(
   clustered_render_creation_handler_internal,
-  compile_ecs_name_hash("OnEntityCreated"),
+  compile_ecs_name_hash("OnFrameGraphInit"),
   {
-    DESCRIBE_QUERY_COMPONENT("clustered_render", Engine::Render::ClusteredRenderer)
+
   },
   "clustered_render_creation_handler"
 );

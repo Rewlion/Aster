@@ -116,17 +116,17 @@ static EventSystemRegistration atmosphere_creation_handler_registration(
 
 static void atmosphere_render_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
 {
-  const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
-  int atm_render_tag = accessor.get<int>(compile_ecs_name_hash("atm_render_tag"));
-  atmosphere_render_creation_handler(*casted_event, atm_render_tag);
+  Engine::OnFrameGraphInit* casted_event = reinterpret_cast<Engine::OnFrameGraphInit*>(event);
+
+  atmosphere_render_creation_handler(*casted_event);
 }
 
 
 static EventSystemRegistration atmosphere_render_creation_handler_registration(
   atmosphere_render_creation_handler_internal,
-  compile_ecs_name_hash("OnEntityCreated"),
+  compile_ecs_name_hash("OnFrameGraphInit"),
   {
-    DESCRIBE_QUERY_COMPONENT("atm_render_tag", int)
+
   },
   "atmosphere_render_creation_handler"
 );

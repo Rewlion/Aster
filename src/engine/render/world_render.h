@@ -23,8 +23,6 @@ namespace Engine::Render
 
     private:
       void createFrameGraph();
-    private:
-      eastl::vector<fg::NodeHandle> m_FgNodes;
   };
 
   extern WorldRender world_render;
