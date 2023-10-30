@@ -39,4 +39,9 @@ namespace fg
   {
     manager->setClosingNode(node);
   }
+
+  void set_render_size(const uint2 size)
+  {
+    manager->setRenderSize(size);
+  }
 }

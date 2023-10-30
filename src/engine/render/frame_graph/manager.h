@@ -11,6 +11,8 @@ namespace fg
   class Manager
   {
     public:
+      void setRenderSize(const uint2);
+
       void registerNode(const char* name, const char* file, BuildFunction build_cb);
 
       void execNewFrame();

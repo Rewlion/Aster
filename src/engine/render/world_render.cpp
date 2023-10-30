@@ -37,6 +37,7 @@ namespace Engine::Render
 
   void WorldRender::render()
   {
+    fg::set_render_size(Window::get_window_size());
     fg::exec_new_frame();
     gapi::present_backbuffer_and_finalize_frame();
   }

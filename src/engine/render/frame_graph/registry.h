@@ -69,6 +69,8 @@ namespace fg
       };
 
     public:
+      auto getRenderSize() const -> uint2 { return m_RenderSize; }
+
       void orderMeBefore(const char* node);
       void orderMeAfter(const char* node);
 
@@ -106,6 +108,8 @@ namespace fg
       void reset();
 
     private:
+      uint2 m_RenderSize = uint2{0,0};
+
       node_id_t m_CurrentExecNodeId;
       size_t m_TotalBlobsSize = 0;
 

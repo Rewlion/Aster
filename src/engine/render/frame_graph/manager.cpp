@@ -11,6 +11,11 @@
 
 namespace fg
 {
+  void Manager::setRenderSize(const uint2 size)
+  {
+    m_Registry.m_RenderSize = size;
+  }
+
   void Manager::registerNode(const char* name, const char* file, BuildFunction build_cb)
   {
     m_Registry.registerNode(name, file, build_cb);
