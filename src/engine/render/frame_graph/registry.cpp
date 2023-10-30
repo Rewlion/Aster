@@ -272,7 +272,7 @@ namespace fg
                                           gapi::LoadOp::Load, gapi::StoreOp::Store);
   }
 
-  auto Registry::registerNode(const char* name, const char* file, BuildFunction build_cb) -> node_id_t
+  void Registry::registerNode(const char* name, const char* file, BuildFunction build_cb)
   {
     const name_id_t nameId = m_NodesNames.storeString(name);
     const node_id_t nodeId = to_node_id(nameId);
@@ -281,8 +281,6 @@ namespace fg
     node.nameId = nameId;
     node.fileSrc = file;
     node.build = build_cb;
-    
-    return nodeId;
   }
 
   void Registry::reset()

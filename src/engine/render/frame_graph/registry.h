@@ -102,7 +102,7 @@ namespace fg
       auto modifyResourceInternal(const char* name, ModifyCb&&) -> virt_res_id_t;
       auto readResourceInternal(const char* name, const bool optional, const Timeline, ReadCb&&) -> virt_res_id_t;
 
-      auto registerNode(const char* name, const char* file, BuildFunction build_cb) -> node_id_t;
+      void registerNode(const char* name, const char* file, BuildFunction build_cb);
       void reset();
 
     private:

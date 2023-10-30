@@ -11,37 +11,23 @@
 
 namespace fg
 {
-  auto Manager::registerNode(const char* name, const char* file, BuildFunction build_cb) -> node_id_t
+  void Manager::registerNode(const char* name, const char* file, BuildFunction build_cb)
   {
-    const node_id_t id = m_Registry.registerNode(name, file, build_cb);
-    m_State = State::Compile;
-    return id;
+    m_Registry.registerNode(name, file, build_cb);
+    m_State = State::ExecReady;
   }
 
   void Manager::execNewFrame()
   {
     ASSERT_FMT(m_State != State::Empty, "framegraph doesn't have nodes to process");
 
-    switch (m_State)
-    {
-      case State::Compile:
-      {
-        compile();
-        validateResources();
-        orderNodes();
-        placeBlobs();
-        m_State = State::ExecReady;
-      }
-      case State::ExecReady:
-      {
-        flushResources();
-        execNodes();
-        ++m_iFrame;
-        break;
-      }
-      default:
-        ASSERT(!"framegraph doesn't have nodes to process");
-    }
+    compile();
+    validateResources();
+    orderNodes();
+    placeBlobs();
+    flushResources();
+    execNodes();
+    ++m_iFrame;
   }
 
   auto Manager::getStorage(const Timeline timeline) -> ResourceStorage&
@@ -54,7 +40,6 @@ namespace fg
   void Manager::compile()
   {
     m_Registry.reset();
-    m_PersistentResourceStorage.reset();
 
     for (size_t i = 0; auto& node: m_Registry.m_Nodes)
     {

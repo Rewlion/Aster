@@ -11,7 +11,7 @@ namespace fg
   class Manager
   {
     public:
-      auto registerNode(const char* name, const char* file, BuildFunction build_cb) -> node_id_t;
+      void registerNode(const char* name, const char* file, BuildFunction build_cb);
 
       void execNewFrame();
       void setClosingNode(const char* node) { m_ClosingNode = node; }
@@ -43,7 +43,6 @@ namespace fg
       enum class State
       {
         Empty,
-        Compile,
         ExecReady
       };
 

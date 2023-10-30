@@ -25,9 +25,9 @@ namespace fg
     delete manager;
   }
 
-  auto register_node(const char* name, const char* file, BuildFunction build_cb) -> node_id_t
+  void register_node(const char* name, const char* file, BuildFunction build_cb)
   {
-    return manager->registerNode(name, file, build_cb);
+    manager->registerNode(name, file, build_cb);
   }
 
   void exec_new_frame()
