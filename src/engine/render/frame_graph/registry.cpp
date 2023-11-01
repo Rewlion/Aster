@@ -237,6 +237,13 @@ namespace fg
     return std::move(*this);
   }
 
+  auto Registry::RpBuilder::addTarget(const char* tex_name, const gapi::LoadOp load, const gapi::StoreOp store,
+                                      const gapi::ClearColorValue& clear_color) && -> RpBuilder&&
+  {
+    auto tex = m_Registry.modifyTexture(tex_name, gapi::TextureState::RenderTarget);
+    return std::move(*this).addTarget(tex, load, store, clear_color);
+  }
+
   auto Registry::RpBuilder::addTarget(const TextureRequest tex_req,
                                       const gapi::ClearColorValue& clear_color) && -> RpBuilder&&
   {
@@ -270,6 +277,14 @@ namespace fg
     auto tex = m_Registry.readTexture(tex_name, gapi::TextureState::DepthReadStencilRead);
     return std::move(*this).addDepth(tex, load, gapi::StoreOp::Store,
                                           gapi::LoadOp::Load, gapi::StoreOp::Store);
+  }
+
+  auto Registry::RpBuilder::addRWDepth(const char* tex_name, const gapi::LoadOp depth_load,
+                                       const gapi::StoreOp depth_store) && -> RpBuilder&&
+  {
+    auto tex = m_Registry.modifyTexture(tex_name, gapi::TextureState::DepthWriteStencilWrite);
+    return std::move(*this).addDepth(tex, depth_load, depth_store,
+                                     gapi::LoadOp::Load, gapi::StoreOp::Store);
   }
 
   void Registry::registerNode(const char* name, const char* file, BuildFunction build_cb)

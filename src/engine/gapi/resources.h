@@ -311,7 +311,7 @@ namespace gapi
     BF_BindUAV      = 1 << 6
   };
 
-  inline
+  constexpr
   auto operator|(const BufferUsage a, const BufferUsage b) -> BufferUsage
   {
       return (BufferUsage)((int)a|(int)b);

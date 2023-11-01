@@ -166,3 +166,123 @@ static SystemRegistration {system_name}_registration(
   system_name = name,
   components_descriptions = generate_query_components_description(components,2)
 )
+
+
+def generate_fg_order_before(node_name):
+  return f"""    reg.orderMeBefore("{node_name}");"""
+
+
+def generate_fg_order_after(node_name):
+  return f"""    reg.orderMeAfter("{node_name}");"""
+
+
+def generate_fg_create_buffer(name, usage, state, size):
+  return f"""    auto {name} = reg.createBuffer(
+      "{name}",
+      gapi::BufferAllocationDescription{{
+        .size = {size},
+        .usage = {usage}
+      }},
+      {state}
+    );"""
+
+
+def generate_fg_modify_buffer(name, state):
+  return f"""    auto {name} = reg.modifyBuffer("{name}", {state});"""
+
+
+def generate_fg_read_optional_buffer(name, state, optional):
+  return f"""    auto {name} = reg.readBuffer("{name}", {state}{f", {optional}" if optional != "" else ""});"""
+
+
+def generate_fg_create_texture(
+  name, tex_format, extent, mip_levels,
+  array_layers, samples_per_pixel,
+  usage, init_state, persistent_storage):
+  return f"""
+    auto {name} = reg.createTexture("{name}",
+      gapi::TextureAllocationDescription{{
+        .format =          {tex_format if tex_format != "" else "gapi::TextureFormat::R8G8B8A8_UNORM"},
+        .extent =          {extent if extent != "" else "{0,0,0}"},
+        .mipLevels =       {mip_levels if mip_levels != "" else "1"},
+        .arrayLayers =     {array_layers if array_layers != "" else "1"},
+        .samplesPerPixel = {samples_per_pixel if samples_per_pixel != "" else "gapi::TextureSamples::s1"},
+        .usage =           {usage if usage != "" else "gapi::TextureUsage::TEX_USAGE_NONE"}
+      }},
+      {init_state if init_state != "" else "gapi::TextureState::Undefined"},
+      {persistent_storage if persistent_storage != "" else "false"}
+    );
+"""
+
+
+def generate_fg_import_texture_producer(name, import_fn):
+  return f"""    auto {name} = reg.importTextureProducer("{name}", {import_fn});"""
+
+
+def generate_fg_modify_texture(name, state):
+  return f"""    auto {name} = reg.modifyTexture("{name}", {state});"""
+
+
+def generate_fg_read_optional_texture(name, state, optional):
+  return f"""    auto {name} = reg.readTexture("{name}", {state}{f", {optional}" if optional != "" else ""});"""
+
+
+def generate_fg_read_timeline_texture(name, state, timeline):
+  return f"""    auto {name} = reg.readTexture("{name}", {state}{f", {timeline}" if timeline != "" else ""});"""
+
+
+def generate_fg_rename_texture(from_name, to_name, state):
+  return f"""    auto {to_name} = reg.renameTexture("{from_name}", "{to_name}", {state});"""
+
+
+def generate_fg_create_blob(name, type):
+  return f"""    auto {name} = reg.createBlob<{type}>("{name}");"""
+
+
+def generate_fg_read_blob(name, type):
+  return f"""    auto {name} = reg.readBlob<{type}>("{name}");"""
+
+
+def generate_fg_modify_blob(name, type):
+  return f"""    auto {name} = reg.modifyBlob<{type}>("{name}");"""
+
+
+def generate_fg_target(name, load_op, store_op, clear_color):
+  return f"""      .addTarget("{name}", {load_op}, {store_op}, {clear_color})"""
+
+
+def generate_fg_rodepth(name, load_op):
+  return f"""      .addRODepth("{name}", {load_op})"""
+
+
+def generate_fg_rwdepth(name, load_op, store_op):
+  return f"""      .addRWDepth("{name}", {load_op}, {store_op})"""
+
+
+def generate_fg_renderpass(targets, depth_stencil):
+  res = "\n".join(["    reg.requestRenderPass()"] + targets + [depth_stencil + ";\n"])
+
+  return res
+
+
+def generate_fg_exec_fn_bridge(encoder_name, capture_list, args_list, exec_fn):
+  return f"""
+    return [{",".join(capture_list)}](gapi::CmdEncoder& {encoder_name})
+    {{
+      {exec_fn}({", ".join(args_list)});
+    }};"""
+
+
+def generate_fg_node(name, body, has_render_size_access):
+  renderSize = "\n    const uint2 __renderSize__ = reg.getRenderSize();\n" if has_render_size_access else ""
+  return f"""
+ECS_EVENT_SYSTEM()
+static
+void mk_fg_node_{name}(const Engine::OnFrameGraphInit&)
+{{
+  fg::register_node("{name}", FG_FILE_DECL, [](fg::Registry& reg)
+  {{ {renderSize}
+{body}
+  }});
+}}
+"""

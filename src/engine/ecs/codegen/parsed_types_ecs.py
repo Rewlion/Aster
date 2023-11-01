@@ -1,5 +1,7 @@
+import clang.cindex
 import cursor_utils as utils
 import templates
+import re
 
 class SystemParam:
   def __init__(self, param_cursor):

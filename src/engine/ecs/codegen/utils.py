@@ -4,8 +4,11 @@ import os
 ES_SYSTEM_TAG = "ecs_system"
 ES_EVENT_SYSTEM_TAG = "ecs_event_system"
 ES_QUERY_TAG = "ecs_query"
+FG_EXEC_TAG = "fg_node_exec"
+FG_DSL_TAG = "fg_node_dsl"
 
-import parsed_types as parsed
+import parsed_types_ecs as parsed_ecs
+import parsed_types_fg as parsed_fg
 
 def generate_ecs_impl(from_src, includeArgs, defineArgs):
   generated_code = [
@@ -33,14 +36,16 @@ def generate_ecs_impl(from_src, includeArgs, defineArgs):
   if len(errors) > 0:
     raise ValueError("\n".join(map(str,errors)))
 
+  fgExecFnCursors = {}
   generators = []
+
   for fnCursor in translation_unit.cursor.get_children():
     if fnCursor.kind == clang.cindex.CursorKind.FUNCTION_DECL:
-      name = fnCursor.spelling
       paramCursors = []
       isEsSystem = False
       isEsEventSystem = False
       isEsQuery = False
+      isFgExec = False
 
       for child in fnCursor.get_children():
         if child.kind == clang.cindex.CursorKind.PARM_DECL:
@@ -52,17 +57,23 @@ def generate_ecs_impl(from_src, includeArgs, defineArgs):
             isEsEventSystem = True
           elif child.spelling == ES_QUERY_TAG:
             isEsQuery = True
-
-      if isEsSystem and isEsQuery:
-        raise ValueError("ERROR: {} can't be es_function and es_query in the same time [{}]".format(name, fnCursor.location))
+          elif child.spelling == FG_EXEC_TAG:
+            isFgExec = True
 
       if isEsQuery:
-        generators = generators + [parsed.Query(fnCursor, paramCursors)]
+        generators = generators + [parsed_ecs.Query(fnCursor, paramCursors)]
       elif isEsSystem:
-        generators = generators + [parsed.System(fnCursor, paramCursors)]
+        generators = generators + [parsed_ecs.System(fnCursor, paramCursors)]
       elif isEsEventSystem:
-        generators = generators + [parsed.EventSystem(fnCursor, paramCursors)]
-  
+        generators = generators + [parsed_ecs.EventSystem(fnCursor, paramCursors)]
+      elif isFgExec:
+        fgExecFnCursors[fnCursor.spelling] = (fnCursor, paramCursors)
+
+    elif fnCursor.kind == clang.cindex.CursorKind.STRUCT_DECL:
+      for child in fnCursor.get_children():
+        if child.kind == clang.cindex.CursorKind.ANNOTATE_ATTR and child.spelling == FG_DSL_TAG:
+          generators = generators + [parsed_fg.FgNode(fnCursor, fgExecFnCursors)]
+
   generated_code.extend([g.generate() for g in generators])
   final_src = '\n'.join(generated_code)
 
