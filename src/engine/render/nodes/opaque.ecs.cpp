@@ -91,6 +91,17 @@ void mk_gbuffer_main_pass_node(const Engine::OnFrameGraphInit&)
 
 ECS_EVENT_SYSTEM()
 static
+void mk_late_opaque_sync_node(const Engine::OnFrameGraphInit&)
+{
+  fg::register_node("late_opaque_sync", FG_FILE_DECL, [](fg::Registry&reg){
+    auto depth = reg.renameTexture("opaque_depth", "late_opaque_depth", gapi::TextureState::DepthReadStencilRead);
+    return [](gapi::CmdEncoder&) {};
+  });
+}
+
+
+ECS_EVENT_SYSTEM()
+static
 void mk_gbuffer_resolve_node(const Engine::OnFrameGraphInit&)
   {
     fg::register_node("gbuffer_resolve", FG_FILE_DECL, [](fg::Registry& reg)
@@ -108,7 +119,7 @@ void mk_gbuffer_resolve_node(const Engine::OnFrameGraphInit&)
       auto gbuf0 = reg.readTexture("gbuf0", gapi::TextureState::ShaderRead);
       auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead);
       auto gbuf2 = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead);
-      auto gbufDepth = reg.renameTexture("depth_for_resolve", "gbuffer_depth", gapi::TextureState::DepthReadStencilRead);
+      auto gbufDepth = reg.renameTexture("late_opaque_depth", "gbuffer_depth", gapi::TextureState::DepthReadStencilRead);
       auto atmParams = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_SRV);
       auto enviSpecular = reg.readTexture("atm_envi_specular", gapi::TextureState::ShaderRead, true);
       auto enviBRDF = reg.readTexture("atm_envi_brdf", gapi::TextureState::ShaderRead, true);

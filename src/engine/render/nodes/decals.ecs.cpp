@@ -15,11 +15,11 @@ void mk_decals_node(const Engine::OnFrameGraphInit&)
 {
   fg::register_node("decals", FG_FILE_DECL, [](fg::Registry& reg)
   {
-    auto depth = reg.renameTexture("opaque_depth", "depth_for_resolve", gapi::TextureState::DepthReadStencilRead);
+    auto depth = reg.readTexture("late_opaque_depth",  gapi::TextureState::DepthReadStencilRead);
 
     reg.requestRenderPass()
        .addTarget("gbuf0")
-       .addDepth(depth);
+       .addRODepth("late_opaque_depth");
 
     return [depth](gapi::CmdEncoder& encoder)
     {

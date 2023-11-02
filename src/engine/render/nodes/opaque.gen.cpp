@@ -26,6 +26,24 @@ static EventSystemRegistration mk_gbuffer_main_pass_node_registration(
 );
 
 
+static void mk_late_opaque_sync_node_internal(Event* event, ComponentsAccessor& accessor)
+{
+  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+
+  mk_late_opaque_sync_node(*casted_event);
+}
+
+
+static EventSystemRegistration mk_late_opaque_sync_node_registration(
+  mk_late_opaque_sync_node_internal,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+
+  },
+  "mk_late_opaque_sync_node"
+);
+
+
 static void mk_gbuffer_resolve_node_internal(Event* event, ComponentsAccessor& accessor)
 {
   const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
