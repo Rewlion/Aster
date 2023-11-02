@@ -1,8 +1,6 @@
 #include <engine/console/cmd.h>
-#include <engine/ecs/macros.h>
-#include <engine/events.h>
 #include <engine/render/clustered_render.h>
-#include <engine/render/frame_graph/frame_graph.h>
+#include <engine/render/frame_graph/dsl.h>
 #include <engine/tfx/tfx.h>
 
 ECS_EVENT_SYSTEM()
@@ -14,28 +12,25 @@ void clustered_render_prepare(const Engine::OnBeforeRender& evt,
 
 static bool is_clustered_render_dbg_enabled = true;
 
-ECS_EVENT_SYSTEM()
+NODE_BEGIN(dbg_clustered_render)
+  ORDER_ME_BEFORE(ui)
+  MODIFY_TEX_AS(final_target, AS(rt), TEX_STATE(RenderTarget))
+  EXEC(dbg_clustered_render_exec)
+NODE_END()
+
+NODE_EXEC()
 static
-void clustered_render_creation_handler(const Engine::OnFrameGraphInit&)
+void dbg_clustered_render_exec(gapi::CmdEncoder& encoder,
+                               const gapi::TextureHandle rt)
 {
-  fg::register_node("dbg_clustered_render", FG_FILE_DECL, [](fg::Registry& reg)
+  if (is_clustered_render_dbg_enabled)
   {
-    reg.orderMeBefore("ui");
-
-    auto rt = reg.modifyTexture("final_target", gapi::TextureState::RenderTarget);
-
-    return [rt](gapi::CmdEncoder& encoder)
-    {
-      if (is_clustered_render_dbg_enabled)
-      {
-        encoder.beginRenderpass(gapi::RenderTargets{gapi::RenderPassAttachment{rt.get()}}, {});
-        tfx::activate_technique("DebugClusters", encoder);
-        encoder.updateResources();
-        encoder.draw(4,1,0,0);
-        encoder.endRenderpass();
-      }
-    };
-  });
+    encoder.beginRenderpass(gapi::RenderTargets{gapi::RenderPassAttachment{rt}}, {});
+    tfx::activate_technique("DebugClusters", encoder);
+    encoder.updateResources();
+    encoder.draw(4,1,0,0);
+    encoder.endRenderpass();
+  }
 }
 
 static

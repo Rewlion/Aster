@@ -26,19 +26,27 @@ static EventSystemRegistration clustered_render_prepare_registration(
 );
 
 
-static void clustered_render_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_dbg_clustered_render(Event*, ComponentsAccessor&)
 {
-  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+  fg::register_node("dbg_clustered_render", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    reg.orderMeBefore("ui");
+    auto rt = reg.modifyTexture("final_target", gapi::TextureState::RenderTarget);
 
-  clustered_render_creation_handler(*casted_event);
+    return [rt](gapi::CmdEncoder& encoder)
+    {
+      dbg_clustered_render_exec(encoder, rt.get());
+    };
+  });
 }
 
-
-static EventSystemRegistration clustered_render_creation_handler_registration(
-  clustered_render_creation_handler_internal,
+static
+EventSystemRegistration mk_fg_node_dbg_clustered_render_registration(
+  mk_fg_node_dbg_clustered_render,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
-
   },
-  "clustered_render_creation_handler"
+  "mk_fg_node_dbg_clustered_render"
 );
