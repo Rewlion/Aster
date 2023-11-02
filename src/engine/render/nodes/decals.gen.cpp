@@ -34,19 +34,21 @@ void query_decals (eastl::function<
 }
 
 
-static void mk_decals_node_internal(Event* event, ComponentsAccessor& accessor)
+ECS_EVENT_SYSTEM()
+static
+void mk_fg_node_decals(const Engine::OnFrameGraphInit&)
 {
-  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+  fg::register_node("decals", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto late_opaque_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
+    reg.requestRenderPass()
+      .addTarget("buf0", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addDepth(late_opaque_depth);
 
-  mk_decals_node(*casted_event);
+
+    return [late_opaque_depth](gapi::CmdEncoder& encoder)
+    {
+      decals_exec(late_opaque_depth.get(), encoder);
+    };
+  });
 }
-
-
-static EventSystemRegistration mk_decals_node_registration(
-  mk_decals_node_internal,
-  compile_ecs_name_hash("OnFrameGraphInit"),
-  {
-
-  },
-  "mk_decals_node"
-);

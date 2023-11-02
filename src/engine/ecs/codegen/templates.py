@@ -248,15 +248,19 @@ def generate_fg_modify_blob(name, type):
 
 
 def generate_fg_target(name, load_op, store_op, clear_color):
-  return f"""      .addTarget("{name}", {load_op}, {store_op}, {clear_color})"""
+  return f"""      .addTarget({name}, {load_op}, {store_op}, {clear_color})"""
 
+
+def generate_fg_depth(name):
+  return f"""      .addDepth({name})"""
+                      
 
 def generate_fg_rodepth(name, load_op):
-  return f"""      .addRODepth("{name}", {load_op})"""
+  return f"""      .addRODepth({name}, {load_op})"""
 
 
 def generate_fg_rwdepth(name, load_op, store_op):
-  return f"""      .addRWDepth("{name}", {load_op}, {store_op})"""
+  return f"""      .addRWDepth({name}, {load_op}, {store_op})"""
 
 
 def generate_fg_renderpass(targets, depth_stencil):

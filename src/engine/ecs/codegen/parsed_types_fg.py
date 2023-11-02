@@ -8,6 +8,7 @@ class FgParsingContext:
   def __init__(self, exec_functions_with_params):
     self.execFunctionsWithParams = exec_functions_with_params
     self.generateRenderSizeAccess = False
+    self.accessedResources = set()
 
   def getExecFunction(self, name):
     if name in self.execFunctionsWithParams:
@@ -16,6 +17,18 @@ class FgParsingContext:
       raise ValueError(f"Unknown execution function {name}")
 
   
+  def markResourceAccess(self, name):
+    self.accessedResources.add(name)
+
+
+  def hasResourceAccess(self, name):
+    return name in self.accessedResources
+
+
+  def getResourceAccess(self, name):
+    return f"\"{name}\"" if not self.hasResourceAccess(name) else name
+
+
   def markRenderSizeAccess(self):
     self.generateRenderSizeAccess = True
 
@@ -167,6 +180,7 @@ class CreateBufferAction(TemplateParamExtractor):
     self.bufferState = ""
     self.bufferSize = ""
     self.extractParams(field_cursor)
+    context.markResourceAccess(self.name)
 
   def generate(self):
     return templates.generate_fg_create_buffer(self.name, self.bufferUsage, self.bufferState, self.bufferSize)
@@ -185,6 +199,7 @@ class CreateTextureAction(TemplateParamExtractor):
     self.persistentStorage = ""
     self.context = context
     self.extractParams(field_cursor)
+    context.markResourceAccess(self.name)
 
 
   def generate(self):
@@ -199,6 +214,7 @@ class ModifyBufferAction(TemplateParamExtractor):
     self.name = ""
     self.bufferState = ""
     self.extractParams(field_cursor)
+    context.markResourceAccess(self.name)
 
 
   def generate(self):
@@ -211,6 +227,7 @@ class ReadOptionalBufferAction(TemplateParamExtractor):
     self.bufferState = ""
     self.optional = ""
     self.extractParams(field_cursor)
+    context.markResourceAccess(self.name)
 
 
   def generate(self):
@@ -223,6 +240,7 @@ class ImportTextureProducerAction(TemplateParamExtractor):
     self.name = ""
     self.importFn = ""
     self.extractParams(field_cursor)
+    context.markResourceAccess(self.name)
 
 
   def generate(self):
@@ -235,6 +253,7 @@ class ReadOptionalTextureAction(TemplateParamExtractor):
     self.textureState = ""
     self.optional = ""
     self.extractParams(field_cursor)
+    context.markResourceAccess(self.name)
 
 
   def generate(self):
@@ -247,6 +266,7 @@ class ReadTimelineTextureAction(TemplateParamExtractor):
     self.textureState = ""
     self.timeline = ""
     self.extractParams(field_cursor)
+    context.markResourceAccess(self.name)
 
 
   def generate(self):
@@ -259,6 +279,8 @@ class RenameTextureAction(TemplateParamExtractor):
     self.toName = ""
     self.textureState = ""
     self.extractParams(field_cursor)
+    context.markResourceAccess(self.toName)
+    
 
   
   def generate(self):
@@ -270,6 +292,7 @@ class ReadBlobAction(TemplateParamExtractor):
     self.name = ""
     self.blobType = ""
     self.extractParams(field_cursor)
+    context.markResourceAccess(self.name)
 
 
   def generate(self):
@@ -281,6 +304,7 @@ class ModifyBlobAction(TemplateParamExtractor):
     self.name = ""
     self.blobType = ""
     self.extractParams(field_cursor)
+    context.markResourceAccess(self.name)
 
 
   def generate(self):
@@ -292,6 +316,7 @@ class CreateBlobAction(TemplateParamExtractor):
     self.name = ""
     self.blobType = ""
     self.extractParams(field_cursor)
+    context.markResourceAccess(self.name)
 
 
   def generate(self):
@@ -303,6 +328,7 @@ class ModifyTextureAction(TemplateParamExtractor):
     self.name = ""
     self.textureState = ""
     self.extractParams(field_cursor)
+    context.markResourceAccess(self.name)
 
 
   def generate(self):
@@ -334,57 +360,77 @@ class ExecFunctionAction(TemplateParamExtractor):
 
 
 class Target(TemplateParamExtractor):
-  def __init__(self, tmpl_arg_type):
+  def __init__(self, tmpl_arg_type, context):
     self.name = ""
     self.loadOp = ""
     self.storeOp = ""
     self.clearColor = ""
+    self.context = context
     self.extractParams(tmpl_arg_type)
 
 
   def generate(self):
-    return templates.generate_fg_target(self.name, self.loadOp, self.storeOp, self.clearColor)
+    return templates.generate_fg_target(self.context.getResourceAccess(self.name), self.loadOp, self.storeOp, self.clearColor)
 
 
-class RODepth(TemplateParamExtractor):
-  def __init__(self, tmpl_arg_type):
+class Depth(TemplateParamExtractor):
+  def __init__(self, tmpl_arg_type, context):
     self.name = ""
-    self.loadOp = ""
+    self.context = context
     self.extractParams(tmpl_arg_type)
 
   
   def generate(self):
-    return templates.generate_fg_rodepth(self.name, self.loadOp)
+    return templates.generate_fg_depth(self.context.getResourceAccess(self.name))
+
+
+class RODepth(TemplateParamExtractor):
+  def __init__(self, tmpl_arg_type, context):
+    self.name = ""
+    self.loadOp = ""
+    self.context = context
+    self.extractParams(tmpl_arg_type)
+
+  
+  def generate(self):
+    return templates.generate_fg_rodepth(self.context.getResourceAccess(self.name), self.loadOp)
 
 
 class RWDepth(TemplateParamExtractor):
-  def __init__(self, tmpl_arg_type):
+  def __init__(self, tmpl_arg_type, context):
     self.name = ""
     self.loadOp = ""
     self.storeOp = ""
+    self.context = context
     self.extractParams(tmpl_arg_type)
 
 
   def generate(self):
-    return templates.generate_fg_rwdepth(self.name, self.loadOp, self.storeOp)
+    name = f"\"{self.name}\"" if not self.context.hasResourceAccess(self.name) else self.name
+    return templates.generate_fg_rwdepth(name, self.loadOp, self.storeOp)
 
 class RenderPassAction(TemplateParamExtractor):
   def __init__(self, field_cursor, context):
     self.targets = []
     self.depthStencil = None
+    self.context = context
     self.extractParams(field_cursor)
 
 
   def extractTarget(self, tmpl_arg_type):
-    self.targets = self.targets + [Target(tmpl_arg_type)]
+    self.targets.append(Target(tmpl_arg_type, self.context))
 
   
+  def extractDepth(self, tmpl_arg_type):
+    self.depthStencil = Depth(tmpl_arg_type, self.context)
+
+
   def extractRODepth(self, tmpl_arg_type):
-    self.depthStencil = RODepth(tmpl_arg_type)
+    self.depthStencil = RODepth(tmpl_arg_type, self.context)
 
 
   def extractRWDepth(self, tmpl_arg_type):
-    self.depthStencil = RWDepth(tmpl_arg_type)
+    self.depthStencil = RWDepth(tmpl_arg_type, self.context)
 
   
   def generate(self):

@@ -131,6 +131,9 @@ namespace fg::dsl
   template<class name, class loadOp, class storeOp, class clearColor>
   struct Target {};
 
+  template<class name>
+  struct Depth {};
+
   template<class name, class loadOp>
   struct RODepth {};
 
@@ -144,7 +147,7 @@ namespace fg::dsl
   struct ExecFunction {};
 
   #define FG_NODE_DSL() [[clang::annotate("fg_node_dsl")]]
-  #define FG_EXEC() [[clang::annotate("fg_node_exec")]]
+  #define NODE_EXEC() [[clang::annotate("fg_node_exec")]]
 }
 
 #define NODE_BEGIN(name)\
@@ -179,6 +182,12 @@ namespace fg::dsl
     fg::dsl::LoadOp<gapi::LoadOp:: loadOp>>
 #define DEPTH_RO(name) DEPTH_RO_EX(name, Load)
 #define DEPTH_RO_CLEARED(name) DEPTH_RO_EX(name, Clear)
+
+#define DEPTH_EX(name)\
+  fg::dsl::Depth<\
+    fg::dsl::Name<#name>>
+
+#define DEPTH(name) DEPTH_EX(name)
 // RENDERPASS END
 
 #define ORDER_ME_AFTER(name) fg::dsl::OrderAfter name;
