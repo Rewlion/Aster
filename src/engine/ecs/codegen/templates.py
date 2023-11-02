@@ -219,16 +219,16 @@ def generate_fg_import_texture_producer(name, import_fn):
   return f"""    auto {name} = reg.importTextureProducer("{name}", {import_fn});"""
 
 
-def generate_fg_modify_texture(name, state):
-  return f"""    auto {name} = reg.modifyTexture("{name}", {state});"""
+def generate_fg_modify_texture(name, name_alias, state):
+  return f"""    auto {name_alias if name_alias != "" else name} = reg.modifyTexture("{name}", {state});"""
 
 
-def generate_fg_read_optional_texture(name, state, optional):
-  return f"""    auto {name} = reg.readTexture("{name}", {state}{f", {optional}" if optional != "" else ""});"""
+def generate_fg_read_optional_texture(name, name_alias, state, optional):
+  return f"""    auto {name_alias if name_alias != "" else name} = reg.readTexture("{name}", {state}{f", {optional}" if optional != "" else ""});"""
 
 
-def generate_fg_read_timeline_texture(name, state, timeline):
-  return f"""    auto {name} = reg.readTexture("{name}", {state}{f", {timeline}" if timeline != "" else ""});"""
+def generate_fg_read_timeline_texture(name, name_alias, state, timeline):
+  return f"""    auto {name_alias if name_alias != "" else name} = reg.readTexture("{name}", {state}{f", {timeline}" if timeline != "" else ""});"""
 
 
 def generate_fg_rename_texture(from_name, to_name, state):
@@ -264,7 +264,7 @@ def generate_fg_rwdepth(name, load_op, store_op):
 
 
 def generate_fg_renderpass(targets, depth_stencil):
-  res = "\n".join(["    reg.requestRenderPass()"] + targets + [depth_stencil, "    ;\n"])
+  res = "\n".join(["    reg.requestRenderPass()"] + targets + [depth_stencil+";\n" if depth_stencil != "" else "    ;\n"])
 
   return res
 

@@ -59,6 +59,14 @@ class TemplateParamExtractor:
       return re.findall(r'\<([^>]*)\>', type.spelling)[0]
   
 
+  def extractStub(self, tmpl_arg_type):
+    pass
+    
+
+  def extractNameAlias(self, tmpl_arg_type):
+    self.nameAlias = self.extractTemplateArgumentsAsIs(tmpl_arg_type).replace('\"', '')
+
+
   def extractName(self, tmpl_arg_type):
       self.name = self.extractTemplateArgumentsAsIs(tmpl_arg_type).replace('\"', '')
 
@@ -250,27 +258,29 @@ class ImportTextureProducerAction(TemplateParamExtractor):
 class ReadOptionalTextureAction(TemplateParamExtractor):
   def __init__(self, field_cursor, context):
     self.name = ""
+    self.nameAlias = ""
     self.textureState = ""
     self.optional = ""
     self.extractParams(field_cursor)
-    context.markResourceAccess(self.name)
+    context.markResourceAccess(self.name if self.nameAlias == "" else self.nameAlias)
 
 
   def generate(self):
-    return templates.generate_fg_read_optional_texture(self.name, self.textureState, self.optional)
+    return templates.generate_fg_read_optional_texture(self.name,self.nameAlias, self.textureState, self.optional)
 
 
 class ReadTimelineTextureAction(TemplateParamExtractor):
   def __init__(self, field_cursor, context):
     self.name = ""
+    self.nameAlias = ""
     self.textureState = ""
     self.timeline = ""
     self.extractParams(field_cursor)
-    context.markResourceAccess(self.name)
+    context.markResourceAccess(self.name if self.nameAlias == "" else self.nameAlias)
 
 
   def generate(self):
-    return templates.generate_fg_read_timeline_texture(self.name, self.textureState, self.timeline)
+    return templates.generate_fg_read_timeline_texture(self.name, self.nameAlias, self.textureState, self.timeline)
 
 
 class RenameTextureAction(TemplateParamExtractor):
@@ -326,13 +336,14 @@ class CreateBlobAction(TemplateParamExtractor):
 class ModifyTextureAction(TemplateParamExtractor):
   def __init__(self, field_cursor, context):
     self.name = ""
+    self.nameAlias = ""
     self.textureState = ""
     self.extractParams(field_cursor)
-    context.markResourceAccess(self.name)
+    context.markResourceAccess(self.name if self.nameAlias == "" else self.nameAlias)
 
 
   def generate(self):
-    return templates.generate_fg_modify_texture(self.name, self.textureState)
+    return templates.generate_fg_modify_texture(self.name, self.nameAlias, self.textureState)
 
 
 class ExecFunctionAction(TemplateParamExtractor):

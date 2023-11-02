@@ -10,6 +10,8 @@
 
 namespace fg::dsl
 {
+  struct Stub {};
+
   //https://ctrpeach.io/posts/cpp20-string-literal-template-parameters/
   template<size_t N>
   struct NameWrapper {
@@ -19,6 +21,9 @@ namespace fg::dsl
 
   template <NameWrapper name>
   struct Name {};
+
+  template <NameWrapper name>
+  struct NameAlias {};
 
   template <NameWrapper name>
   struct NameFrom {};
@@ -107,13 +112,13 @@ namespace fg::dsl
   template <fg::Timeline timeline>
   struct Timeline {};
 
-  template<class name, class state>
+  template<class name, class nameAlias, class state>
   struct ModifyTexture {};
 
-  template <class name, class state, class timeline>
+  template <class name, class nameAlias, class state, class timeline>
   struct ReadTimelineTexture {};
 
-  template <class name, class state, class optional>
+  template <class name, class nameAlias, class state, class optional>
   struct ReadOptionalTexture {};
 
   template<gapi::LoadOp op>
@@ -166,6 +171,7 @@ namespace fg::dsl
                   fg::dsl::StoreOp<gapi::StoreOp:: storeOp>,\
                   fg::dsl::UClearColorValue<uint32Clear>>
 #define TARGET(name) TARGET_EX(name, Load, Store, 0)
+#define TARGET_LOAD_DONTCARE(name) TARGET_EX(name, DontCare, Store, 0)
 #define TARGET_CLEARED(name, uint32Color) TARGET_EX(name, Clear, Store, uint32Color)
 
 #define DEPTH_RW_EX(name, loadOp, storeOp)\
@@ -221,6 +227,7 @@ namespace fg::dsl
     fg::dsl::Optional,\
     fg::dsl::BufferState<gapi::BufferState::BF_STATE_ ## state>> NAME_WITH_LINE(readBuffer);
 
+#define AS(name) fg::dsl::NameAlias<#name>
 #define TEX_SIZE_RELATIVE() fg::dsl::RelativeSize
 #define TEX_SIZE(x,y,z) fg::dsl::AbsSize<uint3(x,y,z)>
 #define TEX_MIPS(n) n
@@ -264,12 +271,29 @@ namespace fg::dsl
 #define MODIFY_TEX(name, state)\
   fg::dsl::ModifyTexture<\
     fg::dsl::Name<#name>,\
+    fg::dsl::Stub,\
+    fg::dsl::TextureState<state>\
+  > NAME_WITH_LINE(modifyTex);
+
+#define MODIFY_TEX_AS(name, as, state)\
+  fg::dsl::ModifyTexture<\
+    fg::dsl::Name<#name>,\
+    as,\
     fg::dsl::TextureState<state>\
   > NAME_WITH_LINE(modifyTex);
 
 #define READ_TEX(name, state)\
   fg::dsl::ReadOptionalTexture<\
     fg::dsl::Name<#name>,\
+    fg::dsl::Stub,\
+    fg::dsl::TextureState<state>,\
+    fg::dsl::NotOptional\
+  > NAME_WITH_LINE(readTex);
+
+#define READ_TEX_AS(name, as, state)\
+  fg::dsl::ReadOptionalTexture<\
+    fg::dsl::Name<#name>,\
+    as,\
     fg::dsl::TextureState<state>,\
     fg::dsl::NotOptional\
   > NAME_WITH_LINE(readTex);
@@ -281,9 +305,26 @@ namespace fg::dsl
     fg::dsl::Optional\
   > NAME_WITH_LINE(readOptTex);
 
+#define READ_TEX_OPTIONAL_AS(name, as, state)\
+  fg::dsl::ReadOptionalTexture<\
+    fg::dsl::Name<#name>,\
+    as,\
+    fg::dsl::TextureState<state>,\
+    fg::dsl::Optional\
+  > NAME_WITH_LINE(readOptTex);
+
 #define READ_TEX_PREV_FRAME(name, state)\
   fg::dsl::ReadTimelineTexture<\
     fg::dsl::Name<#name>,\
+    fg::dsl::Stub,\
+    fg::dsl::TextureState<state>,\
+    fg::dsl::Timeline<fg::Timeline::Previous>\
+  > NAME_WITH_LINE(readPrevFrameTex);
+
+#define READ_TEX_PREV_FRAME_AS(name, as, state)\
+  fg::dsl::ReadTimelineTexture<\
+    fg::dsl::Name<#name>,\
+    as,\
     fg::dsl::TextureState<state>,\
     fg::dsl::Timeline<fg::Timeline::Previous>\
   > NAME_WITH_LINE(readPrevFrameTex);
