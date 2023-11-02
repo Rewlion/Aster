@@ -78,6 +78,8 @@ namespace gapi::vulkan
 
       vk::Format getTextureFormat(const TextureHandle handler);
 
+      auto getTextureExtent(const TextureHandle) -> uint3;
+
       vk::ImageView getImageView(const TextureHandle handler, const bool srv = false, const size_t mip = 0);
 
       auto getImageViewType(const TextureHandle) const -> vk::ImageViewType;

@@ -111,6 +111,22 @@ namespace gapi::vulkan
     return vk::Format::eUndefined;
   }
 
+  auto Device::getTextureExtent(const TextureHandle handle) -> uint3
+  {
+    TextureHandlerInternal h{handle};
+    if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
+    {
+      const vk::Extent2D vkExtent = m_Swapchain.getSurfaceExtent();
+      return uint3{vkExtent.width, vkExtent.height, 1};
+    }
+
+    if (h.as.typed.type == (uint64_t)TextureType::Allocated)
+      return getAllocatedTexture(handle).size;
+
+    ASSERT(!"UNSUPPORTED");
+    return uint3(1,1,1);
+  }
+
   vk::ImageView Device::getImageView(const TextureHandle handler, const bool srv, const size_t mip)
   {
     TextureHandlerInternal h{handler};

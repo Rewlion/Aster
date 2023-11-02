@@ -33,6 +33,7 @@ namespace gapi
   extern CmdPromise*           (*gapi_allocate_cmd_promise)();
   extern void                  (*gapi_wait_fence)(Fence* fence);
   extern void                  (*gapi_present_backbuffer_and_finalize_frame)();
+  extern uint3                 (*gapi_get_texture_extent)(const TextureHandle);
 }
 
 namespace gapi::vulkan
@@ -163,6 +164,11 @@ namespace gapi::vulkan
     frameGc.nextFrame();
   }
 
+  auto get_texture_extent(const TextureHandle h) -> uint3
+  {
+    return device->getTextureExtent(h);
+  }
+
   TextureHandle texture_2d_srv_stub;
   TextureHandle texture_3d_srv_stub;
   TextureHandle texture_cube_srv_stub;
@@ -274,6 +280,7 @@ namespace gapi::vulkan
     gapi_allocate_cmd_promise = allocate_cmd_promise;
     gapi_wait_fence = wait_fence;
     gapi_present_backbuffer_and_finalize_frame = present_backbuffer_and_finalize_frame;
+    gapi_get_texture_extent = get_texture_extent;
 
     backend.init();
     device.reset(backend.createDevice(&frameGc));

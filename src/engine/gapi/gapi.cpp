@@ -28,6 +28,7 @@ namespace gapi
   CmdPromise*              (*gapi_allocate_cmd_promise)();
   void                     (*gapi_present_backbuffer_and_finalize_frame)();
   void                     (*gapi_wait_fence)(Fence* fence);
+  uint3                    (*gapi_get_texture_extent)(const TextureHandle);
 
   void init()
   {
@@ -146,5 +147,10 @@ namespace gapi
   void wait_fence(Fence* fence)
   {
     gapi_wait_fence(fence);
+  }
+
+  auto get_texture_extent(const TextureHandle h) -> uint3
+  {
+    return gapi_get_texture_extent(h);
   }
 }

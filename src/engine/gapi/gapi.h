@@ -28,4 +28,5 @@ namespace gapi
   auto allocate_cmd_promise() -> CmdPromise*;
   void present_backbuffer_and_finalize_frame();
   void wait_fence(Fence* fence);
+  auto get_texture_extent(const TextureHandle) -> uint3;
 }
