@@ -64,19 +64,31 @@ void query_dbg_line_renderer (eastl::function<
 }
 
 
-static void line_renderer_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_dbg_line_renderer(Event*, ComponentsAccessor&)
 {
-  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+  fg::register_node("dbg_line_renderer", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    reg.orderMeBefore("ui");
+    reg.requestRenderPass()
+      .addTarget("final_target", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addTarget("motionBuf", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addRODepth("gbuffer_depth", gapi::LoadOp::Load);
 
-  line_renderer_creation_handler(*casted_event);
+
+    return [](gapi::CmdEncoder& encoder)
+    {
+      dbg_line_renderer_exec(encoder);
+    };
+  });
 }
 
-
-static EventSystemRegistration line_renderer_creation_handler_registration(
-  line_renderer_creation_handler_internal,
+static
+EventSystemRegistration mk_fg_node_dbg_line_renderer_registration(
+  mk_fg_node_dbg_line_renderer,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
-
   },
-  "line_renderer_creation_handler"
+  "mk_fg_node_dbg_line_renderer"
 );
