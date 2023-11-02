@@ -34,16 +34,17 @@ void query_decals (eastl::function<
 }
 
 
-ECS_EVENT_SYSTEM()
+//Engine::OnFrameGraphInit handler
 static
-void mk_fg_node_decals(const Engine::OnFrameGraphInit&)
+void mk_fg_node_decals(Event*, ComponentsAccessor&)
 {
   fg::register_node("decals", FG_FILE_DECL, [](fg::Registry& reg)
   { 
     auto late_opaque_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
     reg.requestRenderPass()
       .addTarget("buf0", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
-      .addDepth(late_opaque_depth);
+      .addDepth(late_opaque_depth)
+    ;
 
 
     return [late_opaque_depth](gapi::CmdEncoder& encoder)
@@ -52,3 +53,12 @@ void mk_fg_node_decals(const Engine::OnFrameGraphInit&)
     };
   });
 }
+
+static
+EventSystemRegistration mk_fg_node_decals_registration(
+  mk_fg_node_decals,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_decals"
+);

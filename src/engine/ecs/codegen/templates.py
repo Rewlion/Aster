@@ -264,7 +264,7 @@ def generate_fg_rwdepth(name, load_op, store_op):
 
 
 def generate_fg_renderpass(targets, depth_stencil):
-  res = "\n".join(["    reg.requestRenderPass()"] + targets + [depth_stencil + ";\n"])
+  res = "\n".join(["    reg.requestRenderPass()"] + targets + [depth_stencil, "    ;\n"])
 
   return res
 
@@ -279,14 +279,24 @@ def generate_fg_exec_fn_bridge(encoder_name, capture_list, args_list, exec_fn):
 
 def generate_fg_node(name, body, has_render_size_access):
   renderSize = "\n    const uint2 __renderSize__ = reg.getRenderSize();\n" if has_render_size_access else ""
+  registrationFnName = f"mk_fg_node_{name}"
   return f"""
-ECS_EVENT_SYSTEM()
+//Engine::OnFrameGraphInit handler
 static
-void mk_fg_node_{name}(const Engine::OnFrameGraphInit&)
+void {registrationFnName}(Event*, ComponentsAccessor&)
 {{
   fg::register_node("{name}", FG_FILE_DECL, [](fg::Registry& reg)
   {{ {renderSize}
 {body}
   }});
 }}
+
+static
+EventSystemRegistration {registrationFnName}_registration(
+  {registrationFnName},
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {{
+  }},
+  "{registrationFnName}"
+);
 """
