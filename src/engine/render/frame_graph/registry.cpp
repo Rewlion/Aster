@@ -203,7 +203,6 @@ namespace fg
       return {INVALID_VIRT_RES_ID};
     }
     vResFrom.consumedBy = m_CurrentExecNodeId;
-    vResFrom.modificationChain.push_back(m_CurrentExecNodeId);
 
     auto& vResTo = m_VirtResources[vResIdTo];
     vResTo.clonnedVResId = vResIdFrom;
@@ -212,9 +211,9 @@ namespace fg
     vResTo.resourceId = m_VirtResources[vResIdFrom].resourceId;
 
     auto& node = m_Nodes[m_CurrentExecNodeId];
-    node.modifies.push_back(vResIdFrom);
+    node.modifies.push_back(vResIdTo);
     node.creates.push_back(vResIdTo);
-    node.execState.textureBeginStates.push_back({vResIdFrom, state});
+    node.execState.textureBeginStates.push_back({vResIdTo, state});
 
     return {vResIdTo};
   }
