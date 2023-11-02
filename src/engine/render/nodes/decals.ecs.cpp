@@ -9,7 +9,7 @@ ECS_DESCRIBE_QUERY(query_decals, (const string& decal_name, const float3& size, 
 NODE_BEGIN(decals)
   READ_TEX(late_opaque_depth, TEX_STATE(DepthReadStencilRead))
   RP_BEGIN()
-    TARGET(buf0),
+    TARGET(gbuf0),
     DEPTH(late_opaque_depth)
   RP_END()
   EXEC(decals_exec)

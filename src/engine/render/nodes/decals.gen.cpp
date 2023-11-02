@@ -42,9 +42,8 @@ void mk_fg_node_decals(Event*, ComponentsAccessor&)
   { 
     auto late_opaque_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
     reg.requestRenderPass()
-      .addTarget("buf0", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
-      .addDepth(late_opaque_depth)
-    ;
+      .addTarget("gbuf0", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addDepth(late_opaque_depth);
 
 
     return [late_opaque_depth](gapi::CmdEncoder& encoder)
