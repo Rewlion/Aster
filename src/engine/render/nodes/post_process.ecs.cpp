@@ -1,38 +1,23 @@
-#include <engine/ecs/macros.h>
-#include <engine/events.h>
-#include <engine/render/ecs_utils.h>
-#include <engine/render/frame_graph/frame_graph.h>
+#include <engine/render/frame_graph/dsl.h>
 #include <engine/tfx/tfx.h>
 
-ECS_EVENT_SYSTEM()
+NODE_BEGIN(post_process)
+  READ_TEX(transparent_target, TEX_STATE(ShaderRead))
+  CREATE_TEX_2D(final_target, TEX_SIZE_RELATIVE(), R8G8B8A8_UNORM, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
+  RP_BEGIN()
+    TARGET(final_target)
+  RP_END()
+  EXEC(post_process_exec)
+NODE_END()
+
+NODE_EXEC()
 static
-void mk_post_process_node(const Engine::OnFrameGraphInit&)
+void post_process_exec(gapi::CmdEncoder& encoder, const gapi::TextureHandle transparent_target)
 {
-  fg::register_node("post_process", FG_FILE_DECL, [](fg::Registry& reg)
-  {
-    auto ppInput = reg.readTexture("transparent_target", gapi::TextureState::ShaderRead);
-    auto renderSize = Engine::Render::get_render_size();
+  tfx::set_extern("post_process_input", transparent_target);
+  tfx::activate_scope("PostProcessScope", encoder);
+  tfx::activate_technique("PostProcess", encoder);
 
-    gapi::TextureAllocationDescription allocDesc;
-    allocDesc.format = gapi::TextureFormat::R8G8B8A8_UNORM;
-    allocDesc.extent = int3{renderSize.x, renderSize.y, 1};
-    allocDesc.mipLevels = 1;
-    allocDesc.arrayLayers = 1;
-    allocDesc.usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV;
-
-    auto rt = reg.createTexture("final_target", allocDesc, gapi::TextureState::RenderTarget);
-
-    reg.requestRenderPass()
-       .addTarget(rt, gapi::LoadOp::Load, gapi::StoreOp::Store);
-
-    return [ppInput](gapi::CmdEncoder& encoder)
-    {
-      tfx::set_extern("post_process_input", ppInput.get());
-      tfx::activate_scope("PostProcessScope", encoder);
-      tfx::activate_technique("PostProcess", encoder);
-
-      encoder.updateResources();
-      encoder.draw(4, 1, 0, 0);
-    };
-  });
+  encoder.updateResources();
+  encoder.draw(4, 1, 0, 0);
 }

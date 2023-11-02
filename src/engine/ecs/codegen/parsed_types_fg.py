@@ -435,7 +435,7 @@ class RenderPassAction(TemplateParamExtractor):
   
   def generate(self):
     targets = [t.generate() for t in self.targets]
-    depthStencil = self.depthStencil.generate()
+    depthStencil = self.depthStencil.generate() if self.depthStencil is not None else ""
     return templates.generate_fg_renderpass(targets, depthStencil)
 
 

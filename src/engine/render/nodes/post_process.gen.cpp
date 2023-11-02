@@ -8,19 +8,47 @@
 
 using namespace ecs;
 
-static void mk_post_process_node_internal(Event* event, ComponentsAccessor& accessor)
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_post_process(Event*, ComponentsAccessor&)
 {
-  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+  fg::register_node("post_process", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    const uint2 __renderSize__ = reg.getRenderSize();
 
-  mk_post_process_node(*casted_event);
+    auto transparent_target = reg.readTexture("transparent_target", gapi::TextureState::ShaderRead, false);
+
+    auto final_target = reg.createTexture("final_target",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R8G8B8A8_UNORM,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::RenderTarget,
+      false
+    );
+
+    reg.requestRenderPass()
+      .addTarget(final_target, gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+
+    ;
+
+
+    return [transparent_target](gapi::CmdEncoder& encoder)
+    {
+      post_process_exec(encoder, transparent_target.get());
+    };
+  });
 }
 
-
-static EventSystemRegistration mk_post_process_node_registration(
-  mk_post_process_node_internal,
+static
+EventSystemRegistration mk_fg_node_post_process_registration(
+  mk_fg_node_post_process,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
-
   },
-  "mk_post_process_node"
+  "mk_fg_node_post_process"
 );

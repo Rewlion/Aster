@@ -221,6 +221,7 @@ namespace fg::dsl
     fg::dsl::Optional,\
     fg::dsl::BufferState<gapi::BufferState::BF_STATE_ ## state>> NAME_WITH_LINE(readBuffer);
 
+#define TEX_SIZE_RELATIVE() fg::dsl::RelativeSize
 #define TEX_SIZE(x,y,z) fg::dsl::AbsSize<uint3(x,y,z)>
 #define TEX_MIPS(n) n
 #define TEX_ARRAY_LAYERS(n) n
@@ -245,14 +246,14 @@ namespace fg::dsl
     persistent_storage\
   > NAME_WITH_LINE(createTex);
 
-#define CREATE_TEX_2D_EX(name, x, y, format, mip_levels, usage, state, persisted)\
-  CREATE_TEX_EX(name, TEX_SIZE(x,y,1), format, TEX_MIPS(mip_levels), TEX_ARRAY_LAYERS(1), TEX_SAMPLES(1), usage, state, persisted())
+#define CREATE_TEX_2D_EX(name, size, format, mip_levels, usage, state, persisted)\
+  CREATE_TEX_EX(name, size, format, TEX_MIPS(mip_levels), TEX_ARRAY_LAYERS(1), TEX_SAMPLES(1), usage, state, persisted())
 
-#define CREATE_TEX_2D(name, x, y, format, usage, state)\
-  CREATE_TEX_2D_EX(name, x, y, format, TEX_MIPS(1), usage, state, TEX_NOT_PERSISTENT)
+#define CREATE_TEX_2D(name, size, format, usage, state)\
+  CREATE_TEX_2D_EX(name, size, format, TEX_MIPS(1), usage, state, TEX_NOT_PERSISTENT)
 
-#define CREATE_TEX_2D_PERSISTENT(name, x, y, format, usage, state)\
-  CREATE_TEX_2D_EX(name, x, y, format, TEX_MIPS(1), usage, state, TEX_PERSISTENT)
+#define CREATE_TEX_2D_PERSISTENT(name, size, format, usage, state)\
+  CREATE_TEX_2D_EX(name, size, format, TEX_MIPS(1), usage, state, TEX_PERSISTENT)
 
 #define IMPORT_TEX(name, import_fn)\
   fg::dsl::ImportTextureProducer<\
