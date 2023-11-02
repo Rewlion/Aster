@@ -8,73 +8,198 @@
 
 using namespace ecs;
 
-static void mk_gbuffer_main_pass_node_internal(Event* event, ComponentsAccessor& accessor)
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_gbuffer_main_pass(Event*, ComponentsAccessor&)
 {
-  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+  fg::register_node("gbuffer_main_pass", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    const uint2 __renderSize__ = reg.getRenderSize();
 
-  mk_gbuffer_main_pass_node(*casted_event);
+    reg.orderMeAfter("frame_preparing");
+
+    auto opaque_depth = reg.createTexture("opaque_depth",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::D24_UNORM_S8_UINT,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_DEPTH_STENCIL | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::DepthWriteStencilWrite,
+      false
+    );
+
+
+    auto gbuf0 = reg.createTexture("gbuf0",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R8G8B8A8_UNORM,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::RenderTarget,
+      false
+    );
+
+
+    auto gbuf1 = reg.createTexture("gbuf1",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R16G16B16A16_UNORM,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::RenderTarget,
+      false
+    );
+
+
+    auto gbuf2 = reg.createTexture("gbuf2",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R32G32B32A32_S,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::RenderTarget,
+      false
+    );
+
+
+    auto motionBuf = reg.createTexture("motionBuf",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R32G32B32A32_S,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::RenderTarget,
+      false
+    );
+
+    reg.requestRenderPass()
+      .addTarget(gbuf0, gapi::LoadOp::Clear, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addTarget(gbuf1, gapi::LoadOp::Clear, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addTarget(gbuf2, gapi::LoadOp::Clear, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addTarget(motionBuf, gapi::LoadOp::Clear, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addRWDepth(opaque_depth, gapi::LoadOp::Clear, gapi::StoreOp::Store);
+
+
+    return [](gapi::CmdEncoder& encoder)
+    {
+      gbuffer_main_pass_exec(encoder);
+    };
+  });
 }
 
-
-static EventSystemRegistration mk_gbuffer_main_pass_node_registration(
-  mk_gbuffer_main_pass_node_internal,
+static
+EventSystemRegistration mk_fg_node_gbuffer_main_pass_registration(
+  mk_fg_node_gbuffer_main_pass,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
-
   },
-  "mk_gbuffer_main_pass_node"
+  "mk_fg_node_gbuffer_main_pass"
 );
 
 
-static void mk_late_opaque_sync_node_internal(Event* event, ComponentsAccessor& accessor)
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_late_opaque_sync(Event*, ComponentsAccessor&)
 {
-  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
-
-  mk_late_opaque_sync_node(*casted_event);
+  fg::register_node("late_opaque_sync", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto late_opaque_depth = reg.renameTexture("opaque_depth", "late_opaque_depth", gapi::TextureState::DepthReadStencilRead);
+    return [](gapi::CmdEncoder&){};
+  });
 }
 
-
-static EventSystemRegistration mk_late_opaque_sync_node_registration(
-  mk_late_opaque_sync_node_internal,
+static
+EventSystemRegistration mk_fg_node_late_opaque_sync_registration(
+  mk_fg_node_late_opaque_sync,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
-
   },
-  "mk_late_opaque_sync_node"
+  "mk_fg_node_late_opaque_sync"
 );
 
 
-static void mk_gbuffer_resolve_node_internal(Event* event, ComponentsAccessor& accessor)
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
 {
-  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+  fg::register_node("gbuffer_resolve", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    const uint2 __renderSize__ = reg.getRenderSize();
 
-  mk_gbuffer_resolve_node(*casted_event);
+
+    auto resolve_target = reg.createTexture("resolve_target",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R32G32B32A32_S,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::RenderTarget,
+      false
+    );
+
+    auto gbuf0 = reg.readTexture("gbuf0", gapi::TextureState::ShaderRead, false);
+    auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
+    auto gbuf2 = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead, false);
+    auto gbuffer_depth = reg.renameTexture("late_opaque_depth", "gbuffer_depth", gapi::TextureState::DepthReadStencilRead);
+    auto sph_buf = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_SRV, false);
+    auto atm_envi_specular = reg.readTexture("atm_envi_specular", gapi::TextureState::ShaderRead, true);
+    auto atm_envi_brdf = reg.readTexture("atm_envi_brdf", gapi::TextureState::ShaderRead, true);
+    reg.requestRenderPass()
+      .addTarget(resolve_target, gapi::LoadOp::Clear, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+    ;
+
+
+    return [gbuf0,gbuf1,gbuf2,gbuffer_depth,sph_buf,atm_envi_specular,atm_envi_brdf](gapi::CmdEncoder& encoder)
+    {
+      gbuffer_resolve_exec(encoder, gbuf0.get(), gbuf1.get(), gbuf2.get(), gbuffer_depth.get(), sph_buf.get(), atm_envi_specular.get(), atm_envi_brdf.get());
+    };
+  });
 }
 
-
-static EventSystemRegistration mk_gbuffer_resolve_node_registration(
-  mk_gbuffer_resolve_node_internal,
+static
+EventSystemRegistration mk_fg_node_gbuffer_resolve_registration(
+  mk_fg_node_gbuffer_resolve,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
-
   },
-  "mk_gbuffer_resolve_node"
+  "mk_fg_node_gbuffer_resolve"
 );
 
 
-static void mk_transparent_sync_node_internal(Event* event, ComponentsAccessor& accessor)
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_transparent_sync(Event*, ComponentsAccessor&)
 {
-  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
-
-  mk_transparent_sync_node(*casted_event);
+  fg::register_node("transparent_sync", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto transparent_target = reg.renameTexture("resolve_target", "transparent_target", gapi::TextureState::RenderTarget);
+    return [](gapi::CmdEncoder&){};
+  });
 }
 
-
-static EventSystemRegistration mk_transparent_sync_node_registration(
-  mk_transparent_sync_node_internal,
+static
+EventSystemRegistration mk_fg_node_transparent_sync_registration(
+  mk_fg_node_transparent_sync,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
-
   },
-  "mk_transparent_sync_node"
+  "mk_fg_node_transparent_sync"
 );
