@@ -114,21 +114,344 @@ static EventSystemRegistration atmosphere_creation_handler_registration(
 );
 
 
-static void atmosphere_render_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_atm_res_import(Event*, ComponentsAccessor&)
 {
-  Engine::OnFrameGraphInit* casted_event = reinterpret_cast<Engine::OnFrameGraphInit*>(event);
+  fg::register_node("atm_res_import", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    reg.orderMeAfter("frame_preparing");
+    auto camera_data = reg.readBlob<Engine::CameraData>("camera_data");
 
-  atmosphere_render_creation_handler(*casted_event);
+    auto atm_tr_lut = reg.createTexture("atm_tr_lut",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+        .extent =          uint3(int2(256, 64), 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::Undefined,
+      fg::PERSISTENT
+    );
+
+
+    auto atm_ms_lut = reg.createTexture("atm_ms_lut",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+        .extent =          uint3(int2(32, 32), 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::Undefined,
+      fg::PERSISTENT
+    );
+
+
+    auto atm_sky_lut = reg.createTexture("atm_sky_lut",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+        .extent =          uint3(int2(256, 128), 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::Undefined,
+      fg::PERSISTENT
+    );
+
+
+    auto atm_ap_lut = reg.createTexture("atm_ap_lut",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+        .extent =          uint3(int3(32, 32, 32).x, int3(32, 32, 32).y, int3(32, 32, 32).z),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_UAV)
+      },
+      gapi::TextureState::Undefined,
+      fg::PERSISTENT
+    );
+
+
+    auto atm_envi_specular = reg.createTexture("atm_envi_specular",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+        .extent =          uint3(int2(512, 256), 1),
+        .mipLevels =       get_envi_specular_mips(),
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::Undefined,
+      fg::PERSISTENT
+    );
+
+
+    auto atm_envi_brdf = reg.createTexture("atm_envi_brdf",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+        .extent =          uint3(int2(256, 256), 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::Undefined,
+      fg::PERSISTENT
+    );
+
+    auto atm_envi_mips = reg.createBlob<int>("atm_envi_mips");
+
+    return [atm_envi_mips,camera_data](gapi::CmdEncoder& encoder)
+    {
+      atm_res_import_exec(encoder, atm_envi_mips.get(), camera_data.get());
+    };
+  });
 }
 
-
-static EventSystemRegistration atmosphere_render_creation_handler_registration(
-  atmosphere_render_creation_handler_internal,
+static
+EventSystemRegistration mk_fg_node_atm_res_import_registration(
+  mk_fg_node_atm_res_import,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
-
   },
-  "atmosphere_render_creation_handler"
+  "mk_fg_node_atm_res_import"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_atm_ap_lut_render(Event*, ComponentsAccessor&)
+{
+  fg::register_node("atm_ap_lut_render", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_ms_lut = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_ap_lut = reg.modifyTexture("atm_ap_lut", gapi::TextureState::ShaderReadWrite);
+
+    return [atm_tr_lut,atm_ms_lut,atm_ap_lut](gapi::CmdEncoder& encoder)
+    {
+      atm_ap_lut_render_exec(encoder, atm_tr_lut.get(), atm_ms_lut.get(), atm_ap_lut.get());
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_atm_ap_lut_render_registration(
+  mk_fg_node_atm_ap_lut_render,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_atm_ap_lut_render"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_atm_tr_lut_render(Event*, ComponentsAccessor&)
+{
+  fg::register_node("atm_tr_lut_render", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    reg.orderMeAfter("frame_preparing");
+    reg.requestRenderPass()
+      .addTarget("atm_tr_lut", gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+    ;
+
+
+    return [](gapi::CmdEncoder& encoder)
+    {
+      atm_tr_lut_render_exec(encoder);
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_atm_tr_lut_render_registration(
+  mk_fg_node_atm_tr_lut_render,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_atm_tr_lut_render"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_atm_ms_lut_render(Event*, ComponentsAccessor&)
+{
+  fg::register_node("atm_ms_lut_render", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
+    reg.requestRenderPass()
+      .addTarget("atm_ms_lut", gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+    ;
+
+
+    return [atm_tr_lut](gapi::CmdEncoder& encoder)
+    {
+      atm_ms_lut_render_exec(encoder, atm_tr_lut.get());
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_atm_ms_lut_render_registration(
+  mk_fg_node_atm_ms_lut_render,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_atm_ms_lut_render"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_atm_sky_lut_render(Event*, ComponentsAccessor&)
+{
+  fg::register_node("atm_sky_lut_render", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_ms_lut = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead, false);
+    reg.requestRenderPass()
+      .addTarget("atm_sky_lut", gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+    ;
+
+
+    return [atm_tr_lut,atm_ms_lut](gapi::CmdEncoder& encoder)
+    {
+      atm_sky_lut_render_exec(encoder, atm_tr_lut.get(), atm_ms_lut.get());
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_atm_sky_lut_render_registration(
+  mk_fg_node_atm_sky_lut_render,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_atm_sky_lut_render"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_atm_sph_render(Event*, ComponentsAccessor&)
+{
+  fg::register_node("atm_sph_render", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto sph_buf = reg.modifyBuffer("sph_buf", gapi::BufferState::BF_STATE_UAV_RW);
+    auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_sky_lut = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
+
+    return [sph_buf,atm_tr_lut,atm_sky_lut](gapi::CmdEncoder& encoder)
+    {
+      atm_sph_render_exec(encoder, sph_buf.get(), atm_tr_lut.get(), atm_sky_lut.get());
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_atm_sph_render_registration(
+  mk_fg_node_atm_sph_render,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_atm_sph_render"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_atm_sky_apply(Event*, ComponentsAccessor&)
+{
+  fg::register_node("atm_sky_apply", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto atm_ap_lut = reg.readTexture("atm_ap_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_sky_lut = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
+    auto gbuffer_depth = reg.readTexture("gbuffer_depth", gapi::TextureState::DepthReadStencilRead, false);
+    reg.requestRenderPass()
+      .addTarget("resolve_target", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+    ;
+
+
+    return [atm_ap_lut,atm_sky_lut,atm_tr_lut,gbuffer_depth](gapi::CmdEncoder& encoder)
+    {
+      atm_sky_apply_exec(encoder, atm_ap_lut.get(), atm_sky_lut.get(), atm_tr_lut.get(), gbuffer_depth.get());
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_atm_sky_apply_registration(
+  mk_fg_node_atm_sky_apply,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_atm_sky_apply"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_atm_envi_specular(Event*, ComponentsAccessor&)
+{
+  fg::register_node("atm_envi_specular", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_sky_lut = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_envi_specular = reg.modifyTexture("atm_envi_specular", gapi::TextureState::RenderTarget);
+    auto atm_envi_mips = reg.readBlob<int>("atm_envi_mips");
+
+    return [atm_tr_lut,atm_sky_lut,atm_envi_specular,atm_envi_mips](gapi::CmdEncoder& encoder)
+    {
+      atm_envi_specular_exec(encoder, atm_tr_lut.get(), atm_sky_lut.get(), atm_envi_specular.get(), atm_envi_mips.get());
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_atm_envi_specular_registration(
+  mk_fg_node_atm_envi_specular,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_atm_envi_specular"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_atm_envi_brdf(Event*, ComponentsAccessor&)
+{
+  fg::register_node("atm_envi_brdf", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    reg.requestRenderPass()
+      .addTarget("atm_envi_brdf", gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+    ;
+
+
+    return [](gapi::CmdEncoder& encoder)
+    {
+      atm_envi_brdf_exec(encoder);
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_atm_envi_brdf_registration(
+  mk_fg_node_atm_envi_brdf,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_atm_envi_brdf"
 );
 
 

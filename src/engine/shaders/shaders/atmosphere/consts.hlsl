@@ -6,5 +6,7 @@
 #define SKY_LUT_SIZE int2(256,128)
 #define MS_LUT_SIZE int2(32,32)
 #define AP_LUT_SIZE int3(32,32,32)
+#define ENVI_SPECULAR_LUT_SIZE int2(512, 256)
+#define ENVI_BRDF_SIZE int2(256, 256)
 
 #endif

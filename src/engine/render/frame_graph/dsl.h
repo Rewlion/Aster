@@ -230,6 +230,7 @@ namespace fg::dsl
 #define AS(name) fg::dsl::NameAlias<#name>
 #define TEX_SIZE_RELATIVE() fg::dsl::RelativeSize
 #define TEX_SIZE(x,y,z) fg::dsl::AbsSize<uint3(x,y,z)>
+#define TEX_SIZE2(xy) fg::dsl::AbsSize<uint3(xy,1)>
 #define TEX_MIPS(n) n
 #define TEX_ARRAY_LAYERS(n) n
 #define TEX_SAMPLES(n) gapi::TextureSamples::s ## n

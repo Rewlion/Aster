@@ -1,14 +1,11 @@
 #include <engine/console/cmd.h>
 #include <engine/ecs/ecs.h>
-#include <engine/ecs/ecs_events.h>
-#include <engine/ecs/macros.h>
-#include <engine/events.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gapi/resource_wrappers.h>
 #include <engine/log.h>
 #include <engine/math.h>
 #include <engine/render/ecs_utils.h>
-#include <engine/render/frame_graph/frame_graph.h>
+#include <engine/render/frame_graph/dsl.h>
 #include <engine/render/imgui/imgui.h>
 #include <engine/tfx/tfx.h>
 #include <engine/work_cycle/camera.h>
@@ -37,272 +34,261 @@ static void atmosphere_creation_handler(const ecs::OnEntityCreated& evt, float a
   ecs::get_registry().createEntity("AtmosphereRender", std::move(init));
 }
 
-gapi::TextureState get_lut_init_state(const gapi::TextureState init_state)
+constexpr
+auto get_envi_specular_mips() -> uint
 {
-  AtmosphereLutState lutState;
-  query_atm_lut_state([&](const int& atm_lut_state){
-    lutState = (AtmosphereLutState)atm_lut_state;
-  });
-
-  return lutState == AtmosphereLutState::Preparing ?
-          init_state :
-          gapi::TextureState::ShaderRead;
+  return std::min(std::bit_width((uint)ENVI_SPECULAR_LUT_SIZE.x), 5u);
 }
 
-ECS_EVENT_SYSTEM()
+NODE_BEGIN(atm_res_import)
+  ORDER_ME_AFTER(frame_preparing)
+  READ_BLOB(camera_data, Engine::CameraData)
+  
+  CREATE_TEX_2D_PERSISTENT(atm_tr_lut, TEX_SIZE2(TR_LUT_SIZE),
+                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(Undefined))
+  
+  CREATE_TEX_2D_PERSISTENT(atm_ms_lut, TEX_SIZE2(MS_LUT_SIZE),
+                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(Undefined))
+  
+  CREATE_TEX_2D_PERSISTENT(atm_sky_lut, TEX_SIZE2(SKY_LUT_SIZE),
+                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(Undefined))
+
+  CREATE_TEX_2D_PERSISTENT(atm_ap_lut, TEX_SIZE(AP_LUT_SIZE.x, AP_LUT_SIZE.y, AP_LUT_SIZE.z),
+                           R16G16B16A16_SFLOAT, TEX_USAGE2(SRV,UAV), TEX_STATE(Undefined))
+
+  CREATE_TEX_2D_EX(atm_envi_specular, TEX_SIZE2(ENVI_SPECULAR_LUT_SIZE),
+                  R16G16B16A16_SFLOAT, TEX_MIPS(get_envi_specular_mips()), TEX_USAGE2(RT,SRV), TEX_STATE(Undefined),
+                  TEX_PERSISTENT)
+
+  CREATE_TEX_2D_PERSISTENT(atm_envi_brdf, TEX_SIZE2(ENVI_BRDF_SIZE),
+                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(Undefined))
+
+  CREATE_BLOB(atm_envi_mips, int)
+
+  EXEC(atm_res_import_exec)
+NODE_END()
+
+NODE_EXEC()
 static
-void atmosphere_render_creation_handler(
-  Engine::OnFrameGraphInit&)
+void atm_res_import_exec(gapi::CmdEncoder& encoder,
+                         int& atm_envi_mips,
+                         const Engine::CameraData& camera_data)
 {
-  fg::register_node("atm_res_import", FG_FILE_DECL, [](fg::Registry& reg)
-  {
-    reg.orderMeAfter("frame_preparing");
+  atm_envi_mips = get_envi_specular_mips();
 
-    auto cameraData = reg.readBlob<Engine::CameraData>("camera_data");
-
-    reg.createTexture("atm_tr_lut",
-      gapi::TextureAllocationDescription{
-        .format = gapi::TextureFormat::R16G16B16A16_SFLOAT,
-        .extent = uint3{TR_LUT_SIZE, 1},
-        .usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV,
-        .name = "trLUT"
-      },
-      gapi::TextureState::Undefined, fg::PERSISTENT);
-
-    reg.createTexture("atm_ms_lut",
-      gapi::TextureAllocationDescription{
-        .format = gapi::TextureFormat::R16G16B16A16_SFLOAT,
-        .extent = uint3{MS_LUT_SIZE, 1},
-        .usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV,
-        .name = "msLUT"
-      },
-      gapi::TextureState::Undefined, fg::PERSISTENT);
-
-    reg.createTexture("atm_sky_lut",
-      gapi::TextureAllocationDescription{
-        .format = gapi::TextureFormat::R16G16B16A16_SFLOAT,
-        .extent = uint3{SKY_LUT_SIZE, 1},
-        .usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV,
-        .name = "skyLUT"
-      },
-      gapi::TextureState::Undefined, fg::PERSISTENT);
-
-    reg.createTexture("atm_ap_lut",
-      gapi::TextureAllocationDescription{
-        .format = gapi::TextureFormat::R16G16B16A16_SFLOAT,
-        .extent = uint3{AP_LUT_SIZE},
-        .usage = gapi::TEX_USAGE_SRV | gapi::TEX_USAGE_UAV,
-        .name = "apLUT"
-      },
-      gapi::TextureState::Undefined, fg::PERSISTENT);
-
-    const int2 enviSpecularSize = int2(512,256);
-    const uint32_t enviMipsVal = std::min(std::bit_width((uint)enviSpecularSize.x), 5u);
-    reg.createTexture("atm_envi_specular",
-      gapi::TextureAllocationDescription{
-        .format = gapi::TextureFormat::R16G16B16A16_SFLOAT,
-        .extent = uint3{enviSpecularSize, 1},
-        .mipLevels = enviMipsVal,
-        .usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV,
-        .name = "enviSpecularLUT"
-      },
-      gapi::TextureState::Undefined, fg::PERSISTENT);
-
-    reg.createTexture("atm_envi_brdf",
-      gapi::TextureAllocationDescription{
-        .format = gapi::TextureFormat::R16G16B16A16_SFLOAT,
-        .extent = uint3{256, 256, 1},
-        .usage = gapi::TEX_USAGE_RT | gapi::TEX_USAGE_SRV,
-        .name = "enviBRDF"
-      },
-      gapi::TextureState::Undefined, fg::PERSISTENT);
-
-    auto enviMips = reg.createBlob<int>("atm_envi_mips");
-
-    return [cameraData, enviMips, enviMipsVal](gapi::CmdEncoder& encoder)
-    {
-      enviMips.get() = enviMipsVal;
-
-      query_atm_params([&](float atm_radius_bot_km, float atm_radius_top_km){
-      query_sun_params([&](float sun_azimuth, float sun_altitude){
-        float4 sunAzimuth_sunAltitude_rTopMM_rBotMM{
-          math::radians(sun_azimuth),
-          math::radians(sun_altitude),
-          atm_radius_top_km / 1000.0,
-          atm_radius_bot_km / 1000.0
-        };
-
-        float cameraH = sunAzimuth_sunAltitude_rTopMM_rBotMM.w + cameraData->pos.y;
-        cameraH = (cameraH < 10.0 ? 10.0 : cameraH) / 1e6;
-
-        tfx::set_extern("atmPosMM", float3(0.0f, sunAzimuth_sunAltitude_rTopMM_rBotMM.w + cameraH, 0.0f));
-        tfx::set_extern("maxAerialDist_mm", 0.032f);
-        tfx::set_channel("sunAzimuth_sunAltitude_rTopMM_rBotMM", sunAzimuth_sunAltitude_rTopMM_rBotMM);
-        tfx::activate_scope("AtmosphereScope", encoder);
-      });});
+  query_atm_params([&](float atm_radius_bot_km, float atm_radius_top_km){
+  query_sun_params([&](float sun_azimuth, float sun_altitude){
+    float4 sunAzimuth_sunAltitude_rTopMM_rBotMM{
+      math::radians(sun_azimuth),
+      math::radians(sun_altitude),
+      atm_radius_top_km / 1000.0,
+      atm_radius_bot_km / 1000.0
     };
-  });
 
-  fg::register_node("atm_ap_lut_render", FG_FILE_DECL, [](fg::Registry& reg)
-  {
-    auto trLUT = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
-    auto msLUT = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead);
-    auto apLUT = reg.modifyTexture("atm_ap_lut", gapi::TextureState::ShaderReadWrite);
-    return [trLUT, msLUT, apLUT](gapi::CmdEncoder& encoder)
-    {
-      tfx::set_extern("trLUT", trLUT.get());
-      tfx::set_extern("msLUT", msLUT.get());
-      tfx::set_extern("apLUT", apLUT.get());
-      tfx::activate_technique("AerialPerspective", encoder);
+    float cameraH = sunAzimuth_sunAltitude_rTopMM_rBotMM.w + camera_data.pos.y;
+    cameraH = (cameraH < 10.0 ? 10.0 : cameraH) / 1e6;
 
-      encoder.updateResources();
-      encoder.dispatch(1,1,32);
-    };
-  });
-
-  fg::register_node("atm_tr_lut_render", FG_FILE_DECL, [](fg::Registry& reg)
-  {
-    reg.orderMeAfter("frame_preparing");
-
-    reg.requestRenderPass()
-       .addTarget("atm_tr_lut", gapi::LoadOp::DontCare);
-
-    return [](gapi::CmdEncoder& encoder)
-    {
-      tfx::activate_technique("TransmittanceLUT", encoder);
-
-      encoder.updateResources();
-      encoder.draw(4, 1, 0, 0);
-    };
-  });
-
-  fg::register_node("atm_ms_lut_render", FG_FILE_DECL, [](fg::Registry& reg)
-  {
-    auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
-
-    reg.requestRenderPass()
-       .addTarget("atm_ms_lut", gapi::LoadOp::DontCare);
-
-    return [trLUTtex](gapi::CmdEncoder& encoder)
-    {
-      tfx::set_extern("trLUT", trLUTtex.get());
-      tfx::activate_technique("MultipleScatteringLUT", encoder);
-
-      encoder.updateResources();
-      encoder.draw(4, 1, 0, 0);
-    };
-  });
-
-  fg::register_node("atm_sky_lut_render", FG_FILE_DECL, [](fg::Registry& reg)
-  {
-    auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
-    auto msLUTtex = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead);
-
-    reg.requestRenderPass()
-       .addTarget("atm_sky_lut", gapi::LoadOp::DontCare);
-
-    return [trLUTtex, msLUTtex](gapi::CmdEncoder& encoder)
-    {
-      tfx::set_extern("trLUT", trLUTtex.get());
-      tfx::set_extern("msLUT", msLUTtex.get());
-      tfx::activate_technique("SkyLUT", encoder);
-
-      encoder.updateResources();
-      encoder.draw(4, 1, 0, 0);
-    };
-  });
-
-  fg::register_node("atm_sph_render", FG_FILE_DECL, [](fg::Registry& reg)
-  {
-    auto paramsBuf = reg.modifyBuffer("sph_buf", gapi::BufferState::BF_STATE_UAV_RW);
-    auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
-    auto skyLUTtex = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead);
-
-    return [paramsBuf, trLUTtex, skyLUTtex](gapi::CmdEncoder& encoder)
-    {
-      tfx::set_extern("trLUT", trLUTtex.get());
-      tfx::set_extern("skyLUT", skyLUTtex.get());
-      tfx::set_extern("atmParamsBuffer", paramsBuf.get());
-      tfx::activate_technique("AtmSphericalHarmonics", encoder);
-
-      encoder.updateResources();
-      encoder.dispatch(1,1,1);
-    };
-  });
-
-  fg::register_node("atm_sky_apply", FG_FILE_DECL, [](fg::Registry& reg)
-  {
-    reg.requestRenderPass()
-      .addTarget("resolve_target");
-
-    auto apLUTtex = reg.readTexture("atm_ap_lut", gapi::TextureState::ShaderRead);
-    auto skyLUTtex = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead);
-    auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
-    auto gbufferDepth = reg.readTexture("gbuffer_depth", gapi::TextureState::DepthReadStencilRead);
-
-    return [apLUTtex, skyLUTtex, trLUTtex, gbufferDepth](gapi::CmdEncoder& encoder)
-    {
-       tfx::set_extern("apLUT", apLUTtex.get());
-       tfx::set_extern("skyLUT", skyLUTtex.get());
-       tfx::set_extern("trLUT", trLUTtex.get());
-       tfx::set_extern("gbufferDepth", gbufferDepth.get());
-
-       tfx::activate_technique("SkyApply", encoder);
-       encoder.updateResources();
-       encoder.draw(4, 1, 0, 0);
-    };
-  });
-
-  fg::register_node("atm_envi_specular", FG_FILE_DECL, [](fg::Registry& reg){
-    auto trLUTtex = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead);
-    auto skyLUTtex = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead);
-    auto enviSpecularTex = reg.modifyTexture("atm_envi_specular", gapi::TextureState::RenderTarget);
-    auto enviMips = reg.readBlob<int>("atm_envi_mips");
-
-    return [trLUTtex, skyLUTtex, enviSpecularTex, enviMips](gapi::CmdEncoder& encoder)
-    {
-      tfx::set_extern("trLUT", trLUTtex.get());
-      tfx::set_extern("skyLUT", skyLUTtex.get());
-      tfx::set_extern("enviMips", (float)enviMips.get());
-
-      int mips = enviMips.get();
-      for (int i = 0; i < mips; ++i)
-      {
-        gapi::RenderTargets mrt {gapi::RenderPassAttachment{
-          .texture = enviSpecularTex.get(),
-          .mipLevel = (uint32_t)i,
-          .loadOp = gapi::LoadOp::DontCare
-        }};
-      
-        encoder.beginRenderpass(mrt, {});
-
-        float roughness = 1.0f / (float)mips * i;
-        tfx::set_extern("enviRoughness", roughness);
-        tfx::set_extern("renderSize", encoder.getRenderSize());
-
-        tfx::activate_technique("EnviSpecular", encoder);
-        encoder.updateResources();
-        encoder.draw(4, 1, 0, 0);
-
-        encoder.endRenderpass();
-      }
-    };
-  });
-
-  fg::register_node("atm_envi_brdf", FG_FILE_DECL, [](fg::Registry& reg){
-    reg.requestRenderPass()
-       .addTarget("atm_envi_brdf", gapi::LoadOp::DontCare);
-
-    return [](gapi::CmdEncoder& encoder)
-    {
-      tfx::set_extern("renderSize", encoder.getRenderSize());
-      tfx::activate_technique("EnviBRDF", encoder);
-      encoder.updateResources();
-      encoder.draw(4, 1, 0, 0);
-    };
-  });
+    tfx::set_extern("atmPosMM", float3(0.0f, sunAzimuth_sunAltitude_rTopMM_rBotMM.w + cameraH, 0.0f));
+    tfx::set_extern("maxAerialDist_mm", 0.032f);
+    tfx::set_channel("sunAzimuth_sunAltitude_rTopMM_rBotMM", sunAzimuth_sunAltitude_rTopMM_rBotMM);
+    tfx::activate_scope("AtmosphereScope", encoder);
+  });});
 }
 
+NODE_BEGIN(atm_ap_lut_render)
+  READ_TEX(atm_tr_lut, TEX_STATE(ShaderRead))
+  READ_TEX(atm_ms_lut, TEX_STATE(ShaderRead))
+  MODIFY_TEX(atm_ap_lut, TEX_STATE(ShaderReadWrite))
+  EXEC(atm_ap_lut_render_exec)
+NODE_END()
+
+NODE_EXEC()
+static
+void atm_ap_lut_render_exec(gapi::CmdEncoder& encoder,
+                            const gapi::TextureHandle atm_tr_lut,
+                            const gapi::TextureHandle atm_ms_lut,
+                            const gapi::TextureHandle atm_ap_lut)
+{
+  tfx::set_extern("trLUT", atm_tr_lut);
+  tfx::set_extern("msLUT", atm_ms_lut);
+  tfx::set_extern("apLUT", atm_ap_lut);
+  tfx::activate_technique("AerialPerspective", encoder);
+
+  encoder.updateResources();
+  encoder.dispatch(1,1,32);
+}
+
+NODE_BEGIN(atm_tr_lut_render)
+  ORDER_ME_AFTER(frame_preparing)
+  RP_BEGIN()
+    TARGET_LOAD_DONTCARE(atm_tr_lut)
+  RP_END()
+  EXEC(atm_tr_lut_render_exec)
+NODE_END()
+
+NODE_EXEC()
+static
+void atm_tr_lut_render_exec(gapi::CmdEncoder& encoder)
+{
+  tfx::activate_technique("TransmittanceLUT", encoder);
+
+  encoder.updateResources();
+  encoder.draw(4, 1, 0, 0);
+}
+
+NODE_BEGIN(atm_ms_lut_render)
+  READ_TEX(atm_tr_lut, TEX_STATE(ShaderRead))
+  RP_BEGIN()
+    TARGET_LOAD_DONTCARE(atm_ms_lut)
+  RP_END()
+  EXEC(atm_ms_lut_render_exec)
+NODE_END()
+
+NODE_EXEC()
+static
+void atm_ms_lut_render_exec(gapi::CmdEncoder& encoder,
+                            const gapi::TextureHandle atm_tr_lut)
+{
+  tfx::set_extern("trLUT", atm_tr_lut);
+  tfx::activate_technique("MultipleScatteringLUT", encoder);
+
+  encoder.updateResources();
+  encoder.draw(4, 1, 0, 0);
+}
+
+NODE_BEGIN(atm_sky_lut_render)
+  READ_TEX(atm_tr_lut, TEX_STATE(ShaderRead))
+  READ_TEX(atm_ms_lut, TEX_STATE(ShaderRead))
+  RP_BEGIN()
+    TARGET_LOAD_DONTCARE(atm_sky_lut)
+  RP_END()
+  EXEC(atm_sky_lut_render_exec)
+NODE_END()
+
+NODE_EXEC()
+static
+void atm_sky_lut_render_exec(gapi::CmdEncoder& encoder,
+                             const gapi::TextureHandle atm_tr_lut,
+                             const gapi::TextureHandle atm_ms_lut)
+{
+  tfx::set_extern("trLUT", atm_tr_lut);
+  tfx::set_extern("msLUT", atm_ms_lut);
+  tfx::activate_technique("SkyLUT", encoder);
+
+  encoder.updateResources();
+  encoder.draw(4, 1, 0, 0);
+}
+
+NODE_BEGIN(atm_sph_render)
+  MODIFY_BUF(sph_buf, BUF_STATE(UAV_RW))
+  READ_TEX(atm_tr_lut, TEX_STATE(ShaderRead))
+  READ_TEX(atm_sky_lut, TEX_STATE(ShaderRead))
+  EXEC(atm_sph_render_exec)
+NODE_END()
+
+NODE_EXEC()
+static
+void atm_sph_render_exec(gapi::CmdEncoder& encoder,
+                         const gapi::BufferHandler sph_buf,
+                         const gapi::TextureHandle atm_tr_lut,
+                         const gapi::TextureHandle atm_sky_lut)
+{
+  tfx::set_extern("trLUT", atm_tr_lut);
+  tfx::set_extern("skyLUT", atm_sky_lut);
+  tfx::set_extern("atmParamsBuffer", sph_buf);
+  tfx::activate_technique("AtmSphericalHarmonics", encoder);
+
+  encoder.updateResources();
+  encoder.dispatch(1,1,1);
+}
+
+NODE_BEGIN(atm_sky_apply)
+  READ_TEX(atm_ap_lut, TEX_STATE(ShaderRead))
+  READ_TEX(atm_sky_lut, TEX_STATE(ShaderRead))
+  READ_TEX(atm_tr_lut, TEX_STATE(ShaderRead))
+  READ_TEX(gbuffer_depth, TEX_STATE(DepthReadStencilRead))
+  RP_BEGIN()
+    TARGET(resolve_target)
+  RP_END()
+  EXEC(atm_sky_apply_exec)
+NODE_END()
+
+NODE_EXEC()
+static
+void atm_sky_apply_exec(gapi::CmdEncoder& encoder,
+                        const gapi::TextureHandle atm_ap_lut,
+                        const gapi::TextureHandle atm_sky_lut,
+                        const gapi::TextureHandle atm_tr_lut,
+                        const gapi::TextureHandle gbuffer_depth)
+{
+  tfx::set_extern("apLUT", atm_ap_lut);
+  tfx::set_extern("skyLUT", atm_sky_lut);
+  tfx::set_extern("trLUT", atm_tr_lut);
+  tfx::set_extern("gbufferDepth", gbuffer_depth);
+
+  tfx::activate_technique("SkyApply", encoder);
+  encoder.updateResources();
+  encoder.draw(4, 1, 0, 0);
+}
+
+NODE_BEGIN(atm_envi_specular)
+  READ_TEX(atm_tr_lut, TEX_STATE(ShaderRead))
+  READ_TEX(atm_sky_lut, TEX_STATE(ShaderRead))
+  MODIFY_TEX(atm_envi_specular, TEX_STATE(RenderTarget))
+  READ_BLOB(atm_envi_mips, int)
+  EXEC(atm_envi_specular_exec)
+NODE_END()
+
+NODE_EXEC()
+static
+void atm_envi_specular_exec(gapi::CmdEncoder& encoder,
+                            const gapi::TextureHandle atm_tr_lut,
+                            const gapi::TextureHandle atm_sky_lut,
+                            const gapi::TextureHandle atm_envi_specular,
+                            const int atm_envi_mips)
+{
+  tfx::set_extern("trLUT", atm_tr_lut);
+  tfx::set_extern("skyLUT", atm_sky_lut);
+  tfx::set_extern("enviMips", (float)atm_envi_mips);
+
+  for (int i = 0; i < atm_envi_mips; ++i)
+  {
+    gapi::RenderTargets mrt {gapi::RenderPassAttachment{
+      .texture = atm_envi_specular,
+      .mipLevel = (uint32_t)i,
+      .loadOp = gapi::LoadOp::DontCare
+    }};
+  
+    encoder.beginRenderpass(mrt, {});
+
+    float roughness = 1.0f / (float)atm_envi_mips * i;
+    tfx::set_extern("enviRoughness", roughness);
+    tfx::set_extern("renderSize", encoder.getRenderSize());
+
+    tfx::activate_technique("EnviSpecular", encoder);
+    encoder.updateResources();
+    encoder.draw(4, 1, 0, 0);
+
+    encoder.endRenderpass();
+  }
+}
+
+NODE_BEGIN(atm_envi_brdf)
+  RP_BEGIN()
+    TARGET_LOAD_DONTCARE(atm_envi_brdf)
+  RP_END()
+  EXEC(atm_envi_brdf_exec)
+NODE_END()
+
+NODE_EXEC()
+static
+void atm_envi_brdf_exec(gapi::CmdEncoder& encoder)
+{
+  tfx::set_extern("renderSize", encoder.getRenderSize());
+  tfx::activate_technique("EnviBRDF", encoder);
+  encoder.updateResources();
+  encoder.draw(4, 1, 0, 0);
+}
 
 ECS_DESCRIBE_QUERY(query_sun, (float& sun_azimuth, float& sun_altitude));
 
