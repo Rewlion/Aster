@@ -163,7 +163,27 @@ class TemplateParamExtractor:
   def extractUClearColorValue(self, tmpl_arg_type):
       self.clearColor = f"gapi::ClearColorValue{{uint32_t{{{self.extractTemplateArgumentsAsIs(tmpl_arg_type)}}}}}"
 
-class OrderAfterAction:
+
+BUILD_ACTION = "build_action"
+EXEC_ACTION = "exec_action"
+EXEC_FN_ACTION = "exec_fn_action"
+
+class BuildAction(TemplateParamExtractor):
+  def getActionType(self):
+    return BUILD_ACTION
+
+
+class ExecAction(TemplateParamExtractor):
+  def getActionType(self):
+    return EXEC_ACTION
+
+
+class ExecFnAction(TemplateParamExtractor):
+  def getActionType(self):
+    return EXEC_FN_ACTION
+
+
+class OrderAfterAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = field_cursor.spelling
   
@@ -172,7 +192,7 @@ class OrderAfterAction:
     return templates.generate_fg_order_after(self.name)
 
 
-class OrderBeforeAction:
+class OrderBeforeAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = field_cursor.spelling
 
@@ -181,7 +201,7 @@ class OrderBeforeAction:
     return templates.generate_fg_order_before(self.name)
 
 
-class CreateBufferAction(TemplateParamExtractor):
+class CreateBufferAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
     self.bufferUsage = ""
@@ -194,7 +214,7 @@ class CreateBufferAction(TemplateParamExtractor):
     return templates.generate_fg_create_buffer(self.name, self.bufferUsage, self.bufferState, self.bufferSize)
   
 
-class CreateTextureAction(TemplateParamExtractor):
+class CreateTextureAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
     self.textureFormat = ""
@@ -217,7 +237,7 @@ class CreateTextureAction(TemplateParamExtractor):
       self.textureUsage, self.textureState, self.persistentStorage)
 
 
-class ModifyBufferAction(TemplateParamExtractor):
+class ModifyBufferAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
     self.bufferState = ""
@@ -229,7 +249,7 @@ class ModifyBufferAction(TemplateParamExtractor):
     return templates.generate_fg_modify_buffer(self.name, self.bufferState)
 
 
-class ReadOptionalBufferAction(TemplateParamExtractor):
+class ReadOptionalBufferAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
     self.bufferState = ""
@@ -243,7 +263,7 @@ class ReadOptionalBufferAction(TemplateParamExtractor):
 
 
 
-class ImportTextureProducerAction(TemplateParamExtractor):
+class ImportTextureProducerAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
     self.importFn = ""
@@ -255,7 +275,7 @@ class ImportTextureProducerAction(TemplateParamExtractor):
     return templates.generate_fg_import_texture_producer(self.name, self.importFn)
 
 
-class ReadOptionalTextureAction(TemplateParamExtractor):
+class ReadOptionalTextureAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
     self.nameAlias = ""
@@ -269,7 +289,7 @@ class ReadOptionalTextureAction(TemplateParamExtractor):
     return templates.generate_fg_read_optional_texture(self.name,self.nameAlias, self.textureState, self.optional)
 
 
-class ReadTimelineTextureAction(TemplateParamExtractor):
+class ReadTimelineTextureAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
     self.nameAlias = ""
@@ -283,7 +303,7 @@ class ReadTimelineTextureAction(TemplateParamExtractor):
     return templates.generate_fg_read_timeline_texture(self.name, self.nameAlias, self.textureState, self.timeline)
 
 
-class RenameTextureAction(TemplateParamExtractor):
+class RenameTextureAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.fromName = ""
     self.toName = ""
@@ -297,7 +317,7 @@ class RenameTextureAction(TemplateParamExtractor):
     return templates.generate_fg_rename_texture(self.fromName, self.toName, self.textureState)
 
 
-class ReadBlobAction(TemplateParamExtractor):
+class ReadBlobAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
     self.blobType = ""
@@ -309,7 +329,7 @@ class ReadBlobAction(TemplateParamExtractor):
     return templates.generate_fg_read_blob(self.name, self.blobType)
   
 
-class ModifyBlobAction(TemplateParamExtractor):
+class ModifyBlobAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
     self.blobType = ""
@@ -321,7 +341,7 @@ class ModifyBlobAction(TemplateParamExtractor):
     return templates.generate_fg_modify_blob(self.name, self.blobType)
   
 
-class CreateBlobAction(TemplateParamExtractor):
+class CreateBlobAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
     self.blobType = ""
@@ -333,7 +353,7 @@ class CreateBlobAction(TemplateParamExtractor):
     return templates.generate_fg_create_blob(self.name, self.blobType)
 
 
-class ModifyTextureAction(TemplateParamExtractor):
+class ModifyTextureAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
     self.nameAlias = ""
@@ -346,7 +366,7 @@ class ModifyTextureAction(TemplateParamExtractor):
     return templates.generate_fg_modify_texture(self.name, self.nameAlias, self.textureState)
 
 
-class ExecFunctionAction(TemplateParamExtractor):
+class ExecFunctionAction(ExecFnAction):
   def __init__(self, field_cursor, context):
     self.context = context
     self.name = ""
@@ -354,7 +374,7 @@ class ExecFunctionAction(TemplateParamExtractor):
     self.extractParams(field_cursor)
 
 
-  def generate(self):
+  def generate(self, exec_actions):
     execFn = self.context.getExecFunction(self.name)
     captureList = []
     argsList = []
@@ -367,10 +387,10 @@ class ExecFunctionAction(TemplateParamExtractor):
       else:
         encoderName = arg.spelling
         argsList = argsList + [encoderName]
-    return templates.generate_fg_exec_fn_bridge(encoderName, captureList, argsList, self.name)
+    return templates.generate_fg_exec_fn_bridge(encoderName, captureList, argsList, self.name, exec_actions)
 
 
-class Target(TemplateParamExtractor):
+class Target(BuildAction):
   def __init__(self, tmpl_arg_type, context):
     self.name = ""
     self.loadOp = ""
@@ -384,7 +404,7 @@ class Target(TemplateParamExtractor):
     return templates.generate_fg_target(self.context.getResourceAccess(self.name), self.loadOp, self.storeOp, self.clearColor)
 
 
-class Depth(TemplateParamExtractor):
+class Depth(BuildAction):
   def __init__(self, tmpl_arg_type, context):
     self.name = ""
     self.context = context
@@ -395,7 +415,7 @@ class Depth(TemplateParamExtractor):
     return templates.generate_fg_depth(self.context.getResourceAccess(self.name))
 
 
-class RODepth(TemplateParamExtractor):
+class RODepth(BuildAction):
   def __init__(self, tmpl_arg_type, context):
     self.name = ""
     self.loadOp = ""
@@ -407,7 +427,7 @@ class RODepth(TemplateParamExtractor):
     return templates.generate_fg_rodepth(self.context.getResourceAccess(self.name), self.loadOp)
 
 
-class RWDepth(TemplateParamExtractor):
+class RWDepth(BuildAction):
   def __init__(self, tmpl_arg_type, context):
     self.name = ""
     self.loadOp = ""
@@ -420,7 +440,7 @@ class RWDepth(TemplateParamExtractor):
     name = f"\"{self.name}\"" if not self.context.hasResourceAccess(self.name) else self.name
     return templates.generate_fg_rwdepth(name, self.loadOp, self.storeOp)
 
-class RenderPassAction(TemplateParamExtractor):
+class RenderPassAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.targets = []
     self.depthStencil = None
@@ -454,19 +474,30 @@ class FgNode:
   def __init__(self, struct_cursor, exec_functions):
     self.name = struct_cursor.spelling
     self.context = FgParsingContext(exec_functions)
-    self.actions = self.parseActions(struct_cursor, exec_functions)
+    self.buildActions, self.execActions, self.execFnAction = self.parseActions(struct_cursor)
 
-  def parseActions(self, struct_cursor, exec_functions):
-    actions = []
+  def parseActions(self, struct_cursor):
+    buildActions = []
+    execActions = []
+    execFnAction = None
     for field in struct_cursor.get_children():
       if field.kind == clang.cindex.CursorKind.FIELD_DECL:
         actionName = f"{field.type.get_declaration().spelling}Action"
         if actionName in globals():
-          actions = actions + [globals()[actionName](field, self.context)]
+          action = globals()[actionName](field, self.context)
+          actionType = action.getActionType()
+          if actionType == BUILD_ACTION:
+            buildActions.append(action)
+          elif actionType == EXEC_ACTION:
+            execActions.append(action)
+          elif actionType == EXEC_FN_ACTION:
+            execFnAction = action
         
-    return actions
+    return buildActions, execActions, execFnAction
   
 
   def generate(self):
-    body = "\n".join([action.generate() for action in self.actions])
-    return templates.generate_fg_node(self.name, body, self.context.hasRenderSizeAccess())
+    buildActions = "\n".join([action.generate() for action in self.buildActions])
+    execActions = "\n".join([action.generate() for action in self.execActions])
+    execFnAction = self.execFnAction.generate(execActions)
+    return templates.generate_fg_node(self.name, buildActions, execFnAction, self.context.hasRenderSizeAccess())

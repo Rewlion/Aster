@@ -269,15 +269,16 @@ def generate_fg_renderpass(targets, depth_stencil):
   return res
 
 
-def generate_fg_exec_fn_bridge(encoder_name, capture_list, args_list, exec_fn):
+def generate_fg_exec_fn_bridge(encoder_name, capture_list, args_list, exec_fn, exec_actions):
+  actions = "\n" + exec_actions if exec_actions != "" else ""
   return f"""
     return [{",".join(capture_list)}](gapi::CmdEncoder& {encoder_name})
-    {{
+    {{{actions}
       {exec_fn}({", ".join(args_list)});
     }};"""
 
 
-def generate_fg_node(name, body, has_render_size_access):
+def generate_fg_node(name, build_actions, exec_fn_action, has_render_size_access):
   renderSize = "\n    const uint2 __renderSize__ = reg.getRenderSize();\n" if has_render_size_access else ""
   registrationFnName = f"mk_fg_node_{name}"
   return f"""
@@ -287,7 +288,8 @@ void {registrationFnName}(Event*, ComponentsAccessor&)
 {{
   fg::register_node("{name}", FG_FILE_DECL, [](fg::Registry& reg)
   {{ {renderSize}
-{body}
+{build_actions}
+{exec_fn_action}
   }});
 }}
 
