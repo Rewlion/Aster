@@ -133,6 +133,13 @@ namespace fg::dsl
   template<uint32_t val>
   struct UClearColorValue {};
 
+  //workaround for float type val
+  template <NameWrapper name>
+  struct FClearColorValue {};
+
+  template<class val>
+  struct ClearColorValue {};
+
   template<class name, class loadOp, class storeOp, class clearColor>
   struct Target {};
 
@@ -165,14 +172,17 @@ namespace fg::dsl
 #define RP_BEGIN() fg::dsl::RenderPass<
 #define RP_END() > NAME_WITH_LINE(rp);
 
-#define TARGET_EX(name, loadOp, storeOp, uint32Clear)\
+#define UCLEAR(uint32val) fg::dsl::UClearColorValue<uint32val>
+#define FCLEAR(floatval) fg::dsl::FClearColorValue<#floatval>
+
+#define TARGET_EX(name, loadOp, storeOp, clear)\
   fg::dsl::Target<fg::dsl::Name<#name>,\
                   fg::dsl::LoadOp<gapi::LoadOp:: loadOp>,\
                   fg::dsl::StoreOp<gapi::StoreOp:: storeOp>,\
-                  fg::dsl::UClearColorValue<uint32Clear>>
-#define TARGET(name) TARGET_EX(name, Load, Store, 0)
-#define TARGET_LOAD_DONTCARE(name) TARGET_EX(name, DontCare, Store, 0)
-#define TARGET_CLEARED(name, uint32Color) TARGET_EX(name, Clear, Store, uint32Color)
+                  fg::dsl::ClearColorValue<clear>>
+#define TARGET(name) TARGET_EX(name, Load, Store, UCLEAR(0))
+#define TARGET_LOAD_DONTCARE(name) TARGET_EX(name, DontCare, Store, UCLEAR(0))
+#define TARGET_CLEARED(name, clear) TARGET_EX(name, Clear, Store, clear)
 
 #define DEPTH_RW_EX(name, loadOp, storeOp)\
   fg::dsl::RWDepth<\

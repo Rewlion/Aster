@@ -160,8 +160,16 @@ class TemplateParamExtractor:
       self.storeOp = self.extractTemplateArgumentsAsIs(tmpl_arg_type)
 
 
-  def extractUClearColorValue(self, tmpl_arg_type):
-      self.clearColor = f"gapi::ClearColorValue{{uint32_t{{{self.extractTemplateArgumentsAsIs(tmpl_arg_type)}}}}}"
+  def extractClearColorValue(self, tmpl_arg_type):
+      color = tmpl_arg_type.get_template_argument_type(0)
+      colorType = color.get_declaration().spelling
+      if colorType == "UClearColorValue":
+        self.clearColor = f"gapi::ClearColorValue{{uint32_t{{{self.extractTemplateArgumentsAsIs(color)}}}}}"
+      elif colorType == "FClearColorValue":
+        flVal = self.extractTemplateArgumentsAsIs(color).replace("\"", "")
+        self.clearColor = f"gapi::ClearColorValue{{float{{{flVal}}}}}"
+      else:
+        raise ValueError(f"Unknown clear color type `{colorType}`")
 
 
 BUILD_ACTION = "build_action"

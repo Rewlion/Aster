@@ -64,19 +64,91 @@ void query_dbg_poly_renderer (eastl::function<
 }
 
 
-static void poly_renderer_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_dbg_poly_render(Event*, ComponentsAccessor&)
 {
-  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+  fg::register_node("dbg_poly_render", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    const uint2 __renderSize__ = reg.getRenderSize();
 
-  poly_renderer_creation_handler(*casted_event);
+    reg.orderMeBefore("ui");
+
+    auto transparent_poly_acc = reg.createTexture("transparent_poly_acc",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::RenderTarget,
+      false
+    );
+
+
+    auto transparent_poly_revealage = reg.createTexture("transparent_poly_revealage",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R8_UNORM,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::RenderTarget,
+      false
+    );
+
+    reg.requestRenderPass()
+      .addTarget(transparent_poly_acc, gapi::LoadOp::Clear, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addTarget(transparent_poly_revealage, gapi::LoadOp::Clear, gapi::StoreOp::Store, gapi::ClearColorValue{float{1.0f}})
+      .addRODepth("gbuffer_depth", gapi::LoadOp::Load);
+
+
+    return [](gapi::CmdEncoder& encoder)
+    {
+      dbg_poly_render_exec(encoder);
+    };
+  });
 }
 
-
-static EventSystemRegistration poly_renderer_creation_handler_registration(
-  poly_renderer_creation_handler_internal,
+static
+EventSystemRegistration mk_fg_node_dbg_poly_render_registration(
+  mk_fg_node_dbg_poly_render,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
-
   },
-  "poly_renderer_creation_handler"
+  "mk_fg_node_dbg_poly_render"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_dbg_poly_combine(Event*, ComponentsAccessor&)
+{
+  fg::register_node("dbg_poly_combine", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto transparent_poly_acc = reg.readTexture("transparent_poly_acc", gapi::TextureState::ShaderRead, false);
+    auto transparent_poly_revealage = reg.readTexture("transparent_poly_revealage", gapi::TextureState::ShaderRead, false);
+    reg.requestRenderPass()
+      .addTarget("final_target", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addRODepth("gbuffer_depth", gapi::LoadOp::Load);
+
+
+    return [transparent_poly_acc,transparent_poly_revealage](gapi::CmdEncoder& encoder)
+    {
+      dbg_poly_combine_exec(encoder, transparent_poly_acc.get(), transparent_poly_revealage.get());
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_dbg_poly_combine_registration(
+  mk_fg_node_dbg_poly_combine,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_dbg_poly_combine"
 );
