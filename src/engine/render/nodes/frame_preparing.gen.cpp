@@ -8,37 +8,79 @@
 
 using namespace ecs;
 
-static void mk_backbuffer_acquiring_node_internal(Event* event, ComponentsAccessor& accessor)
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_backbuffer_acquiring(Event*, ComponentsAccessor&)
 {
-  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+  fg::register_node("backbuffer_acquiring", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto backbuffer = reg.importTextureProducer("backbuffer", import_backbuffer);
 
-  mk_backbuffer_acquiring_node(*casted_event);
+    return [](gapi::CmdEncoder& encoder)
+    {
+      backbuffer_acquiring_exec(encoder);
+    };
+  });
 }
 
-
-static EventSystemRegistration mk_backbuffer_acquiring_node_registration(
-  mk_backbuffer_acquiring_node_internal,
+static
+EventSystemRegistration mk_fg_node_backbuffer_acquiring_registration(
+  mk_fg_node_backbuffer_acquiring,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
-
   },
-  "mk_backbuffer_acquiring_node"
+  "mk_fg_node_backbuffer_acquiring"
 );
 
 
-static void mk_frame_preparing_node_internal(Event* event, ComponentsAccessor& accessor)
+static void mk_frame_samplers_preparing_node_internal(Event* event, ComponentsAccessor& accessor)
 {
   const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
 
-  mk_frame_preparing_node(*casted_event);
+  mk_frame_samplers_preparing_node(*casted_event);
 }
 
 
-static EventSystemRegistration mk_frame_preparing_node_registration(
-  mk_frame_preparing_node_internal,
+static EventSystemRegistration mk_frame_samplers_preparing_node_registration(
+  mk_frame_samplers_preparing_node_internal,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
 
   },
-  "mk_frame_preparing_node"
+  "mk_frame_samplers_preparing_node"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_frame_preparing(Event*, ComponentsAccessor&)
+{
+  fg::register_node("frame_preparing", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    reg.orderMeAfter("backbuffer_acquiring");
+    auto sph_buf = reg.createBuffer(
+      "sph_buf",
+      gapi::BufferAllocationDescription{
+        .size = (9 + 1) * sizeof(float4),
+        .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
+      },
+      gapi::BufferState::BF_STATE_UAV_RW
+    );
+    auto camera_data = reg.createBlob<Engine::CameraData>("camera_data");
+    auto window_size = reg.createBlob<int2>("window_size");
+
+    return [sph_buf,camera_data,window_size](gapi::CmdEncoder& encoder)
+    {
+      frame_preparing_exec(encoder, sph_buf.get(), camera_data.get(), window_size.get());
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_frame_preparing_registration(
+  mk_fg_node_frame_preparing,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_frame_preparing"
 );
