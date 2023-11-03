@@ -130,16 +130,18 @@ void mk_fg_node_dbg_poly_combine(Event*, ComponentsAccessor&)
 {
   fg::register_node("dbg_poly_combine", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto transparent_poly_acc = reg.readTexture("transparent_poly_acc", gapi::TextureState::ShaderRead, false);
-    auto transparent_poly_revealage = reg.readTexture("transparent_poly_revealage", gapi::TextureState::ShaderRead, false);
+    auto dbgPolyAcc = reg.readTexture("transparent_poly_acc", gapi::TextureState::ShaderRead, false);
+    auto dbgPolyRevealage = reg.readTexture("transparent_poly_revealage", gapi::TextureState::ShaderRead, false);
     reg.requestRenderPass()
       .addTarget("final_target", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
       .addRODepth("gbuffer_depth", gapi::LoadOp::Load);
 
 
-    return [transparent_poly_acc,transparent_poly_revealage](gapi::CmdEncoder& encoder)
+    return [dbgPolyAcc,dbgPolyRevealage](gapi::CmdEncoder& encoder)
     {
-      dbg_poly_combine_exec(encoder, transparent_poly_acc.get(), transparent_poly_revealage.get());
+      tfx::set_extern("dbgPolyAcc", dbgPolyAcc.get());
+      tfx::set_extern("dbgPolyRevealage", dbgPolyRevealage.get());
+      dbg_poly_combine_exec(encoder);
     };
   });
 }

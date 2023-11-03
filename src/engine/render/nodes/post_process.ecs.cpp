@@ -2,7 +2,7 @@
 #include <engine/tfx/tfx.h>
 
 NODE_BEGIN(post_process)
-  READ_TEX_SRV(transparent_target)
+  BIND_TEX_SRV_AS(transparent_target, post_process_input)
   CREATE_TEX_2D(final_target, TEX_SIZE_RELATIVE(), R8G8B8A8_UNORM, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
   RP_BEGIN()
     TARGET(final_target)
@@ -12,9 +12,8 @@ NODE_END()
 
 NODE_EXEC()
 static
-void post_process_exec(gapi::CmdEncoder& encoder, const gapi::TextureHandle transparent_target)
+void post_process_exec(gapi::CmdEncoder& encoder)
 {
-  tfx::set_extern("post_process_input", transparent_target);
   tfx::activate_scope("PostProcessScope", encoder);
   tfx::activate_technique("PostProcess", encoder);
 

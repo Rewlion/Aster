@@ -9,6 +9,7 @@ class FgParsingContext:
     self.execFunctionsWithParams = exec_functions_with_params
     self.generateRenderSizeAccess = False
     self.accessedResources = set()
+    self.additionalCaptureList = set()
 
   def getExecFunction(self, name):
     if name in self.execFunctionsWithParams:
@@ -36,6 +37,13 @@ class FgParsingContext:
   def hasRenderSizeAccess(self):
     return self.generateRenderSizeAccess
 
+
+  def addInCaptureList(self, name):
+    self.additionalCaptureList.add(name)
+
+
+  def getAdditionalCaptureList(self):
+    return self.additionalCaptureList
 
 class TemplateParamExtractor:
   def extractParams(self, field_or_type):
@@ -254,26 +262,28 @@ class CreateTextureAction(BuildAction):
 class ModifyBufferAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
+    self.nameAlias = ""
     self.bufferState = ""
     self.extractParams(field_cursor)
-    context.markResourceAccess(self.name)
+    context.markResourceAccess(self.name if self.nameAlias == "" else self.nameAlias)
 
 
   def generate(self):
-    return templates.generate_fg_modify_buffer(self.name, self.bufferState)
+    return templates.generate_fg_modify_buffer(self.name, self.nameAlias, self.bufferState)
 
 
 class ReadOptionalBufferAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
+    self.nameAlias = ""
     self.bufferState = ""
     self.optional = ""
     self.extractParams(field_cursor)
-    context.markResourceAccess(self.name)
+    context.markResourceAccess(self.name if self.nameAlias == "" else self.nameAlias)
 
 
   def generate(self):
-    return templates.generate_fg_read_optional_buffer(self.name, self.bufferState, self.optional)
+    return templates.generate_fg_read_optional_buffer(self.name, self.nameAlias, self.bufferState, self.optional)
 
 
 
@@ -390,17 +400,17 @@ class ExecFunctionAction(ExecFnAction):
 
   def generate(self, exec_actions):
     execFn = self.context.getExecFunction(self.name)
-    captureList = []
+    captureList = self.context.getAdditionalCaptureList()
     argsList = []
     encoderName = ""
     for arg in execFn.get_arguments():
       argTypeName = utils.get_cursor_type_name(arg.type)
       if argTypeName != "gapi::CmdEncoder":
-        captureList = captureList + [arg.spelling]
-        argsList = argsList + [f"{arg.spelling}.get()"]
+        captureList.add(arg.spelling)
+        argsList.append(f"{arg.spelling}.get()")
       else:
         encoderName = arg.spelling
-        argsList = argsList + [encoderName]
+        argsList.append(encoderName)
     return templates.generate_fg_exec_fn_bridge(encoderName, captureList, argsList, self.name, exec_actions)
 
 
@@ -411,6 +421,18 @@ class NoExecFunctionAction(ExecFnAction):
 
   def generate(self, exec_actions):
     return templates.generate_fg_no_exec_fn()
+
+
+class BindShaderVarAction(ExecAction):
+  def __init__(self, field_cursor, context):
+    self.name = ""
+    self.nameAlias = ""
+    self.extractParams(field_cursor)
+    context.addInCaptureList(self.name)
+
+  
+  def generate(self):
+    return templates.generate_fg_bind_shvar(self.name, self.nameAlias)
 
 
 class Target(BuildAction):

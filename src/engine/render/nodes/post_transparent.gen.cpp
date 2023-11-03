@@ -73,8 +73,8 @@ void mk_fg_node_TAA(Event*, ComponentsAccessor&)
   { 
     const uint2 __renderSize__ = reg.getRenderSize();
 
-    auto taa_current_frame = reg.readTexture("final_target", gapi::TextureState::ShaderRead, false);
-    auto taa_prev_frame = reg.readTexture("final_antialiased_target", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+    auto taaCurrentFrame = reg.readTexture("final_target", gapi::TextureState::ShaderRead, false);
+    auto taaPrevFrame = reg.readTexture("final_antialiased_target", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
     auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead, false);
     auto gbuffer_depth = reg.readTexture("gbuffer_depth", gapi::TextureState::DepthReadStencilRead, false);
 
@@ -96,9 +96,13 @@ void mk_fg_node_TAA(Event*, ComponentsAccessor&)
     ;
 
 
-    return [taa_current_frame,taa_prev_frame,motionBuf,gbuffer_depth](gapi::CmdEncoder& encoder)
+    return [taaCurrentFrame,gbuffer_depth,motionBuf,taaPrevFrame](gapi::CmdEncoder& encoder)
     {
-      taa_exec(taa_current_frame.get(), taa_prev_frame.get(), motionBuf.get(), gbuffer_depth.get(), encoder);
+      tfx::set_extern("taaCurrentFrame", taaCurrentFrame.get());
+      tfx::set_extern("taaPrevFrame", taaPrevFrame.get());
+      tfx::set_extern("motionBuf", motionBuf.get());
+      tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
+      taa_exec(encoder);
     };
   });
 }
@@ -122,7 +126,7 @@ void mk_fg_node_present(Event*, ComponentsAccessor&)
     auto final_antialiased_target = reg.readTexture("final_antialiased_target", gapi::TextureState::TransferSrc, false);
     auto backbuffer = reg.modifyTexture("backbuffer", gapi::TextureState::TransferDst);
 
-    return [final_antialiased_target,backbuffer](gapi::CmdEncoder& encoder)
+    return [backbuffer,final_antialiased_target](gapi::CmdEncoder& encoder)
     {
       present_exec(encoder, final_antialiased_target.get(), backbuffer.get());
     };

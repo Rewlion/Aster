@@ -16,7 +16,7 @@ void mk_fg_node_post_process(Event*, ComponentsAccessor&)
   { 
     const uint2 __renderSize__ = reg.getRenderSize();
 
-    auto transparent_target = reg.readTexture("transparent_target", gapi::TextureState::ShaderRead, false);
+    auto post_process_input = reg.readTexture("transparent_target", gapi::TextureState::ShaderRead, false);
 
     auto final_target = reg.createTexture("final_target",
       gapi::TextureAllocationDescription{
@@ -36,9 +36,10 @@ void mk_fg_node_post_process(Event*, ComponentsAccessor&)
     ;
 
 
-    return [transparent_target](gapi::CmdEncoder& encoder)
+    return [post_process_input](gapi::CmdEncoder& encoder)
     {
-      post_process_exec(encoder, transparent_target.get());
+      tfx::set_extern("post_process_input", post_process_input.get());
+      post_process_exec(encoder);
     };
   });
 }

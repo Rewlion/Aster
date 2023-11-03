@@ -103,7 +103,7 @@ void mk_fg_node_terrain(Event*, ComponentsAccessor&)
     );
 
 
-    return [gbuf0,gbuf1,gbuf2,opaque_depth,terrainFeedback](gapi::CmdEncoder& encoder)
+    return [opaque_depth,gbuf0,gbuf2,terrainFeedback,gbuf1](gapi::CmdEncoder& encoder)
     {
       terrain_exec(encoder, gbuf0.get(), gbuf1.get(), gbuf2.get(), opaque_depth.get(), terrainFeedback.get());
     };

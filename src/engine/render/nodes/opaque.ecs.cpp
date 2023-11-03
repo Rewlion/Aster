@@ -83,13 +83,18 @@ NODE_END()
 
 NODE_BEGIN(gbuffer_resolve)
   CREATE_TEX_2D(resolve_target, TEX_SIZE_RELATIVE(), R32G32B32A32_S, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
-  READ_TEX_SRV(gbuf0)
-  READ_TEX_SRV(gbuf1)
-  READ_TEX_SRV(gbuf2)
+  
+  BIND_TEX_SRV_AS(gbuf0, gbuffer_albedo)
+  BIND_TEX_SRV_AS(gbuf1, gbuffer_normal)
+  BIND_TEX_SRV_AS(gbuf2, gbuffer_metal_roughness)
+
   RENAME_TEX_RO_DEPTH(late_opaque_depth, gbuffer_depth)
-  READ_BUF_SRV(sph_buf)
-  READ_TEX_SRV_OPTIONAL(atm_envi_specular)
-  READ_TEX_SRV_OPTIONAL(atm_envi_brdf)
+  BIND_SHADER_VAR_AS(gbuffer_depth, gbuffer_depth)
+
+  BIND_BUF_SRV_AS(sph_buf, atmParamsBuffer)
+
+  BIND_OPTIONAL_TEX_SRV_AS(atm_envi_specular, enviSpecular)
+  BIND_OPTIONAL_TEX_SRV_AS(atm_envi_brdf, enviBRDF)
 
   RP_BEGIN()
     TARGET_CLEARED(resolve_target, UCLEAR(0))
@@ -100,23 +105,8 @@ NODE_END()
 
 NODE_EXEC()
 static
-void gbuffer_resolve_exec(gapi::CmdEncoder& encoder,
-                          const gapi::TextureHandle gbuf0,
-                          const gapi::TextureHandle gbuf1,
-                          const gapi::TextureHandle gbuf2,
-                          const gapi::TextureHandle gbuffer_depth,
-                          const gapi::BufferHandler sph_buf,
-                          const gapi::TextureHandle atm_envi_specular,
-                          const gapi::TextureHandle atm_envi_brdf)
+void gbuffer_resolve_exec(gapi::CmdEncoder& encoder)
 {
-  tfx::set_extern("gbuffer_albedo", gbuf0);
-  tfx::set_extern("gbuffer_normal", gbuf1);
-  tfx::set_extern("gbuffer_metal_roughness", gbuf2);
-  tfx::set_extern("gbuffer_depth", gbuffer_depth);
-  tfx::set_extern("atmParamsBuffer", sph_buf);
-  tfx::set_extern("enviSpecular", atm_envi_specular);
-  tfx::set_extern("enviBRDF", atm_envi_brdf);
-
   tfx::activate_technique("ResolveGbuffer", encoder);
   encoder.updateResources();
   encoder.draw(4, 1, 0, 0);

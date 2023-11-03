@@ -54,10 +54,11 @@ void dbg_text_exec(gapi::CmdEncoder& encoder)
 }
 
 NODE_BEGIN(TAA)
-  READ_TEX_SRV_AS(final_target, AS(taa_current_frame))
-  READ_TEX_SRV_PREV_FRAME_AS(final_antialiased_target, AS(taa_prev_frame))
-  READ_TEX_SRV(motionBuf)
-  READ_TEX_DEPTH(gbuffer_depth)
+  BIND_TEX_SRV_AS(final_target, taaCurrentFrame)
+  BIND_PREV_FRAME_TEX_SRV_AS(final_antialiased_target, taaPrevFrame)
+  BIND_TEX_SRV_AS(motionBuf, motionBuf)
+  BIND_TEX_RO_DEPTH_AS(gbuffer_depth, gbuffer_depth)
+
   CREATE_TEX_2D(final_antialiased_target, TEX_SIZE_RELATIVE(), R8G8B8A8_UNORM, TEX_USAGE3(RT,SRV,TRANSFER_SRC), TEX_STATE(RenderTarget))
 
   RP_BEGIN()
@@ -69,17 +70,9 @@ NODE_END()
 
 NODE_EXEC()
 static
-void taa_exec(const gapi::TextureHandle taa_current_frame,
-              const gapi::TextureHandle taa_prev_frame,
-              const gapi::TextureHandle motionBuf,
-              const gapi::TextureHandle gbuffer_depth,
-              gapi::CmdEncoder& encoder)
+void taa_exec(gapi::CmdEncoder& encoder)
 {
-  tfx::set_extern("taaCurrentFrame", taa_current_frame);
-  tfx::set_extern("taaPrevFrame", taa_prev_frame);
-  tfx::set_extern("motionBuf", motionBuf);
   tfx::set_extern("renderSize", encoder.getRenderSize());
-  tfx::set_extern("gbuffer_depth", gbuffer_depth);
   tfx::activate_technique("TAA", encoder);
 
   encoder.updateResources();

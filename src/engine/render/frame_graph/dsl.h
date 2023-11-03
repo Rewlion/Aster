@@ -52,10 +52,10 @@ namespace fg::dsl
 
   struct OrderBefore{};
 
-  template <class name, class state, class optional>
+  template <class name, class alias, class state, class optional>
   struct ReadOptionalBuffer {};
 
-  template<class name, class state>
+  template<class name, class alias, class state>
   struct ModifyBuffer {};
 
   struct OrderAfter{};
@@ -161,6 +161,9 @@ namespace fg::dsl
   template <class ...T>
   struct RenderPass {};
 
+  template<class resName, class shvarName>
+  struct BindShaderVar {};
+
   template<class name>
   struct ExecFunction {};
 
@@ -231,21 +234,33 @@ namespace fg::dsl
 #define MODIFY_BUF(name, state)\
   fg::dsl::ModifyBuffer<\
     fg::dsl::Name<#name>,\
+    fg::dsl::Stub,\
     fg::dsl::BufferState<state>> NAME_WITH_LINE(modifyBuffer);
 
-#define MODIFY_BUF_UAV(name) MODIFY_BUF(name, BUF_STATE(UAV_RW))
+#define MODIFY_BUF_AS(name, as, state)\
+  fg::dsl::ModifyBuffer<\
+    fg::dsl::Name<#name>,\
+    fg::dsl::NameAlias<#as>,\
+    fg::dsl::BufferState<state>> NAME_WITH_LINE(modifyBuffer);
 
 #define READ_BUF(name, state)\
   fg::dsl::ReadOptionalBuffer<\
     fg::dsl::Name<#name>,\
+    fg::dsl::Stub,\
     fg::dsl::NotOptional,\
     fg::dsl::BufferState<state>> NAME_WITH_LINE(readBuffer);
 
-#define READ_BUF_SRV(name) READ_BUF(name, BUF_STATE(SRV))
+#define READ_BUF_AS(name, as, state)\
+  fg::dsl::ReadOptionalBuffer<\
+    fg::dsl::Name<#name>,\
+    fg::dsl::NameAlias<#as>,\
+    fg::dsl::NotOptional,\
+    fg::dsl::BufferState<state>> NAME_WITH_LINE(readBuffer);
 
 #define READ_BUF_OPTIONAL(name, state)\
   fg::dsl::ReadOptionalBuffer<\
     fg::dsl::Name<#name>,\
+    fg::dsl::Stub,\
     fg::dsl::Optional,\
     fg::dsl::BufferState<state>> NAME_WITH_LINE(readBuffer);
 
@@ -300,19 +315,12 @@ namespace fg::dsl
     fg::dsl::TextureState<state>\
   > NAME_WITH_LINE(modifyTex);
 
-#define MODIFY_TEX_RT(name) MODIFY_TEX(name, TEX_STATE(RenderTarget))
-#define MODIFY_TEX_DEPTH(name) MODIFY_TEX(name, TEX_STATE(DepthWriteStencilWrite))
-#define MODIFY_TEX_UAV(name) MODIFY_TEX(name, TEX_STATE(ShaderReadWrite))
-#define MODIFY_TEX_TRANSFER_DST(name) MODIFY_TEX(name, TEX_STATE(TransferDst))
-
 #define MODIFY_TEX_AS(name, as, state)\
   fg::dsl::ModifyTexture<\
     fg::dsl::Name<#name>,\
-    as,\
+    fg::dsl::NameAlias<#as>,\
     fg::dsl::TextureState<state>\
   > NAME_WITH_LINE(modifyTex);
-
-#define MODIFY_TEX_RT_AS(name, as) MODIFY_TEX_AS(name, as, TEX_STATE(RenderTarget))
 
 #define READ_TEX(name, state)\
   fg::dsl::ReadOptionalTexture<\
@@ -322,21 +330,15 @@ namespace fg::dsl
     fg::dsl::NotOptional\
   > NAME_WITH_LINE(readTex);
 
-#define READ_TEX_SRV(name) READ_TEX(name, TEX_STATE(ShaderRead))
-#define READ_TEX_DEPTH(name) READ_TEX(name, TEX_STATE(DepthReadStencilRead))
-#define READ_TEX_TRANSFER_SRC(name) READ_TEX(name, TEX_STATE(TransferSrc))
-
 #define READ_TEX_AS(name, as, state)\
   fg::dsl::ReadOptionalTexture<\
     fg::dsl::Name<#name>,\
-    as,\
+    fg::dsl::NameAlias<#as>,\
     fg::dsl::TextureState<state>,\
     fg::dsl::NotOptional\
   > NAME_WITH_LINE(readTex);
 
-#define READ_TEX_SRV_AS(name, as) READ_TEX_AS(name, as, TEX_STATE(ShaderRead))
-
-#define READ_TEX_OPTIONAL(name, state)\
+#define READ_OPTIONAL_TEX(name, state)\
   fg::dsl::ReadOptionalTexture<\
     fg::dsl::Name<#name>,\
     fg::dsl::Stub,\
@@ -344,17 +346,15 @@ namespace fg::dsl
     fg::dsl::Optional\
   > NAME_WITH_LINE(readOptTex);
 
-#define READ_TEX_SRV_OPTIONAL(name) READ_TEX_OPTIONAL(name, TEX_STATE(ShaderRead))
-
-#define READ_TEX_OPTIONAL_AS(name, as, state)\
+#define READ_OPTIONAL_TEX_AS(name, as, state)\
   fg::dsl::ReadOptionalTexture<\
     fg::dsl::Name<#name>,\
-    as,\
+    fg::dsl::NameAlias<#as>,\
     fg::dsl::TextureState<state>,\
     fg::dsl::Optional\
   > NAME_WITH_LINE(readOptTex);
 
-#define READ_TEX_PREV_FRAME(name, state)\
+#define READ_PREV_FRAME_TEX(name, state)\
   fg::dsl::ReadTimelineTexture<\
     fg::dsl::Name<#name>,\
     fg::dsl::Stub,\
@@ -362,25 +362,20 @@ namespace fg::dsl
     fg::dsl::Timeline<fg::Timeline::Previous>\
   > NAME_WITH_LINE(readPrevFrameTex);
 
-#define READ_TEX_PREV_FRAME_AS(name, as, state)\
+#define READ_PREV_FRAME_TEX_AS(name, as, state)\
   fg::dsl::ReadTimelineTexture<\
     fg::dsl::Name<#name>,\
-    as,\
+    fg::dsl::NameAlias<#as>,\
     fg::dsl::TextureState<state>,\
     fg::dsl::Timeline<fg::Timeline::Previous>\
   > NAME_WITH_LINE(readPrevFrameTex);
   
-#define READ_TEX_SRV_PREV_FRAME_AS(name, as) READ_TEX_PREV_FRAME_AS(name, as, TEX_STATE(ShaderRead))
-
 #define RENAME_TEX(from, to, state)\
   fg::dsl::RenameTexture<\
     fg::dsl::NameFrom<#from>,\
     fg::dsl::NameTo<#to>,\
     fg::dsl::TextureState<state>\
   > NAME_WITH_LINE(renameTex);
-
-#define RENAME_TEX_RT(from, to) RENAME_TEX(from, to, TEX_STATE(RenderTarget))
-#define RENAME_TEX_RO_DEPTH(from, to) RENAME_TEX(from, to, TEX_STATE(DepthReadStencilRead))
 
 #define CREATE_BLOB(name, type)\
   fg::dsl::CreateBlob<\
@@ -399,6 +394,53 @@ namespace fg::dsl
     fg::dsl::Name<#name>,\
     fg::dsl::BlobType<type>\
   > NAME_WITH_LINE(modifyBlob);
+
+#define BIND_SHADER_VAR_AS(res, as) fg::dsl::BindShaderVar<\
+  fg::dsl::Name<#res>,\
+  fg::dsl::NameAlias<#as>> NAME_WITH_LINE(bindShVar);
+
+#define BIND_SHADER_VAR(var) BIND_SHADER_VAR_AS(var, var)
+
+#define MODIFY_TEX_RT(name) MODIFY_TEX(name, TEX_STATE(RenderTarget))
+#define MODIFY_TEX_RT_AS(name, as) MODIFY_TEX_AS(name, as, TEX_STATE(RenderTarget))
+#define MODIFY_TEX_DEPTH(name) MODIFY_TEX(name, TEX_STATE(DepthWriteStencilWrite))
+#define MODIFY_TEX_UAV(name) MODIFY_TEX(name, TEX_STATE(ShaderReadWrite))
+#define MODIFY_TEX_UAV_AS(name, as) MODIFY_TEX_AS(name, as, TEX_STATE(ShaderReadWrite))
+#define MODIFY_TEX_TRANSFER_DST(name) MODIFY_TEX(name, TEX_STATE(TransferDst))
+#define MODIFY_BUF_UAV(name) MODIFY_BUF(name, BUF_STATE(UAV_RW))
+#define MODIFY_BUF_UAV_AS(name, as) MODIFY_BUF_AS(name, as, BUF_STATE(UAV_RW))
+
+#define READ_TEX_SRV(name) READ_TEX(name, TEX_STATE(ShaderRead))
+#define READ_TEX_SRV_AS(name, as) READ_TEX_AS(name, as, TEX_STATE(ShaderRead))
+#define READ_TEX_DEPTH(name) READ_TEX(name, TEX_STATE(DepthReadStencilRead))
+#define READ_TEX_DEPTH_AS(name, as) READ_TEX_AS(name, as, TEX_STATE(DepthReadStencilRead))
+#define READ_TEX_TRANSFER_SRC(name) READ_TEX(name, TEX_STATE(TransferSrc))
+#define READ_BUF_SRV(name) READ_BUF(name, BUF_STATE(SRV))
+#define READ_BUF_SRV_AS(name, as) READ_BUF_AS(name, as, BUF_STATE(SRV))
+
+#define READ_OPTIONAL_TEX_SRV(name) READ_OPTIONAL_TEX(name, TEX_STATE(ShaderRead))
+#define READ_OPTIONAL_TEX_SRV_AS(name, as) READ_OPTIONAL_TEX_AS(name, as, TEX_STATE(ShaderRead))
+
+#define READ_PREV_FRAME_TEX_SRV(name) READ_PREV_FRAME_TEX(name, TEX_STATE(ShaderRead))
+#define READ_PREV_FRAME_TEX_SRV_AS(name, as) READ_PREV_FRAME_TEX_AS(name, as, TEX_STATE(ShaderRead))
+
+#define RENAME_TEX_RT(from, to) RENAME_TEX(from, to, TEX_STATE(RenderTarget))
+#define RENAME_TEX_RO_DEPTH(from, to) RENAME_TEX(from, to, TEX_STATE(DepthReadStencilRead))
+
+#define BIND_RES_AS(action, res_name, as_var_name)\
+  action(res_name, as_var_name)\
+  BIND_SHADER_VAR(as_var_name)
+
+#define BIND_TEX_SRV_AS(res_name, as_var_name) BIND_RES_AS(READ_TEX_SRV_AS, res_name, as_var_name)
+#define BIND_TEX_RW_UAV_AS(res_name, as_var_name) BIND_RES_AS(MODIFY_TEX_UAV_AS, res_name, as_var_name)
+#define BIND_TEX_RO_DEPTH_AS(res_name, as_var_name) BIND_RES_AS(READ_TEX_DEPTH_AS, res_name, as_var_name)
+#define BIND_BUF_SRV_AS(res_name, as_var_name) BIND_RES_AS(READ_BUF_SRV_AS, res_name, as_var_name)
+#define BIND_BUF_RW_UAV_AS(res_name, as_var_name) BIND_RES_AS(MODIFY_BUF_UAV_AS, res_name, as_var_name)
+
+#define BIND_OPTIONAL_TEX_SRV_AS(res_name, as_var_name) BIND_RES_AS(READ_OPTIONAL_TEX_SRV_AS, res_name, as_var_name)
+
+#define BIND_PREV_FRAME_TEX_SRV_AS(res_name, as_var_name) BIND_RES_AS(READ_PREV_FRAME_TEX_SRV_AS, res_name, as_var_name)
+
 
 #define EXEC(func) fg::dsl::ExecFunction<fg::dsl::Name<#func>> NAME_WITH_LINE(execFunc);
 #define NO_EXEC() fg::dsl::NoExecFunction NAME_WITH_LINE(noExecFunc);

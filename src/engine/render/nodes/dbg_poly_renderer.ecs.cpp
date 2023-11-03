@@ -45,8 +45,8 @@ void dbg_poly_render_exec(gapi::CmdEncoder& encoder)
 }
 
 NODE_BEGIN(dbg_poly_combine)
-  READ_TEX_SRV(transparent_poly_acc)
-  READ_TEX_SRV(transparent_poly_revealage)
+  BIND_TEX_SRV_AS(transparent_poly_acc, dbgPolyAcc)
+  BIND_TEX_SRV_AS(transparent_poly_revealage, dbgPolyRevealage)
 
   RP_BEGIN()
     TARGET(final_target),
@@ -58,12 +58,8 @@ NODE_END()
 
 NODE_EXEC()
 static
-void dbg_poly_combine_exec(gapi::CmdEncoder& encoder,
-                           const gapi::TextureHandle transparent_poly_acc,
-                           const gapi::TextureHandle transparent_poly_revealage)
+void dbg_poly_combine_exec(gapi::CmdEncoder& encoder)
 {
-  tfx::set_extern("dbgPolyAcc", transparent_poly_acc);
-  tfx::set_extern("dbgPolyRevealage", transparent_poly_revealage);
   query_dbg_poly_renderer([&encoder](auto& renderer){
     renderer.combine(encoder);
   });

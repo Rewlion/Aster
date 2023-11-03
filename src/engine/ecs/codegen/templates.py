@@ -187,12 +187,12 @@ def generate_fg_create_buffer(name, usage, state, size):
     );"""
 
 
-def generate_fg_modify_buffer(name, state):
-  return f"""    auto {name} = reg.modifyBuffer("{name}", {state});"""
+def generate_fg_modify_buffer(name, name_alias, state):
+  return f"""    auto {name_alias if name_alias != "" else name} = reg.modifyBuffer("{name}", {state});"""
 
 
-def generate_fg_read_optional_buffer(name, state, optional):
-  return f"""    auto {name} = reg.readBuffer("{name}", {state}{f", {optional}" if optional != "" else ""});"""
+def generate_fg_read_optional_buffer(name, name_alias, state, optional):
+  return f"""    auto {name_alias if name_alias != "" else name} = reg.readBuffer("{name}", {state}{f", {optional}" if optional != "" else ""});"""
 
 
 def generate_fg_create_texture(
@@ -280,6 +280,10 @@ def generate_fg_exec_fn_bridge(encoder_name, capture_list, args_list, exec_fn, e
 
 def generate_fg_no_exec_fn():
   return "    return [](gapi::CmdEncoder&){};"
+
+
+def generate_fg_bind_shvar(res, var):
+  return f"""      tfx::set_extern("{var}", {res}.get());"""
 
 
 def generate_fg_node(name, build_actions, exec_fn_action, has_render_size_access):

@@ -96,33 +96,29 @@ void atm_res_import_exec(gapi::CmdEncoder& encoder,
 }
 
 NODE_BEGIN(atm_ap_lut_render)
-  READ_TEX_SRV(atm_tr_lut)
-  READ_TEX_SRV(atm_ms_lut)
-  MODIFY_TEX_UAV(atm_ap_lut)
+  BIND_TEX_SRV_AS(atm_tr_lut, trLUT)
+  BIND_TEX_SRV_AS(atm_ms_lut, msLUT)
+  BIND_TEX_RW_UAV_AS(atm_ap_lut, apLUT)
+
   EXEC(atm_ap_lut_render_exec)
 NODE_END()
 
 NODE_EXEC()
 static
-void atm_ap_lut_render_exec(gapi::CmdEncoder& encoder,
-                            const gapi::TextureHandle atm_tr_lut,
-                            const gapi::TextureHandle atm_ms_lut,
-                            const gapi::TextureHandle atm_ap_lut)
+void atm_ap_lut_render_exec(gapi::CmdEncoder& encoder)
 {
-  tfx::set_extern("trLUT", atm_tr_lut);
-  tfx::set_extern("msLUT", atm_ms_lut);
-  tfx::set_extern("apLUT", atm_ap_lut);
   tfx::activate_technique("AerialPerspective", encoder);
-
   encoder.updateResources();
   encoder.dispatch(1,1,32);
 }
 
 NODE_BEGIN(atm_tr_lut_render)
   ORDER_ME_AFTER(frame_preparing)
+
   RP_BEGIN()
     TARGET_LOAD_DONTCARE(atm_tr_lut)
   RP_END()
+
   EXEC(atm_tr_lut_render_exec)
 NODE_END()
 
@@ -131,124 +127,104 @@ static
 void atm_tr_lut_render_exec(gapi::CmdEncoder& encoder)
 {
   tfx::activate_technique("TransmittanceLUT", encoder);
-
   encoder.updateResources();
   encoder.draw(4, 1, 0, 0);
 }
 
 NODE_BEGIN(atm_ms_lut_render)
-  READ_TEX_SRV(atm_tr_lut)
+  BIND_TEX_SRV_AS(atm_tr_lut, trLUT)
+
   RP_BEGIN()
     TARGET_LOAD_DONTCARE(atm_ms_lut)
   RP_END()
+
   EXEC(atm_ms_lut_render_exec)
 NODE_END()
 
 NODE_EXEC()
 static
-void atm_ms_lut_render_exec(gapi::CmdEncoder& encoder,
-                            const gapi::TextureHandle atm_tr_lut)
+void atm_ms_lut_render_exec(gapi::CmdEncoder& encoder)
 {
-  tfx::set_extern("trLUT", atm_tr_lut);
   tfx::activate_technique("MultipleScatteringLUT", encoder);
-
   encoder.updateResources();
   encoder.draw(4, 1, 0, 0);
 }
 
 NODE_BEGIN(atm_sky_lut_render)
-  READ_TEX_SRV(atm_tr_lut)
-  READ_TEX_SRV(atm_ms_lut)
+  BIND_TEX_SRV_AS(atm_tr_lut, trLUT)
+  BIND_TEX_SRV_AS(atm_ms_lut, msLUT)
+
   RP_BEGIN()
     TARGET_LOAD_DONTCARE(atm_sky_lut)
   RP_END()
+
   EXEC(atm_sky_lut_render_exec)
 NODE_END()
 
 NODE_EXEC()
 static
-void atm_sky_lut_render_exec(gapi::CmdEncoder& encoder,
-                             const gapi::TextureHandle atm_tr_lut,
-                             const gapi::TextureHandle atm_ms_lut)
+void atm_sky_lut_render_exec(gapi::CmdEncoder& encoder)
 {
-  tfx::set_extern("trLUT", atm_tr_lut);
-  tfx::set_extern("msLUT", atm_ms_lut);
   tfx::activate_technique("SkyLUT", encoder);
-
   encoder.updateResources();
   encoder.draw(4, 1, 0, 0);
 }
 
 NODE_BEGIN(atm_sph_render)
-  MODIFY_BUF_UAV(sph_buf)
-  READ_TEX_SRV(atm_tr_lut)
-  READ_TEX_SRV(atm_sky_lut)
+  BIND_BUF_RW_UAV_AS(sph_buf, atmParamsBuffer)
+  BIND_TEX_SRV_AS(atm_tr_lut, trLUT)
+  BIND_TEX_SRV_AS(atm_sky_lut, skyLUT)
+
   EXEC(atm_sph_render_exec)
 NODE_END()
 
 NODE_EXEC()
 static
-void atm_sph_render_exec(gapi::CmdEncoder& encoder,
-                         const gapi::BufferHandler sph_buf,
-                         const gapi::TextureHandle atm_tr_lut,
-                         const gapi::TextureHandle atm_sky_lut)
+void atm_sph_render_exec(gapi::CmdEncoder& encoder)
 {
-  tfx::set_extern("trLUT", atm_tr_lut);
-  tfx::set_extern("skyLUT", atm_sky_lut);
-  tfx::set_extern("atmParamsBuffer", sph_buf);
   tfx::activate_technique("AtmSphericalHarmonics", encoder);
-
   encoder.updateResources();
   encoder.dispatch(1,1,1);
 }
 
 NODE_BEGIN(atm_sky_apply)
-  READ_TEX_SRV(atm_ap_lut)
-  READ_TEX_SRV(atm_sky_lut)
-  READ_TEX_SRV(atm_tr_lut)
-  READ_TEX_DEPTH(gbuffer_depth)
+  BIND_TEX_SRV_AS(atm_ap_lut, apLUT)
+  BIND_TEX_SRV_AS(atm_sky_lut, skyLUT)
+  BIND_TEX_SRV_AS(atm_tr_lut, trLUT)
+  BIND_TEX_RO_DEPTH_AS(gbuffer_depth, gbufferDepth)
+
   RP_BEGIN()
     TARGET(resolve_target)
   RP_END()
+
   EXEC(atm_sky_apply_exec)
 NODE_END()
 
 NODE_EXEC()
 static
-void atm_sky_apply_exec(gapi::CmdEncoder& encoder,
-                        const gapi::TextureHandle atm_ap_lut,
-                        const gapi::TextureHandle atm_sky_lut,
-                        const gapi::TextureHandle atm_tr_lut,
-                        const gapi::TextureHandle gbuffer_depth)
+void atm_sky_apply_exec(gapi::CmdEncoder& encoder)
 {
-  tfx::set_extern("apLUT", atm_ap_lut);
-  tfx::set_extern("skyLUT", atm_sky_lut);
-  tfx::set_extern("trLUT", atm_tr_lut);
-  tfx::set_extern("gbufferDepth", gbuffer_depth);
-
   tfx::activate_technique("SkyApply", encoder);
   encoder.updateResources();
   encoder.draw(4, 1, 0, 0);
 }
 
 NODE_BEGIN(atm_envi_specular)
-  READ_TEX_SRV(atm_tr_lut)
-  READ_TEX_SRV(atm_sky_lut)
+  BIND_TEX_SRV_AS(atm_tr_lut, trLUT)
+  BIND_TEX_SRV_AS(atm_sky_lut, skyLUT)
+
   MODIFY_TEX_RT(atm_envi_specular)
   READ_BLOB(atm_envi_mips, int)
+
   EXEC(atm_envi_specular_exec)
 NODE_END()
 
 NODE_EXEC()
 static
 void atm_envi_specular_exec(gapi::CmdEncoder& encoder,
-                            const gapi::TextureHandle atm_tr_lut,
-                            const gapi::TextureHandle atm_sky_lut,
                             const gapi::TextureHandle atm_envi_specular,
                             const int atm_envi_mips)
 {
-  tfx::set_extern("trLUT", atm_tr_lut);
-  tfx::set_extern("skyLUT", atm_sky_lut);
   tfx::set_extern("enviMips", (float)atm_envi_mips);
 
   for (int i = 0; i < atm_envi_mips; ++i)

@@ -14,7 +14,7 @@ static bool is_clustered_render_dbg_enabled = true;
 
 NODE_BEGIN(dbg_clustered_render)
   ORDER_ME_BEFORE(ui)
-  MODIFY_TEX_RT_AS(final_target, AS(rt))
+  MODIFY_TEX_RT_AS(final_target, rt)
   EXEC(dbg_clustered_render_exec)
 NODE_END()
 
