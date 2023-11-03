@@ -33,7 +33,6 @@ void mk_fg_node_post_process(Event*, ComponentsAccessor&)
 
     reg.requestRenderPass()
       .addTarget(final_target, gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
-
     ;
 
 

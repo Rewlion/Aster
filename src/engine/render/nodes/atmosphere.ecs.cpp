@@ -96,9 +96,9 @@ void atm_res_import_exec(gapi::CmdEncoder& encoder,
 }
 
 NODE_BEGIN(atm_ap_lut_render)
-  READ_TEX(atm_tr_lut, TEX_STATE(ShaderRead))
-  READ_TEX(atm_ms_lut, TEX_STATE(ShaderRead))
-  MODIFY_TEX(atm_ap_lut, TEX_STATE(ShaderReadWrite))
+  READ_TEX_SRV(atm_tr_lut)
+  READ_TEX_SRV(atm_ms_lut)
+  MODIFY_TEX_UAV(atm_ap_lut)
   EXEC(atm_ap_lut_render_exec)
 NODE_END()
 
@@ -137,7 +137,7 @@ void atm_tr_lut_render_exec(gapi::CmdEncoder& encoder)
 }
 
 NODE_BEGIN(atm_ms_lut_render)
-  READ_TEX(atm_tr_lut, TEX_STATE(ShaderRead))
+  READ_TEX_SRV(atm_tr_lut)
   RP_BEGIN()
     TARGET_LOAD_DONTCARE(atm_ms_lut)
   RP_END()
@@ -157,8 +157,8 @@ void atm_ms_lut_render_exec(gapi::CmdEncoder& encoder,
 }
 
 NODE_BEGIN(atm_sky_lut_render)
-  READ_TEX(atm_tr_lut, TEX_STATE(ShaderRead))
-  READ_TEX(atm_ms_lut, TEX_STATE(ShaderRead))
+  READ_TEX_SRV(atm_tr_lut)
+  READ_TEX_SRV(atm_ms_lut)
   RP_BEGIN()
     TARGET_LOAD_DONTCARE(atm_sky_lut)
   RP_END()
@@ -180,9 +180,9 @@ void atm_sky_lut_render_exec(gapi::CmdEncoder& encoder,
 }
 
 NODE_BEGIN(atm_sph_render)
-  MODIFY_BUF(sph_buf, BUF_STATE(UAV_RW))
-  READ_TEX(atm_tr_lut, TEX_STATE(ShaderRead))
-  READ_TEX(atm_sky_lut, TEX_STATE(ShaderRead))
+  MODIFY_BUF_UAV(sph_buf)
+  READ_TEX_SRV(atm_tr_lut)
+  READ_TEX_SRV(atm_sky_lut)
   EXEC(atm_sph_render_exec)
 NODE_END()
 
@@ -203,10 +203,10 @@ void atm_sph_render_exec(gapi::CmdEncoder& encoder,
 }
 
 NODE_BEGIN(atm_sky_apply)
-  READ_TEX(atm_ap_lut, TEX_STATE(ShaderRead))
-  READ_TEX(atm_sky_lut, TEX_STATE(ShaderRead))
-  READ_TEX(atm_tr_lut, TEX_STATE(ShaderRead))
-  READ_TEX(gbuffer_depth, TEX_STATE(DepthReadStencilRead))
+  READ_TEX_SRV(atm_ap_lut)
+  READ_TEX_SRV(atm_sky_lut)
+  READ_TEX_SRV(atm_tr_lut)
+  READ_TEX_DEPTH(gbuffer_depth)
   RP_BEGIN()
     TARGET(resolve_target)
   RP_END()
@@ -232,9 +232,9 @@ void atm_sky_apply_exec(gapi::CmdEncoder& encoder,
 }
 
 NODE_BEGIN(atm_envi_specular)
-  READ_TEX(atm_tr_lut, TEX_STATE(ShaderRead))
-  READ_TEX(atm_sky_lut, TEX_STATE(ShaderRead))
-  MODIFY_TEX(atm_envi_specular, TEX_STATE(RenderTarget))
+  READ_TEX_SRV(atm_tr_lut)
+  READ_TEX_SRV(atm_sky_lut)
+  MODIFY_TEX_RT(atm_envi_specular)
   READ_BLOB(atm_envi_mips, int)
   EXEC(atm_envi_specular_exec)
 NODE_END()

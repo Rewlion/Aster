@@ -2,7 +2,7 @@
 #include <engine/tfx/tfx.h>
 
 NODE_BEGIN(post_process)
-  READ_TEX(transparent_target, TEX_STATE(ShaderRead))
+  READ_TEX_SRV(transparent_target)
   CREATE_TEX_2D(final_target, TEX_SIZE_RELATIVE(), R8G8B8A8_UNORM, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
   RP_BEGIN()
     TARGET(final_target)

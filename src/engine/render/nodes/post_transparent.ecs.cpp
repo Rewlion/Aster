@@ -54,10 +54,10 @@ void dbg_text_exec(gapi::CmdEncoder& encoder)
 }
 
 NODE_BEGIN(TAA)
-  READ_TEX_AS(final_target, AS(taa_current_frame), TEX_STATE(ShaderRead))
-  READ_TEX_PREV_FRAME_AS(final_antialiased_target, AS(taa_prev_frame), TEX_STATE(ShaderRead))
-  READ_TEX(motionBuf, TEX_STATE(ShaderRead))
-  READ_TEX(gbuffer_depth, TEX_STATE(DepthReadStencilRead))
+  READ_TEX_SRV_AS(final_target, AS(taa_current_frame))
+  READ_TEX_SRV_PREV_FRAME_AS(final_antialiased_target, AS(taa_prev_frame))
+  READ_TEX_SRV(motionBuf)
+  READ_TEX_DEPTH(gbuffer_depth)
   CREATE_TEX_2D(final_antialiased_target, TEX_SIZE_RELATIVE(), R8G8B8A8_UNORM, TEX_USAGE3(RT,SRV,TRANSFER_SRC), TEX_STATE(RenderTarget))
 
   RP_BEGIN()
@@ -87,8 +87,8 @@ void taa_exec(const gapi::TextureHandle taa_current_frame,
 }
 
 NODE_BEGIN(present)
-  READ_TEX(final_antialiased_target, TEX_STATE(TransferSrc))
-  MODIFY_TEX(backbuffer, TEX_STATE(TransferDst))
+  READ_TEX_TRANSFER_SRC(final_antialiased_target)
+  MODIFY_TEX_TRANSFER_DST(backbuffer)
   EXEC(present_exec)
 NODE_END()
 

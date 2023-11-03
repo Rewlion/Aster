@@ -77,19 +77,19 @@ void gbuffer_main_pass_exec(gapi::CmdEncoder& encoder)
 }
 
 NODE_BEGIN(late_opaque_sync)
-  RENAME_TEX(opaque_depth, late_opaque_depth, TEX_STATE(DepthReadStencilRead))
+  RENAME_TEX_RO_DEPTH(opaque_depth, late_opaque_depth)
   NO_EXEC()
 NODE_END()
 
 NODE_BEGIN(gbuffer_resolve)
   CREATE_TEX_2D(resolve_target, TEX_SIZE_RELATIVE(), R32G32B32A32_S, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
-  READ_TEX(gbuf0, TEX_STATE(ShaderRead))
-  READ_TEX(gbuf1, TEX_STATE(ShaderRead))
-  READ_TEX(gbuf2, TEX_STATE(ShaderRead))
-  RENAME_TEX(late_opaque_depth, gbuffer_depth, TEX_STATE(DepthReadStencilRead))
-  READ_BUF(sph_buf, BUF_STATE(SRV))
-  READ_TEX_OPTIONAL(atm_envi_specular, TEX_STATE(ShaderRead))
-  READ_TEX_OPTIONAL(atm_envi_brdf, TEX_STATE(ShaderRead))
+  READ_TEX_SRV(gbuf0)
+  READ_TEX_SRV(gbuf1)
+  READ_TEX_SRV(gbuf2)
+  RENAME_TEX_RO_DEPTH(late_opaque_depth, gbuffer_depth)
+  READ_BUF_SRV(sph_buf)
+  READ_TEX_SRV_OPTIONAL(atm_envi_specular)
+  READ_TEX_SRV_OPTIONAL(atm_envi_brdf)
 
   RP_BEGIN()
     TARGET_CLEARED(resolve_target, UCLEAR(0))
@@ -123,6 +123,6 @@ void gbuffer_resolve_exec(gapi::CmdEncoder& encoder,
 }
 
 NODE_BEGIN(transparent_sync)
-  RENAME_TEX(resolve_target, transparent_target, TEX_STATE(RenderTarget))
+  RENAME_TEX_RT(resolve_target, transparent_target)
   NO_EXEC()
 NODE_END()

@@ -54,10 +54,10 @@ void virtual_terrain_on_tick(
 }
 
 NODE_BEGIN(terrain)
-  MODIFY_TEX(gbuf0, TEX_STATE(RenderTarget))
-  MODIFY_TEX(gbuf1, TEX_STATE(RenderTarget))
-  MODIFY_TEX(gbuf2, TEX_STATE(RenderTarget))
-  MODIFY_TEX(opaque_depth, TEX_STATE(DepthWriteStencilWrite))
+  MODIFY_TEX_RT(gbuf0)
+  MODIFY_TEX_RT(gbuf1)
+  MODIFY_TEX_RT(gbuf2)
+  MODIFY_TEX_DEPTH(opaque_depth)
 
   CREATE_TEX_2D(terrainFeedback, TEX_SIZE_RELATIVE_DIV(10), R32_UINT,  TEX_USAGE2(UAV, TRANSFER_SRC), TEX_STATE(ShaderReadWrite))
   
@@ -98,8 +98,8 @@ void terrain_exec(gapi::CmdEncoder& encoder,
 NODE_BEGIN(terrain_update_vtex)
   ORDER_ME_AFTER(terrain)
 
-  READ_TEX(terrainFeedback, TEX_STATE(TransferSrc))
-  MODIFY_TEX(gbuf0, TEX_STATE(RenderTarget)) // ??
+  READ_TEX_TRANSFER_SRC(terrainFeedback)
+  MODIFY_TEX_RT(gbuf0) // ??
 
   EXEC(terrain_update_vtex_exec)
 NODE_END()

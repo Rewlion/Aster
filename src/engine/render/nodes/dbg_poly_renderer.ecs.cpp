@@ -45,8 +45,8 @@ void dbg_poly_render_exec(gapi::CmdEncoder& encoder)
 }
 
 NODE_BEGIN(dbg_poly_combine)
-  READ_TEX(transparent_poly_acc, TEX_STATE(ShaderRead))
-  READ_TEX(transparent_poly_revealage, TEX_STATE(ShaderRead))
+  READ_TEX_SRV(transparent_poly_acc)
+  READ_TEX_SRV(transparent_poly_revealage)
 
   RP_BEGIN()
     TARGET(final_target),
