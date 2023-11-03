@@ -76,39 +76,74 @@ static EventSystemRegistration virtual_terrain_on_tick_registration(
 );
 
 
-static void virtual_terrain_node_internal(Event* event, ComponentsAccessor& accessor)
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_terrain(Event*, ComponentsAccessor&)
 {
-  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+  fg::register_node("terrain", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    const uint2 __renderSize__ = reg.getRenderSize();
 
-  virtual_terrain_node(*casted_event);
+    auto gbuf0 = reg.modifyTexture("gbuf0", gapi::TextureState::RenderTarget);
+    auto gbuf1 = reg.modifyTexture("gbuf1", gapi::TextureState::RenderTarget);
+    auto gbuf2 = reg.modifyTexture("gbuf2", gapi::TextureState::RenderTarget);
+    auto opaque_depth = reg.modifyTexture("opaque_depth", gapi::TextureState::DepthWriteStencilWrite);
+
+    auto terrainFeedback = reg.createTexture("terrainFeedback",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R32_UINT,
+        .extent =          uint3(__renderSize__ / uint(10), 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_UAV | gapi::TextureUsage::TEX_USAGE_TRANSFER_SRC)
+      },
+      gapi::TextureState::ShaderReadWrite,
+      false
+    );
+
+
+    return [gbuf0,gbuf1,gbuf2,opaque_depth,terrainFeedback](gapi::CmdEncoder& encoder)
+    {
+      terrain_exec(encoder, gbuf0.get(), gbuf1.get(), gbuf2.get(), opaque_depth.get(), terrainFeedback.get());
+    };
+  });
 }
 
-
-static EventSystemRegistration virtual_terrain_node_registration(
-  virtual_terrain_node_internal,
+static
+EventSystemRegistration mk_fg_node_terrain_registration(
+  mk_fg_node_terrain,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
-
   },
-  "virtual_terrain_node"
+  "mk_fg_node_terrain"
 );
 
 
-static void virtual_terrain_update_vtex_node_internal(Event* event, ComponentsAccessor& accessor)
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_terrain_update_vtex(Event*, ComponentsAccessor&)
 {
-  const Engine::OnFrameGraphInit* casted_event = reinterpret_cast<const Engine::OnFrameGraphInit*>(event);
+  fg::register_node("terrain_update_vtex", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    reg.orderMeAfter("terrain");
+    auto terrainFeedback = reg.readTexture("terrainFeedback", gapi::TextureState::TransferSrc, false);
+    auto gbuf0 = reg.modifyTexture("gbuf0", gapi::TextureState::RenderTarget);
 
-  virtual_terrain_update_vtex_node(*casted_event);
+    return [terrainFeedback](gapi::CmdEncoder& encoder)
+    {
+      terrain_update_vtex_exec(encoder, terrainFeedback.get());
+    };
+  });
 }
 
-
-static EventSystemRegistration virtual_terrain_update_vtex_node_registration(
-  virtual_terrain_update_vtex_node_internal,
+static
+EventSystemRegistration mk_fg_node_terrain_update_vtex_registration(
+  mk_fg_node_terrain_update_vtex,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
-
   },
-  "virtual_terrain_update_vtex_node"
+  "mk_fg_node_terrain_update_vtex"
 );
 
 

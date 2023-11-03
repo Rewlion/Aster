@@ -278,6 +278,10 @@ def generate_fg_exec_fn_bridge(encoder_name, capture_list, args_list, exec_fn, e
     }};"""
 
 
+def generate_fg_no_exec_fn():
+  return "    return [](gapi::CmdEncoder&){};"
+
+
 def generate_fg_node(name, build_actions, exec_fn_action, has_render_size_access):
   renderSize = "\n    const uint2 __renderSize__ = reg.getRenderSize();\n" if has_render_size_access else ""
   registrationFnName = f"mk_fg_node_{name}"

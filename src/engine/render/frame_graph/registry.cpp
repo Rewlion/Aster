@@ -278,6 +278,13 @@ namespace fg
                                           gapi::LoadOp::Load, gapi::StoreOp::Store);
   }
 
+  auto Registry::RpBuilder::addRWDepth(const TextureRequest tex, const gapi::LoadOp depth_load,
+                                       const gapi::StoreOp depth_store) && -> RpBuilder&&
+  {
+    return std::move(*this).addDepth(tex, depth_load, depth_store,
+                                     gapi::LoadOp::Load, gapi::StoreOp::Store);
+  }
+
   auto Registry::RpBuilder::addRWDepth(const char* tex_name, const gapi::LoadOp depth_load,
                                        const gapi::StoreOp depth_store) && -> RpBuilder&&
   {

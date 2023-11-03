@@ -64,7 +64,13 @@ namespace fg::dsl
   struct TextureFormat {};
 
   struct RelativeSize {};
+
+  template<uint32_t>
+  struct RelativeSizeMul {};
   
+  template<uint32_t>
+  struct RelativeSizeDiv {};
+
   template<uint3>
   struct AbsSize{};
 
@@ -158,6 +164,8 @@ namespace fg::dsl
   template<class name>
   struct ExecFunction {};
 
+  struct NoExecFunction {};
+
   #define FG_NODE_DSL() [[clang::annotate("fg_node_dsl")]]
   #define NODE_EXEC() [[clang::annotate("fg_node_exec")]]
 }
@@ -229,16 +237,18 @@ namespace fg::dsl
   fg::dsl::ReadOptionalBuffer<\
     fg::dsl::Name<#name>,\
     fg::dsl::NotOptional,\
-    fg::dsl::BufferState<gapi::BufferState::BF_STATE_ ## state>> NAME_WITH_LINE(readBuffer);
+    fg::dsl::BufferState<state>> NAME_WITH_LINE(readBuffer);
 
 #define READ_BUF_OPTIONAL(name, state)\
   fg::dsl::ReadOptionalBuffer<\
     fg::dsl::Name<#name>,\
     fg::dsl::Optional,\
-    fg::dsl::BufferState<gapi::BufferState::BF_STATE_ ## state>> NAME_WITH_LINE(readBuffer);
+    fg::dsl::BufferState<state>> NAME_WITH_LINE(readBuffer);
 
 #define AS(name) fg::dsl::NameAlias<#name>
 #define TEX_SIZE_RELATIVE() fg::dsl::RelativeSize
+#define TEX_SIZE_RELATIVE_DIV(v) fg::dsl::RelativeSizeDiv<uint(v)>
+#define TEX_SIZE_RELATIVE_MUL(v) fg::dsl::RelativeSizeMul<uint(v)>
 #define TEX_SIZE(x,y,z) fg::dsl::AbsSize<uint3(x,y,z)>
 #define TEX_SIZE2(xy) fg::dsl::AbsSize<uint3(xy,1)>
 #define TEX_MIPS(n) n
@@ -312,6 +322,7 @@ namespace fg::dsl
 #define READ_TEX_OPTIONAL(name, state)\
   fg::dsl::ReadOptionalTexture<\
     fg::dsl::Name<#name>,\
+    fg::dsl::Stub,\
     fg::dsl::TextureState<state>,\
     fg::dsl::Optional\
   > NAME_WITH_LINE(readOptTex);
@@ -366,3 +377,4 @@ namespace fg::dsl
   > NAME_WITH_LINE(modifyBlob);
 
 #define EXEC(func) fg::dsl::ExecFunction<fg::dsl::Name<#func>> NAME_WITH_LINE(execFunc);
+#define NO_EXEC() fg::dsl::NoExecFunction NAME_WITH_LINE(noExecFunc);

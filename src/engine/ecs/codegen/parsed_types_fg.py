@@ -107,6 +107,12 @@ class TemplateParamExtractor:
     elif sizeTypeName == "RelativeSize":
       self.extent = "uint3(__renderSize__, 1)"
       self.context.markRenderSizeAccess()
+    elif sizeTypeName == "RelativeSizeMul":
+      self.extent = f"uint3(__renderSize__ * {self.extractTemplateArgumentsAsIs(sizeType)}, 1)"
+      self.context.markRenderSizeAccess()
+    elif sizeTypeName == "RelativeSizeDiv":
+      self.extent = f"uint3(__renderSize__ / {self.extractTemplateArgumentsAsIs(sizeType)}, 1)"
+      self.context.markRenderSizeAccess()
     else:
       raise ValueError(f"Unknown extent type `{sizeTypeName}`")
 
@@ -396,6 +402,15 @@ class ExecFunctionAction(ExecFnAction):
         encoderName = arg.spelling
         argsList = argsList + [encoderName]
     return templates.generate_fg_exec_fn_bridge(encoderName, captureList, argsList, self.name, exec_actions)
+
+
+class NoExecFunctionAction(ExecFnAction):
+  def __init__(self, field_cursor, context):
+    pass
+
+
+  def generate(self, exec_actions):
+    return templates.generate_fg_no_exec_fn()
 
 
 class Target(BuildAction):

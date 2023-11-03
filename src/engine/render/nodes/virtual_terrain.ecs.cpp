@@ -1,10 +1,8 @@
 #include <engine/assert.h>
 #include <engine/assets/assets_manager.h>
 #include <engine/ecs/ecs.h>
-#include <engine/ecs/macros.h>
-#include <engine/events.h>
 #include <engine/render/ecs_utils.h>
-#include <engine/render/frame_graph/frame_graph.h>
+#include <engine/render/frame_graph/dsl.h>
 #include <engine/render/terrain_render.h>
 #include <engine/tfx/tfx.h>
 #include <engine/utils/bits.h>
@@ -55,81 +53,65 @@ void virtual_terrain_on_tick(
   vterrain_render.setView(cameraPos);
 }
 
-ECS_EVENT_SYSTEM()
+NODE_BEGIN(terrain)
+  MODIFY_TEX(gbuf0, TEX_STATE(RenderTarget))
+  MODIFY_TEX(gbuf1, TEX_STATE(RenderTarget))
+  MODIFY_TEX(gbuf2, TEX_STATE(RenderTarget))
+  MODIFY_TEX(opaque_depth, TEX_STATE(DepthWriteStencilWrite))
+
+  CREATE_TEX_2D(terrainFeedback, TEX_SIZE_RELATIVE_DIV(10), R32_UINT,  TEX_USAGE2(UAV, TRANSFER_SRC), TEX_STATE(ShaderReadWrite))
+  
+  EXEC(terrain_exec)
+NODE_END()
+
+NODE_EXEC()
 static
-void virtual_terrain_node(
-  const Engine::OnFrameGraphInit&
-)
+void terrain_exec(gapi::CmdEncoder& encoder,
+                  const gapi::TextureHandle gbuf0,
+                  const gapi::TextureHandle gbuf1,
+                  const gapi::TextureHandle gbuf2,
+                  const gapi::TextureHandle opaque_depth,
+                  const gapi::TextureHandle terrainFeedback)
 {
-  fg::register_node("terrain", FG_FILE_DECL,
-    [](fg::Registry& reg)
+  query_vterrain([&](auto& terrain)
   {
-    auto gbuf0 = reg.modifyTexture("gbuf0", gapi::TextureState::RenderTarget);
-    auto gbuf1 = reg.modifyTexture("gbuf1", gapi::TextureState::RenderTarget);
-    auto gbuf2 = reg.modifyTexture("gbuf2", gapi::TextureState::RenderTarget);
-    auto gbufDepth = reg.modifyTexture("opaque_depth", gapi::TextureState::DepthWriteStencilWrite);
+    terrain.updateGpuData(encoder);
+    encoder.clearColorTexture(terrainFeedback, gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite, {(uint32_t)~0}, {});
 
-    const int2 feedbackSize = Engine::Render::get_render_size() / 10;
-    auto feedbackBuf = reg.createTexture("terrainFeedback", gapi::TextureAllocationDescription{
-      .format = gapi::TextureFormat::R32_UINT,
-      .extent = {feedbackSize, 1.0},
-      .usage = gapi::TEX_USAGE_UAV | gapi::TEX_USAGE_TRANSFER_SRC
-    }, gapi::TextureState::ShaderReadWrite);
-
-    auto feedbackSizeBlob = reg.createBlob<int2>("feedbackSize");
-
-    return [gbuf0, gbuf1, gbuf2, gbufDepth, feedbackBuf, feedbackSizeBlob, feedbackSize](gapi::CmdEncoder& encoder)
-    {
-      feedbackSizeBlob.get() = feedbackSize;
-
-      query_vterrain([&](auto& terrain)
+    encoder.beginRenderpass(
       {
-        terrain.updateGpuData(encoder);
-        encoder.clearColorTexture(feedbackBuf.get(), gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite, {(uint32_t)~0}, {});
-
-        encoder.beginRenderpass(
-          {
-            gapi::RenderPassAttachment{.texture = gbuf0.get()},
-            gapi::RenderPassAttachment{.texture = gbuf1.get()},
-            gapi::RenderPassAttachment{.texture = gbuf2.get()}
-          },
-          gapi::RenderPassDepthStencilAttachment{
-            .texture = gbufDepth.get(),
-            .initialState = gapi::TextureState::DepthWriteStencilWrite,
-            .finalState = gapi::TextureState::DepthWriteStencilWrite,
-          }
-        );
-        terrain.render(encoder, feedbackBuf.get(), feedbackSize);
-        encoder.endRenderpass();
-      });
-    };
+        gapi::RenderPassAttachment{.texture = gbuf0},
+        gapi::RenderPassAttachment{.texture = gbuf1},
+        gapi::RenderPassAttachment{.texture = gbuf2}
+      },
+      gapi::RenderPassDepthStencilAttachment{
+        .texture = opaque_depth,
+        .initialState = gapi::TextureState::DepthWriteStencilWrite,
+        .finalState = gapi::TextureState::DepthWriteStencilWrite,
+      }
+    );
+    terrain.render(encoder, terrainFeedback, uint2(gapi::get_texture_extent(terrainFeedback)));
+    encoder.endRenderpass();
   });
 }
 
-ECS_EVENT_SYSTEM()
-static
-void virtual_terrain_update_vtex_node(
-  const Engine::OnFrameGraphInit&
-)
-{
-  fg::register_node("terrain_update_vtex", FG_FILE_DECL,
-    [](fg::Registry& reg)
-  {
-    reg.orderMeAfter("terrain");
-    auto feedbackBuf = reg.readTexture("terrainFeedback", gapi::TextureState::TransferSrc);
-    auto feedbackSize = reg.readBlob<int2>("feedbackSize");
-    
-    auto gbuf0 = reg.modifyTexture("gbuf0", gapi::TextureState::RenderTarget);
-    // auto gbuf1 = reg.modifyTexture("gbuf1", gapi::TextureState::RenderTarget);
-    // auto gbuf2 = reg.modifyTexture("gbuf2", gapi::TextureState::RenderTarget);
+NODE_BEGIN(terrain_update_vtex)
+  ORDER_ME_AFTER(terrain)
 
-    return [feedbackBuf, feedbackSize](gapi::CmdEncoder& encoder)
-    {
-      query_vterrain([&](auto& terrain)
-      {
-        terrain.updateVTex(encoder, feedbackBuf.get(), feedbackSize.get());
-      });
-    };
+  READ_TEX(terrainFeedback, TEX_STATE(TransferSrc))
+  MODIFY_TEX(gbuf0, TEX_STATE(RenderTarget)) // ??
+
+  EXEC(terrain_update_vtex_exec)
+NODE_END()
+
+NODE_EXEC()
+static
+void terrain_update_vtex_exec(gapi::CmdEncoder& encoder,
+                              const gapi::TextureHandle terrainFeedback)
+{
+  query_vterrain([&](auto& terrain)
+  {
+    terrain.updateVTex(encoder, terrainFeedback, gapi::get_texture_extent(terrainFeedback));
   });
 }
 
