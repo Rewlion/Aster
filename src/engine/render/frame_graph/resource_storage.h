@@ -38,6 +38,8 @@ namespace fg
       void reset();
 
     private:
+      void freeResource(Resource&);
+
       void createTexture(const res_id_t, const gapi::TextureAllocationDescription&);
       void createSampler(const res_id_t, const gapi::SamplerAllocationDescription&);
       void createBuffer(const res_id_t, const gapi::BufferAllocationDescription&, const gapi::BufferState);
@@ -70,9 +72,28 @@ namespace fg
   {
     public:
       void importResTo(const res_id_t, ResourceStorage&);
-      void createOnce(const res_id_t, const Registry::Resource&);
+      void create(const res_id_t, const Registry::Resource&);
       void reset() { m_Storage.reset(); }
     private:
+
+      template<class T>
+      static
+      auto hasAllocDescChanged(const Registry::Resource& prev,
+                               const Registry::Resource& cur)
+      {
+        if (const auto* prevBufInfo = std::get_if<T>(&prev))
+        {
+          const auto& oldAllocDesc = prevBufInfo->allocDesc;
+          const auto& newAllocDesc = std::get<T>(cur).allocDesc;
+
+          return std::memcmp(&oldAllocDesc, &newAllocDesc, sizeof(newAllocDesc)) > 0;
+        }
+        return false;
+      }
+
+    private:
+
       ResourceStorage m_Storage;
+      Utils::ResizableVector<Registry::Resource, res_id_t> m_CreateInfos;
   };
 }

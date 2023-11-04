@@ -344,7 +344,7 @@ namespace fg
             auto& res = m_Registry.m_Resources[vRes.resourceId];
             if (vRes.persistent)
             {
-              m_PersistentResourceStorage.createOnce(vRes.resourceId, res);
+              m_PersistentResourceStorage.create(vRes.resourceId, res);
               m_PersistentResourceStorage.importResTo(vRes.resourceId, getStorage());
             }
             else

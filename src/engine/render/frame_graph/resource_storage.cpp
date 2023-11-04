@@ -1,5 +1,6 @@
 #include "resource_storage.h"
 
+
 #include <engine/assert.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gapi/cmd_encoder.h>
@@ -135,26 +136,30 @@ namespace fg
   void ResourceStorage::reset()
   {
     for (auto& res: m_Resources)
-    {
-      if (auto* tex = std::get_if<TextureResource>(&res))
-      {
-        if (!tex->imported && tex->texture != gapi::TextureHandle::Invalid)
-          gapi::free_resource(tex->texture);
-      }
-      else if (auto* smp = std::get_if<SamplerResource>(&res))
-      {
-        if (smp->sampler != gapi::SamplerHandler::Invalid)
-          gapi::free_resource(smp->sampler);
-      }
-      else if (auto* buf = std::get_if<BufferResource>(&res))
-      {
-        if (buf->buffer != gapi::BufferHandler::Invalid)
-          gapi::free_resource(buf->buffer);
-      }
-    }
+      freeResource(res);
 
     m_Resources.clear();
     m_Blobs.clear();
+  }
+
+  void ResourceStorage::freeResource(Resource& res)
+  {
+    if (auto* tex = std::get_if<TextureResource>(&res))
+    {
+      if (!tex->imported && tex->texture != gapi::TextureHandle::Invalid)
+        gapi::free_resource(tex->texture);
+    }
+    else if (auto* smp = std::get_if<SamplerResource>(&res))
+    {
+      if (smp->sampler != gapi::SamplerHandler::Invalid)
+        gapi::free_resource(smp->sampler);
+    }
+    else if (auto* buf = std::get_if<BufferResource>(&res))
+    {
+      if (buf->buffer != gapi::BufferHandler::Invalid)
+        gapi::free_resource(buf->buffer);
+    }
+    res = std::monostate{};
   }
 
   void PersistentResourceStorage::importResTo(const res_id_t res_id, ResourceStorage& to)
@@ -166,10 +171,25 @@ namespace fg
     }
   }
 
-  void PersistentResourceStorage::createOnce(const res_id_t res_id, const Registry::Resource& res_info)
+  void PersistentResourceStorage::create(const res_id_t res_id, const Registry::Resource& res_info)
   {
     ResourceStorage::Resource& res = m_Storage.m_Resources[res_id];
     if (std::holds_alternative<std::monostate>(res))
+    {
       m_Storage.create(res_id, res_info);
+      m_CreateInfos[res_id] = res_info;
+    }
+    else
+    {
+      Registry::Resource& savedInfo = m_CreateInfos[res_id];
+      if (hasAllocDescChanged<Registry::BufferResource>(res_info, savedInfo) ||
+          hasAllocDescChanged<Registry::TextureResource>(res_info, savedInfo))
+      {
+        m_Storage.freeResource(res);
+        m_Storage.create(res_id, res_info);
+        savedInfo = res_info;
+      }
+    }
+
   }
 }
