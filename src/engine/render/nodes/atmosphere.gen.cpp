@@ -235,7 +235,7 @@ void mk_fg_node_atm_ap_lut_render(Event*, ComponentsAccessor&)
     auto msLUT = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead, false);
     auto apLUT = reg.modifyTexture("atm_ap_lut", gapi::TextureState::ShaderReadWrite);
 
-    return [apLUT,trLUT,msLUT](gapi::CmdEncoder& encoder)
+    return [msLUT,apLUT,trLUT](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("trLUT", trLUT.get());
       tfx::set_extern("msLUT", msLUT.get());
@@ -327,7 +327,7 @@ void mk_fg_node_atm_sky_lut_render(Event*, ComponentsAccessor&)
     ;
 
 
-    return [trLUT,msLUT](gapi::CmdEncoder& encoder)
+    return [msLUT,trLUT](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("trLUT", trLUT.get());
       tfx::set_extern("msLUT", msLUT.get());
@@ -356,7 +356,7 @@ void mk_fg_node_atm_sph_render(Event*, ComponentsAccessor&)
     auto trLUT = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
     auto skyLUT = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
 
-    return [skyLUT,trLUT,atmParamsBuffer](gapi::CmdEncoder& encoder)
+    return [atmParamsBuffer,skyLUT,trLUT](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("atmParamsBuffer", atmParamsBuffer.get());
       tfx::set_extern("trLUT", trLUT.get());
@@ -391,7 +391,7 @@ void mk_fg_node_atm_sky_apply(Event*, ComponentsAccessor&)
     ;
 
 
-    return [skyLUT,apLUT,trLUT,gbufferDepth](gapi::CmdEncoder& encoder)
+    return [gbufferDepth,trLUT,skyLUT,apLUT](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("apLUT", apLUT.get());
       tfx::set_extern("skyLUT", skyLUT.get());
@@ -423,7 +423,7 @@ void mk_fg_node_atm_envi_specular(Event*, ComponentsAccessor&)
     auto atm_envi_specular = reg.modifyTexture("atm_envi_specular", gapi::TextureState::RenderTarget);
     auto atm_envi_mips = reg.readBlob<int>("atm_envi_mips");
 
-    return [atm_envi_specular,atm_envi_mips,skyLUT,trLUT](gapi::CmdEncoder& encoder)
+    return [atm_envi_mips,atm_envi_specular,skyLUT,trLUT](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("trLUT", trLUT.get());
       tfx::set_extern("skyLUT", skyLUT.get());

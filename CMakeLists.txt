@@ -7,6 +7,7 @@ project(Not_this_again VERSION 0.1
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+add_definitions(-DSPDLOG_COMPILED_LIB)
 add_definitions(-DPLATFORM_WIN64)
 add_definitions(#-Wno-defaulted-function-deleted
 -Wno-deprecated-volatile
@@ -21,35 +22,30 @@ include_directories(
   "${CMAKE_SOURCE_DIR}/deps/SPIRV-Cross-moltenvk_1.1.5/include"
   "${CMAKE_SOURCE_DIR}/deps/boost-1.77/include"
   "${CMAKE_SOURCE_DIR}/deps/dxc/include"
-  "${CMAKE_SOURCE_DIR}/deps/eastl-3.17.06/include"
+  "${CMAKE_SOURCE_DIR}/deps/eastl/include"
   "${CMAKE_SOURCE_DIR}/deps/freetype-2.12.1/include"
   "${CMAKE_SOURCE_DIR}/deps/function2/include"
   "${CMAKE_SOURCE_DIR}/deps/glm-0.9.9.8/include"
   "${CMAKE_SOURCE_DIR}/deps/gtest/include"
-  "${CMAKE_SOURCE_DIR}/deps/imgui/src"
   "${CMAKE_SOURCE_DIR}/deps/imgui-node-editor/src"
+  "${CMAKE_SOURCE_DIR}/deps/imgui/src"
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/include"
   "${CMAKE_SOURCE_DIR}/deps/quickjs/include"
-  "${CMAKE_SOURCE_DIR}/deps/spdlog-1.9.2/include"
+  "${CMAKE_SOURCE_DIR}/deps/spdlog/include"
   "${CMAKE_SOURCE_DIR}/deps/tinygltf-2.5.0/include"
   "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/include"
   "${CMAKE_SOURCE_DIR}/deps/xxhash/include"
 )
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  link_directories("${CMAKE_SOURCE_DIR}/deps/eastl-3.17.06/win64/debug")
-else()
-  link_directories("${CMAKE_SOURCE_DIR}/deps/eastl-3.17.06/win64/release")
-endif ()
-
-
 link_directories(
   "${CMAKE_SOURCE_DIR}/deps/boost-1.77/win64"
   "${CMAKE_SOURCE_DIR}/deps/dxc"
+  "${CMAKE_SOURCE_DIR}/deps/eastl/win64"
   "${CMAKE_SOURCE_DIR}/deps/freetype-2.12.1/win64"
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/win64"
-  "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/win64/"
   "${CMAKE_SOURCE_DIR}/deps/quickjs/win64"
+  "${CMAKE_SOURCE_DIR}/deps/spdlog/win64"
+  "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/win64/"
   "${CMAKE_SOURCE_DIR}/deps/xxhash/win64"
 )
 

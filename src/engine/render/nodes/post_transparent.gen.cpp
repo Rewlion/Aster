@@ -96,7 +96,7 @@ void mk_fg_node_TAA(Event*, ComponentsAccessor&)
     ;
 
 
-    return [taaCurrentFrame,gbuffer_depth,motionBuf,taaPrevFrame](gapi::CmdEncoder& encoder)
+    return [gbuffer_depth,motionBuf,taaPrevFrame,taaCurrentFrame](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("taaCurrentFrame", taaCurrentFrame.get());
       tfx::set_extern("taaPrevFrame", taaPrevFrame.get());

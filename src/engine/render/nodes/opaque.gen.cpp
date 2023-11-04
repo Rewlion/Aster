@@ -167,7 +167,7 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
     ;
 
 
-    return [gbuffer_normal,enviSpecular,gbuffer_albedo,gbuffer_depth,gbuffer_metal_roughness,enviBRDF,atmParamsBuffer](gapi::CmdEncoder& encoder)
+    return [enviBRDF,gbuffer_metal_roughness,gbuffer_albedo,gbuffer_normal,enviSpecular,atmParamsBuffer,gbuffer_depth](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("gbuffer_albedo", gbuffer_albedo.get());
       tfx::set_extern("gbuffer_normal", gbuffer_normal.get());

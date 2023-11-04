@@ -37,7 +37,7 @@ namespace Utils
 
   struct Frustum
   {
-    enum {LEFT,RIGHT,BOT,TOP,NEAR,FAR, LAST_PLANE};
+    enum PlaneType{LEFT,RIGHT,BOT,TOP,NEAR,FAR, LAST_PLANE};
     
     Frustum() = default;
     Frustum(const float4x4& view_projection);

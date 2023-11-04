@@ -4,6 +4,7 @@
 #include <engine/log.h>
 #include <engine/utils/fs.h>
 
+#include <windows.h>
 #include <fileapi.h>
 #include <filesystem>
 #include <handleapi.h>

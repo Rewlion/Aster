@@ -169,7 +169,7 @@ namespace tfx
             }
             default:
             {
-              ASSERT_FMT(false, "unsupported byte code `{}`", bc.type);
+              ASSERT_FMT(false, "unsupported byte code `{}`", (int)bc.type);
               break;
             }
           }

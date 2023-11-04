@@ -1,5 +1,6 @@
 #include "win_mouse.h"
 
+#include <Windows.h>
 #include <Windowsx.h>
 #include <WinUser.h>
 

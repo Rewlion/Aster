@@ -18,7 +18,7 @@ namespace Engine::gui
     m_Behaviors.clear();
     BehaviorRegistration::forEach([this](IBehavior* bhv) {
       ASSERT_FMT(m_Behaviors.find(bhv->getType()) == m_Behaviors.end(),
-        "can't register Behavior: {}, it's already registered", bhv->getType());
+        "can't register Behavior: {}, it's already registered", (int)bhv->getType());
       m_Behaviors.emplace(eastl::make_pair(bhv->getType(), bhv));
     });
   }
@@ -26,7 +26,7 @@ namespace Engine::gui
   IBehavior* BehaviorsStorage::getBehavior(const BehaviorType type)
   {
     const auto it = m_Behaviors.find(type);
-    ASSERT_FMT(it != m_Behaviors.end(), "unsupported behavior {}", type);
+    ASSERT_FMT(it != m_Behaviors.end(), "unsupported behavior {}", (int)type);
     return it->second;
   }
 }

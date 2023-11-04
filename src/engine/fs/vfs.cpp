@@ -78,7 +78,7 @@ namespace
             if (it->second == MountType::Source)
               return m_SourceController.readFile(mount, path);
             
-            ASSERT_FMT_RETURN(false, {}, "vfs: can't read file {}: it has unsupported mounting {}", path, it->second);
+            ASSERT_FMT_RETURN(false, {}, "vfs: can't read file {}: it has unsupported mounting {}", path, (int)it->second);
           }
 
           ASSERT(!"vfs: path {} doesn't have a mount point");

@@ -2,6 +2,8 @@
 
 #include <engine/window.h>
 
+#include <Windows.h>
+
 namespace Engine::Input
 {
   auto create_keyboard_driver() -> IKeyboardDriver*

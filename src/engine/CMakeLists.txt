@@ -34,6 +34,7 @@ target_link_libraries(engine
   "dbgeng"
   "freetype"
   "ktx"
+  "spdlog"
   "user32"
   "vulkan-1"
   "xxhash"
