@@ -9,7 +9,7 @@ class FgParsingContext:
     self.execFunctionsWithParams = exec_functions_with_params
     self.generateRenderSizeAccess = False
     self.accessedResources = set()
-    self.additionalCaptureList = set()
+    self.additionalCaptureList = {}
 
   def getExecFunction(self, name):
     if name in self.execFunctionsWithParams:
@@ -39,11 +39,11 @@ class FgParsingContext:
 
 
   def addInCaptureList(self, name):
-    self.additionalCaptureList.add(name)
+    self.additionalCaptureList[name] = None
 
 
   def getAdditionalCaptureList(self):
-    return self.additionalCaptureList
+    return list(self.additionalCaptureList)
 
 class TemplateParamExtractor:
   def extractParams(self, field_or_type):
@@ -429,7 +429,7 @@ class ExecFunctionAction(ExecFnAction):
     for arg in execFn.get_arguments():
       argTypeName = utils.get_cursor_type_name(arg.type)
       if argTypeName != "gapi::CmdEncoder":
-        captureList.add(arg.spelling)
+        captureList.append(arg.spelling)
         argsList.append(f"{arg.spelling}.get()")
       else:
         encoderName = arg.spelling
