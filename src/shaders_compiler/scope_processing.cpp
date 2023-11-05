@@ -160,6 +160,7 @@ namespace ShadersSystem
           case ResourceType::TextureCube:
           case ResourceType::RWTexture2D:
           case ResourceType::RWTexture3D:
+          case ResourceType::StructuredBuffer:
           case ResourceType::RWStructuredBuffer:
           case ResourceType::RWBuffer:
           {
@@ -282,6 +283,7 @@ namespace ShadersSystem
             }
 
             case ResourceType::Buffer:
+            case ResourceType::StructuredBuffer:
             case ResourceType::RWStructuredBuffer:
             case ResourceType::RWBuffer:
             {
@@ -514,6 +516,7 @@ namespace ShadersSystem
             case ResourceType::Texture2D:
             case ResourceType::Texture3D:
             case ResourceType::TextureCube:
+            case ResourceType::StructuredBuffer:
             case ResourceType::RWStructuredBuffer:
             case ResourceType::RWBuffer:
             case ResourceType::RWTexture2D:

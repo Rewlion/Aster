@@ -284,6 +284,10 @@ Buffer {
   return TFX_TOKEN_ROBUFFER;
 }
 
+StructuredBuffer {
+  return TFX_TOKEN_STRUCTUREDBUFFER;
+}
+
 RWStructuredBuffer {
   return TFX_TOKEN_RWSTRUCTUREDBUFFER;
 }

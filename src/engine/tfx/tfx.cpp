@@ -118,6 +118,7 @@ namespace tfx
                     VERIFY_CASE(TextureHandle, RWTexture2D)        ||
                     VERIFY_CASE(TextureHandle, RWTexture3D)        ||
                     VERIFY_CASE(BufferHandler, Buffer)             ||
+                    VERIFY_CASE(BufferHandler, StructuredBuffer)   ||
                     VERIFY_CASE(BufferHandler, RWStructuredBuffer) ||
                     VERIFY_CASE(BufferHandler, RWBuffer)           ||
                     VERIFY_CASE(SamplerHandler, Sampler);
@@ -137,6 +138,7 @@ namespace tfx
               break;
             }
             case ShadersSystem::ResourceType::Buffer:
+            case ShadersSystem::ResourceType::StructuredBuffer:
             case ShadersSystem::ResourceType::RWStructuredBuffer:
             case ShadersSystem::ResourceType::RWBuffer:
             {

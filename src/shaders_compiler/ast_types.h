@@ -22,6 +22,7 @@ namespace ShadersSystem
     Texture2D,
     Texture3D,
     TextureCube,
+    StructuredBuffer,
     RWStructuredBuffer,
     RWBuffer,
     RWTexture2D,
@@ -39,6 +40,7 @@ namespace ShadersSystem
       case ResourceType::Texture2D :          return "Texture2D";
       case ResourceType::Texture3D :          return "Texture3D";
       case ResourceType::TextureCube :        return "TextureCube";
+      case ResourceType::StructuredBuffer :   return "StructuredBuffer";
       case ResourceType::RWStructuredBuffer : return "RWStructuredBuffer";
       case ResourceType::RWBuffer :           return "RWBuffer";
       case ResourceType::RWTexture2D :        return "RWTexture2D";
@@ -54,6 +56,7 @@ namespace ShadersSystem
     switch (type)
     {
       case ResourceType::Buffer :
+      case ResourceType::StructuredBuffer :
       case ResourceType::Texture2D :
       case ResourceType::Texture3D :
       case ResourceType::TextureCube :        return "t";
