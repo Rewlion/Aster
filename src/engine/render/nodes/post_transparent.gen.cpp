@@ -96,7 +96,7 @@ void mk_fg_node_TAA(Event*, ComponentsAccessor&)
     ;
 
 
-    return [gbuffer_depth,motionBuf,taaPrevFrame,taaCurrentFrame](gapi::CmdEncoder& encoder)
+    return [taaCurrentFrame,taaPrevFrame,motionBuf,gbuffer_depth](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("taaCurrentFrame", taaCurrentFrame.get());
       tfx::set_extern("taaPrevFrame", taaPrevFrame.get());
@@ -126,7 +126,7 @@ void mk_fg_node_present(Event*, ComponentsAccessor&)
     auto final_antialiased_target = reg.readTexture("final_antialiased_target", gapi::TextureState::TransferSrc, false);
     auto backbuffer = reg.modifyTexture("backbuffer", gapi::TextureState::TransferDst);
 
-    return [backbuffer,final_antialiased_target](gapi::CmdEncoder& encoder)
+    return [final_antialiased_target,backbuffer](gapi::CmdEncoder& encoder)
     {
       present_exec(encoder, final_antialiased_target.get(), backbuffer.get());
     };

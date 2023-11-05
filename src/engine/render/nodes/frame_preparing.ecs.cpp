@@ -73,7 +73,7 @@ void mk_frame_samplers_preparing_node(const Engine::OnFrameGraphInit&)
 NODE_BEGIN(frame_preparing)
   ORDER_ME_AFTER(backbuffer_acquiring)
 
-  CREATE_GPU_BUF(sph_buf, BUF_USAGE(UAV), BUF_STATE(UAV_RW), ATM_PARAMS_COUNT * sizeof(float4))
+  CREATE_GPU_BUF(sph_buf, BUF_USAGE(UAV), BUF_STATE(UAV_RW), BUF_SIZE(ATM_PARAMS_COUNT * sizeof(float4)))
   CREATE_BLOB(camera_data, Engine::CameraData)
   CREATE_BLOB(window_size, int2)
 

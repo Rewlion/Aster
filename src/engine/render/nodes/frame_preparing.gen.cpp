@@ -69,7 +69,7 @@ void mk_fg_node_frame_preparing(Event*, ComponentsAccessor&)
     auto camera_data = reg.createBlob<Engine::CameraData>("camera_data");
     auto window_size = reg.createBlob<int2>("window_size");
 
-    return [sph_buf,window_size,camera_data](gapi::CmdEncoder& encoder)
+    return [sph_buf,camera_data,window_size](gapi::CmdEncoder& encoder)
     {
       frame_preparing_exec(encoder, sph_buf.get(), camera_data.get(), window_size.get());
     };
