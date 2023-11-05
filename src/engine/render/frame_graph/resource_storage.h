@@ -24,6 +24,7 @@ namespace fg
     public:
       void create(const res_id_t, const Registry::Resource&);
       void importTexture(const res_id_t, const gapi::TextureHandle, const gapi::TextureState init_state);
+      void importBuffer(const res_id_t, const gapi::BufferHandler, const gapi::BufferState init_state);
       void transitTextureState(const res_id_t, const gapi::TextureState to_state, gapi::CmdEncoder& encoder);
       void transitBufferState(const res_id_t, const gapi::BufferState to_state, gapi::CmdEncoder& encoder);
       
@@ -52,8 +53,8 @@ namespace fg
       struct TextureResource
       {
         gapi::TextureHandle texture = gapi::TextureHandle::Invalid;
-        bool imported = false;
         gapi::TextureState currentState = gapi::TextureState::Undefined;
+        bool imported = false;
       };
 
       struct SamplerResource
@@ -65,6 +66,7 @@ namespace fg
       {
         gapi::BufferHandler buffer = gapi::BufferHandler::Invalid;
         gapi::BufferState currentState = (gapi::BufferState)0;
+        bool imported = false;
       };
   };
 

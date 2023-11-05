@@ -25,7 +25,13 @@ namespace fg
     }
     else if (auto* bufferRes = std::get_if<Registry::BufferResource>(&res_info))
     {
-      createBuffer(res_id, bufferRes->allocDesc, bufferRes->initState);
+      if (bufferRes->producer)
+      {
+        const auto [buf, initState] = bufferRes->producer();
+        importBuffer(res_id, buf, initState);
+      }
+      else
+        createBuffer(res_id, bufferRes->allocDesc, bufferRes->initState);
     }
     else if (auto* blobRes = std::get_if<Registry::BlobResource>(&res_info))
     {
@@ -41,8 +47,8 @@ namespace fg
 
     res = TextureResource{
       .texture = gapi::allocate_texture(alloc_desc),
-      .imported = false,
-      .currentState = gapi::TextureState::Undefined
+      .currentState = gapi::TextureState::Undefined,
+      .imported = false
     };
   }
 
@@ -65,7 +71,8 @@ namespace fg
 
     res = BufferResource{
       .buffer = gapi::allocate_buffer(alloc_desc.size, alloc_desc.usage, alloc_desc.name),
-      .currentState = init_state
+      .currentState = init_state,
+      .imported = false
     };
   }
 
@@ -76,8 +83,20 @@ namespace fg
 
     res = TextureResource{
       .texture = h,
-      .imported = true,
-      .currentState = init_state
+      .currentState = init_state,
+      .imported = true
+    };
+  }
+
+  void ResourceStorage::importBuffer(const res_id_t res_id, const gapi::BufferHandler h, const gapi::BufferState init_state)
+  {
+    Resource& res = m_Resources[res_id];
+    ASSERT(std::holds_alternative<std::monostate>(res));
+
+    res = BufferResource{
+      .buffer = h,
+      .currentState = init_state,
+      .imported = true
     };
   }
 
@@ -156,7 +175,7 @@ namespace fg
     }
     else if (auto* buf = std::get_if<BufferResource>(&res))
     {
-      if (buf->buffer != gapi::BufferHandler::Invalid)
+      if (!buf->imported && buf->buffer != gapi::BufferHandler::Invalid)
         gapi::free_resource(buf->buffer);
     }
     res = std::monostate{};
@@ -168,6 +187,11 @@ namespace fg
     {
       ASSERT(tex->texture != gapi::TextureHandle::Invalid);
       to.importTexture(res_id, tex->texture, tex->currentState);
+    }
+    else if (auto* buf = std::get_if<ResourceStorage::BufferResource>(&m_Storage.m_Resources[res_id]))
+    {
+      ASSERT(buf->buffer != gapi::BufferHandler::Invalid);
+      to.importBuffer(res_id, buf->buffer, buf->currentState);
     }
   }
 

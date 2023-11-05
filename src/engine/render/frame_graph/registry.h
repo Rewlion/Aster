@@ -31,6 +31,13 @@ namespace fg
   };
   using TextureProduceFunction = fu2::function<TextureImport() const>;
 
+  struct BufferImport
+  {
+    gapi::BufferHandler buf;
+    gapi::BufferState initState;
+  };
+  using BufferProduceFunction = fu2::function<BufferImport() const>;
+
   class Registry
   {
     friend class Manager;
@@ -81,6 +88,7 @@ namespace fg
       void orderMeAfter(const char* node);
 
       auto createBuffer(const char* name, const gapi::BufferAllocationDescription&, const gapi::BufferState init_state) -> BufferRequest;
+      auto importBufferProducer(const char* name, BufferProduceFunction) -> BufferRequest;
       auto modifyBuffer(const char* name, const gapi::BufferState state) -> BufferRequest;
       auto readBuffer(const char* name, const gapi::BufferState state, const bool optional = false) -> BufferRequest;
 
@@ -107,6 +115,7 @@ namespace fg
       using ReadCb = ModifyCb;
       using CreateCb = ModifyCb;
       auto createResourceInternal(const char* name, Resource&&, CreateCb&&) -> virt_res_id_t;
+      auto importResourceInternal(const char* name, Resource&&) -> virt_res_id_t;
       auto modifyResourceInternal(const char* name, ModifyCb&&) -> virt_res_id_t;
       auto readResourceInternal(const char* name, const bool optional, const Timeline, ReadCb&&) -> virt_res_id_t;
 
@@ -203,6 +212,7 @@ namespace fg
 
       struct BufferResource
       {
+        BufferProduceFunction producer;
         gapi::BufferAllocationDescription allocDesc;
         gapi::BufferState initState;
       };

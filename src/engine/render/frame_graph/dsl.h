@@ -32,7 +32,10 @@ namespace fg::dsl
   struct NameTo {};
 
   template <NameWrapper name>
-  struct ImportFnName {};
+  struct FnName {};
+
+  template <NameWrapper name>
+  struct NodeName {};
 
   struct NotOptional {};
   
@@ -98,10 +101,16 @@ namespace fg::dsl
   struct BufferUsage {};
 
   template<uint32_t size>
+  struct AbsBufSize {};
+
+  template<class sizeOrCb>
   struct BufferSize {};
 
   template<class ...T>
   struct CreateBuffer {};
+
+  template<class nameFrom, class nameTo>
+  struct ImportBufferProducer {};
 
   template<gapi::TextureState state>
   struct TextureState {};
@@ -174,8 +183,9 @@ namespace fg::dsl
 }
 
 #define NODE_BEGIN(name)\
-  struct FG_NODE_DSL() name\
-  {
+  struct FG_NODE_DSL() dsl_ ## name\
+  {\
+    fg::dsl::NodeName<#name> nodeName;
 
 #define NODE_END() };
 
@@ -221,7 +231,10 @@ namespace fg::dsl
 #define ORDER_ME_BEFORE(name) fg::dsl::OrderBefore name;
 
 #define BUF_USAGE(usage) gapi::BufferUsage::BF_Bind ## usage
+#define BUF_USAGE2(usage1, usage2) (gapi::BufferUsage)(BUF_USAGE(usage1) | BUF_USAGE(usage2))
 #define BUF_STATE(state) gapi::BufferState::BF_STATE_ ## state
+#define BUF_SIZE_CB(cb) fg::dsl::FnName<#cb>
+#define BUF_SIZE(size) fg::dsl::AbsBufSize<size>
 
 #define CREATE_BUF_EX(name, usage, state, size, Gpu_Cpu) fg::dsl::CreateBuffer<\
   fg::dsl::Name<#name>,\
@@ -231,6 +244,13 @@ namespace fg::dsl
 
 #define CREATE_CPU_BUF(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Cpu)
 #define CREATE_GPU_BUF(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Gpu)
+
+#define IMPORT_BUF(name, import_fn)\
+  fg::dsl::ImportBufferProducer<\
+    fg::dsl::Name<#name>,\
+    fg::dsl::FnName<#import_fn>\
+  > NAME_WITH_LINE(importBuffer);
+
 #define MODIFY_BUF(name, state)\
   fg::dsl::ModifyBuffer<\
     fg::dsl::Name<#name>,\
@@ -305,7 +325,7 @@ namespace fg::dsl
 #define IMPORT_TEX(name, import_fn)\
   fg::dsl::ImportTextureProducer<\
     fg::dsl::Name<#name>,\
-    fg::dsl::ImportFnName<#import_fn>\
+    fg::dsl::FnName<#import_fn>\
   > NAME_WITH_LINE(importTexture);
 
 #define MODIFY_TEX(name, state)\

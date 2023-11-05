@@ -47,6 +47,13 @@ namespace fg
     });
   }
 
+  auto Registry::importBufferProducer(const char* name, BufferProduceFunction producer) -> BufferRequest
+  {
+    return importResourceInternal(name, BufferResource{
+      .producer = producer
+    });
+  }
+
   auto Registry::modifyBuffer(const char* name, const gapi::BufferState state) -> BufferRequest
   {
     return modifyResourceInternal(name, [state](const virt_res_id_t virt_res_id, NodeInfo& node)
@@ -98,6 +105,25 @@ namespace fg
     return {vResId};
   }
 
+  auto Registry::importResourceInternal(const char* name, Resource&& res) -> virt_res_id_t
+  {
+    const name_id_t nameId = m_ResourcesNames.storeString(name);
+    const virt_res_id_t vResId = to_virt_res_id(nameId);
+    const res_id_t resId = to_res_id(vResId);
+
+    auto& vRes = m_VirtResources[vResId];
+    vRes.resourceId = resId;
+    vRes.createdBy = m_CurrentExecNodeId;
+    vRes.modificationChain.insert(vRes.modificationChain.begin(), m_CurrentExecNodeId);
+    
+    m_Resources[resId] = std::move(res);
+
+    auto& node = m_Nodes[m_CurrentExecNodeId];
+    node.creates.push_back(vResId);
+
+    return vResId;
+  }
+
   auto Registry::modifyResourceInternal(const char* name, ModifyCb&& cb) -> virt_res_id_t
   {
     const name_id_t nameId = m_ResourcesNames.storeString(name);
@@ -136,24 +162,9 @@ namespace fg
 
   auto Registry::importTextureProducer(const char* name, TextureProduceFunction producer) -> TextureRequest
   {
-    const name_id_t nameId = m_ResourcesNames.storeString(name);
-    const virt_res_id_t vResId = to_virt_res_id(nameId);
-    const res_id_t resId = to_res_id(vResId);
-
-    auto& vRes = m_VirtResources[vResId];
-    vRes.resourceId = resId;
-    vRes.createdBy = m_CurrentExecNodeId;
-    vRes.modificationChain.insert(vRes.modificationChain.begin(), m_CurrentExecNodeId);
-    
-    auto& res = m_Resources[resId];
-    res = TextureResource{
+    return importResourceInternal(name, TextureResource{
       .producer = producer
-    };
-
-    auto& node = m_Nodes[m_CurrentExecNodeId];
-    node.creates.push_back(vResId);
-
-    return {vResId};
+    });
   }
 
   auto Registry::modifyTexture(const char* name, const gapi::TextureState state) -> TextureRequest
