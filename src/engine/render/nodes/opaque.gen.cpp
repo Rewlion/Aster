@@ -149,12 +149,13 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
         .mipLevels =       1,
         .arrayLayers =     1,
         .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+        .usage =           (gapi::TextureUsage)((gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_UAV) | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::RenderTarget,
+      gapi::TextureState::ShaderReadWrite,
       false
     );
 
+    fg::dsl::AccessDecorator render_size{__renderSize__};
     auto gbuffer_albedo = reg.readTexture("gbuf0", gapi::TextureState::ShaderRead, false);
     auto gbuffer_normal = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
     auto gbuffer_metal_roughness = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead, false);
@@ -162,13 +163,10 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
     auto atmParamsBuffer = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_SRV, false);
     auto enviSpecular = reg.readTexture("atm_envi_specular", gapi::TextureState::ShaderRead, true);
     auto enviBRDF = reg.readTexture("atm_envi_brdf", gapi::TextureState::ShaderRead, true);
-    reg.requestRenderPass()
-      .addTarget(resolve_target, gapi::LoadOp::Clear, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
-    ;
 
-
-    return [gbuffer_albedo,gbuffer_normal,gbuffer_metal_roughness,gbuffer_depth,atmParamsBuffer,enviSpecular,enviBRDF](gapi::CmdEncoder& encoder)
+    return [resolve_target,gbuffer_albedo,gbuffer_normal,gbuffer_metal_roughness,gbuffer_depth,atmParamsBuffer,enviSpecular,enviBRDF,render_size](gapi::CmdEncoder& encoder)
     {
+      tfx::set_extern("resolveTarget", resolve_target.get());
       tfx::set_extern("gbuffer_albedo", gbuffer_albedo.get());
       tfx::set_extern("gbuffer_normal", gbuffer_normal.get());
       tfx::set_extern("gbuffer_metal_roughness", gbuffer_metal_roughness.get());
@@ -176,7 +174,7 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
       tfx::set_extern("atmParamsBuffer", atmParamsBuffer.get());
       tfx::set_extern("enviSpecular", enviSpecular.get());
       tfx::set_extern("enviBRDF", enviBRDF.get());
-      gbuffer_resolve_exec(encoder);
+      gbuffer_resolve_exec(encoder, render_size.get());
     };
   });
 }

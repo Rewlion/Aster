@@ -11,7 +11,7 @@ technique_macro USE_ENVI_IBL {
 
   float2 sampleEnviBRDF(float roughness, float NoV)
   {
-    return enviBRDF.Sample(linearClampSampler, float2(NoV, roughness)).rg;
+    return enviBRDF.SampleLevel(linearClampSampler, float2(NoV, roughness), 0).rg;
   }
 
   float3 enviSpecularIBL(float3 F0, float roughness, float NoV, float3 R)

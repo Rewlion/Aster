@@ -290,6 +290,10 @@ def generate_fg_bind_shvar(res, var):
   return f"""      tfx::set_extern("{var}", {res}.get());"""
 
 
+def generate_fg_render_size_access(var):
+  return f"""    fg::dsl::AccessDecorator {var}{{__renderSize__}};"""
+
+
 def generate_fg_node(name, build_actions, exec_fn_action, has_render_size_access):
   renderSize = "\n    const uint2 __renderSize__ = reg.getRenderSize();\n" if has_render_size_access else ""
   registrationFnName = f"mk_fg_node_{name}"

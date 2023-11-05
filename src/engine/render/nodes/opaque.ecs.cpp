@@ -6,6 +6,8 @@
 
 #include <glm/gtx/transform.hpp>
 
+#include <engine/shaders/shaders/clustered_light/tiles.hlsl>
+
 NODE_BEGIN(gbuffer_main_pass)
   ORDER_ME_AFTER(frame_preparing)
 
@@ -82,8 +84,11 @@ NODE_BEGIN(late_opaque_sync)
 NODE_END()
 
 NODE_BEGIN(gbuffer_resolve)
-  CREATE_TEX_2D(resolve_target, TEX_SIZE_RELATIVE(), R32G32B32A32_S, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
-  
+  CREATE_TEX_2D(resolve_target, TEX_SIZE_RELATIVE(), R32G32B32A32_S, TEX_USAGE3(RT,UAV,SRV), TEX_STATE(ShaderReadWrite))
+  BIND_SHADER_VAR_AS(resolve_target, resolveTarget)
+
+  READ_RENDER_SIZE_AS(render_size)
+
   BIND_TEX_SRV_AS(gbuf0, gbuffer_albedo)
   BIND_TEX_SRV_AS(gbuf1, gbuffer_normal)
   BIND_TEX_SRV_AS(gbuf2, gbuffer_metal_roughness)
@@ -96,20 +101,23 @@ NODE_BEGIN(gbuffer_resolve)
   BIND_OPTIONAL_TEX_SRV_AS(atm_envi_specular, enviSpecular)
   BIND_OPTIONAL_TEX_SRV_AS(atm_envi_brdf, enviBRDF)
 
-  RP_BEGIN()
-    TARGET_CLEARED(resolve_target, UCLEAR(0))
-  RP_END()
-
   EXEC(gbuffer_resolve_exec)
 NODE_END()
 
 NODE_EXEC()
 static
-void gbuffer_resolve_exec(gapi::CmdEncoder& encoder)
+void gbuffer_resolve_exec(gapi::CmdEncoder& encoder,
+                          const uint2& render_size)
 {
   tfx::activate_technique("ResolveGbuffer", encoder);
   encoder.updateResources();
-  encoder.draw(4, 1, 0, 0);
+
+  const auto getGroupSize = [](uint render_dim, uint tile_dim) {
+    uint add = render_dim % tile_dim > 0 ? 1 : 0;
+    return render_dim / tile_dim + add;
+  };
+
+  encoder.dispatch(getGroupSize(render_size.x, TILE_DIM_X), getGroupSize(render_size.y, TILE_DIM_X), 1);
 }
 
 NODE_BEGIN(transparent_sync)

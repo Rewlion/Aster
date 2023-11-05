@@ -66,6 +66,9 @@ namespace fg::dsl
   template<gapi::TextureFormat format>
   struct TextureFormat {};
 
+  template<class varName>
+  struct AccessRenderSize {};
+
   struct RelativeSize {};
 
   template<uint32_t>
@@ -180,6 +183,17 @@ namespace fg::dsl
 
   #define FG_NODE_DSL() [[clang::annotate("fg_node_dsl")]]
   #define NODE_EXEC() [[clang::annotate("fg_node_exec")]]
+
+  template<class T>
+  class AccessDecorator
+  {
+    public:
+      AccessDecorator(T& obj) : m_Obj(obj) {}
+      auto get() -> T& { return m_Obj; }
+      auto get() const -> const T& { return m_Obj; }
+    private:
+      T m_Obj;
+  };
 }
 
 #define NODE_BEGIN(name)\
@@ -188,6 +202,9 @@ namespace fg::dsl
     fg::dsl::NodeName<#name> nodeName;
 
 #define NODE_END() };
+
+#define READ_RENDER_SIZE_AS(as)\
+  fg::dsl::AccessRenderSize<fg::dsl::Name<#as>> NAME_WITH_LINE(accessRenderSize);
 
 // RENDERPASS BEGIN
 #define RP_BEGIN() fg::dsl::RenderPass<

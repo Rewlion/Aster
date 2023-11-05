@@ -12,10 +12,11 @@ scope ResolveGbufferScope {
   reserve:
     descriptor_set(3);
     register(buffer, 0-1);
-    register(texture, 0-5);
+    register(texture, 0-6);
 
   RWStructuredBuffer<float3> atmParamsBuffer = extern(atmParamsBuffer);
 
+  RWTexture2D<float4> resolveTarget = extern(resolveTarget);
   Texture2D gbufferAlbedo = extern(gbuffer_albedo);
   Texture2D gbufferNormal = extern(gbuffer_normal);
   Texture2D gbufferMetalRoughness = extern(gbuffer_metal_roughness);
@@ -40,24 +41,41 @@ technique ResolveGbuffer {
   USE_MATH();
   #hlsl
   #include "atmosphere/sph.hlsl"
+  #include "clustered_light/tiles.hlsl"
   #end
   USE_ATMOSPHERE_PARAMS();
   USE_ATM_SPH();
 
-  USE_SCREENSPACE_VIEW_BASE();
   USE_ENVI_IBL();
   USE_MATERIALS_UNPACKING();
   USE_DEPTH_UTILS();
   USE_PBR();
 
   #hlsl
-    float3 deferredLight(VsOutput input)
+    [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
+    void cs_main(uint3 dispatch_thread_id: SV_DispatchThreadID)
     {
-      uint3 tc = uint3(input.pos.xy, 0);
+      uint2 renderSize;
+      resolveTarget.GetDimensions(renderSize.x, renderSize.y);
+
+      if (any(dispatch_thread_id.xy >= renderSize))
+        return;
+
+      uint3 tc = dispatch_thread_id;
+      float depth = gbufferDepth.Load(tc).r;
+
+      if (depth == 0.0)
+        return;
+
+      float3 leftRight = FrameScope.rtView_WS - FrameScope.ltView_WS;
+      float3 topBot = FrameScope.lbView_WS - FrameScope.ltView_WS;
+
+      float2 t = float2(tc.xy) / float2(renderSize - uint2(1, 1));
+      float3 farPlainPoint = FrameScope.ltView_WS + leftRight * t.x + topBot * t.y;
+
       ProcessedMaterial mat = processMaterial(unpackMaterial(tc));
 
-      float depth = gbufferDepth.Load(tc).r;
-      float3 worldPos = calcWorldPos(FrameScope.cameraPos, input.viewDir, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+      float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
 
       float3 N = mat.normal;
       float3 L = getAtmSunDir();
@@ -79,16 +97,10 @@ technique ResolveGbuffer {
       float3 specularPart = enviSpecularIBL(mat.specularReflection, mat.roughness, NoV, R);
 
       float3 Lo = diffusePart + specularPart;
-
-      return Lo;
-    }
-
-    float4 ps_main(VsOutput input) : SV_Target0
-    {
-      return float4(deferredLight(input), 1.0);
+      
+      resolveTarget[tc.xy] = float4(Lo, 1.0);
     }
   #end
 
-  compile(vs_6_1, vs_main);
-  compile(ps_6_1, ps_main);
+  compile(cs, cs_main);
 };

@@ -538,11 +538,23 @@ class RenderPassAction(BuildAction):
     return templates.generate_fg_renderpass(targets, depthStencil)
 
 
+class AccessRenderSizeAction(BuildAction):
+  def __init__(self, field_cursor, context):
+    self.name = ""
+    self.extractParams(field_cursor)
+    context.markRenderSizeAccess()
+
+  
+  def generate(self):
+    return templates.generate_fg_render_size_access(self.name)
+
+
 class NodeName():
   def __init__(self, field_cursor):
     extractor = TemplateParamExtractor()
     extractor.extractName(field_cursor.type)
     self.nodeName = extractor.name
+
 
 class FgNode:
   def __init__(self, struct_cursor, exec_functions):
