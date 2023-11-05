@@ -172,17 +172,21 @@ namespace gapi::vulkan
   TextureHandle texture_2d_srv_stub;
   TextureHandle texture_3d_srv_stub;
   TextureHandle texture_cube_srv_stub;
+  BufferHandler buffer_uav_stub;
 
-  auto get_resource_stub(ShadersSystem::ResourceType type) -> TextureHandle
+  auto get_resource_stub(ShadersSystem::ResourceType type) -> ResourceHandler
   {
     switch (type)
     {
-      case ShadersSystem::ResourceType::Texture2D: return texture_2d_srv_stub;
-      case ShadersSystem::ResourceType::Texture3D: return texture_3d_srv_stub;
-      case ShadersSystem::ResourceType::TextureCube: return texture_cube_srv_stub;
-      case ShadersSystem::ResourceType::RWTexture2D : return texture_2d_srv_stub;
-      case ShadersSystem::ResourceType::RWTexture3D : return texture_3d_srv_stub;
-      default: ASSERT_FMT(false, "unsupported resource type {}", (int)type); return texture_2d_srv_stub;
+      case ShadersSystem::ResourceType::Texture2D:    return (ResourceHandler)texture_2d_srv_stub;
+      case ShadersSystem::ResourceType::Texture3D:    return (ResourceHandler)texture_3d_srv_stub;
+      case ShadersSystem::ResourceType::TextureCube:  return (ResourceHandler)texture_cube_srv_stub;
+      case ShadersSystem::ResourceType::RWTexture2D : return (ResourceHandler)texture_2d_srv_stub;
+      case ShadersSystem::ResourceType::RWTexture3D : return (ResourceHandler)texture_3d_srv_stub;
+      case ShadersSystem::ResourceType::Buffer:
+      case ShadersSystem::ResourceType::RWBuffer:
+      case ShadersSystem::ResourceType::RWStructuredBuffer: return (ResourceHandler)buffer_uav_stub;
+      default: ASSERT_FMT(false, "unsupported resource type {}", (int)type); return (ResourceHandler)texture_2d_srv_stub;
     }
   }
 
@@ -251,6 +255,12 @@ namespace gapi::vulkan
     encoder->transitTextureState(texture_3d_srv_stub, gapi::TextureState::TransferDst, gapi::TextureState::ShaderRead);
     encoder->transitTextureState(texture_cube_srv_stub, gapi::TextureState::TransferDst, gapi::TextureState::ShaderRead);
     encoder->flush();
+
+    uint bufStub = 0;
+    buffer_uav_stub = gapi::allocate_buffer(sizeof(bufStub), gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible, "buf_stub");
+    encoder->writeBuffer(buffer_uav_stub, &bufStub, 0, sizeof(bufStub));
+    encoder->insertGlobalBufferBarrier(gapi::BufferState::BF_STATE_TRANSFER_DST,
+      (gapi::BufferState)(gapi::BufferState::BF_STATE_SRV | gapi::BufferState::BF_STATE_UAV_RW));
   }
 
   void free_cmd_promise(VulkanCmdPromise* promise)

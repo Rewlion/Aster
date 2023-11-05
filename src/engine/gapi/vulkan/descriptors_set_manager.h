@@ -8,8 +8,9 @@
 #include <EASTL/vector.h>
 #include <EASTL/vector_set.h>
 
-#include <optional>
 #include <functional>
+#include <optional>
+#include <utility>
 
 namespace gapi::vulkan
 {
@@ -55,8 +56,7 @@ namespace gapi::vulkan
   
     struct UniformBufferWriteInfo
     {
-      vk::Buffer buffer;
-      size_t constOffset;
+      BufferHandler buffer;
       size_t set;
       size_t binding;
     };
@@ -77,7 +77,7 @@ namespace gapi::vulkan
 
         void setTexture(const TextureHandle, const size_t binding, const size_t mip);
         void setSampler(const vk::Sampler, const size_t binding);
-        void setUniformBuffer(const vk::Buffer, const size_t binding, const size_t constOffset);
+        void setUniformBuffer(const BufferHandler, const size_t binding);
 
         auto acquireSet(vk::Device) -> vk::DescriptorSet;
         auto isToggled() const -> bool { return m_Toggled; }
@@ -94,6 +94,7 @@ namespace gapi::vulkan
         auto getBindingId(const size_t binding) const -> int;
         auto validateBindingType(const size_t binding, const vk::DescriptorType) const -> bool;
         auto getImageView(const TextureHandle, const size_t binding, const size_t mip) const -> vk::ImageView;
+        auto getBufferWithOffset(const BufferHandler) -> std::pair<vk::Buffer, vk::DeviceSize>;
 
       private:
         Device& m_Device;
@@ -122,7 +123,7 @@ namespace gapi::vulkan
 
       void setImage(TextureHandle, const size_t set, const size_t binding, const size_t mip);
       void setSampler(const vk::Sampler sampler, const size_t set, const size_t binding);
-      void setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding, const size_t constOffset);
+      void setUniformBuffer(const BufferHandler buffer, const size_t set, const size_t binding);
 
       void updateDescriptorSets(vk::CommandBuffer& cmdBuf);
 

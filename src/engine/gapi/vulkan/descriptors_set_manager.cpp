@@ -152,14 +152,12 @@ namespace gapi::vulkan
     m_Dirty = true;
   }
 
-  void DescriptorsSetManager::SetManager::setUniformBuffer(const vk::Buffer buffer,
-                                                           const size_t binding,
-                                                           const size_t constOffset)
+  void DescriptorsSetManager::SetManager::setUniformBuffer(const BufferHandler buffer,
+                                                           const size_t binding)
   {
     fitWriteInfos(binding);
     m_WriteInfos[binding] = UniformBufferWriteInfo{
       .buffer = buffer,
-      .constOffset = constOffset,
       .set = m_SetId,
       .binding = binding
     };
@@ -172,7 +170,7 @@ namespace gapi::vulkan
     template<class... Ts> overload(Ts...) -> overload<Ts...>;
   }
 
-  extern auto get_resource_stub(ShadersSystem::ResourceType type) -> TextureHandle;
+  extern auto get_resource_stub(ShadersSystem::ResourceType type) -> ResourceHandler;
 
   auto DescriptorsSetManager::SetManager::getImageView(const TextureHandle handle,
                                                        const size_t binding,
@@ -187,7 +185,20 @@ namespace gapi::vulkan
         return m_Device.getImageView(handle, true, mip);
     }
 
-    return m_Device.getImageView(get_resource_stub(expectedResourceType), true);
+    return m_Device.getImageView((TextureHandle)get_resource_stub(expectedResourceType), true);
+  }
+
+  auto DescriptorsSetManager::SetManager::getBufferWithOffset(const BufferHandler handle) -> std::pair<vk::Buffer, vk::DeviceSize>
+  {
+    const BufferHandler h = handle != gapi::BufferHandler::Invalid ?
+                              handle :
+                              (gapi::BufferHandler)get_resource_stub(ShadersSystem::ResourceType::Buffer);
+
+    const Buffer& buffer = m_Device.getBuffer(h);
+    return {
+      buffer.buffer.get(),
+      buffer.getConstOffset()
+    };
   }
 
   auto DescriptorsSetManager::SetManager::acquireSet(vk::Device device) -> vk::DescriptorSet
@@ -272,8 +283,9 @@ namespace gapi::vulkan
             {
               if(validateBindingType(info.binding, type))
               {
-                bufInfos[iBuf].buffer = info.buffer;
-                bufInfos[iBuf].offset = info.constOffset;
+                const auto [buf, offset] = getBufferWithOffset(info.buffer);
+                bufInfos[iBuf].buffer = buf;
+                bufInfos[iBuf].offset = offset;
                 bufInfos[iBuf].range = VK_WHOLE_SIZE;
                 addWriteInfo(info.binding, type, &bufInfos[iBuf], nullptr);
                 ++iBuf;
@@ -332,10 +344,10 @@ namespace gapi::vulkan
     m_SetManagers[set].setSampler(sampler, binding);
   }
 
-  void DescriptorsSetManager::setUniformBuffer(const vk::Buffer buffer, const size_t set, const size_t binding, const size_t constOffset)
+  void DescriptorsSetManager::setUniformBuffer(const BufferHandler buffer, const size_t set, const size_t binding)
   {
     fitSetManagers(set);
-    m_SetManagers[set].setUniformBuffer(buffer, binding, constOffset);
+    m_SetManagers[set].setUniformBuffer(buffer, binding);
   }
 
   void DescriptorsSetManager::updateDescriptorSets(vk::CommandBuffer& cmdBuf)
