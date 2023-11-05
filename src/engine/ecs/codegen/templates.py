@@ -187,6 +187,10 @@ def generate_fg_create_buffer(name, usage, state, size):
     );"""
 
 
+def generate_fg_import_buffer_producer(name, import_fn):
+  return f"""    auto {name} = reg.importBufferProducer("{name}", {import_fn});"""
+
+
 def generate_fg_modify_buffer(name, name_alias, state):
   return f"""    auto {name_alias if name_alias != "" else name} = reg.modifyBuffer("{name}", {state});"""
 

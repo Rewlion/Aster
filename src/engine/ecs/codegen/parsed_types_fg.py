@@ -71,20 +71,24 @@ class TemplateParamExtractor:
     pass
     
 
-  def extractNameAlias(self, tmpl_arg_type):
-    self.nameAlias = self.extractTemplateArgumentsAsIs(tmpl_arg_type).replace('\"', '')
-
+  def extractNameInternal(self, tmpl_arg_type):
+    return self.extractTemplateArgumentsAsIs(tmpl_arg_type).replace('\"', '')
+  
 
   def extractName(self, tmpl_arg_type):
-      self.name = self.extractTemplateArgumentsAsIs(tmpl_arg_type).replace('\"', '')
+    self.name = self.extractNameInternal(tmpl_arg_type)
+
+
+  def extractNameAlias(self, tmpl_arg_type):
+    self.nameAlias = self.extractNameInternal(tmpl_arg_type)
 
   
   def extractNameFrom(self, tmpl_arg_type):
-    self.fromName = self.extractTemplateArgumentsAsIs(tmpl_arg_type).replace('\"', '')
+    self.fromName = self.extractNameInternal(tmpl_arg_type)
 
   
   def extractNameTo(self, tmpl_arg_type):
-    self.toName = self.extractTemplateArgumentsAsIs(tmpl_arg_type).replace('\"', '')
+    self.toName = self.extractNameInternal(tmpl_arg_type)
 
 
   def extractBufferUsage(self, tmpl_arg_type):
@@ -96,7 +100,14 @@ class TemplateParamExtractor:
 
 
   def extractBufferSize(self, tmpl_arg_type):
-    self.bufferSize = self.extractTemplateArgumentsAsIs(tmpl_arg_type)
+    sizeType = tmpl_arg_type.get_template_argument_type(0)
+    sizeTypeName = sizeType.get_declaration().spelling
+    if sizeTypeName == "FnName":
+      self.bufferSize = f"{self.extractTemplateArgumentsAsIs(sizeType)}()"
+    elif sizeTypeName == "AbsBufSize":
+      self.bufferSize = self.extractTemplateArgumentsAsIs(sizeType)
+    else:
+      raise ValueError("Invalid buffer size `{tmpl_arg_type.spelling}`")
 
 
   def extractTextureFormat(self, tmpl_arg_type):
@@ -154,8 +165,8 @@ class TemplateParamExtractor:
     self.optional = "false"
 
 
-  def extractImportFnName(self, tmpl_arg_type):
-      self.importFn = self.extractTemplateArgumentsAsIs(tmpl_arg_type).replace('\"', '')
+  def extractFnName(self, tmpl_arg_type):
+      self.fnName = self.extractTemplateArgumentsAsIs(tmpl_arg_type).replace('\"', '')
 
 
   def extractTimeline(self, tmpl_arg_type):
@@ -234,7 +245,19 @@ class CreateBufferAction(BuildAction):
 
   def generate(self):
     return templates.generate_fg_create_buffer(self.name, self.bufferUsage, self.bufferState, self.bufferSize)
-  
+
+
+class ImportBufferProducerAction(BuildAction):
+  def __init__(self, field_cursor, context):
+    self.name = ""
+    self.fnName = ""
+    self.extractParams(field_cursor)
+    context.markResourceAccess(self.name)
+
+
+  def generate(self):
+    return templates.generate_fg_import_buffer_producer(self.name, self.fnName)
+
 
 class CreateTextureAction(BuildAction):
   def __init__(self, field_cursor, context):
@@ -290,13 +313,13 @@ class ReadOptionalBufferAction(BuildAction):
 class ImportTextureProducerAction(BuildAction):
   def __init__(self, field_cursor, context):
     self.name = ""
-    self.importFn = ""
+    self.fnName = ""
     self.extractParams(field_cursor)
     context.markResourceAccess(self.name)
 
 
   def generate(self):
-    return templates.generate_fg_import_texture_producer(self.name, self.importFn)
+    return templates.generate_fg_import_texture_producer(self.name, self.fnName)
 
 
 class ReadOptionalTextureAction(BuildAction):
@@ -515,9 +538,15 @@ class RenderPassAction(BuildAction):
     return templates.generate_fg_renderpass(targets, depthStencil)
 
 
+class NodeName():
+  def __init__(self, field_cursor):
+    extractor = TemplateParamExtractor()
+    extractor.extractName(field_cursor.type)
+    self.nodeName = extractor.name
+
 class FgNode:
   def __init__(self, struct_cursor, exec_functions):
-    self.name = struct_cursor.spelling
+    self.name = ""
     self.context = FgParsingContext(exec_functions)
     self.buildActions, self.execActions, self.execFnAction = self.parseActions(struct_cursor)
 
@@ -527,8 +556,11 @@ class FgNode:
     execFnAction = None
     for field in struct_cursor.get_children():
       if field.kind == clang.cindex.CursorKind.FIELD_DECL:
-        actionName = f"{field.type.get_declaration().spelling}Action"
-        if actionName in globals():
+        fieldTypeName = field.type.get_declaration().spelling
+        actionName = f"{fieldTypeName}Action"
+        if fieldTypeName == "NodeName":
+          self.name = NodeName(field).nodeName
+        elif actionName in globals():
           action = globals()[actionName](field, self.context)
           actionType = action.getActionType()
           if actionType == BUILD_ACTION:
@@ -537,7 +569,10 @@ class FgNode:
             execActions.append(action)
           elif actionType == EXEC_FN_ACTION:
             execFnAction = action
-        
+    
+    if self.name == "":
+      raise ValueError(f"Node declared via structure {struct_cursor.spelling} doesn't have name declared")
+
     return buildActions, execActions, execFnAction
   
 
