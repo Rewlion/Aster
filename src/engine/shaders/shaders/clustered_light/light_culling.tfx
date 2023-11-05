@@ -8,11 +8,12 @@ scope ClusterLightCullingScope
   #include "utils.hlsl"
   #end
 
-  RWStructuredBuffer<Cluster> frustumClusters = extern(frustumClusters);
+  StructuredBuffer<Cluster> frustumClusters = extern(frustumClusters);
+  StructuredBuffer<Light> lightBuffer = extern(clustersLightBuffer);
+
   RWStructuredBuffer<ClusterInfo> clustersInfoBuffer = extern(clustersInfoBuffer);
   RWStructuredBuffer<ClusterIndirection> indirectionBuffer = extern(clustersIndirectionBuffer);
   RWStructuredBuffer<uint> indirectionBufNextPos = extern(clustersIndirectionBufferNextPos);
-  RWStructuredBuffer<Light> lightBuffer = extern(clustersLightBuffer);
 };
 
 technique ClusterLightCulling

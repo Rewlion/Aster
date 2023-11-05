@@ -11,7 +11,7 @@ scope DebugClustersScope
   #include "utils.hlsl"
   #end
 
-  RWStructuredBuffer<ClusterInfo> clustersInfoBuffer = extern(clustersInfoBuffer);
+  StructuredBuffer<ClusterInfo> clustersInfoBuffer = extern(clustersInfoBuffer);
 };
 
 technique DebugClusters

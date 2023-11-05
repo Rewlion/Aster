@@ -134,7 +134,7 @@ void mk_fg_node_clustered_lights_culling(Event*, ComponentsAccessor&)
 {
   fg::register_node("clustered_lights_culling", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto frustumClusters = reg.modifyBuffer("frustum_clusters", gapi::BufferState::BF_STATE_UAV_RW);
+    auto frustumClusters = reg.readBuffer("frustum_clusters", gapi::BufferState::BF_STATE_SRV, false);
     auto clustersLightBuffer = reg.readBuffer("clustered_lights", gapi::BufferState::BF_STATE_SRV, false);
     auto clustersInfoBuffer = reg.modifyBuffer("clusters_info", gapi::BufferState::BF_STATE_UAV_RW);
     auto clustersIndirectionBuffer = reg.modifyBuffer("clusters_indirecion", gapi::BufferState::BF_STATE_UAV_RW);
@@ -169,9 +169,7 @@ void mk_fg_node_dbg_clustered_render(Event*, ComponentsAccessor&)
   fg::register_node("dbg_clustered_render", FG_FILE_DECL, [](fg::Registry& reg)
   { 
     reg.orderMeBefore("ui");
-    reg.orderMeAfter("clustered_lights_culling");
-    reg.orderMeAfter("build_light_clusters");
-    auto clustersInfoBuffer = reg.modifyBuffer("clusters_info", gapi::BufferState::BF_STATE_UAV_RW);
+    auto clustersInfoBuffer = reg.readBuffer("clusters_info", gapi::BufferState::BF_STATE_SRV, false);
     auto rt = reg.modifyTexture("final_target", gapi::TextureState::RenderTarget);
 
     return [clustersInfoBuffer,rt](gapi::CmdEncoder& encoder)

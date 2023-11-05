@@ -62,7 +62,7 @@ void build_light_clusters(gapi::CmdEncoder& encoder)
 }
 
 NODE_BEGIN(clustered_lights_culling)
-  BIND_BUF_RW_UAV_AS(frustum_clusters, frustumClusters)
+  BIND_BUF_SRV_AS(frustum_clusters, frustumClusters)
   BIND_BUF_SRV_AS(clustered_lights, clustersLightBuffer)
   BIND_BUF_RW_UAV_AS(clusters_info, clustersInfoBuffer)
   BIND_BUF_RW_UAV_AS(clusters_indirecion, clustersIndirectionBuffer)
@@ -87,10 +87,8 @@ static bool is_clustered_render_dbg_enabled = true;
 
 NODE_BEGIN(dbg_clustered_render)
   ORDER_ME_BEFORE(ui)
-  ORDER_ME_AFTER(clustered_lights_culling)
-  ORDER_ME_AFTER(build_light_clusters)
 
-  BIND_BUF_RW_UAV_AS(clusters_info, clustersInfoBuffer)
+  BIND_BUF_SRV_AS(clusters_info, clustersInfoBuffer)
   MODIFY_TEX_RT_AS(final_target, rt)
   EXEC(dbg_clustered_render_exec)
 NODE_END()
