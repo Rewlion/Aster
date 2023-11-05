@@ -2,7 +2,7 @@ template @("name: CoreRender") {
   component @("FontRender font_render") {}
   component @("GuiRender gui_render") {}
   component @("ImGuiRender imgui_render") {}
-  component @("ClusteredRenderer clustered_render") {}
+  component @("ClusteredLights clustered_lights") {}
 
   int2 render_window_size = 0, 0
   

@@ -4,26 +4,26 @@
 #include <engine/ecs/components_accessor.h>
 #include <EASTL/functional.h>
 
-#include "clustered_render.ecs.cpp" 
+#include "clustered_lights.ecs.cpp" 
 
 using namespace ecs;
 
-const static DirectQueryRegistration query_clustered_render_queryReg{
+const static DirectQueryRegistration query_clustered_lights_queryReg{
   {
-    DESCRIBE_QUERY_COMPONENT("clustered_render", Engine::Render::ClusteredRenderer)
+    DESCRIBE_QUERY_COMPONENT("clustered_lights", Engine::Render::ClusteredLights)
   },
-  "query_clustered_render"};
-const static query_id_t query_clustered_render_queryId = query_clustered_render_queryReg.getId();
+  "query_clustered_lights"};
+const static query_id_t query_clustered_lights_queryId = query_clustered_lights_queryReg.getId();
 
 
-void query_clustered_render (eastl::function<
+void query_clustered_lights (eastl::function<
   void(
-    Engine::Render::ClusteredRenderer& clustered_render)> cb)
+    Engine::Render::ClusteredLights& clustered_lights)> cb)
 {
-  ecs::get_registry().query(query_clustered_render_queryId, [&](ComponentsAccessor& accessor)
+  ecs::get_registry().query(query_clustered_lights_queryId, [&](ComponentsAccessor& accessor)
   {
-    Engine::Render::ClusteredRenderer& clustered_render = accessor.get<Engine::Render::ClusteredRenderer>(compile_ecs_name_hash("clustered_render"));
-    cb(clustered_render);
+    Engine::Render::ClusteredLights& clustered_lights = accessor.get<Engine::Render::ClusteredLights>(compile_ecs_name_hash("clustered_lights"));
+    cb(clustered_lights);
   });
 }
 
