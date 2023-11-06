@@ -461,10 +461,11 @@ void spawn_moving_point_light_at_camera(eastl::span<string_view>)
         ecs::EntityComponents init;
         init["center_pos"] = initPos;
         init["pos"] = initPos;
-        init["point_light_attenuation_radius"] = 0.3f;
+        init["point_light_attenuation_radius"] = 10.0f;
         init["point_light_color"] = float3{0.0f, 1.0f, 0.0f};
 
         ecs::get_registry().createEntity("MovingPointLight", std::move(init));
+        return;
       }
   });
 }

@@ -11,7 +11,7 @@
 scope ResolveGbufferScope {
   reserve:
     descriptor_set(3);
-    register(buffer, 0-1);
+    register(buffer, 0-4);
     register(texture, 0-6);
 
   RWStructuredBuffer<float3> atmParamsBuffer = extern(atmParamsBuffer);
@@ -23,6 +23,14 @@ scope ResolveGbufferScope {
   Texture2D gbufferDepth = extern(gbuffer_depth);
   Texture2D enviSpecular = extern(enviSpecular);
   Texture2D enviBRDF = extern(enviBRDF);
+
+  #hlsl
+  #include "clustered_light/utils.hlsl"
+  #end
+
+  StructuredBuffer<Light> lightBuffer = extern(clustersLightBuffer);
+  StructuredBuffer<ClusterInfo> clustersInfoBuffer = extern(clustersInfoBuffer);
+  StructuredBuffer<ClusterIndirection> indirectionBuffer = extern(clustersIndirectionBuffer);
 
   float enviMips = extern(enviMips);
   float4 sunAzimuth_sunAltitude_rTopMM_rBotMM = channel(sunAzimuth_sunAltitude_rTopMM_rBotMM);
@@ -41,7 +49,6 @@ technique ResolveGbuffer {
   USE_MATH();
   #hlsl
   #include "atmosphere/sph.hlsl"
-  #include "clustered_light/tiles.hlsl"
   #end
   USE_ATMOSPHERE_PARAMS();
   USE_ATM_SPH();
@@ -52,6 +59,8 @@ technique ResolveGbuffer {
   USE_PBR();
 
   #hlsl
+    #include "clustered_light/lights_apply.hlsl"
+
     [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
     void cs_main(uint3 dispatch_thread_id: SV_DispatchThreadID)
     {
@@ -86,15 +95,35 @@ technique ResolveGbuffer {
       float NoL = max(dot(L, N), 0.0);
       float NoV = max(dot(V,N), 0.0);
       float VoH = max(dot(V,H), 0.0);
+      float NoH = max(dot(N,H), 0.0);
 
-      float3 F = schlickFresnel(mat.specularReflection, VoH).rgb;
-      float3 kD = (1.0 - F);
+      DynamicLightsApplyParams dynamicLightParams;
+      dynamicLightParams.tc = tc.xy;
+      dynamicLightParams.renderSize = renderSize;
+      dynamicLightParams.worldPos = worldPos;
+      dynamicLightParams.N = N;
+      dynamicLightParams.NoV = NoV;
+      dynamicLightParams.NoH = NoH;
+      dynamicLightParams.VoH = VoH;
+      dynamicLightParams.zView = linearize_z(depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+      dynamicLightParams.zNear = FrameScope.zNear_zFar.x;
+      dynamicLightParams.zFar = FrameScope.zNear_zFar.y;
+      dynamicLightParams.roughness = mat.roughness;
+      dynamicLightParams.ggxAlpha = mat.ggxAlpha;
+      dynamicLightParams.specularReflection = mat.specularReflection;
+      dynamicLightParams.clustersInfoBuffer = clustersInfoBuffer;
+      dynamicLightParams.indirectionBuffer = indirectionBuffer;
+      dynamicLightParams.lightBuffer = lightBuffer;
+
+      float3 dynamicLightsDiffuseNoBRDF;
+      float3 dynamicLightsSpecular;
+      dynamicLights(dynamicLightParams, dynamicLightsDiffuseNoBRDF, dynamicLightsSpecular);
 
       float3 diffuseSPH = getSphDiffuseProbe(N);
       float3 sunL = getSunL() * NoL;
 
-      float3 diffusePart = diffuseBRDF(mat.diffuseColor, mat.specularReflection, VoH) * (diffuseSPH + sunL);
-      float3 specularPart = enviSpecularIBL(mat.specularReflection, mat.roughness, NoV, R);
+      float3 diffusePart = diffuseBRDF(mat.diffuseColor, mat.specularReflection, VoH) * (diffuseSPH + sunL + dynamicLightsDiffuseNoBRDF);
+      float3 specularPart = enviSpecularIBL(mat.specularReflection, mat.roughness, NoV, R) + dynamicLightsSpecular;
 
       float3 Lo = diffusePart + specularPart;
       

@@ -60,7 +60,7 @@ Image Based Lighthing for Specular:
       https://www.pbr-book.org/3ed-2018/Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions
 
 PBR
-  - https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/course-notes-moving-frostbite-to-pbr-v2.pdf
+  - https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf
 
     MS diffuse brdf TODO
     https://www.activision.com/cdn/research/siggraph_2018_opt.pdf

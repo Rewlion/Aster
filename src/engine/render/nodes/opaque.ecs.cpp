@@ -93,6 +93,10 @@ NODE_BEGIN(gbuffer_resolve)
   BIND_TEX_SRV_AS(gbuf1, gbuffer_normal)
   BIND_TEX_SRV_AS(gbuf2, gbuffer_metal_roughness)
 
+  BIND_BUF_SRV_AS(clustered_lights, clustersLightBuffer)
+  BIND_BUF_SRV_AS(clusters_info, clustersInfoBuffer)
+  BIND_BUF_SRV_AS(clusters_indirecion, clustersIndirectionBuffer)
+
   RENAME_TEX_RO_DEPTH(late_opaque_depth, gbuffer_depth)
   BIND_SHADER_VAR_AS(gbuffer_depth, gbuffer_depth)
 

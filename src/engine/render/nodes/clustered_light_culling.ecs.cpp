@@ -83,7 +83,7 @@ void clustered_lights_culling(gapi::CmdEncoder& encoder)
                    CLUSTERS_DIM_Z / CLUSTERS_THREADS_Z);
 }
 
-static bool is_clustered_render_dbg_enabled = true;
+static bool is_clustered_render_dbg_enabled = false;
 
 NODE_BEGIN(dbg_clustered_render)
   ORDER_ME_BEFORE(ui)
