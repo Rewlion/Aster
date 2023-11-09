@@ -8,7 +8,6 @@ add_library(engine ${engine_src})
 target_link_libraries(engine
   deps_imgui
   deps_imgui_node_editor
-  deps_optick
   engine_assets
   engine_console
   engine_datablock

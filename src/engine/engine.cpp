@@ -21,8 +21,6 @@
 #include <engine/types.h>
 #include <engine/window.h>
 
-#include <optick/optick.h>
-
 namespace Engine
 {
   void init_input()
@@ -70,8 +68,6 @@ namespace Engine
   {
     while(!Window::has_pending_exit())
     {
-      OPTICK_FRAME("MainThread");
-
       fs::FilesWatcher::readNotifies();
       Time::tick();
 
