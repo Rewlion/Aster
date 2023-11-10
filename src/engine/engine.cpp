@@ -2,9 +2,10 @@
 
 #include <engine/assets/assets_manager.h>
 #include <engine/console/console.h>
+#include <engine/debug_marks.h>
 #include <engine/ecs/ecs.h>
-#include <engine/events.h>
 #include <engine/editor/editor.h>
+#include <engine/events.h>
 #include <engine/fs/file_watch.h>
 #include <engine/fs/vfs.h>
 #include <engine/gapi/gapi.h>
@@ -68,6 +69,8 @@ namespace Engine
   {
     while(!Window::has_pending_exit())
     {
+      PROFILE_CPU_NAMED("Tick");
+
       fs::FilesWatcher::readNotifies();
       Time::tick();
 
@@ -82,6 +85,8 @@ namespace Engine
 
       imgui::Manager::tick();
       Render::world_render.render();
+      
+      FrameMarkNamed("MainThread");
     }
   }
 

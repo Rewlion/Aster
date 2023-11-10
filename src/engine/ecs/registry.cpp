@@ -2,6 +2,7 @@
 #include "components_accessor.h"
 #include "ecs_events.h"
 
+#include <engine/debug_marks.h>
 #include <engine/log.h>
 #include <engine/utils/string.h>
 
@@ -257,7 +258,7 @@ namespace ecs
     m_RegisteredDirectQueries.resize(DirectQueryRegistration::size());
 
     SystemRegistration::enumerate([this](const SystemRegistration& system_reg) {
-      registerSystem(system_reg.m_Cb, system_reg.m_Comps);
+      registerSystem(system_reg.m_Name, system_reg.m_Cb, system_reg.m_Comps);
     });
 
     DirectQueryRegistration::enumerate([this](const DirectQueryRegistration& query) {
@@ -266,23 +267,25 @@ namespace ecs
     });
 
     EventSystemRegistration::enumerate([this](const EventSystemRegistration& event_system_reg) {
-      registerEventSystem(event_system_reg.m_Cb, event_system_reg.m_Event, event_system_reg.m_Comps);
+      registerEventSystem(event_system_reg.m_Name, event_system_reg.m_Cb, event_system_reg.m_Event, event_system_reg.m_Comps);
     });
   }
 
-  void Registry::registerSystem(const QueryCb& cb, const QueryComponents& components)
+  void Registry::registerSystem(const char* name, const QueryCb& cb, const QueryComponents& components)
   {
     const  eastl::vector<archetype_id_t> desiredArchetypes = findDesiredArchetypes(components);
     if (desiredArchetypes.size() > 0)
     {
       m_RegisteredQueues.push_back(RegisteredQueryInfo{
+        .name = name,
         .cb = std::move(cb),
         .archetypes = std::move(desiredArchetypes)
       });
     }
   }
 
-  void Registry::registerEventSystem(const EventQueryCb& cb,
+  void Registry::registerEventSystem(const char* name,
+                                     const EventQueryCb& cb,
                                      const name_hash_t event,
                                      const QueryComponents& components)
   {
@@ -296,6 +299,7 @@ namespace ecs
     if (it != m_EventHandleQueries.end())
     {
       it->second.push_back(RegisteredEventQueryInfo{
+        .name = name,
         .eventCb = cb,
         .archetypes = eastl::move(desiredArchetypes)
       });
@@ -351,19 +355,28 @@ namespace ecs
   {
     if (m_Templates.hasPendingRegistration())
     {
+      PROFILE_CPU_NAMED("Ecs Queries registration")
       registerCppQueries();
       m_Templates.markRegistered();
     }
 
     processEvents();
 
-    for(const RegisteredQueryInfo& query: m_RegisteredQueues)
-      for(const archetype_id_t archetypeId: query.archetypes)
-        queryArchetype(archetypeId, query.cb);
+    {
+      PROFILE_CPU_NAMED("Ecs systems")
+      for(const RegisteredQueryInfo& query: m_RegisteredQueues)
+      {
+        PROFILE_CPU_TNAMED(query.name);
+        for(const archetype_id_t archetypeId: query.archetypes)
+          queryArchetype(archetypeId, query.cb);
+      }
+    }
   }
 
   void Registry::processDirectEvent(Event* event)
   {
+    PROFILE_CPU_NAMED("Ecs direct events")
+
     eastl::vector<RegisteredEventQueryInfo>& queries = m_EventHandleQueries[event->eventNameHash];
 
     const auto it = m_EntityInfosMap.find(event->receiver.getId());
@@ -372,6 +385,8 @@ namespace ecs
       const archetype_id_t archetypeId = it->second.archId;
       for (const auto& query: queries)
       {
+        PROFILE_CPU_TNAMED(query.name);
+
         const bool hasValidArch = eastl::find(query.archetypes.begin(), query.archetypes.end(), archetypeId)
                                     != query.archetypes.end();
         if (hasValidArch)
@@ -389,9 +404,13 @@ namespace ecs
 
   void Registry::processBroadcastEvent(Event* event)
   {
+    PROFILE_CPU_NAMED("Ecs Broadcast Event")
+
     eastl::vector<RegisteredEventQueryInfo>& queries = m_EventHandleQueries[event->eventNameHash];
     for(const auto& query: queries)
     {
+      PROFILE_CPU_TNAMED(query.name);
+
       if (!query.archetypes.empty())
       {
         for(const archetype_id_t archetypeId: query.archetypes)

@@ -6,6 +6,7 @@
 
 #include <EASTL/vector.h>
 
+#include <engine/debug_marks.h>
 #include <engine/log.h>
 
 namespace gapi::vulkan
@@ -80,6 +81,8 @@ namespace gapi::vulkan
 
       inline void nextFrame()
       {
+        PROFILE_CPU_NAMED("FrameGC clearing");
+
         frameId = (frameId + 1) % GC_FRAMES;
         {
           auto& waitFences = frameResources[frameId].waitFences;

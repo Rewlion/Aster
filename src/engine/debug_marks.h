@@ -28,10 +28,12 @@ class ScopeDbgMarkerRegion
 
 
 #ifdef TRACY_ENABLE
-#define PROFILE_CPU() ZoneScoped
-#define PROFILE_CPU_NAMED(name) ZoneTransientN(NAME_WITH_LINE(cpuProfile), name, true)
-#define PROFILE_GAPI(name, encoder)\
+#define PROFILE_CPU() ZoneScoped;
+#define PROFILE_CPU_NAMED(name) ZoneScopedN(name);
+#define PROFILE_CPU_TNAMED(name) ZoneTransientN(NAME_WITH_LINE(cpuProfile), name, true);
+#define PROFILE_GAPI_TNAMED(name, encoder)\
   GAPI_MARK(name, encoder)\
+  PROFILE_CPU_TNAMED(name)\
   std::unique_ptr<gapi::GpuSectionProfileScope> NAME_WITH_LINE(gpuSectionProfile) {\
     (encoder).beginScopedProfileSection(__LINE__, __FILE__, std::strlen(__FILE__), __FUNCTION__, std::strlen(__FUNCTION__), name, std::strlen(name))\
   };\
@@ -39,5 +41,6 @@ class ScopeDbgMarkerRegion
 #else
 #define PROFILE_CPU() 
 #define PROFILE_CPU_NAMED(name) 
+#define PROFILE_CPU_TNAMED(name) 
 #define PROFILE_GAPI(name, encoder)  GAPI_MARK(name, encoder)
 #endif

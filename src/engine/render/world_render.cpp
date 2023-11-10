@@ -1,6 +1,7 @@
 #include "world_render.h"
 #include "gui_render.h"
 
+#include <engine/debug_marks.h>
 #include <engine/ecs/ecs.h>
 #include <engine/events.h>
 #include <engine/render/font/font_render.h>
@@ -37,6 +38,8 @@ namespace Engine::Render
 
   void WorldRender::render()
   {
+    PROFILE_CPU_NAMED("Render")
+
     fg::set_render_size(Window::get_window_size());
     fg::exec_new_frame();
     gapi::present_backbuffer_and_finalize_frame();

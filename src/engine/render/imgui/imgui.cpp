@@ -1,6 +1,7 @@
 #include "imgui.h"
 
 #include <engine/assert.h>
+#include <engine/debug_marks.h>
 #include <engine/time.h>
 
 #include <imgui-node-editor/imgui_node_editor.h>
@@ -82,7 +83,8 @@ namespace Engine::imgui
   void Manager::tick()
   {
     ASSERT_FMT(m_This, "ImGui Manager is not initialized");
-    
+    PROFILE_CPU_NAMED("ImGui Tick")
+
     ImGuiIO& io = ImGui::GetIO();
     const float2 wndSize = Window::get_window_size();
     io.DisplaySize = ImVec2(wndSize.x, wndSize.y);

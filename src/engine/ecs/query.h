@@ -96,12 +96,14 @@ namespace ecs
 
   struct RegisteredQueryInfo
   {
+    const char* name;
     QueryCb cb;
     eastl::vector<archetype_id_t> archetypes;
   };
 
   struct RegisteredEventQueryInfo
   {
+    const char* name;
     EventQueryCb eventCb;
     eastl::vector<archetype_id_t> archetypes;
   };

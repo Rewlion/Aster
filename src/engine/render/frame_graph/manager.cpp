@@ -25,6 +25,7 @@ namespace fg
   void Manager::execNewFrame()
   {
     ASSERT_FMT(m_State != State::Empty, "framegraph doesn't have nodes to process");
+    PROFILE_CPU_NAMED("FG new frame")
 
     compile();
     validateResources();
@@ -44,6 +45,8 @@ namespace fg
 
   void Manager::compile()
   {
+    PROFILE_CPU();
+
     m_Registry.reset();
 
     for (size_t i = 0; auto& node: m_Registry.m_Nodes)
@@ -55,6 +58,8 @@ namespace fg
 
   void Manager::validateResources()
   {
+    PROFILE_CPU();
+
     eastl::vector_set<virt_res_id_t> processedReads, processedModifies, processedCreates;
     eastl::vector<virt_res_id_t> validModifies, validCreates;
     eastl::vector<Registry::NodeInfo::ReadRequest> validReads;
@@ -122,6 +127,8 @@ namespace fg
 
   void Manager::orderNodes()
   {
+    PROFILE_CPU();
+
     m_NodesOrder.clear();
     const node_id_t closingNode = to_node_id(m_Registry.m_NodesNames.getStringId(m_ClosingNode));
     ASSERT_FMT(closingNode != INVALID_NODE_ID,
@@ -237,6 +244,8 @@ namespace fg
 
   void Manager::placeBlobs()
   {
+    PROFILE_CPU();
+
     size_t blobsSize = 0;
     for (node_id_t nodeId: m_NodesOrder)
     {
@@ -256,6 +265,8 @@ namespace fg
 
   void Manager::flushResources()
   {
+    PROFILE_CPU();
+
     auto& storage = getStorage();
     storage.reset();
     storage.setBlobsStorageSize(m_BlobsSize);
@@ -263,6 +274,8 @@ namespace fg
 
   void Manager::execNodes()
   {
+    PROFILE_CPU_NAMED("FG execute")
+
     std::unique_ptr<gapi::CmdEncoder> encoder{gapi::allocate_cmd_encoder()};
     const auto beginRp = [&encoder, &registry = m_Registry, &storage = getStorage(), this]
       (const Registry::NodeInfo& node)
@@ -332,47 +345,67 @@ namespace fg
 
       for (const node_id_t nodeId: m_NodesOrder)
       {
-        GAPI_MARK(m_Registry.m_NodesNames.getString(to_name_id(nodeId)), *encoder);
+        const char* nodeName = m_Registry.m_NodesNames.getString(to_name_id(nodeId));
+        PROFILE_GAPI_TNAMED(nodeName, *encoder);
 
         auto& node = m_Registry.m_Nodes[nodeId];
 
-        for (auto vResId: node.creates)
         {
-          const auto& vRes = m_Registry.m_VirtResources[vResId];
-          if (vRes.clonnedVResId == INVALID_VIRT_RES_ID)
+          PROFILE_CPU_NAMED("create resources")
+          for (auto vResId: node.creates)
           {
-            auto& res = m_Registry.m_Resources[vRes.resourceId];
-            if (vRes.persistent)
+            const auto& vRes = m_Registry.m_VirtResources[vResId];
+            if (vRes.clonnedVResId == INVALID_VIRT_RES_ID)
             {
-              m_PersistentResourceStorage.create(vRes.resourceId, res);
-              m_PersistentResourceStorage.importResTo(vRes.resourceId, getStorage());
+              auto& res = m_Registry.m_Resources[vRes.resourceId];
+              if (vRes.persistent)
+              {
+                PROFILE_CPU_NAMED("persistent create")
+                m_PersistentResourceStorage.create(vRes.resourceId, res);
+                m_PersistentResourceStorage.importResTo(vRes.resourceId, getStorage());
+              }
+              else
+              {
+                PROFILE_CPU_NAMED("create")
+                getStorage().create(vRes.resourceId, res);
+              }
             }
-            else
-              getStorage().create(vRes.resourceId, res);
           }
         }
 
-        for (auto texState: node.execState.textureBeginStates)
         {
-          const res_id_t resId = getResourceId(texState.virtResId);
-          const bool validTimeline = !(texState.timeline == Timeline::Previous && m_iFrame == 0);
-          if(resId != INVALID_RES_ID && validTimeline)
-            getStorage(texState.timeline).transitTextureState(resId, texState.state, *encoder);
+          PROFILE_CPU_NAMED("transit textures state")
+          for (auto texState: node.execState.textureBeginStates)
+          {
+            const res_id_t resId = getResourceId(texState.virtResId);
+            const bool validTimeline = !(texState.timeline == Timeline::Previous && m_iFrame == 0);
+            if(resId != INVALID_RES_ID && validTimeline)
+              getStorage(texState.timeline).transitTextureState(resId, texState.state, *encoder);
+          }
         }
 
-        for (auto bufState: node.execState.bufferBeginStates)
         {
-          const res_id_t resId = getResourceId(bufState.virtResId);
-          if(resId != INVALID_RES_ID)
-            getStorage().transitBufferState(resId, bufState.state, *encoder);
+          PROFILE_CPU_NAMED("transit buffer state")
+          for (auto bufState: node.execState.bufferBeginStates)
+          {
+            const res_id_t resId = getResourceId(bufState.virtResId);
+            if(resId != INVALID_RES_ID)
+              getStorage().transitBufferState(resId, bufState.state, *encoder);
+          }
         }
 
         const bool declaredRp = (node.execState.renderPass.depth.vResId != INVALID_VIRT_RES_ID)
                                || node.execState.renderPass.mrt.empty();
         if (declaredRp)
+        {
+          PROFILE_CPU_NAMED("begin rp")
           beginRp(node);
+        }
 
-        node.exec(*encoder);
+        {
+          PROFILE_CPU_NAMED("exec")
+          node.exec(*encoder);
+        }
 
         if (declaredRp)
           encoder->endRenderpass();

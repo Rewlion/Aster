@@ -2,6 +2,7 @@
 
 #include <engine/assert.h>
 #include <engine/datablock/utils.h>
+#include <engine/debug_marks.h>
 #include <engine/log.h>
 #include <engine/settings.h>
 #include <engine/time.h>
@@ -266,6 +267,7 @@ namespace Engine::Input
 
   void Manager::processInput()
   {
+    PROFILE_CPU();
     Manager::m_This->processInputMessages();
     Manager::m_This->processActions();
   }

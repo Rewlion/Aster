@@ -1,6 +1,7 @@
 #include "gui.h"
 
 #include <engine/assert.h>
+#include <engine/debug_marks.h>
 #include <engine/input/drivers/buttons.h>
 #include <engine/log.h>
 #include <engine/qjs/value.hpp>
@@ -84,6 +85,8 @@ namespace Engine::gui
 
   void Gui::tick()
   {
+    PROFILE_CPU_NAMED("Gpu Tick")
+    
     if (m_This->m_RtState.reactStorage.hasDirtyStates())
     {
       m_This->m_Scene.rebuildDirtyElems(m_This->m_RtState.reactStorage.getDirtyStates());

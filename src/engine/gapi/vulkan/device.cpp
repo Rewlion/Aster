@@ -6,6 +6,7 @@
 #include "tracy.h"
 
 #include <engine/assert.h>
+#include <engine/debug_marks.h>
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/log.h>
 
@@ -234,6 +235,7 @@ namespace gapi::vulkan
 
   void Device::presentSurfaceImage()
   {
+    PROFILE_CPU();
     m_Swapchain.present(m_SemaphoresToWaitBeforePresent.data(), m_SemaphoresToWaitBeforePresent.size());
     m_SemaphoresToWaitBeforePresent.clear();
   }

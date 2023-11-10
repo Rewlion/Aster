@@ -2,6 +2,7 @@
 
 #include <engine/settings.h>
 #include <engine/assert.h>
+#include <engine/debug_marks.h>
 
 #include <EASTL/vector.h>
 
@@ -148,6 +149,8 @@ namespace Engine::Window
 
   void poll_wnd_messages()
   {
+    PROFILE_CPU();
+    
     MSG msg = { };
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
     {

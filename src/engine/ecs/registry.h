@@ -45,9 +45,10 @@ namespace ecs
     private:
       void registerEvents();
       void registerCppQueries();
-      void registerSystem(const QueryCb& cb,
+      void registerSystem(const char* name, const QueryCb& cb,
                           const QueryComponents& components);
-      void registerEventSystem(const EventQueryCb& cb,
+      void registerEventSystem(const char* name,
+                               const EventQueryCb& cb,
                                const name_hash_t event,
                                const QueryComponents& components);
       void registerEvent(const char* event_name);
