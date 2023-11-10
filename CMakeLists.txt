@@ -7,6 +7,7 @@ project(Not_this_again VERSION 0.1
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+add_definitions(-DTRACY_ENABLE)
 add_definitions(-DSPDLOG_COMPILED_LIB)
 add_definitions(-DPLATFORM_WIN64)
 add_definitions(#-Wno-defaulted-function-deleted
@@ -33,6 +34,7 @@ include_directories(
   "${CMAKE_SOURCE_DIR}/deps/quickjs/include"
   "${CMAKE_SOURCE_DIR}/deps/spdlog/include"
   "${CMAKE_SOURCE_DIR}/deps/tinygltf-2.5.0/include"
+  "${CMAKE_SOURCE_DIR}/deps/tracy/include"
   "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/include"
   "${CMAKE_SOURCE_DIR}/deps/xxhash/include"
 )
@@ -71,8 +73,9 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/fs")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/work_cycle")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/deps/SPIRV-Cross-moltenvk_1.1.5/src")
-add_subdirectory("${CMAKE_SOURCE_DIR}/deps/imgui/src/imgui")
 add_subdirectory("${CMAKE_SOURCE_DIR}/deps/imgui-node-editor/src/imgui-node-editor")
+add_subdirectory("${CMAKE_SOURCE_DIR}/deps/imgui/src/imgui")
+add_subdirectory("${CMAKE_SOURCE_DIR}/deps/tracy/src")
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/shaders_compiler")
 

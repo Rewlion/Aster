@@ -4,6 +4,13 @@
 
 namespace gapi
 {
+  class GpuSectionProfileScope
+  {
+    public:
+      virtual
+      ~GpuSectionProfileScope(){};
+  };
+
   class CmdEncoder
   {
     public:
@@ -104,6 +111,11 @@ namespace gapi
 
       virtual
       void endMarkerRegion() = 0;
+
+      virtual
+      auto beginScopedProfileSection(const size_t line, const char* file, const size_t file_len,
+                                     const char* function, const size_t function_len, const char* name,
+                                     const size_t name_len) -> GpuSectionProfileScope* = 0;
 
       virtual
       void dispatch(const uint32_t group_count_x, const uint32_t group_count_y, const uint32_t group_count_z) = 0;

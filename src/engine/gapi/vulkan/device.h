@@ -38,6 +38,7 @@ namespace gapi::vulkan
 
       struct CreateInfo
       {
+        vk::PhysicalDevice physicalDevice;
         vk::Instance instance;
         vk::SurfaceKHR surface;
         vk::UniqueDevice device;
@@ -57,6 +58,7 @@ namespace gapi::vulkan
     public:
       Device() = default;
       Device(CreateInfo&&, FrameGarbageCollector*);
+      ~Device();
 
       const Device& operator=(const Device& rvl) = delete;
 

@@ -3,6 +3,7 @@
 #include "gapi_to_vk.h"
 #include "resources.h"
 #include "result.h"
+#include "tracy.h"
 
 #include <engine/assert.h>
 #include <engine/gapi/cmd_encoder.h>
@@ -59,6 +60,17 @@ namespace gapi::vulkan
 
     submitGraphicsCmd(swapchainInitCmdBuf, fence.value.get());
     VK_CHECK(m_Device->waitForFences(1, &fence.value.get(), true, ~0));
+
+  #ifdef TRACY_ENABLE
+    tracy_init(ci.physicalDevice, m_Device.get(), m_GraphicsCmdPool.get(), m_GraphicsQueue);
+  #endif
+  }
+
+  Device::~Device()
+  {
+  #ifdef TRACY_ENABLE
+    tracy_destroy();
+  #endif
   }
 
   auto Device::checkCapability(const CapabilitiesBits c) const -> bool

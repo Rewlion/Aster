@@ -587,6 +587,30 @@ public:
         Profiler::QueueSerialFinish();
     }
 
+    tracy_force_inline VkCtxScope(VkCtxScope&& r)
+    {
+        m_active = r.m_active;
+        m_cmdbuf = r.m_cmdbuf;
+        m_ctx = r.m_ctx;
+
+        r.m_active = false;
+    }
+
+    tracy_force_inline VkCtxScope& operator=(VkCtxScope&& r)
+    {
+        if (m_active)
+            this->~VkCtxScope();
+
+        m_active = r.m_active;
+        m_cmdbuf = r.m_cmdbuf;
+        m_ctx = r.m_ctx;
+
+        r.m_active = false;
+
+        return *this;
+    }
+
+
     tracy_force_inline ~VkCtxScope()
     {
         if( !m_active ) return;
@@ -604,7 +628,7 @@ public:
     }
 
 private:
-    const bool m_active;
+    bool m_active;
 
     VkCommandBuffer m_cmdbuf;
     VkCtx* m_ctx;

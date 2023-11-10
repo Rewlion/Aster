@@ -2,11 +2,13 @@
 #include "device.h"
 #include "frame_gc.h"
 #include "gapi_to_vk.h"
+#include "tracy.h"
 
 #include <engine/gapi/vulkan/cache/renderpass_storage.h>
 #include <engine/gapi/vulkan/cache/pipelines_storage.h>
 
 #undef MemoryBarrier //wtf ? winnt
+
 
 namespace gapi::vulkan
 {
@@ -302,6 +304,11 @@ namespace gapi::vulkan
     insureActiveCmd();
     ASSERT(m_RenderPassState.rp == vk::RenderPass{});
     ASSERT(m_CmdBuf != vk::CommandBuffer{});
+    
+  #ifdef TRACY_ENABLE
+    tracy_collect_time_stamps(m_CmdBuf);
+  #endif
+  
     VK_CHECK(m_CmdBuf.end());
 
     vk::Fence fence;
@@ -316,7 +323,7 @@ namespace gapi::vulkan
     }
     else
       fence = reinterpret_cast<VulkanFence*>(signalFence)->fence.get();
-
+    
     m_Device.submitGraphicsCmd(m_CmdBuf, fence);
 
     m_CmdBuf = vk::CommandBuffer{};
@@ -531,6 +538,41 @@ namespace gapi::vulkan
       insureActiveCmd();
       m_CmdBuf.endDebugUtilsLabelEXT();
     }
+  }
+
+#ifdef TRACY_ENABLE
+  class VkGpuSectionProfileScope : public gapi::GpuSectionProfileScope
+  {
+    public:
+      VkGpuSectionProfileScope(tracy::VkCtxScope&& scope)
+        : m_Scope(std::move(scope))
+      {
+      }
+
+      virtual
+      ~VkGpuSectionProfileScope(){}
+
+    private:
+      tracy::VkCtxScope m_Scope;
+      
+  };
+#endif
+
+  auto CmdEncoder::beginScopedProfileSection(const size_t line, const char* file, const size_t file_len,
+                                             const char* function, const size_t function_len, const char* name,
+                                             const size_t name_len) -> GpuSectionProfileScope*
+  {
+  #ifdef TRACY_ENABLE
+    insureActiveCmd();
+
+    tracy::VkCtx* ctx = tracy_get_ctx();
+    auto scope = tracy::VkCtxScope(ctx, line, file, file_len, function,
+                                   function_len, name, name_len, m_CmdBuf, true);
+
+    return new VkGpuSectionProfileScope{std::move(scope)};
+  #endif
+
+    return nullptr;
   }
 
   void CmdEncoder::dispatch(const uint32_t group_count_x, const uint32_t group_count_y, const uint32_t group_count_z)

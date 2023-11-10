@@ -54,6 +54,7 @@ namespace gapi::vulkan
   {
     wait_gpu_idle();
     frameGc.clearAllFrames();
+    device.reset();
   }
 
   auto get_device() -> vk::Device&

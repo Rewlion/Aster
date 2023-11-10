@@ -101,6 +101,10 @@ namespace gapi::vulkan
 
       void endMarkerRegion() override;
 
+      auto beginScopedProfileSection(const size_t line, const char* file, const size_t file_len,
+                                     const char* function, const size_t function_len, const char* name,
+                                     const size_t name_len) -> GpuSectionProfileScope* override;
+
       void dispatch(const uint32_t group_count_x, const uint32_t group_count_y, const uint32_t group_count_z) override;
 
       auto getRenderSize() const -> float2 override { return m_RenderSize; };

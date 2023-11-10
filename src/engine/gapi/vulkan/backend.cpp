@@ -259,6 +259,7 @@ namespace gapi::vulkan
     }
 
     Device::CreateInfo deviceCi{
+      .physicalDevice = m_PhysicalDevice,
       .instance = *m_Instance,
       .surface = *m_Surface,
       .device = eastl::move(device.value),
