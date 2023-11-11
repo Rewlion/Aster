@@ -1,133 +1,128 @@
 #pragma once
 
-#include "vulkan.h"
 #include "descriptors_set_manager.h"
+#include "device.h"
+#include "resources.h"
 #include "result.h"
-
-#include <EASTL/vector.h>
 
 #include <engine/debug_marks.h>
 #include <engine/log.h>
 
+#include <tuple>
+
 namespace gapi::vulkan
 {
   constexpr size_t GC_FRAMES = SWAPCHAIN_IMAGES_COUNT+1;
-
-  class FrameGarbageCollector
+  
+  template<class ...ResourceType>
+  class FrameGarbageCollectorBase
   {
-    public:
-      inline void init(Device* d)
-      {
-        device = d;
-      }
-
-
-      inline void addBuffer(Buffer&& b)
-      {
-        addBuffer(std::move(b.buffer));
-        addMemory(std::move(b.memory));
-      }
-
-      inline void addBuffer(vk::UniqueBuffer&& buffer)
-      {
-        frameResources[frameId].buffers.push_back(std::move(buffer));
-      }
-
-      inline void addMemory(vk::UniqueDeviceMemory&& memory)
-      {
-        frameResources[frameId].memories.push_back(std::move(memory));
-      }
-
-      inline void addCmdBuffer(vk::UniqueCommandBuffer&& cmdBuffer)
-      {
-        frameResources[frameId].cmdBuffers.push_back(std::move(cmdBuffer));
-      }
-
-      inline void addSemaphores(vk::UniqueSemaphore&& semaphore)
-      {
-        frameResources[frameId].semaphores.push_back(std::move(semaphore));
-      }
-
-      inline void addFence(vk::UniqueFence&& fence)
-      {
-        frameResources[frameId].fences.push_back(std::move(fence));
-      }
-
-      inline void addWaitFence(vk::UniqueFence&& fence)
-      {
-        frameResources[frameId].waitFences.push_back(fence.get());
-        frameResources[frameId].fences.push_back(std::move(fence));
-      }
-
-      inline void addFramebuffer(vk::UniqueFramebuffer&& fb)
-      {
-        frameResources[frameId].framebuffers.push_back(std::move(fb));
-      }
-
-      inline void addDsetManager(DescriptorsSetManager&& dsetManager)
-      {
-        frameResources[frameId].dsetManagers.push_back(std::move(dsetManager));
-      }
-
-      inline void addCmdPool(vk::UniqueCommandPool&& cmdPool)
-      {
-        frameResources[frameId].cmdPools.push_back(std::move(cmdPool));
-      }
-
-      inline void addEvent(vk::UniqueEvent&& event)
-      {
-        frameResources[frameId].events.push_back(std::move(event));
-      }
-
-      inline void nextFrame()
-      {
-        PROFILE_CPU_NAMED("FrameGC clearing");
-
-        frameId = (frameId + 1) % GC_FRAMES;
+    class DestroyQueue
+    {
+      public:
+        template<class T>
+        void add(T&& res)
         {
-          auto& waitFences = frameResources[frameId].waitFences;
-          if (waitFences.size() > 0)
-          {
-            VK_CHECK(device->getDevice().waitForFences(waitFences.size(), waitFences.data(), true, -1));
-            waitFences.clear();
-          }
+          eastl::vector<T>& pool = getPool<T>();
+          pool.push_back(std::move(res));
         }
 
-        frameResources[frameId].buffers.clear();
-        frameResources[frameId].memories.clear();
-        frameResources[frameId].cmdBuffers.clear();
-        frameResources[frameId].semaphores.clear();
-        frameResources[frameId].fences.clear();
-        frameResources[frameId].framebuffers.clear();
-        frameResources[frameId].dsetManagers.clear();
-        frameResources[frameId].cmdPools.clear();
-        frameResources[frameId].events.clear();
-      }
+        void destroy()
+        {
+          std::apply([](auto& ...resource){
+            (resource.clear(), ...);
+          }, m_Resources);
+        }
+      private:
+        template<class Resource>
+        auto getPool() -> eastl::vector<Resource>&
+        {
+          return std::get<eastl::vector<Resource>>(m_Resources);
+        }
 
-      inline
-      void clearAllFrames()
-      {
-        for (int i = 0; i < GC_FRAMES; ++i)
-          nextFrame();
-      }
+        std::tuple<eastl::vector<ResourceType>...> m_Resources;
+    };
 
-    private:
-      struct Resources
-      {
-        eastl::vector<vk::Fence> waitFences;
-        eastl::vector<vk::UniqueBuffer> buffers;
-        eastl::vector<vk::UniqueDeviceMemory> memories;
-        eastl::vector<vk::UniqueCommandBuffer> cmdBuffers;
-        eastl::vector<vk::UniqueSemaphore> semaphores;
-        eastl::vector<vk::UniqueFence> fences;
-        eastl::vector<vk::UniqueFramebuffer> framebuffers;
-        eastl::vector<DescriptorsSetManager> dsetManagers;
-        eastl::vector<vk::UniqueCommandPool> cmdPools;
-        eastl::vector<vk::UniqueEvent> events;
-      };
+    class WaitQueue
+    {
+      public:
+        WaitQueue() = default;
+        WaitQueue(Device* device)
+          : m_Device(device)
+        {
+        }
 
-      Device* device = nullptr;
-      size_t frameId = 0;
-      Resources frameResources[GC_FRAMES];
+        void add(const vk::Fence fence)
+        {
+          m_Fences.push_back(fence);
+        }
+
+        void wait()
+        {
+          if (m_Fences.size() > 0)
+          {
+            VK_CHECK(m_Device->getDevice().waitForFences(m_Fences.size(), m_Fences.data(), true, -1));
+            m_Fences.clear();
+          }
+        }
+      private:
+        Device* m_Device = nullptr;
+        eastl::vector<vk::Fence> m_Fences;
+    };
+
+  public:
+    void init(Device *d)
+    {
+      m_FrameId = 0;
+      for (size_t i = 0; i < GC_FRAMES; ++i)
+        m_WaitQueue[i] = WaitQueue{d};
+    }
+
+    void addBuffer(Buffer &&b)
+    {
+      add(std::move(b.buffer));
+      add(std::move(b.memory));
+    }
+
+    void addWaitFence(vk::UniqueFence&& fence)
+    {
+      m_WaitQueue[m_FrameId].add(fence.get());
+      m_DestroyQueue[m_FrameId].add(std::move(fence));
+    }
+
+    template<class T>
+    void add(T&& res)
+    {
+      m_DestroyQueue[m_FrameId].add(std::move(res));
+    }
+
+    void nextFrame()
+    {
+      PROFILE_CPU_NAMED("FrameGC clearing");
+      m_FrameId = (m_FrameId + 1) % GC_FRAMES;
+      m_WaitQueue[m_FrameId].wait();
+      m_DestroyQueue[m_FrameId].destroy();
+    }
+
+    void clearAllFrames()
+    {
+      for (int i = 0; i < GC_FRAMES; ++i)
+        nextFrame();
+    }
+
+  private:
+    size_t m_FrameId = 0;
+    DestroyQueue m_DestroyQueue [GC_FRAMES];
+    WaitQueue m_WaitQueue [GC_FRAMES];
+  };
+
+  class FrameGarbageCollector
+    : public FrameGarbageCollectorBase<
+      vk::UniqueBuffer, vk::UniqueDeviceMemory, vk::UniqueCommandBuffer,
+      vk::UniqueSemaphore, vk::UniqueFence, vk::UniqueFramebuffer, DescriptorsSetManager,
+      vk::UniqueCommandPool, vk::UniqueEvent>
+  {
   };
 }
+
+#undef GC_TYPES

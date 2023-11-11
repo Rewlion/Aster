@@ -266,7 +266,7 @@ namespace gapi::vulkan
 
   void free_cmd_promise(VulkanCmdPromise* promise)
   {
-    frameGc.addEvent(std::move(promise->event));
+    frameGc.add(std::move(promise->event));
   }
 
   void init()

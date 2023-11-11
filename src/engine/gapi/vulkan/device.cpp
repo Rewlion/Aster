@@ -96,7 +96,7 @@ namespace gapi::vulkan
     ));
 
     const auto ret = cmdBuf.get();
-    m_FrameGc->addCmdBuffer(std::move(cmdBuf));
+    m_FrameGc->add(std::move(cmdBuf));
 
     return ret;
   }
@@ -230,7 +230,7 @@ namespace gapi::vulkan
     submit.signalSemaphoreCount = 1;
     VK_CHECK(m_GraphicsQueue.submit(submit, signal_fence));
 
-    m_FrameGc->addSemaphores(std::move(signalSemaphore));
+    m_FrameGc->add(std::move(signalSemaphore));
   }
 
   void Device::presentSurfaceImage()
@@ -365,7 +365,7 @@ namespace gapi::vulkan
   {
     auto sem = createSemaphore();
     m_BackbufferAcquireSemaphore = sem.get();
-    m_FrameGc->addSemaphores(std::move(sem));
+    m_FrameGc->add(std::move(sem));
 
     m_Swapchain.acquireSurfaceImage(m_BackbufferAcquireSemaphore, signal_fence);
   }
@@ -381,8 +381,8 @@ namespace gapi::vulkan
     buffer.discards++;
     if (buffer.discards == buffer.maxDiscards)
     {
-      m_FrameGc->addBuffer(std::move(buffer.buffer));
-      m_FrameGc->addMemory(std::move(buffer.memory));
+      m_FrameGc->add(std::move(buffer.buffer));
+      m_FrameGc->add(std::move(buffer.memory));
 
       buffer = allocateBufferInternal(buffer.blockSize, buffer.usage);
       buffer.isFirstDiscard = false;

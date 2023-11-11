@@ -26,8 +26,8 @@ namespace gapi::vulkan
 
   CmdEncoder::~CmdEncoder()
   {
-    m_FrameGc.addDsetManager(std::move(m_DsetManager));
-    m_FrameGc.addCmdPool(std::move(m_CmdPool));
+    m_FrameGc.add(std::move(m_DsetManager));
+    m_FrameGc.add(std::move(m_CmdPool));
   }
 
   void CmdEncoder::beginRenderpass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil)
@@ -110,7 +110,7 @@ namespace gapi::vulkan
   {
     vk::UniqueFramebuffer fb = createFramebuffer(renderArea, renderTargets, depthStencil);
     const auto framebuffer = fb.get();
-    m_FrameGc.addFramebuffer(std::move(fb));
+    m_FrameGc.add(std::move(fb));
 
     return framebuffer;
   }
@@ -164,7 +164,7 @@ namespace gapi::vulkan
     ));
 
     const auto ret = cmdBuf.get();
-    m_FrameGc.addCmdBuffer(std::move(cmdBuf));
+    m_FrameGc.add(std::move(cmdBuf));
 
     return ret;
   }
