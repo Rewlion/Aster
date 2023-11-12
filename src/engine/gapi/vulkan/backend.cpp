@@ -72,7 +72,7 @@ namespace gapi::vulkan
       .setApplicationVersion(VK_MAKE_VERSION(-1, 0, 0))
       .setPEngineName(appName.c_str())
       .setEngineVersion(VK_MAKE_VERSION(-1, 0, 0))
-      .setApiVersion(VK_API_VERSION_1_1);
+      .setApiVersion(ENGINE_VK_VERSION);
 
     eastl::vector<const char*> instanceExtensions = {
       "VK_KHR_surface",
@@ -110,7 +110,6 @@ namespace gapi::vulkan
     m_PhysicalDevice = getSuitablePhysicalDevice();
     m_Surface = createPlatformSurface(*m_Instance);
     m_QueueIndices = getQueueIndices();
-    m_MemoryIndices = getMemoryIndices();
   }
 
   vk::PhysicalDevice Backend::getSuitablePhysicalDevice()
@@ -172,30 +171,6 @@ namespace gapi::vulkan
       indices.transfer = indices.graphics;
 
     return indices;
-  }
-
-  MemoryIndices Backend::getMemoryIndices()
-  {
-    vk::PhysicalDeviceMemoryProperties memoryProperties = m_PhysicalDevice.getMemoryProperties();
-    MemoryIndices memoryIndices;
-
-    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
-    {
-      const vk::MemoryType& memType = memoryProperties.memoryTypes[i];
-      const auto setMemoryIndex = [&memType, &i](size_t& index, const vk::Flags<vk::MemoryPropertyFlagBits>& flags)
-                                  {
-                                    if (index == size_t(-1) && memType.propertyFlags & flags)
-                                      index = i;
-                                  };
-      setMemoryIndex(memoryIndices.stagingMemory,
-        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-
-      setMemoryIndex(memoryIndices.deviceLocalMemory,
-        vk::MemoryPropertyFlagBits::eDeviceLocal);
-    }
-
-    ASSERT(memoryIndices.stagingMemory != size_t(-1) && memoryIndices.deviceLocalMemory != size_t(-1));
-    return memoryIndices;
   }
 
   Device* Backend::createDevice(FrameGarbageCollector* frameGc)
@@ -265,7 +240,6 @@ namespace gapi::vulkan
       .device = eastl::move(device.value),
       .deviceProperties = m_PhysicalDevice.getProperties(),
       .queueIndices = m_QueueIndices,
-      .memoryIndices = m_MemoryIndices,
 
       .surfaceCapabilities = std::move(surfaceCaps.value),
       .surfaceFormats = std::move(surfaceFormats.value),

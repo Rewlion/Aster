@@ -23,7 +23,6 @@ namespace gapi::vulkan
       UniqueDynamicDbgUtilsMessenger createDebugMessenger();
       vk::PhysicalDevice getSuitablePhysicalDevice();
       QueueIndices getQueueIndices();
-      MemoryIndices getMemoryIndices();
 
     private:
       enum class InstanceExtensionsBits
@@ -39,6 +38,5 @@ namespace gapi::vulkan
       vk::PhysicalDevice m_PhysicalDevice;
       vk::UniqueSurfaceKHR m_Surface;
       QueueIndices m_QueueIndices;
-      MemoryIndices m_MemoryIndices;
   };
 }

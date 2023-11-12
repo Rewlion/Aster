@@ -32,6 +32,7 @@ target_link_libraries(engine
   engine_work_cycle
   engine_world_render
   "EASTL"
+  "VulkanMemoryAllocator"
   "dbgeng"
   "freetype"
   "ktx"

@@ -8,10 +8,4 @@ namespace gapi::vulkan
     size_t present = -1;
     size_t transfer = -1;
   };
-
-  struct MemoryIndices
-  {
-    size_t stagingMemory = -1;
-    size_t deviceLocalMemory = -1;
-  };
 }

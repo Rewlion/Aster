@@ -1,11 +1,14 @@
 #pragma once
 
 #include "vulkan.h"
+
 #include "result.h"
+#include "vma.h"
 
 #include <engine/assert.h>
 #include <engine/gapi/resources.h>
 #include <engine/platform/memory.h>
+
 
 #include <stdint.h>
 
@@ -58,24 +61,38 @@ namespace gapi::vulkan
 
   struct Buffer
   {
-    vk::UniqueDeviceMemory memory;
-    vk::UniqueBuffer buffer;
+    VmaAllocator allocator = nullptr;
+    VmaAllocation allocation = nullptr;
+    vk::Buffer buffer = VK_NULL_HANDLE;
     int usage = 0;
-
     size_t blockSize = 0;
-    size_t alignedBlockSize = 0;
-    size_t maxDiscards = 0;
-    size_t discards = 0;
-    bool isFirstDiscard = true;
 
-    inline size_t getConstOffset() const
+    Buffer() = default;
+    Buffer(Buffer&& r)
     {
-      return alignedBlockSize * discards;
+      *this = std::move(r);
+    }
+    
+    Buffer& operator=(Buffer&& r)
+    {
+      this->~Buffer();
+      std::swap(allocator, r.allocator);
+      std::swap(allocation, r.allocation);
+      std::swap(buffer, r.buffer);
+      std::swap(usage, r.usage);
+      std::swap(blockSize, r.blockSize);
+
+      return *this;
     }
 
-    inline size_t getAbsOffset(const size_t localOffset) const
+    ~Buffer()
     {
-      return getConstOffset() + localOffset;
+      if (buffer)
+      {
+        vmaDestroyBuffer(allocator, buffer, allocation);
+        buffer = VK_NULL_HANDLE;
+        allocation = nullptr;
+      }
     }
   };
 
@@ -85,11 +102,42 @@ namespace gapi::vulkan
     vk::UniqueImageView srvView;
     eastl::vector<vk::UniqueImageView> viewsPerMip;
     vk::ImageViewType viewType;
-    vk::UniqueDeviceMemory memory;
-    vk::UniqueImage img;
-    vk::Format format;
-
+    VmaAllocator allocator = nullptr;
+    VmaAllocation allocation = nullptr;;
+    vk::Image img = VK_NULL_HANDLE;
+    vk::Format format = vk::Format::eUndefined;
     int3 size = {0,0,0};
+
+    Texture() = default;
+    Texture(Texture&& r)
+    {
+      *this = std::move(r);
+    }
+    Texture& operator=(Texture&& r)
+    {
+      this->~Texture();
+
+      std::swap(depthView, r.depthView);
+      std::swap(srvView, r.srvView);
+      std::swap(viewsPerMip, r.viewsPerMip);
+      std::swap(viewType, r.viewType);
+      std::swap(allocator, r.allocator);
+      std::swap(allocation, r.allocation);
+      std::swap(img, r.img);
+      std::swap(format, r.format);
+      std::swap(size, r.size);
+
+      return *this;
+    }
+    ~Texture()
+    {
+      if (img)
+      {
+        vmaDestroyImage(allocator, img, allocation);
+        img = VK_NULL_HANDLE;
+        allocator = nullptr;
+      }
+    }
   };
 
   struct Sampler

@@ -3,11 +3,13 @@
 #include "indices.h"
 #include "resources.h"
 #include "swapchain.h"
+#include "vma.h"
 
 #include <engine/types.h>
 #include <engine/utils/fixed_pool.hpp>
 
 #include <EASTL/vector.h>
+
 #include <vector>
 
 namespace gapi
@@ -44,7 +46,6 @@ namespace gapi::vulkan
         vk::UniqueDevice device;
         vk::PhysicalDeviceProperties deviceProperties;
         QueueIndices queueIndices;
-        MemoryIndices memoryIndices;
 
         vk::SurfaceCapabilitiesKHR surfaceCapabilities;
         std::vector<vk::SurfaceFormatKHR> surfaceFormats;
@@ -97,7 +98,7 @@ namespace gapi::vulkan
       BufferHandler allocateBuffer(const size_t size, const int usage, const char* name);
       void freeBuffer(const BufferHandler buffer);
 
-      void* mapBuffer(const BufferHandler buffer, const size_t offset, const size_t size, const int flags = 0);
+      void* mapBuffer(const BufferHandler buffer, const int flags = 0);
       void unmapBuffer(const BufferHandler buffer);
 
       void copyBuffersSync(const BufferHandler src, const size_t srcOffset, const BufferHandler dst, const size_t dstOffset, const size_t size);
@@ -142,7 +143,7 @@ namespace gapi::vulkan
     private:
       void copyBuffersSync(const vk::Buffer src, const size_t srcOffset, const vk::Buffer dst, const size_t dstOffset, const size_t size);
       void writeToStagingBuffer(const Buffer& buffer, const void* src, const size_t offset, const size_t size);
-      void* mapBuffer(const Buffer& buffer, const size_t offset, const size_t size);
+      void* mapBuffer(const Buffer& buffer);
       void unmapBuffer(const Buffer& buffer);
 
 
@@ -151,6 +152,7 @@ namespace gapi::vulkan
 
     private:
       Capabilities m_Capabilities;
+      VmaAllocator m_Vma;
 
       FrameGarbageCollector* m_FrameGc;
       vk::UniqueDevice m_Device;
@@ -161,7 +163,6 @@ namespace gapi::vulkan
       vk::Semaphore m_BackbufferAcquireSemaphore;
 
       QueueIndices m_QueueIndices;
-      MemoryIndices m_MemoryIndices;
 
       vk::Queue m_GraphicsQueue;
       vk::Queue m_TransferQueue;

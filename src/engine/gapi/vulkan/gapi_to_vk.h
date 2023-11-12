@@ -163,19 +163,6 @@ namespace gapi::vulkan
     return 1;
   }
 
-  inline uint32_t get_memory_index(const MemoryIndices memoryIndices, const int bufferUsage)
-  {
-    if (bufferUsage & BF_GpuVisible)
-      return memoryIndices.deviceLocalMemory;
-
-    if (bufferUsage & BF_CpuVisible)
-      return memoryIndices.stagingMemory;
-
-    ASSERT(!"buffer usage has to specify memory storage");
-
-    return 0;
-  }
-
   inline vk::ShaderStageFlagBits get_shader_stage(const ShaderStage stage)
   {
     return static_cast<vk::ShaderStageFlagBits>(stage);

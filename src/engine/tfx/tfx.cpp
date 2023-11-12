@@ -183,7 +183,7 @@ namespace tfx
 
         void processByteCode(const ShadersSystem::ShEndCbuffer& bc)
         {
-          void* dstBuffer = gapi::map_buffer(m_Scope->gpuCbuffer, 0, m_Scope->cpuCbuffer.size(), gapi::WR_DISCARD);
+          void* dstBuffer = gapi::map_buffer(m_Scope->gpuCbuffer, gapi::WR_DISCARD);
           std::memcpy(dstBuffer, m_Scope->cpuCbuffer.data(), m_Scope->cpuCbuffer.size());
           gapi::unmap_buffer(m_Scope->gpuCbuffer);
 

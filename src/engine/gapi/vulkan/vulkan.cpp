@@ -21,7 +21,7 @@ namespace gapi
   extern void                  (*gapi_free_texture)(const TextureHandle texture);
   extern void                  (*gapi_free_sampler)(const SamplerHandler sampler);
   extern void                  (*gapi_free_pipeline_resources)();
-  extern void*                 (*gapi_map_buffer)(const BufferHandler buffer, const size_t offset, const size_t size, const int flags);
+  extern void*                 (*gapi_map_buffer)(const BufferHandler buffer, const int flags);
   extern void                  (*gapi_unmap_buffer)(const BufferHandler buffer);
   extern TextureHandle         (*gapi_allocate_texture)(const TextureAllocationDescription& allocDesc);
   extern SamplerHandler        (*gapi_allocate_sampler)(const SamplerAllocationDescription& allocDesc);
@@ -93,9 +93,9 @@ namespace gapi::vulkan
     pipelinesStorage.clear();
   }
 
-  void* map_buffer(const BufferHandler buffer, const size_t offset, const size_t size, const int flags)
+  void* map_buffer(const BufferHandler buffer, const int flags)
   {
-    return device->mapBuffer(buffer, offset, size, flags);
+    return device->mapBuffer(buffer, flags);
   }
 
   void unmap_buffer(const BufferHandler buffer)

@@ -240,14 +240,14 @@ namespace gapi::vulkan
     insureActiveCmd();
     const Buffer& buffer = m_Device.getBuffer(handle);
     vk::DeviceSize offsets = {0};
-    m_CmdBuf.bindVertexBuffers(0, 1, &buffer.buffer.get(), &offsets);
+    m_CmdBuf.bindVertexBuffers(0, 1, &buffer.buffer, &offsets);
   }
 
   void CmdEncoder::bindIndexBuffer(const BufferHandler handle)
   {
     insureActiveCmd();
     const Buffer& buffer = m_Device.getBuffer(handle);
-    m_CmdBuf.bindIndexBuffer(buffer.buffer.get(), 0, vk::IndexType::eUint32);
+    m_CmdBuf.bindIndexBuffer(buffer.buffer, 0, vk::IndexType::eUint32);
   }
 
   void CmdEncoder::bindGraphicsPipeline(const GraphicsPipelineDescription& desc)
@@ -431,7 +431,7 @@ namespace gapi::vulkan
     region.srcOffset = 0;
     region.dstOffset = offset;
 
-    m_CmdBuf.copyBuffer(staging.buffer.get(), b->buffer.get(), 1, &region);
+    m_CmdBuf.copyBuffer(staging.buffer, b->buffer, 1, &region);
     m_FrameGc.addBuffer(std::move(staging));
   }
 
@@ -452,7 +452,7 @@ namespace gapi::vulkan
     copyDesc.imageOffset = vk::Offset3D{0,0,0};
     copyDesc.imageExtent = vk::Extent3D{(uint32_t)t.size.x, (uint32_t)t.size.y, 1};
 
-    m_CmdBuf.copyImageToBuffer(t.img.get(), vk::ImageLayout::eTransferSrcOptimal, b.buffer.get(), 1, &copyDesc);
+    m_CmdBuf.copyImageToBuffer(t.img, vk::ImageLayout::eTransferSrcOptimal, b.buffer, 1, &copyDesc);
   }
 
   void CmdEncoder::copyBufferToTexture(const TextureHandle texture, const void* src, const size_t size)
@@ -472,7 +472,7 @@ namespace gapi::vulkan
     copyDesc.imageOffset = vk::Offset3D{0,0,0};
     copyDesc.imageExtent = vk::Extent3D{(uint32_t)t.size.x, (uint32_t)t.size.y, 1};
 
-    m_CmdBuf.copyBufferToImage(staging.buffer.get(), t.img.get(),
+    m_CmdBuf.copyBufferToImage(staging.buffer, t.img,
                                vk::ImageLayout::eTransferDstOptimal, 1, &copyDesc);
     m_FrameGc.addBuffer(std::move(staging));
   }
@@ -494,7 +494,7 @@ namespace gapi::vulkan
       copies.push_back(copyDesc);
     }
 
-    m_CmdBuf.copyBufferToImage(staging.buffer.get(), t.img.get(),
+    m_CmdBuf.copyBufferToImage(staging.buffer, t.img,
       vk::ImageLayout::eTransferDstOptimal, copy_count, copies.data());
 
     m_FrameGc.addBuffer(std::move(staging));

@@ -196,8 +196,8 @@ namespace gapi::vulkan
 
     const Buffer& buffer = m_Device.getBuffer(h);
     return {
-      buffer.buffer.get(),
-      buffer.getConstOffset()
+      buffer.buffer,
+      0
     };
   }
 

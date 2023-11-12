@@ -80,8 +80,7 @@ namespace gapi::vulkan
 
     void addBuffer(Buffer &&b)
     {
-      add(std::move(b.buffer));
-      add(std::move(b.memory));
+      add(std::move(b));
     }
 
     void addWaitFence(vk::UniqueFence&& fence)
@@ -118,7 +117,7 @@ namespace gapi::vulkan
 
   class FrameGarbageCollector
     : public FrameGarbageCollectorBase<
-      vk::UniqueBuffer, vk::UniqueDeviceMemory, vk::UniqueCommandBuffer,
+      Buffer, Texture, vk::UniqueCommandBuffer,
       vk::UniqueSemaphore, vk::UniqueFence, vk::UniqueFramebuffer, DescriptorsSetManager,
       vk::UniqueCommandPool, vk::UniqueEvent>
   {

@@ -35,6 +35,7 @@ include_directories(
   "${CMAKE_SOURCE_DIR}/deps/spdlog/include"
   "${CMAKE_SOURCE_DIR}/deps/tinygltf-2.5.0/include"
   "${CMAKE_SOURCE_DIR}/deps/tracy/include"
+  "${CMAKE_SOURCE_DIR}/deps/vma/include"
   "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/include"
   "${CMAKE_SOURCE_DIR}/deps/xxhash/include"
 )
@@ -50,6 +51,13 @@ link_directories(
   "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/win64/"
   "${CMAKE_SOURCE_DIR}/deps/xxhash/win64"
 )
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  link_directories("${CMAKE_SOURCE_DIR}/deps/vma/win64/debug")
+else()
+  link_directories("${CMAKE_SOURCE_DIR}/deps/vma/win64/release")
+endif ()
+
 
 #workaround for dxcompiler linkage
 configure_file("${CMAKE_SOURCE_DIR}/deps/dxc/win64/dxcompiler.lib" "${CMAKE_BINARY_DIR}/dxcompiler.lib" COPYONLY)

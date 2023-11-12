@@ -252,7 +252,7 @@ namespace Engine::Render
     if (!feedback.valid())
       return;
 
-    VTile* pfeedbackTiles = reinterpret_cast<VTile*>(gapi::map_buffer(feedback, 0, bufSize, 0));
+    VTile* pfeedbackTiles = reinterpret_cast<VTile*>(gapi::map_buffer(feedback));
     eastl::vector<VTile> feedbackTiles = analyzeFeedback({pfeedbackTiles, bufSize / sizeof(VTile)});
     gapi::unmap_buffer(feedback);
 

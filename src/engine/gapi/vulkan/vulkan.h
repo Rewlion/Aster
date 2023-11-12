@@ -15,6 +15,8 @@
 #include <vulkan/vulkan.hpp>
 #pragma clang diagnostic pop
 
+constexpr int ENGINE_VK_VERSION = VK_API_VERSION_1_1;
+
 namespace vk
 {
   class Device;

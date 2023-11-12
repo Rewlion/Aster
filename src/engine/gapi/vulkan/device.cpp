@@ -20,7 +20,6 @@ namespace gapi::vulkan
     , m_Device(std::move(ci.device))
     , m_DeviceProperties(ci.deviceProperties)
     , m_QueueIndices(ci.queueIndices)
-    , m_MemoryIndices(ci.memoryIndices)
   {
     vk::Instance& instance = ci.instance;
 
@@ -65,6 +64,14 @@ namespace gapi::vulkan
   #ifdef TRACY_ENABLE
     tracy_init(ci.physicalDevice, m_Device.get(), m_GraphicsCmdPool.get(), m_GraphicsQueue);
   #endif
+
+    VmaAllocatorCreateInfo vmaCi = {};
+    vmaCi.vulkanApiVersion = ENGINE_VK_VERSION;
+    vmaCi.physicalDevice = ci.physicalDevice;
+    vmaCi.device = m_Device.get();
+    vmaCi.instance = instance;
+    vmaCi.pVulkanFunctions = nullptr;
+    vmaCreateAllocator(&vmaCi, &m_Vma);
   }
 
   Device::~Device()
@@ -184,7 +191,7 @@ namespace gapi::vulkan
   {
     TextureHandlerInternal h{handler};
     if (h.as.typed.type == (uint64_t)TextureType::Allocated)
-     return m_AllocatedTextures.get(h.as.typed.id).img.get();
+     return m_AllocatedTextures.get(h.as.typed.id).img;
 
     if (h.as.typed.type == (uint64_t)TextureType::SurfaceRT)
       return m_Swapchain.getSurfaceImage();
@@ -243,7 +250,7 @@ namespace gapi::vulkan
   BufferHandler Device::allocateBuffer(const size_t size, const int usage, const char* name)
   {
     Buffer buffer = allocateBufferInternal(size, usage);
-    setDbgUtilsObjName(name, (uint64_t)(VkBuffer)*buffer.buffer, vk::ObjectType::eBuffer);
+    setDbgUtilsObjName(name, (uint64_t)(VkBuffer)buffer.buffer, vk::ObjectType::eBuffer);
 
     size_t id = (size_t)(~0);
     const bool allocated = m_AllocatedBuffers.add(std::move(buffer), id);
@@ -263,7 +270,7 @@ namespace gapi::vulkan
     m_FrameGc->addBuffer(std::move(b));
   }
 
-  void* Device::mapBuffer(const BufferHandler buffer, const size_t offset, const size_t size, const int flags)
+  void* Device::mapBuffer(const BufferHandler buffer, const int flags)
   {
     Buffer* b = getAllocatedBuffer(buffer);
     if (!(b->usage & BF_CpuVisible))
@@ -275,15 +282,13 @@ namespace gapi::vulkan
     if (flags & WR_DISCARD)
       discardBuffer(*b);
 
-    return mapBuffer(*b, offset, size);
+    return mapBuffer(*b);
   }
 
-  void* Device::mapBuffer(const Buffer& buffer, const size_t offset, const size_t size)
+  void* Device::mapBuffer(const Buffer& buffer)
   {
     void* mem = nullptr;
-
-    VK_CHECK(m_Device->mapMemory(buffer.memory.get(), buffer.getAbsOffset(offset), size, vk::MemoryMapFlagBits{}, &mem));
-
+    VK_CHECK(vk::Result{vmaMapMemory(m_Vma, buffer.allocation, &mem)});
     return mem;
   }
 
@@ -301,38 +306,32 @@ namespace gapi::vulkan
 
   void Device::unmapBuffer(const Buffer& buffer)
   {
-    m_Device->unmapMemory(buffer.memory.get());
+    vmaUnmapMemory(m_Vma, buffer.allocation);
   }
 
   Buffer Device::allocateBufferInternal(const size_t size, const int usage)
   {
-    Buffer b;
+    const uint32_t discardsCount = 1;// get_buffer_discards_count(usage);
 
+    VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+    bufferInfo.usage = VkBufferUsageFlags(get_buffer_usage(usage));
+    bufferInfo.size = get_buffer_size(size, discardsCount, usage, m_DeviceProperties.limits);
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.usage = usage & BF_CpuVisible ? VMA_MEMORY_USAGE_AUTO_PREFER_HOST : VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+    allocInfo.flags = usage & BF_CpuVisible ? VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT : 0;
+
+    VkBuffer buf;
+    VmaAllocation allocation;
+    VK_CHECK(vk::Result{vmaCreateBuffer(m_Vma, &bufferInfo, &allocInfo, &buf, &allocation, nullptr)});
+
+    Buffer b;
     b.usage = usage;
     b.blockSize = size;
-    b.maxDiscards = get_buffer_discards_count(usage);
-
-    vk::BufferCreateInfo bufferCi;
-    bufferCi.usage = get_buffer_usage(usage);
-    bufferCi.size = get_buffer_size(size, b.maxDiscards, usage, m_DeviceProperties.limits);
-    bufferCi.sharingMode = vk::SharingMode::eExclusive;
-
-    b.alignedBlockSize = bufferCi.size / b.maxDiscards;
-
-    auto bufRes = m_Device->createBufferUnique(bufferCi);
-    VK_CHECK_RES(bufRes);
-    b.buffer = std::move(bufRes.value);
-    const vk::MemoryRequirements memRec = m_Device->getBufferMemoryRequirements(b.buffer.get());
-
-    vk::MemoryAllocateInfo allocInfo;
-    allocInfo.allocationSize = memRec.size;
-    allocInfo.memoryTypeIndex = get_memory_index(m_MemoryIndices, usage);
-
-    auto memRes = m_Device->allocateMemoryUnique(allocInfo);
-    VK_CHECK_RES(memRes);
-    b.memory = std::move(memRes.value);
-
-    VK_CHECK(m_Device->bindBufferMemory(b.buffer.get(), b.memory.get(), 0));
+    b.buffer = buf;
+    b.allocator = m_Vma;
+    b.allocation = allocation;
 
     return b;
   }
@@ -341,7 +340,7 @@ namespace gapi::vulkan
   {
     Buffer stagingBuf = allocateBufferInternal(size, BF_CpuVisible);
 
-    void* mappedMemory = mapBuffer(stagingBuf, 0, size);
+    void* mappedMemory = mapBuffer(stagingBuf);
     std::memcpy(mappedMemory, src, size);
     unmapBuffer(stagingBuf);
 
@@ -372,21 +371,9 @@ namespace gapi::vulkan
 
   void Device::discardBuffer(Buffer& buffer)
   {
-    if (buffer.isFirstDiscard)
-    {
-      buffer.isFirstDiscard = false;
-      return;
-    }
-
-    buffer.discards++;
-    if (buffer.discards == buffer.maxDiscards)
-    {
-      m_FrameGc->add(std::move(buffer.buffer));
-      m_FrameGc->add(std::move(buffer.memory));
-
-      buffer = allocateBufferInternal(buffer.blockSize, buffer.usage);
-      buffer.isFirstDiscard = false;
-    }
+    Buffer newBuffer = allocateBufferInternal(buffer.blockSize, buffer.usage);
+    m_FrameGc->addBuffer(std::move(buffer));
+    buffer = std::move(newBuffer);
   }
 
   void Device::copyBuffersSync(const BufferHandler src, const size_t srcOffset,
@@ -396,8 +383,8 @@ namespace gapi::vulkan
     const Buffer* srcBuf = getAllocatedBuffer(src);
     const Buffer* dstBuf = getAllocatedBuffer(dst);
 
-    copyBuffersSync(srcBuf->buffer.get(), srcBuf->getAbsOffset(srcOffset),
-                    dstBuf->buffer.get(), dstBuf->getAbsOffset(dstOffset), size);
+    copyBuffersSync(srcBuf->buffer, srcOffset,
+                    dstBuf->buffer, dstOffset, size);
   }
 
   void Device::copyBuffersSync(const vk::Buffer src, const size_t srcOffset,
@@ -426,7 +413,7 @@ namespace gapi::vulkan
 
   void Device::writeToStagingBuffer(const Buffer& buffer, const void* src, const size_t offset, const size_t size)
   {
-    void* dst = mapBuffer(buffer, offset, size);
+    void* dst = reinterpret_cast<std::byte*>(mapBuffer(buffer)) + offset;
     std::memcpy(dst, src, size);
     unmapBuffer(buffer);
   }
@@ -447,55 +434,51 @@ namespace gapi::vulkan
     Texture resource;
     resource.size = allocDesc.extent;
 
-    vk::ImageCreateInfo ci{};
+    const vk::ImageUsageFlags usage = get_texture_usage(allocDesc.usage);
+    const vk::Format format = get_image_format(allocDesc.format);
+    const vk::ImageType imgType = get_image_type(allocDesc.extent);
 
-    ci.flags = get_image_create_flags(allocDesc.usage);
-    ci.imageType = get_image_type(allocDesc.extent);
-    ci.format = get_image_format(allocDesc.format);
-    ci.extent = vk::Extent3D{(uint32_t)allocDesc.extent.x, (uint32_t)allocDesc.extent.y, (uint32_t)allocDesc.extent.z};
+    VkImageCreateInfo ci = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
+    ci.flags = (VkImageCreateFlags)get_image_create_flags(allocDesc.usage);
+    ci.imageType = (VkImageType)imgType;
+    ci.format = (VkFormat)format;
+    ci.extent = VkExtent3D{(uint32_t)allocDesc.extent.x, (uint32_t)allocDesc.extent.y, (uint32_t)allocDesc.extent.z};
     ci.mipLevels = allocDesc.mipLevels;
     ci.arrayLayers = allocDesc.arrayLayers;
-    ci.samples = get_image_sample_count(allocDesc.samplesPerPixel);
-    ci.tiling = vk::ImageTiling::eOptimal;
-    ci.usage = get_texture_usage(allocDesc.usage);
-    ci.sharingMode = vk::SharingMode::eExclusive;
-
+    ci.samples = (VkSampleCountFlagBits)get_image_sample_count(allocDesc.samplesPerPixel);
+    ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    ci.usage = (VkImageUsageFlags)usage;
+    ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     uint32_t indices = m_QueueIndices.graphics;
     ci.pQueueFamilyIndices = &indices;
     ci.queueFamilyIndexCount = 1;
+    ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-    ci.initialLayout = vk::ImageLayout::eUndefined;
+    VmaAllocationCreateInfo allocCi = {};
+    allocCi.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
+    
+    VkImage img = nullptr;
+    VmaAllocation allocation;
+    VK_CHECK(vk::Result{vmaCreateImage(m_Vma, &ci, &allocCi, &img, &allocation, nullptr)});
 
-    auto img = m_Device->createImageUnique(ci);
-    VK_CHECK_RES(img);
-    resource.img = std::move(img.value);
-    resource.format = ci.format;
+    resource.img = img;
+    resource.allocator = m_Vma;
+    resource.allocation = allocation;
+    resource.format = format;
 
-    setDbgUtilsObjName(allocDesc.name, (uint64_t)(VkImage)*resource.img, vk::ObjectType::eImage);
-
-    const vk::MemoryRequirements memRec = m_Device->getImageMemoryRequirements(resource.img.get());
-
-    vk::MemoryAllocateInfo allocInfo;
-    allocInfo.allocationSize = memRec.size;
-    allocInfo.memoryTypeIndex = m_MemoryIndices.deviceLocalMemory;
-
-    auto memRes = m_Device->allocateMemoryUnique(allocInfo);
-    VK_CHECK_RES(memRes);
-    resource.memory = std::move(memRes.value);
-
-    VK_CHECK(m_Device->bindImageMemory(resource.img.get(), resource.memory.get(), 0));
+    setDbgUtilsObjName(allocDesc.name, (uint64_t)(VkImage)resource.img, vk::ObjectType::eImage);
 
     vk::ImageSubresourceRange subresRange;
-    subresRange.aspectMask = get_image_aspect_flags(ci.format);
+    subresRange.aspectMask = get_image_aspect_flags(format);
     subresRange.baseArrayLayer = 0;
     subresRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
     subresRange.baseMipLevel = 0;
     subresRange.levelCount = VK_REMAINING_MIP_LEVELS;
     
     vk::ImageViewCreateInfo viewCi;
-    viewCi.image = resource.img.get();
-    viewCi.viewType = get_image_view_type(ci.imageType, allocDesc.usage);
-    viewCi.format = ci.format;
+    viewCi.image = resource.img;
+    viewCi.viewType = get_image_view_type(imgType, allocDesc.usage);
+    viewCi.format = format;
     viewCi.components = vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA);
     viewCi.subresourceRange = subresRange;
 
@@ -557,7 +540,10 @@ namespace gapi::vulkan
     ASSERT_FMT(handler.as.typed.type == (uint64_t)TextureType::Allocated, "only allocated textures can be freed");
     ASSERT(m_AllocatedTextures.contains(textureId));
 
+    Texture&& tex = std::move(m_AllocatedTextures.get(textureId));
     m_AllocatedTextures.remove(textureId);
+
+    m_FrameGc->add(std::move(tex));
   }
 
   SamplerHandler Device::allocateSampler(const SamplerAllocationDescription& allocDesc)
