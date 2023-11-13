@@ -19,85 +19,103 @@ namespace ShadersSystem
     ActivateScope,
   };
 
-  struct ShOp
-  {
-    ShOpCode op;
-    ShOp() = default;
-    ShOp(const ShOpCode op)
-      : op(op)
-    {
-    }
-  };
+  #define SH_OP_BASE_BODY ShOpCode op
+  #define SH_OP_BASE(code) r.op = code
 
-  struct ShBindResource: public ShOp
+  struct ShBindResource
   {
+    SH_OP_BASE_BODY;
     ResourceAccessType accessType;
     ResourceType type;
     uint8_t dset, binding;
     char resourceName[RESOURCE_MAX_NAME_LEN];
 
-    ShBindResource() = default;
-    ShBindResource(const ResourceAccessType accessType, const ResourceType type, const string& resName,
-                   const uint8_t dset, const uint8_t binding)
-      : ShOp(ShOpCode::BindResource)
-      , accessType(accessType)
-      , type(type)
-      , dset(dset)
-      , binding(binding)
+    static
+    auto build(const ResourceAccessType access_type,
+               const ResourceType type, const string& res_name,
+               const uint8_t dset, const uint8_t binding) -> ShBindResource
     {
-      std::snprintf(resourceName, RESOURCE_MAX_NAME_LEN, "%s", resName.c_str());
+      ShBindResource r;
+      SH_OP_BASE(ShOpCode::BindResource);
+      r.accessType = access_type;
+      r.type = type;
+      r.dset = dset;
+      r.binding = binding;
+      std::snprintf(r.resourceName, RESOURCE_MAX_NAME_LEN, "%s", res_name.c_str());
+
+      return r;
     }
   };
 
-  struct ShBeginCbuffer: public ShOp
+  struct ShBeginCbuffer
   {
+    SH_OP_BASE_BODY;
     char scopeName[RESOURCE_MAX_NAME_LEN];
-    ShBeginCbuffer() = default;
-    ShBeginCbuffer(const string& scope)
-      : ShOp(ShOpCode::BeginCbuffer)
+
+    static
+    auto build(const string& scope) -> ShBeginCbuffer
     {
-      std::snprintf(scopeName, RESOURCE_MAX_NAME_LEN, "%s", scope.c_str());
+      ShBeginCbuffer r;
+      SH_OP_BASE(ShOpCode::BeginCbuffer);
+      std::snprintf(r.scopeName, RESOURCE_MAX_NAME_LEN, "%s", scope.c_str());
+
+      return r;
     }
   };
 
-  struct ShEndCbuffer: public ShOp
+  struct ShEndCbuffer
   {
+    SH_OP_BASE_BODY;
     uint8_t dset, binding;
-    ShEndCbuffer() = default;
-    ShEndCbuffer(const uint8_t dset, const uint8_t binding)
-      : ShOp(ShOpCode::EndCbuffer)
-      , dset(dset)
-      , binding(binding)
+
+    static
+    auto build(const uint8_t dset, const uint8_t binding) -> ShEndCbuffer
     {
+      ShEndCbuffer r;
+      SH_OP_BASE(ShOpCode::EndCbuffer);
+      r.dset = dset;
+      r.binding = binding;
+
+      return r;
     }
   };
 
-  struct ShBindCbufferVar: public ShOp
+  struct ShBindCbufferVar
   {
+    SH_OP_BASE_BODY;
     uint16_t offset;
     ResourceAccessType accessType;
     gapi::AttributeType type;
     char resourceName[RESOURCE_MAX_NAME_LEN];
 
-    ShBindCbufferVar() = default;
-    ShBindCbufferVar(const uint16_t offset, const ResourceAccessType accessType, const gapi::AttributeType type, const string& resName)
-      : ShOp(ShOpCode::BindCbufferVar)
-      , accessType(accessType)
-      , type(type)
-      , offset(offset)
+    static
+    auto build(const uint16_t offset, const ResourceAccessType access_type,
+               const gapi::AttributeType type, const string& res_name) -> ShBindCbufferVar
     {
-      std::snprintf(resourceName, RESOURCE_MAX_NAME_LEN, "%s", resName.c_str());
+      ShBindCbufferVar r;
+      SH_OP_BASE(ShOpCode::BindCbufferVar);
+      r.offset = offset;
+      r.accessType = access_type;
+      r.type = type;
+      std::snprintf(r.resourceName, RESOURCE_MAX_NAME_LEN, "%s", res_name.c_str());
+
+      return r;
     }
   };
 
-  struct ShActivateScope: public ShOp
+  struct ShActivateScope
   {
+    SH_OP_BASE_BODY;
     char scopeName[RESOURCE_MAX_NAME_LEN];
-    ShActivateScope() = default;
-    ShActivateScope(const string& name)
-      : ShOp(ShOpCode::ActivateScope)
+
+    static
+    auto build(const string& scope_name) -> ShActivateScope
     {
-      std::snprintf(scopeName, RESOURCE_MAX_NAME_LEN, "%s", name.c_str());
+      ShActivateScope r;
+      SH_OP_BASE(ShOpCode::ActivateScope);
+      std::snprintf(r.scopeName, RESOURCE_MAX_NAME_LEN, "%s", scope_name.c_str());
+
+      return r;
     }
   };
 

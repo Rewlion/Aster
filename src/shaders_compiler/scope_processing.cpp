@@ -536,9 +536,9 @@ namespace ShadersSystem
 
         if (!cbufferVars.empty())
         {
-          byteCode.push_back(ShBeginCbuffer(m_Scope.name));
+          byteCode.push_back(ShBeginCbuffer::build(m_Scope.name));
           byteCode.insert(byteCode.begin(), cbufferVars.begin(), cbufferVars.end());
-          byteCode.push_back(ShEndCbuffer(m_Scope.descriptorSet, m_Scope.cbuffer));
+          byteCode.push_back(ShEndCbuffer::build(m_Scope.descriptorSet, m_Scope.cbuffer));
         }
 
         m_Scope.byteCode = std::move(byteCode);
@@ -555,7 +555,7 @@ namespace ShadersSystem
         if (it == m_Scope.cbufferVariables.end())
           throw std::runtime_error(fmt::format("failed to generate byte code for cbuffer var `{}`", res.name));
 
-        ShByteCode b = ShBindCbufferVar(it->second.offset, assignNode->accessType, res.type, assignNode->resourceName);
+        ShByteCode b = ShBindCbufferVar::build(it->second.offset, assignNode->accessType, res.type, assignNode->resourceName);
         bc.push_back(b);
 
         return bc;
@@ -567,7 +567,7 @@ namespace ShadersSystem
         ASSERT(res.assignExp->type == ResourceAssignExp::Type::Access);
         const AccessResource* assignNode = reinterpret_cast<const AccessResource*>(res.assignExp);
 
-        ShByteCode b = ShBindResource(
+        ShByteCode b = ShBindResource::build(
           assignNode->accessType,
           res.type,
           assignNode->resourceName,
@@ -621,7 +621,12 @@ namespace ShadersSystem
           scopeNameHash,
           scope
         });
-        m_Bin.scopes.push_back(MaterialsBin::Scope{scope});
+        m_Bin.scopes.push_back(MaterialsBin::Scope{
+          .name = scope.name,
+          .cbufferReg = scope.cbuffer,
+          .cbufferSize = scope.cbufferSize,
+          .byteCode = scope.byteCode
+        });
       }
 
 

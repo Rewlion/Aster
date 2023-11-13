@@ -8,15 +8,6 @@ namespace ShadersSystem
   {
     struct Scope
     {
-      Scope() = default;
-      Scope(const ShadersSystem::ScopeDeclaration& sc)
-        : name(sc.name)
-        , cbufferReg(sc.cbuffer)
-        , cbufferSize(sc.cbufferSize)
-        , byteCode(sc.byteCode)
-      {
-      }
-
       string name;
       uint8_t cbufferReg;
       uint16_t cbufferSize;

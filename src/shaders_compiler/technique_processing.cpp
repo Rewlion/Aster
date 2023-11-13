@@ -196,7 +196,7 @@ namespace ShadersSystem
 
             if (activate)
             {
-              m_ByteCode.push_back(ShActivateScope(scope));
+              m_ByteCode.push_back(ShActivateScope::build(scope));
             }
           }
           else
