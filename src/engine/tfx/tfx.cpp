@@ -5,10 +5,10 @@
 #include <engine/gapi/gapi.h>
 #include <engine/gapi/utils.h>
 #include <engine/log.h>
+#include <engine/utils/fs.h>
 #include <shaders_compiler/bin.h>
 #include <shaders_compiler/serialization.h>
 
-#include <boost/archive/binary_iarchive.hpp>
 #include <EASTL/hash_map.h>
 
 #include <fstream>
@@ -332,19 +332,16 @@ namespace tfx
   void load_materials_bin(string_view file)
   {
     loginfo("tfx: loading materials bin {}", file);
-    std::ifstream from(file.data(), std::ios::binary);
-    if (!from.is_open())
-    {
-      ASSERT(!"failed to load materials binary");
-      return;
-    }
+    const eastl::vector<char> rawMatBin = Utils::read_file(file);
+    ASSERT_FMT_RETURN(!rawMatBin.empty(), , "failed to load materials binary");
 
     mat_bin = ShadersSystem::MaterialsBin{};
     scopes_storage.clear();
     techniques_storage.clear();
 
-    boost::archive::binary_iarchive archive(from);
-    archive & mat_bin;
+    zpp::bits::in in(rawMatBin);
+    const std::error_code err = std::make_error_code(in(mat_bin));
+    ASSERT_FMT_RETURN(err.value() == 0, , "tfx: failed to deserialize materials bin: `{}`", err.message());
 
     loginfo("tfx: loading tfx scopes");
     load_scopes(mat_bin.scopes);

@@ -1,154 +1,50 @@
 #pragma once
 
-#include <boost/serialization/binary_object.hpp>
+#define ZPP_BITS_AUTODETECT_MEMBERS_MODE 1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-attributes"
+#include <zpp_bits/zpp_bits.h>
+#pragma clang diagnostic pop
 
-namespace boost::serialization
+namespace vk
 {
-
-  template<class Archive>
-  void serialize(Archive& a, gapi::VertexInputDescription::Buffer& vib, const unsigned version)
+  template<class T>
+  constexpr auto serialize(auto& archive, const vk::Flags<T>& flag)
   {
-    a & make_binary_object(&vib, sizeof(vib));
+    return archive(zpp::bits::as_bytes(flag));
   }
 
-  template<class Archive>
-  void serialize(Archive& a, gapi::VertexInputDescription::Attribute& via, const unsigned version)
+  template<class T>
+  constexpr auto serialize(auto& archive, vk::Flags<T>& flag)
   {
-    a & make_binary_object(&via, sizeof(via));
+    return archive(zpp::bits::as_bytes(flag));
+  }
+}
+
+namespace spirv::v2
+{
+  constexpr auto serialize(auto& archive, const DescriptorSetBinding& s)
+  {
+    return archive(zpp::bits::as_bytes(s));
   }
 
-  template<class Archive>
-  void serialize(Archive& a, gapi::VertexInputDescription& ia, const unsigned version)
+  constexpr auto serialize(auto& archive, DescriptorSetBinding& s)
   {
-    a & ia.attributes
-      & ia.buffers;
+    return archive(zpp::bits::as_bytes(s));
+  }
+}
+
+namespace glm
+{
+  template<size_t N, class T>
+  constexpr auto serialize(auto& archive, const vec<N,T>& v)
+  {
+    return archive(zpp::bits::as_bytes(v));
   }
 
-  template<class Archive>
-  void serialize(Archive& a, ShadersSystem::ShaderBlob& b, const unsigned version)
+  template<size_t N, class T>
+  constexpr auto serialize(auto& archive, vec<N,T>& v)
   {
-    a & b.name
-      & b.entry
-      & b.stage
-      & b.data;
-  }
-
-  template<class Archive>
-  void serialize(Archive& a, vk::DescriptorSetLayoutBinding& binding, const unsigned version)
-  {
-    a & binding.binding
-      & binding.descriptorType
-      & binding.descriptorCount
-      & binding.stageFlags;
-
-    binding.pImmutableSamplers = nullptr;
-  }
-
-  template<class Archive>
-  void serialize(Archive& a, spirv::v2::DescriptorSetBinding& binding, const unsigned version)
-  {
-    a & binding.vk
-      & binding.resourceType;
-  }
-
-  template<class Archive>
-  void serialize(Archive& a, tfx::RenderState& st, const unsigned version)
-  {
-    a & st.ia
-      & st.cullMode
-      & st.polygonMode
-      & st.topology
-      & make_binary_object(&st.depthStencil, sizeof(st.depthStencil))
-      & make_binary_object(&st.blending, sizeof(st.blending))
-      & st.tsInputControlPatchCount;
-  }
-
-    template<class Archive>
-    void serialize(Archive& a, spirv::v2::Reflection& r, const unsigned version)
-    {
-      a & r.descriptorSets;
-    }
-
-  template<class Archive>
-  void serialize(Archive& a, ShadersSystem::TechniqueDeclaration& t, const unsigned version)
-  {
-    a & t.type
-      & t.name
-      & t.byteCode
-      & t.renderState
-      & t.blobs
-      & t.dsets;
-  }
-
-  template<class Archive>
-  void serialize(Archive& a, ShadersSystem::MaterialsBin::Scope& s, const unsigned version)
-  {
-    a & s.name
-      & s.cbufferReg
-      & s.cbufferSize
-      & s.byteCode;
-  }
-
-  template<class Archive, class T>
-  void serialize(Archive &a, vk::Flags<T>& flags, const unsigned version)
-  {
-    a & make_binary_object(&flags, sizeof(flags));
-  }
-
-  template<class Archive>
-  void serialize(Archive &a, ShadersSystem::MaterialsBin& bin, const unsigned version)
-  {
-    a & bin.techniques
-      & bin.scopes;
-  }
-
-  template <class Archive, class T>
-  void save(Archive& a, const eastl::vector<T>& vec, const unsigned int version)
-  {
-    const size_t count = vec.size();
-    a & count;
-    for (size_t i = 0 ; i < count; ++i)
-      a & vec[i];
-  }
-
-  template <class Archive, class T>
-  void load(Archive& a, eastl::vector<T>& vec, const unsigned int version)
-  {
-    size_t count = 0;
-    a & count;
-    vec.resize(count);
-    for (size_t i = 0 ; i < count; ++i)
-      a & vec[i];
-  }
-
-  template<class Archive, class T>
-  void serialize(Archive& a, eastl::vector<T>& vec, const unsigned version)
-  {
-    split_free(a, vec, version);
-  }
-
-  template <class Archive>
-  void save(Archive& a, const eastl::vector<ShadersSystem::ShByteCode>& vec, const unsigned int version)
-  {
-    const size_t count = vec.size();
-    a & count
-      & make_binary_object(vec.data(), count * sizeof(vec[0]));
-  }
-
-  typedef std::variant<int,float> KK;
-
-  template <class Archive>
-  void load(Archive& a, eastl::vector<ShadersSystem::ShByteCode>& vec, const unsigned int version)
-  {
-    size_t count = 0;
-    a & count;
-    vec.resize(count);
-    a & make_binary_object(vec.data(), count * sizeof(vec[0]));
-  }
-
-  template<class Archive>
-  void serialize(Archive& a, eastl::vector<ShadersSystem::ShByteCode>& vec, const unsigned version)
-  {
-    split_free(a, vec, version);
+    return archive(zpp::bits::as_bytes(v));
   }
 }

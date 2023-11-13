@@ -276,6 +276,12 @@ namespace Utils
         return N;
       }
 
+      constexpr static
+      auto serialize(auto& archive, auto& self)
+      {
+        return archive(self.m_Values, self.m_Size);
+      }
+
     private:
       value_type m_Values[N];
       size_type m_Size = 0;

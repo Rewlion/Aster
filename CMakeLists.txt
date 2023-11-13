@@ -38,6 +38,7 @@ include_directories(
   "${CMAKE_SOURCE_DIR}/deps/vma/include"
   "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/include"
   "${CMAKE_SOURCE_DIR}/deps/xxhash/include"
+  "${CMAKE_SOURCE_DIR}/deps/zpp_bits/include"
 )
 
 link_directories(

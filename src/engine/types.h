@@ -1,5 +1,6 @@
 #pragma once
 
+#define GLM_FORCE_XYZW_ONLY 1
 #include <glm/glm.hpp>
 #include <string>
 #include <string_view>

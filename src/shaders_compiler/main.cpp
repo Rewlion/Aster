@@ -7,7 +7,6 @@
 #include <engine/datablock/utils.h>
 #include <engine/log.h>
 
-#include <boost/archive/binary_oarchive.hpp>
 #include <boost/program_options.hpp>
 
 #include <filesystem>
@@ -81,8 +80,14 @@ int main(int argc, char** argv)
   }
 
   const ShadersSystem::MaterialsBin& mBin = compiler.getMaterialsBins();
-  boost::archive::binary_oarchive archive(out);
-  archive << mBin;
+  auto [data, outStream] = zpp::bits::data_out();
+  const std::errc err = outStream(mBin);
+  if (std::error_code errCode = std::make_error_code(err))
+  {
+    logerror("failed to serialize materials bin: `{}`", errCode.message());
+    return -1;
+  }
+  out.write(reinterpret_cast<const char*>(data.data()), data.size());
 
   loginfo("done");
   return 0;
