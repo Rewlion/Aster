@@ -43,18 +43,20 @@ include_directories(
 link_directories(
   "${CMAKE_SOURCE_DIR}/deps/boost-1.77/win64"
   "${CMAKE_SOURCE_DIR}/deps/dxc"
-  "${CMAKE_SOURCE_DIR}/deps/eastl/win64"
   "${CMAKE_SOURCE_DIR}/deps/freetype-2.12.1/win64"
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/win64"
   "${CMAKE_SOURCE_DIR}/deps/quickjs/win64"
-  "${CMAKE_SOURCE_DIR}/deps/spdlog/win64"
   "${CMAKE_SOURCE_DIR}/deps/vulkan-1.3.216.0/win64/"
   "${CMAKE_SOURCE_DIR}/deps/xxhash/win64"
 )
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  link_directories("${CMAKE_SOURCE_DIR}/deps/eastl/win64/debug")
+  link_directories("${CMAKE_SOURCE_DIR}/deps/spdlog/win64/debug")
   link_directories("${CMAKE_SOURCE_DIR}/deps/vma/win64/debug")
 else()
+  link_directories("${CMAKE_SOURCE_DIR}/deps/eastl/win64/release")
+  link_directories("${CMAKE_SOURCE_DIR}/deps/spdlog/win64/release")
   link_directories("${CMAKE_SOURCE_DIR}/deps/vma/win64/release")
 endif ()
 
