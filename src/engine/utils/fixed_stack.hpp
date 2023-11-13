@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 namespace Utils
 {
     template<class T>
@@ -67,20 +69,18 @@ namespace Utils
       }
 
       constexpr
-      FixedStack(FixedStack&& rvl)
-      {
-        *(this) = std::move(rvl);
-      }
+      FixedStack(FixedStack&& rvl) = default;
 
       constexpr
-      FixedStack(const FixedStack& rvl)
-      {
-        *(this) = rvl;
-      }
+      FixedStack(const FixedStack& rvl) = default;
 
       constexpr
-      FixedStack()
+      FixedStack() = default;
+
+      ~FixedStack() = default;
+      ~FixedStack() requires (!std::is_trivially_copyable_v<T>)
       {
+        clear();
       }
 
       constexpr
@@ -189,7 +189,9 @@ namespace Utils
       }
 
       constexpr
-      const FixedStack& operator=(const FixedStack& rvl)
+      FixedStack& operator=(const FixedStack& rvl) requires (std::is_trivially_copyable_v<T>) = default;
+      constexpr
+      FixedStack& operator=(const FixedStack& rvl) requires (!std::is_trivially_copyable_v<T>)
       {
         clear();
         for(const auto& v: rvl)
@@ -199,7 +201,9 @@ namespace Utils
       }
 
       constexpr
-      FixedStack& operator=(FixedStack&& rvl)
+      FixedStack& operator=(FixedStack&& rvl) requires (std::is_trivially_copyable_v<T>) = default;
+      constexpr
+      FixedStack& operator=(FixedStack&& rvl) requires (!std::is_trivially_copyable_v<T>)
       {
         clear();
         for(auto& v: rvl)
