@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iterator>
 #include <type_traits>
 
 namespace Utils
@@ -8,6 +9,12 @@ namespace Utils
     class Iterator
     {
       public:
+        using iterator_category = std::forward_iterator_tag;
+        using difference_type   = std::ptrdiff_t;
+        using value_type        = T;
+        using pointer           = T*;
+        using reference         = T&;
+
         constexpr
         Iterator(T* values, size_t pos)
           : m_Values(values)
@@ -16,7 +23,7 @@ namespace Utils
         }
 
         constexpr
-        T& operator*() const
+        reference operator*() const
         {
           return m_Values[m_Pos];
         }
@@ -40,7 +47,7 @@ namespace Utils
         }
 
       private:
-        T* m_Values;
+        pointer m_Values;
         size_t m_Pos;
   };
 
