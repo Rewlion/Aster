@@ -10,7 +10,7 @@ namespace gapi::vulkan
 {
   vk::RenderPass RenderPassStorage::getRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil)
   {
-    ASSERT_FMT(renderTargets.getSize() > 0, "At least one RT has to be provided");
+    ASSERT_FMT(renderTargets.count() > 0, "At least one RT has to be provided");
 
     const size_t hash = hashRenderPass(renderTargets, depthStencil);
 

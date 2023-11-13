@@ -43,10 +43,10 @@ namespace gapi::vulkan
     m_RenderPassState.fb = getFramebuffer(renderArea.extent, renderTargets, depthStencil);
 
     vk::ClearValue clearValues[MAX_RENDER_TARGETS+1];
-    const size_t rtCount = renderTargets.getSize();
+    const size_t rtCount = renderTargets.count();
     for (size_t i = 0; i < rtCount ; ++i)
       clearValues[i].color.setUint32(renderTargets.get(i).clearColor.uint32);
-    clearValues[renderTargets.getSize()] = vk::ClearDepthStencilValue(0.0, 0);
+    clearValues[renderTargets.count()] = vk::ClearDepthStencilValue(0.0, 0);
 
     auto rpBeginInfo = vk::RenderPassBeginInfo();
     rpBeginInfo.renderPass = m_RenderPassState.rp;
@@ -128,7 +128,7 @@ namespace gapi::vulkan
 
     auto fbCi = vk::FramebufferCreateInfo();
     fbCi.renderPass = m_RenderPassState.rp;
-    fbCi.attachmentCount = attachments.getSize();
+    fbCi.attachmentCount = attachments.count();
     fbCi.pAttachments = attachments.getData();
     fbCi.setWidth(renderArea.width);
     fbCi.setHeight(renderArea.height);
@@ -254,8 +254,8 @@ namespace gapi::vulkan
   {
     insureActiveCmd();
 
-    const size_t bindedRtCount = m_RenderPassState.renderTargets.getSize();
-    const size_t blendingRtCount = desc.blendState.attachments.getSize();
+    const size_t bindedRtCount = m_RenderPassState.renderTargets.count();
+    const size_t blendingRtCount = desc.blendState.attachments.count();
 
     vk::Pipeline pipeline;
     if (blendingRtCount >= bindedRtCount)

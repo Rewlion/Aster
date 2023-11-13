@@ -105,10 +105,10 @@ namespace gapi::vulkan
     ret.blendConstants[2] = state.blendConstants[2];
     ret.blendConstants[3] = state.blendConstants[3];
 
-    for (size_t i = 0; i < state.attachments.getSize(); ++i)
+    for (size_t i = 0; i < state.attachments.count(); ++i)
       attachmentStates[i] = get_attachment_blend_state(state.attachments.get(i));
     ret.pAttachments = attachmentStates;
-    ret.attachmentCount = state.attachments.getSize();
+    ret.attachmentCount = state.attachments.count();
 
     return ret;
   }

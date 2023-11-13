@@ -57,7 +57,7 @@ void gbuffer_main_pass_exec(gapi::CmdEncoder& encoder)
 
     Engine::ModelAsset* asset = Engine::assets_manager.getModel(obj.model);
 
-    for(size_t i = 0; i < asset->mesh->submeshes.getSize(); ++i)
+    for(size_t i = 0; i < asset->mesh->submeshes.count(); ++i)
     {
       const Engine::Submesh& submesh = asset->mesh->submeshes.get(i);
       const tfx::Material& material = asset->materials[i];

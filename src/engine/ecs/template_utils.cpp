@@ -63,7 +63,7 @@ namespace ecs
           return true;
       });
 
-      if (parents.getSize() == 1)
+      if (parents.count() == 1)
         parents.clear();
 
       ecs.addTemplate(newTmplName, std::move(parents), {});

@@ -6,27 +6,32 @@ namespace Utils
     class Iterator
     {
       public:
+        constexpr
         Iterator(T* values, size_t pos)
           : m_Values(values)
           , m_Pos(pos)
         {
         }
 
+        constexpr
         T& operator*() const
         {
           return m_Values[m_Pos];
         }
 
+        constexpr
         Iterator operator++()
         {
           return Iterator{m_Values, ++m_Pos};
         }
 
+        constexpr
         bool operator==(const Iterator& it) const
         {
           return m_Values == it.m_Values && m_Pos == it.m_Pos;
         }
 
+        constexpr
         bool operator!=(const Iterator& it) const
         {
           return m_Values != it.m_Values || m_Pos != it.m_Pos;
@@ -41,72 +46,98 @@ namespace Utils
   class FixedStack
   {
     public:
+      using value_type      = T;
+      using size_type       = size_t;
+      using pointer         = T*;
+      using const_pointer   = const T*;
+      using reference       = T&;
+      using const_reference = const T&;
+
+      using iterator        = Iterator<T>;
+      using const_iterator  = Iterator<const T>;
+
+    public:
+
       template<class... Args>
+      constexpr
       FixedStack(Args... args)
       {
         static_assert(sizeof...(args) <= N);
         (push(args), ...);
       }
 
-      FixedStack(FixedStack<T,N>&& rvl)
+      constexpr
+      FixedStack(FixedStack&& rvl)
       {
         *(this) = std::move(rvl);
       }
 
-      FixedStack(const FixedStack<T,N>& rvl)
+      constexpr
+      FixedStack(const FixedStack& rvl)
       {
         *(this) = rvl;
       }
 
+      constexpr
       FixedStack()
       {
       }
 
-      inline T* getData()
+      constexpr
+      pointer getData()
       {
         return m_Values;
       }
 
-      inline const T* getData() const
+      constexpr
+      const_pointer getData() const
       {
         return m_Values;
       }
 
-      inline size_t getSize() const
+      constexpr
+      size_type count() const
       {
         return m_Size;
       }
 
-      inline size_t hasAny() const
+      constexpr
+      bool hasAny() const
       {
         return m_Size != 0;
       }
 
-      inline T& getLast()
+      constexpr
+      reference getLast()
       {
         return m_Values[m_Size-1];
       }
 
-      inline const T& getLast() const
+      constexpr
+      const_reference getLast() const
       {
         return const_cast<FixedStack*>(this)->getLast();
       }
 
-      inline T& getFirst()
+      constexpr
+      reference getFirst()
       {
         return m_Values[0];
       }
 
-      inline const T& getFirst() const
+      constexpr
+      const_reference getFirst() const
       {
         return const_cast<FixedStack*>(this)->getFirst();
       }
 
+      constexpr
       bool empty() const
       {
         return m_Size > 0;
       }
 
+      constexpr
       bool push(T&& v)
       {
         if (m_Size < N)
@@ -118,6 +149,7 @@ namespace Utils
           return false;
       }
 
+      constexpr
       bool push(const T& v)
       {
         if (m_Size < N)
@@ -129,6 +161,7 @@ namespace Utils
           return false;
       }
 
+      constexpr
       bool pop()
       {
         if (m_Size > 0)
@@ -143,17 +176,20 @@ namespace Utils
           return false;
       }
 
-      inline T& get(const size_t i)
+      constexpr
+      reference get(const size_type i)
       {
         return m_Values[i];
       }
 
-      inline const T& get(const size_t i) const
+      constexpr
+      const_reference get(const size_type i) const
       {
         return const_cast<FixedStack*>(this)->get(i);
       }
 
-      inline const FixedStack<T,N>& operator=(const FixedStack<T,N>& rvl)
+      constexpr
+      const FixedStack& operator=(const FixedStack& rvl)
       {
         clear();
         for(const auto& v: rvl)
@@ -162,7 +198,8 @@ namespace Utils
         return *this;
       }
 
-      inline FixedStack<T,N>& operator=(FixedStack<T,N>&& rvl)
+      constexpr
+      FixedStack& operator=(FixedStack&& rvl)
       {
         clear();
         for(auto& v: rvl)
@@ -173,7 +210,8 @@ namespace Utils
         return *this;
       }
 
-      inline bool operator==(const FixedStack<T,N>& rvl) const
+      constexpr
+      bool operator==(const FixedStack& rvl) const
       {
         if (rvl.m_Size == m_Size)
         {
@@ -191,39 +229,44 @@ namespace Utils
         return false;
       }
 
-      inline void clear()
+      constexpr
+      void clear()
       {
-        for (size_t i = 0, count = m_Size; i < count; ++i)
+        for (size_type i = 0, count = m_Size; i < count; ++i)
           pop();
       }
 
-    decltype(auto) begin() const
-    {
-      return Iterator<const T>(m_Values, 0);
-    }
+      constexpr
+      decltype(auto) begin() const
+      {
+        return const_iterator(m_Values, 0);
+      }
 
-    decltype(auto) end() const
-    {
-      return Iterator<const T>(m_Values, m_Size);
-    }
+      constexpr
+      decltype(auto) end() const
+      {
+        return const_iterator(m_Values, m_Size);
+      }
 
-    decltype(auto) begin()
-    {
-      return Iterator<T>(m_Values, 0);
-    }
+      constexpr
+      decltype(auto) begin()
+      {
+        return iterator(m_Values, 0);
+      }
 
-    decltype(auto) end()
-    {
-      return Iterator<T>(m_Values, m_Size);
-    }
+      decltype(auto) end()
+      {
+        return iterator(m_Values, m_Size);
+      }
 
-    size_t getMaxSize() const
-    {
-      return N;
-    }
+      constexpr
+      auto size() const -> size_type
+      {
+        return N;
+      }
 
     private:
-      T m_Values[N];
-      size_t m_Size = 0;
+      value_type m_Values[N];
+      size_type m_Size = 0;
   };
 }
