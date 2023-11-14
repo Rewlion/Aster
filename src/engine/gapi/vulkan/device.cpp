@@ -659,7 +659,7 @@ namespace gapi::vulkan
 
   void Device::setDbgUtilsObjName(const char* name, const uint64_t obj, const vk::ObjectType type)
   {
-  #ifdef CFG_DEBUG_UTILS
+  #if CFG_DEBUG_UTILS
     if (checkCapability(CapabilitiesBits::DebugMarks) && name)
     {
       vk::DebugUtilsObjectNameInfoEXT nI;

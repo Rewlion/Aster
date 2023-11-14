@@ -522,7 +522,7 @@ namespace gapi::vulkan
 
   void CmdEncoder::beginMarkerRegion(const char* name)
   {
-  #ifdef CFG_DEBUG_UTILS
+  #if CFG_DEBUG_UTILS
     if (m_Device.checkCapability(Device::CapabilitiesBits::DebugMarks))
     {
       insureActiveCmd();
@@ -535,7 +535,7 @@ namespace gapi::vulkan
 
   void CmdEncoder::endMarkerRegion()
   {
-  #ifdef CFG_DEBUG_UTILS
+  #if CFG_DEBUG_UTILS
     if (m_Device.checkCapability(Device::CapabilitiesBits::DebugMarks))
     {
       insureActiveCmd();

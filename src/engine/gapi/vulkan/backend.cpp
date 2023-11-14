@@ -70,7 +70,7 @@ namespace gapi::vulkan
       "VK_KHR_get_physical_device_properties2"
     };
 
-  #ifdef CFG_DEBUG_UTILS
+  #if CFG_DEBUG_UTILS
     if (m_SupportedInstanceExts.isSet((size_t)InstanceExtensionsBits::DebugUtils))
       instanceExtensions.push_back("VK_EXT_debug_utils");
   #endif
@@ -110,7 +110,7 @@ namespace gapi::vulkan
   {
     m_Instance = createInstance();
 
-  #ifdef CFG_DEBUG_UTILS
+  #if CFG_DEBUG_UTILS
     m_DebugMessenger = createDebugMessenger();
   #endif
 
@@ -234,7 +234,7 @@ namespace gapi::vulkan
     VK_CHECK_RES(surfacePresentModes);
 
     Device::Capabilities caps;
-  #ifdef CFG_DEBUG_UTILS
+  #if CFG_DEBUG_UTILS
     if (m_SupportedInstanceExts.isSet((size_t)InstanceExtensionsBits::DebugUtils) &&
       Engine::get_app_settings()->getChildBlock("graphics")->getBool("debug_marks", false))
     {
