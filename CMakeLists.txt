@@ -43,7 +43,6 @@ include_directories(
 )
 
 link_directories(
-  "${CMAKE_SOURCE_DIR}/deps/boost-1.77/win64"
   "${CMAKE_SOURCE_DIR}/deps/dxc"
   "${CMAKE_SOURCE_DIR}/deps/freetype-2.12.1/win64"
   "${CMAKE_SOURCE_DIR}/deps/ktx-4.0.0/win64"
