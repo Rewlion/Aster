@@ -18,7 +18,6 @@ namespace gapi::vulkan
       Device* createDevice(FrameGarbageCollector* frameGc);
 
     private:
-      eastl::vector<const char*> getValidationLayers();
       vk::UniqueInstance createInstance();
       UniqueDynamicDbgUtilsMessenger createDebugMessenger();
       vk::PhysicalDevice getSuitablePhysicalDevice();

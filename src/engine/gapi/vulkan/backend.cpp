@@ -29,15 +29,6 @@ namespace gapi::vulkan
     return VK_FALSE;
   }
 
-  eastl::vector<const char*> Backend::getValidationLayers()
-  {
-    eastl::vector<const char*> validationLayers;
-    if (Engine::get_app_settings()->getChildBlock("vulkan")->getBool("validation", false))
-      validationLayers.emplace_back("VK_LAYER_KHRONOS_validation");
-
-    return validationLayers;
-  }
-
   UniqueDynamicDbgUtilsMessenger Backend::createDebugMessenger()
   {
     vk::DebugUtilsMessengerCreateInfoEXT ci;
@@ -64,7 +55,6 @@ namespace gapi::vulkan
         m_SupportedInstanceExts.set((size_t)InstanceExtensionsBits::DebugUtils);
     }
 
-    eastl::vector<const char*> validationLayers = getValidationLayers();
     const auto appName = Engine::get_app_settings()->getText("app_name");
 
     const auto appInfo = vk::ApplicationInfo()
@@ -80,21 +70,34 @@ namespace gapi::vulkan
       "VK_KHR_get_physical_device_properties2"
     };
 
-#ifdef CFG_DEBUG_UTILS
+  #ifdef CFG_DEBUG_UTILS
     if (m_SupportedInstanceExts.isSet((size_t)InstanceExtensionsBits::DebugUtils))
       instanceExtensions.push_back("VK_EXT_debug_utils");
-#endif
+  #endif
     
     loginfo("vulkan: enabled instance extensions:");
     for (const char* ext: instanceExtensions)
       loginfo(">> {}", ext);
 
+    const char* validationLayers[] = {
+      "VK_LAYER_KHRONOS_validation"
+    };
+
+    const uint32_t validationLayersCount =
+    #if CFG_DEBUG_VALIDATION
+      Engine::get_app_settings()
+        ->getChildBlock("vulkan")
+        ->getBool("validation", false) ? (sizeof(validationLayers) / sizeof(validationLayers[0])) : 0;
+    #else
+      0;
+    #endif
+
     const auto instanceCreateInfo = vk::InstanceCreateInfo()
       .setPApplicationInfo(&appInfo)
       .setEnabledExtensionCount(instanceExtensions.size())
       .setPpEnabledExtensionNames(instanceExtensions.data())
-      .setEnabledLayerCount((uint32_t)validationLayers.size())
-      .setPpEnabledLayerNames(validationLayers.data());
+      .setEnabledLayerCount(validationLayersCount)
+      .setPpEnabledLayerNames(validationLayers);
 
     auto res = vk::createInstanceUnique(instanceCreateInfo);
     VK_CHECK_RES(res);
