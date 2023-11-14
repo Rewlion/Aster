@@ -540,7 +540,7 @@ namespace gapi::vulkan
     ASSERT_FMT(handler.as.typed.type == (uint64_t)TextureType::Allocated, "only allocated textures can be freed");
     ASSERT(m_AllocatedTextures.contains(textureId));
 
-    Texture&& tex = std::move(m_AllocatedTextures.get(textureId));
+    Texture tex = std::move(m_AllocatedTextures.get(textureId));
     m_AllocatedTextures.remove(textureId);
 
     m_FrameGc->add(std::move(tex));
