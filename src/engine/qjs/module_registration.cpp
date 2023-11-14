@@ -103,7 +103,7 @@ namespace qjs
       return;
     }
 
-    JSClassID classId;
+    JSClassID classId = 0;
     JS_NewClassID(&classId);
 
     JSRuntime* rt = JS_GetRuntime(ctx);
