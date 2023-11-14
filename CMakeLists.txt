@@ -21,6 +21,7 @@ endif()
 include_directories(
 	"${CMAKE_SOURCE_DIR}/src"
   "${CMAKE_SOURCE_DIR}/deps/SPIRV-Cross-moltenvk_1.1.5/include"
+  "${CMAKE_SOURCE_DIR}/deps/argparse/include"
   "${CMAKE_SOURCE_DIR}/deps/boost-1.77/include"
   "${CMAKE_SOURCE_DIR}/deps/dxc/include"
   "${CMAKE_SOURCE_DIR}/deps/eastl/include"

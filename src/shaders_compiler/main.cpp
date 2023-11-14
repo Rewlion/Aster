@@ -7,38 +7,52 @@
 #include <engine/datablock/utils.h>
 #include <engine/log.h>
 
-#include <boost/program_options.hpp>
+#include <argparse/argparse.hpp>
 
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 
-namespace po = boost::program_options;
 namespace fs = std::filesystem;
 
 int main(int argc, char** argv)
 {
   Engine::InitLog();
-  po::options_description desc("Allowed options");
-  desc.add_options()
-    ("help", "produce help message")
-    ("blk", po::value<string>(), "path to blk with shaders list")
-    ("o", po::value<string>(), "output dir")
-    ("D", "enable debugging and disable all optimizations")
-  ;
 
-  po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
-  po::notify(vm);
+  argparse::ArgumentParser opts("Shaders Compiler");
+  opts.add_argument("--blk")
+      .help("path to blk with shaders list");
+  
+  opts.add_argument("--o")
+      .help("output dir");
 
-  if (vm.count("blk") == 0 || vm.count("o") == 0 || vm.count("help")) {
-      std::cout << desc << "\n";
-      return 0;
+  opts.add_argument("-h", "--help")
+      .flag()
+      .help("show help");
+
+  opts.add_argument("--D")
+      .flag()
+      .help("enable debugging and disable all optimizations");
+
+  try
+  {
+    opts.parse_args(argc, argv);
+  }
+  catch (const std::exception& err)
+  {
+    logerror("error:{}\n\n{}", err.what(), opts.usage());
+    return -1;
   }
 
-  const string blk = vm["blk"].as<string>();
-  const string outputDir = vm["o"].as<string>();
-  const bool debugMode = vm.count("D") > 0;
+  if (opts["-h"] != false || opts["--help"] != false || !opts.is_used("--blk") || !opts.is_used("--o"))
+  {
+    loginfo("{}", opts.usage());
+    return 0;
+  }
+
+  const string blk = opts.get("--blk");
+  const string outputDir = opts.get("--o");
+  const bool debugMode = opts["--D"] == true;
 
   DataBlock shadersBlk;
   if (!load_blk_from_file(&shadersBlk, blk.c_str()))
