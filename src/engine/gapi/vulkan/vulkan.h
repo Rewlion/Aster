@@ -1,5 +1,7 @@
 #pragma once
 
+#include "config.h"
+
 #ifdef PLATFORM_WIN64
   #define VK_USE_PLATFORM_WIN32_KHR
 #endif

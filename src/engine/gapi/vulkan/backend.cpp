@@ -80,7 +80,7 @@ namespace gapi::vulkan
       "VK_KHR_get_physical_device_properties2"
     };
 
-#ifdef DEBUG
+#ifdef CFG_DEBUG_UTILS
     if (m_SupportedInstanceExts.isSet((size_t)InstanceExtensionsBits::DebugUtils))
       instanceExtensions.push_back("VK_EXT_debug_utils");
 #endif
@@ -102,11 +102,15 @@ namespace gapi::vulkan
     VULKAN_HPP_DEFAULT_DISPATCHER.init(res.value.get());
     return std::move(res.value);
   }
-
+ 
   void Backend::init()
   {
     m_Instance = createInstance();
+
+  #ifdef CFG_DEBUG_UTILS
     m_DebugMessenger = createDebugMessenger();
+  #endif
+
     m_PhysicalDevice = getSuitablePhysicalDevice();
     m_Surface = createPlatformSurface(*m_Instance);
     m_QueueIndices = getQueueIndices();
