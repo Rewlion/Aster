@@ -231,11 +231,13 @@ namespace gapi::vulkan
     VK_CHECK_RES(surfacePresentModes);
 
     Device::Capabilities caps;
+  #ifdef CFG_DEBUG_UTILS
     if (m_SupportedInstanceExts.isSet((size_t)InstanceExtensionsBits::DebugUtils) &&
       Engine::get_app_settings()->getChildBlock("graphics")->getBool("debug_marks", false))
     {
       caps.set((size_t)Device::CapabilitiesBits::DebugMarks);
     }
+  #endif
 
     Device::CreateInfo deviceCi{
       .physicalDevice = m_PhysicalDevice,
