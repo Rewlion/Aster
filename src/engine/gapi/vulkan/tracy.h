@@ -4,7 +4,6 @@
 
 #include <tracy/TracyVulkan.hpp>
 
-#ifdef TRACY_ENABLE
 namespace gapi::vulkan
 {
   void tracy_init(const vk::PhysicalDevice, const vk::Device,
@@ -14,7 +13,5 @@ namespace gapi::vulkan
 
   void tracy_collect_time_stamps(vk::CommandBuffer cmd_buf);
 
-  auto tracy_get_ctx() -> tracy::VkCtx*;
+  auto tracy_get_ctx() -> void*;
 }
- 
-#endif

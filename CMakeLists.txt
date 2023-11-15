@@ -7,7 +7,12 @@ project(Not_this_again VERSION 0.1
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_definitions(-DTRACY_ENABLE)
+set(USE_TRACY True)
+
+if (USE_TRACY)
+  add_definitions(-DTRACY_ENABLE)
+endif()
+
 add_definitions(-DSPDLOG_COMPILED_LIB)
 add_definitions(-DPLATFORM_WIN64)
 add_definitions(#-Wno-defaulted-function-deleted

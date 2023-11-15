@@ -569,7 +569,7 @@ namespace gapi::vulkan
   #ifdef TRACY_ENABLE
     insureActiveCmd();
 
-    tracy::VkCtx* ctx = tracy_get_ctx();
+    auto* ctx = reinterpret_cast<tracy::VkCtx*>(tracy_get_ctx());
     auto scope = tracy::VkCtxScope(ctx, line, file, file_len, function,
                                    function_len, name, name_len, m_CmdBuf, true);
 

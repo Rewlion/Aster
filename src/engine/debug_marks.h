@@ -42,5 +42,6 @@ class ScopeDbgMarkerRegion
 #define PROFILE_CPU() 
 #define PROFILE_CPU_NAMED(name) 
 #define PROFILE_CPU_TNAMED(name) 
-#define PROFILE_GAPI(name, encoder)  GAPI_MARK(name, encoder)
+#define PROFILE_GAPI(name, encoder)  GAPI_MARK(name, encoder) 
+#define PROFILE_GAPI_TNAMED(name, encoder) 
 #endif

@@ -34,7 +34,7 @@ namespace gapi::vulkan
     TracyVkCollect(tracyCtx, cmd_buf)
   }
 
-  auto tracy_get_ctx() -> tracy::VkCtx*
+  auto tracy_get_ctx() -> void*
   {
     return tracyCtx;
   }
