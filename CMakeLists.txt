@@ -10,6 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(USE_TRACY True)
 
 if (USE_TRACY)
+  #add_definitions(-DTRACY_HAS_CALLSTACK)
+  #add_definitions(-DTRACY_CALLSTACK)
   add_definitions(-DTRACY_ENABLE)
 endif()
 

@@ -174,6 +174,13 @@ namespace fg
           DepthTarget depth;
         };
 
+        void clear()
+        {
+          bufferBeginStates.clear();
+          textureBeginStates.clear();
+          renderPass = RenderPass{};
+        }
+
         eastl::vector<Buffer> bufferBeginStates;
         eastl::vector<Texture> textureBeginStates;
         RenderPass renderPass;
@@ -181,9 +188,6 @@ namespace fg
 
       struct NodeInfo
       {
-        name_id_t nameId;
-        const char* fileSrc;
-
         struct ReadRequest
         {
           virt_res_id_t vResId;
@@ -191,22 +195,24 @@ namespace fg
           Timeline timeline;
         };
 
-        eastl::vector<virt_res_id_t> modifies;
-        eastl::vector<ReadRequest> reads;
-        eastl::vector<virt_res_id_t> creates;
-
-        eastl::vector<node_id_t> prevNodes;
-
+        name_id_t nameId;
+        const char* fileSrc;
         BuildFunction build;
         ExecFunction exec;
 
         ExecState execState;
+        eastl::vector<virt_res_id_t> modifies;
+        eastl::vector<ReadRequest> reads;
+        eastl::vector<virt_res_id_t> creates;
+        eastl::vector<node_id_t> prevNodes;
 
         void resetResourcesAccess()
         {
+          execState.clear();
           modifies.clear();
           reads.clear();
           creates.clear();
+          prevNodes.clear();
         }
       };
 
