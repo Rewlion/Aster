@@ -102,7 +102,7 @@ namespace fg
 
   void ResourceStorage::transitTextureState(const res_id_t res_id, const gapi::TextureState to_state, gapi::CmdEncoder& encoder)
   {
-    TextureResource& tex = std::get<TextureResource>(m_Resources[res_id]);
+    TextureResource& tex = std::get<TextureResource>(m_Resources.get(res_id));
     if (tex.currentState != to_state)
     {
       encoder.transitTextureState(tex.texture, tex.currentState, to_state);
@@ -112,7 +112,7 @@ namespace fg
 
   void ResourceStorage::transitBufferState(const res_id_t res_id, const gapi::BufferState to_state, gapi::CmdEncoder& encoder)
   {
-    BufferResource& buf = std::get<BufferResource>(m_Resources[res_id]);
+    BufferResource& buf = std::get<BufferResource>(m_Resources.get(res_id));
     if (buf.currentState != to_state)
     {
       encoder.insertGlobalBufferBarrier(buf.currentState, to_state);
@@ -132,24 +132,24 @@ namespace fg
 
   auto ResourceStorage::getTexture(const res_id_t res_id) -> gapi::TextureHandle
   {
-    return std::get<TextureResource>(m_Resources[res_id]).texture;
+    return std::get<TextureResource>(m_Resources.get(res_id)).texture;
   }
 
   auto ResourceStorage::getTextureAndCurrentState(const res_id_t res_id)
     -> eastl::pair<gapi::TextureHandle, gapi::TextureState>
   {
-    const auto& tex = std::get<TextureResource>(m_Resources[res_id]);
+    const auto& tex = std::get<TextureResource>(m_Resources.get(res_id));
     return {tex.texture, tex.currentState};
   }
 
   auto ResourceStorage::getSampler(const res_id_t res_id) -> gapi::SamplerHandler
   {
-    return std::get<SamplerResource>(m_Resources[res_id]).sampler;
+    return std::get<SamplerResource>(m_Resources.get(res_id)).sampler;
   }
 
   auto ResourceStorage::getBuffer(const res_id_t res_id) -> gapi::BufferHandler
   {
-    return std::get<BufferResource>(m_Resources[res_id]).buffer;
+    return std::get<BufferResource>(m_Resources.get(res_id)).buffer;
   }
 
   void ResourceStorage::reset()

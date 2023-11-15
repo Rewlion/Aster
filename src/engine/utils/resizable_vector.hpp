@@ -19,6 +19,11 @@ namespace Utils
         return base_type::operator[] (id);
       }
 
+      auto get(const IdType strong_id) -> typename base_type::reference
+      {
+        return base_type::operator[] ((size_t) strong_id);
+      }
+
     private:
       auto operator[](typename base_type::size_type n) -> typename base_type::reference;
 		  auto operator[](typename base_type::size_type n) const -> typename base_type::const_reference;

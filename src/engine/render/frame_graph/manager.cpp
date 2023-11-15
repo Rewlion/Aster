@@ -375,7 +375,7 @@ namespace fg
 
         {
           PROFILE_CPU_NAMED("transit textures state")
-          for (auto texState: node.execState.textureBeginStates)
+          for (const auto& texState: node.execState.textureBeginStates)
           {
             const res_id_t resId = getResourceId(texState.virtResId);
             const bool validTimeline = !(texState.timeline == Timeline::Previous && m_iFrame == 0);
@@ -386,7 +386,7 @@ namespace fg
 
         {
           PROFILE_CPU_NAMED("transit buffer state")
-          for (auto bufState: node.execState.bufferBeginStates)
+          for (const auto& bufState: node.execState.bufferBeginStates)
           {
             const res_id_t resId = getResourceId(bufState.virtResId);
             if(resId != INVALID_RES_ID)
@@ -418,10 +418,12 @@ namespace fg
   auto Manager::getResourceId(const virt_res_id_t virt_res_id)  -> res_id_t
   {
     virt_res_id_t id = virt_res_id;
-    while(m_Registry.m_VirtResources[id].clonnedVResId != INVALID_VIRT_RES_ID)
-      id = m_Registry.m_VirtResources[id].clonnedVResId;
+    auto* vRes = &m_Registry.m_VirtResources.get(id);
 
-    return m_Registry.m_VirtResources[id].resourceId;
+    while(vRes->clonnedVResId != INVALID_VIRT_RES_ID)
+      vRes = &m_Registry.m_VirtResources.get(vRes->clonnedVResId);
+
+    return vRes->resourceId;
   }
 
   auto Manager::getTexture(const virt_res_id_t virt_res_id, const Timeline timeline) -> gapi::TextureHandle
