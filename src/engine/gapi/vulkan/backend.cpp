@@ -196,9 +196,10 @@ namespace gapi::vulkan
       queueCreateInfos.push_back(queueCreateInfo);
     }
 
-    eastl::vector<const char*> deviceExtensions = {
+    std::array<const char*, 3> deviceExtensions = {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME,
       "VK_KHR_timeline_semaphore",
+      VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME
     };
 
     loginfo("vulkan: enabled device extensions:");

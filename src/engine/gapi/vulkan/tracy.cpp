@@ -20,7 +20,9 @@ namespace gapi::vulkan
     VK_CHECK_RES(r);
     tracyCmdBuf = std::move(r.value[0]);
 
-    tracyCtx = TracyVkContext(physical_device, device, queue, tracyCmdBuf.get());
+    tracyCtx = TracyVkContextCalibrated(physical_device, device, queue, tracyCmdBuf.get(),
+      VULKAN_HPP_DEFAULT_DISPATCHER.vkGetPhysicalDeviceCalibrateableTimeDomainsEXT,
+      VULKAN_HPP_DEFAULT_DISPATCHER.vkGetCalibratedTimestampsEXT);
   }
 
   void tracy_destroy()
