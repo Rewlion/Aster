@@ -18,12 +18,8 @@ void dbg_line_renderer_prepare(const Engine::OnBeforeRender& evt,
 ECS_DESCRIBE_QUERY(query_dbg_line_renderer, Engine::dbg::LineRenderer& dbg_line_renderer)
 
 NODE_BEGIN(dbg_line_renderer)
-  ORDER_ME_BEFORE(ui)
-
   RP_BEGIN()
-    TARGET(final_target),
-    //TARGET(motionBuf),
-    DEPTH_RO(gbuffer_depth)
+    TARGET(post_opaque_target)
   RP_END()
 
   EXEC(dbg_line_renderer_exec)

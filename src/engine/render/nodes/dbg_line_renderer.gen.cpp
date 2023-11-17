@@ -70,10 +70,9 @@ void mk_fg_node_dbg_line_renderer(Event*, ComponentsAccessor&)
 {
   fg::register_node("dbg_line_renderer", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    reg.orderMeBefore("ui");
     reg.requestRenderPass()
-      .addTarget("final_target", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
-      .addRODepth("gbuffer_depth", gapi::LoadOp::Load);
+      .addTarget("post_opaque_target", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+    ;
 
 
     return [](gapi::CmdEncoder& encoder)
