@@ -124,7 +124,13 @@ void gbuffer_resolve_exec(gapi::CmdEncoder& encoder,
   encoder.dispatch(getGroupSize(render_size.x, TILE_DIM_X), getGroupSize(render_size.y, TILE_DIM_X), 1);
 }
 
+NODE_BEGIN(post_opaque_sync)
+  RENAME_TEX_RT(resolve_target, post_opaque_target)
+  NO_EXEC()
+NODE_END()
+
+
 NODE_BEGIN(transparent_sync)
-  RENAME_TEX_RT(resolve_target, transparent_target)
+  RENAME_TEX_RT(post_opaque_target, transparent_target)
   NO_EXEC()
 NODE_END()

@@ -197,11 +197,32 @@ EventSystemRegistration mk_fg_node_gbuffer_resolve_registration(
 
 //Engine::OnFrameGraphInit handler
 static
+void mk_fg_node_post_opaque_sync(Event*, ComponentsAccessor&)
+{
+  fg::register_node("post_opaque_sync", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto post_opaque_target = reg.renameTexture("resolve_target", "post_opaque_target", gapi::TextureState::RenderTarget);
+    return [](gapi::CmdEncoder&){};
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_post_opaque_sync_registration(
+  mk_fg_node_post_opaque_sync,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_post_opaque_sync"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
 void mk_fg_node_transparent_sync(Event*, ComponentsAccessor&)
 {
   fg::register_node("transparent_sync", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto transparent_target = reg.renameTexture("resolve_target", "transparent_target", gapi::TextureState::RenderTarget);
+    auto transparent_target = reg.renameTexture("post_opaque_target", "transparent_target", gapi::TextureState::RenderTarget);
     return [](gapi::CmdEncoder&){};
   });
 }
