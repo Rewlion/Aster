@@ -40,14 +40,14 @@ technique DebugLine {
   struct PsOutput
   {
     float3 color : SV_Target0;
-    float3 motion : SV_Target1;
+    //float3 motion : SV_Target1;
   };
 
   PsOutput ps_main(VsOutput input)
   {
     PsOutput o;
     o.color = input.color;
-    o.motion = float3(calcMotion(input.prevPos, input.curPos), 0.0);
+    //o.motion = float3(calcMotion(input.prevPos, input.curPos), 0.0);
     return o;
   }
   #end
