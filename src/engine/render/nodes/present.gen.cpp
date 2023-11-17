@@ -10,16 +10,37 @@ using namespace ecs;
 
 //Engine::OnFrameGraphInit handler
 static
+void mk_fg_node_present_producer(Event*, ComponentsAccessor&)
+{
+  fg::register_node("present_producer", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto present_src = reg.renameTexture("final_antialiased_target", "present_src", gapi::TextureState::RenderTarget);
+    return [](gapi::CmdEncoder&){};
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_present_producer_registration(
+  mk_fg_node_present_producer,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_present_producer"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
 void mk_fg_node_present(Event*, ComponentsAccessor&)
 {
   fg::register_node("present", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto final_antialiased_target = reg.readTexture("final_antialiased_target", gapi::TextureState::TransferSrc, false);
+    auto present_src = reg.readTexture("present_src", gapi::TextureState::TransferSrc, false);
     auto backbuffer = reg.modifyTexture("backbuffer", gapi::TextureState::TransferDst);
 
-    return [final_antialiased_target,backbuffer](gapi::CmdEncoder& encoder)
+    return [present_src,backbuffer](gapi::CmdEncoder& encoder)
     {
-      present_exec(encoder, final_antialiased_target.get(), backbuffer.get());
+      present_exec(encoder, present_src.get(), backbuffer.get());
     };
   });
 }
