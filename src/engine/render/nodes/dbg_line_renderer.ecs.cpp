@@ -22,7 +22,7 @@ NODE_BEGIN(dbg_line_renderer)
 
   RP_BEGIN()
     TARGET(final_target),
-    TARGET(motionBuf),
+    //TARGET(motionBuf),
     DEPTH_RO(gbuffer_depth)
   RP_END()
 

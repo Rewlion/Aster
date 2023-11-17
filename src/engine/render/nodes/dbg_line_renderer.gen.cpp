@@ -73,7 +73,6 @@ void mk_fg_node_dbg_line_renderer(Event*, ComponentsAccessor&)
     reg.orderMeBefore("ui");
     reg.requestRenderPass()
       .addTarget("final_target", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
-      .addTarget("motionBuf", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
       .addRODepth("gbuffer_depth", gapi::LoadOp::Load);
 
 

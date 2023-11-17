@@ -3,7 +3,7 @@
 
 NODE_BEGIN(post_process)
   BIND_TEX_SRV_AS(transparent_target, post_process_input)
-  CREATE_TEX_2D(final_target, TEX_SIZE_RELATIVE(), R8G8B8A8_UNORM, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
+  CREATE_TEX_2D(final_target, TEX_SIZE_RELATIVE(), R8G8B8A8_UNORM, TEX_USAGE3(RT,SRV, TRANSFER_SRC), TEX_STATE(RenderTarget))
   RP_BEGIN()
     TARGET(final_target)
   RP_END()

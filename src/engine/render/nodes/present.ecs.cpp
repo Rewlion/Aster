@@ -1,7 +1,7 @@
 #include <engine/render/frame_graph/dsl.h>
 
 NODE_BEGIN(present_producer)
-  RENAME_TEX_RT(final_antialiased_target, present_src)
+  RENAME_TEX_RT(final_target, present_src)
   NO_EXEC()
 NODE_END()
 

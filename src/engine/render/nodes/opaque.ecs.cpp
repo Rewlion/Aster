@@ -131,6 +131,6 @@ NODE_END()
 
 
 NODE_BEGIN(transparent_sync)
-  RENAME_TEX_RT(post_opaque_target, transparent_target)
+  RENAME_TEX_RT(taa_target, transparent_target)
   NO_EXEC()
 NODE_END()

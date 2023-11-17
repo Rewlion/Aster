@@ -222,7 +222,7 @@ void mk_fg_node_transparent_sync(Event*, ComponentsAccessor&)
 {
   fg::register_node("transparent_sync", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto transparent_target = reg.renameTexture("post_opaque_target", "transparent_target", gapi::TextureState::RenderTarget);
+    auto transparent_target = reg.renameTexture("taa_target", "transparent_target", gapi::TextureState::RenderTarget);
     return [](gapi::CmdEncoder&){};
   });
 }

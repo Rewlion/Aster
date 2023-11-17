@@ -16,26 +16,26 @@ void mk_fg_node_TAA(Event*, ComponentsAccessor&)
   { 
     const uint2 __renderSize__ = reg.getRenderSize();
 
-    auto taaCurrentFrame = reg.readTexture("final_target", gapi::TextureState::ShaderRead, false);
-    auto taaPrevFrame = reg.readTexture("final_antialiased_target", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+    auto taaCurrentFrame = reg.readTexture("post_opaque_target", gapi::TextureState::ShaderRead, false);
+    auto taaPrevFrame = reg.readTexture("taa_target", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
     auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead, false);
     auto gbuffer_depth = reg.readTexture("gbuffer_depth", gapi::TextureState::DepthReadStencilRead, false);
 
-    auto final_antialiased_target = reg.createTexture("final_antialiased_target",
+    auto taa_target = reg.createTexture("taa_target",
       gapi::TextureAllocationDescription{
-        .format =          gapi::TextureFormat::R8G8B8A8_UNORM,
+        .format =          gapi::TextureFormat::R32G32B32A32_S,
         .extent =          uint3(__renderSize__, 1),
         .mipLevels =       1,
         .arrayLayers =     1,
         .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage =           (gapi::TextureUsage)((gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV) | gapi::TextureUsage::TEX_USAGE_TRANSFER_SRC)
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
       },
       gapi::TextureState::RenderTarget,
       false
     );
 
     reg.requestRenderPass()
-      .addTarget(final_antialiased_target, gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addTarget(taa_target, gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
     ;
 
 

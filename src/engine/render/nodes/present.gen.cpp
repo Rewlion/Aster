@@ -14,7 +14,7 @@ void mk_fg_node_present_producer(Event*, ComponentsAccessor&)
 {
   fg::register_node("present_producer", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto present_src = reg.renameTexture("final_antialiased_target", "present_src", gapi::TextureState::RenderTarget);
+    auto present_src = reg.renameTexture("final_target", "present_src", gapi::TextureState::RenderTarget);
     return [](gapi::CmdEncoder&){};
   });
 }

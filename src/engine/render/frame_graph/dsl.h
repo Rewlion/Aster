@@ -4,8 +4,10 @@
 
 #include <engine/ecs/macros.h>
 #include <engine/events.h>
+#include <engine/gapi/gapi.h>
 #include <engine/gapi/resources.h>
 #include <engine/render/frame_graph/frame_graph.h>
+#include <engine/tfx/tfx.h>
 #include <engine/utils/macros.h>
 
 namespace fg::dsl
