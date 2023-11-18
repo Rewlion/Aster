@@ -10,13 +10,34 @@ using namespace ecs;
 
 //Engine::OnFrameGraphInit handler
 static
+void mk_fg_node_post_process_input_producer(Event*, ComponentsAccessor&)
+{
+  fg::register_node("post_process_input_producer", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto post_process_input = reg.renameTexture("transparent_target", "post_process_input", gapi::TextureState::RenderTarget);
+    return [](gapi::CmdEncoder&){};
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_post_process_input_producer_registration(
+  mk_fg_node_post_process_input_producer,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_post_process_input_producer"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
 void mk_fg_node_post_process(Event*, ComponentsAccessor&)
 {
   fg::register_node("post_process", FG_FILE_DECL, [](fg::Registry& reg)
   { 
     const uint2 __renderSize__ = reg.getRenderSize();
 
-    auto post_process_input = reg.readTexture("transparent_target", gapi::TextureState::ShaderRead, false);
+    auto post_process_input = reg.readTexture("post_process_input", gapi::TextureState::ShaderRead, false);
 
     auto final_target = reg.createTexture("final_target",
       gapi::TextureAllocationDescription{
