@@ -12,7 +12,7 @@ scope ResolveGbufferScope {
   reserve:
     descriptor_set(3);
     register(buffer, 0-4);
-    register(texture, 0-6);
+    register(texture, 0-8);
 
   RWStructuredBuffer<float3> atmParamsBuffer = extern(atmParamsBuffer);
 
@@ -23,6 +23,8 @@ scope ResolveGbufferScope {
   Texture2D gbufferDepth = extern(gbuffer_depth);
   Texture2D enviSpecular = extern(enviSpecular);
   Texture2D enviBRDF = extern(enviBRDF);
+  Texture2D prevPostProcessInput = extern(prevPostProcessInput);
+  Texture2D motionBuf = extern(motionBuf);
 
   #hlsl
   #include "clustered_light/utils.hlsl"
@@ -61,6 +63,108 @@ technique ResolveGbuffer {
   #hlsl
     #include "clustered_light/lights_apply.hlsl"
 
+    #define SSR_MIN_DD 0.01
+    #define SSR_MAX_DD 0.25
+
+    #define SSR_MIN_DITHER 1
+    #define SSR_MAX_DITHER 8
+
+    #define SSR_MIN_DEPTH_RANGE 0.016
+    #define SSR_MAX_DEPTH_RANGE 0.023
+
+    #define SSR_MAX_STEPS 250
+    #define SSR_MAX_DISTANCE 60.0
+
+    float3 ssr(float3 view_dir, float3 R, float3 worldPos, float2 screen_size)
+    {
+      float cameraFacingReflectionAttenuation = 1 - smoothstep(0.25, 0.5, dot(-view_dir, R));
+      if (cameraFacingReflectionAttenuation <= 0)
+        return float3(0,0,0);
+
+      float maxDist = 5.0;
+      float3 endWorldPos = worldPos + R*maxDist;
+
+      float4 beginVS = mul(FrameScope.view, float4(worldPos, 1));
+      if (beginVS.z >= SSR_MAX_DISTANCE)
+        return float3(0,0,0);
+
+      float4 endVS = mul(FrameScope.view, float4(endWorldPos, 1));
+
+      float4 beginSS = mul(FrameScope.viewProj, float4(worldPos, 1));
+      beginSS.xyz /= beginSS.w;
+      beginSS.xy = beginSS.xy * float2(0.5, -0.5) + 0.5;
+
+      float4 endSS = mul(FrameScope.viewProj, float4(endWorldPos, 1));
+      endSS.xyz /= endSS.w;
+      endSS.xy = endSS.xy * float2(0.5, -0.5) + 0.5;
+
+      float2 beginTC = beginSS.xy * screen_size;
+      float2 endTC = endSS.xy * screen_size;
+
+      float begin_w = 1.0 / beginSS.w;
+      float beginZ = beginVS.z * begin_w;
+
+      float end_w = 1.0 / endSS.w;
+      float endZ = endVS.z * end_w;
+
+      float2 deltaPixels = endTC - beginTC;
+      uint maxDeltaPixels = max(max(abs(deltaPixels.x), abs(deltaPixels.y)), 1);
+
+      float2 dirInc = (endSS.xy - beginSS.xy) / maxDeltaPixels;
+      float zInc = (endZ - beginZ) / maxDeltaPixels;
+      float wInc = (end_w - begin_w)  / maxDeltaPixels;
+      float4 rayInc = float4(dirInc, zInc, wInc);
+      
+      float dither[16] = {
+        0,	8,	2,	10,
+        12,	4,	14,	6,
+        3,	11,	1,	9,
+        15,	7,	13,	5
+      };
+      uint xDither = beginTC.x % 4;
+      uint yDither = beginTC.y % 4;
+      uint idDither = xDither + 4 * yDither;
+
+      float t = smoothstep(SSR_MIN_DEPTH_RANGE, SSR_MAX_DEPTH_RANGE, beginSS.z);
+      uint ditherMul = lerp(SSR_MAX_DITHER, SSR_MIN_DITHER, t);
+      float maxDepthDelta = lerp(SSR_MAX_DD, SSR_MIN_DD, t);
+
+      float4 raySamplePrev = float4(beginSS.xy, beginZ, begin_w) + (dither[idDither] + 1.0)*ditherMul * rayInc ;
+      float4 raySample = raySamplePrev;
+      bool found = false;
+      
+      for (uint i = 0; i < SSR_MAX_STEPS; ++i)
+      {
+        raySamplePrev = raySample;
+        raySample = raySamplePrev + rayInc;
+
+        float rayZ = raySample.z / raySample.w;
+
+        if (raySample.x < 0 || raySample.x > 1 || raySample.y < 0 || raySample.y > 1)
+          break;
+
+        float sceneDepth = gbufferDepth.SampleLevel(linearClampSampler, raySample.xy, 0).r;
+        float sceneZ = linearize_z(sceneDepth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+        float zDelta = sceneZ - rayZ;
+
+        float3 sampleNormal = unpackNormal(gbufferNormal.SampleLevel(linearClampSampler, raySample.xy, 0).rgb);
+
+        if (dot(sampleNormal, R) < 0.001 && zDelta > 0 && zDelta < maxDepthDelta && sceneZ > beginVS.z && sceneZ < endVS.z)
+        {
+          found = true;
+          break;
+        }
+      }
+
+      if (!found)
+        return float3(0.0, 0.0, 0.0);
+
+      uint3 tc = uint3((uint2)(raySample.xy * screen_size), 0);
+      float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
+      float3 reflection = prevPostProcessInput.SampleLevel(linearClampSampler, raySample.xy - motionVec, 0).rgb;
+      return reflection;
+    }
+
     [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
     void cs_main(uint3 dispatch_thread_id: SV_DispatchThreadID)
     {
@@ -81,6 +185,7 @@ technique ResolveGbuffer {
 
       float2 t = float2(tc.xy) / float2(renderSize - uint2(1, 1));
       float3 farPlainPoint = FrameScope.ltView_WS + leftRight * t.x + topBot * t.y;
+      float3 viewDir = normalize(farPlainPoint);
 
       ProcessedMaterial mat = processMaterial(unpackMaterial(tc));
 
@@ -123,7 +228,9 @@ technique ResolveGbuffer {
       float3 sunL = getSunL() * NoL;
 
       float3 diffusePart = diffuseBRDF(mat.diffuseColor, mat.specularReflection, VoH) * (diffuseSPH + sunL + dynamicLightsDiffuseNoBRDF);
-      float3 specularPart = enviSpecularIBL(mat.specularReflection, mat.roughness, NoV, R) + dynamicLightsSpecular;
+
+      float3 ssrPart = ssr(viewDir, reflect(viewDir, N), worldPos, float2(renderSize));
+      float3 specularPart = ssrPart;
 
       float3 Lo = diffusePart + specularPart;
       

@@ -159,6 +159,8 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
     auto gbuffer_albedo = reg.readTexture("gbuf0", gapi::TextureState::ShaderRead, false);
     auto gbuffer_normal = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
     auto gbuffer_metal_roughness = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead, false);
+    auto prevPostProcessInput = reg.readTexture("post_process_input", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+    auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead, false);
     auto clustersLightBuffer = reg.readBuffer("clustered_lights", gapi::BufferState::BF_STATE_SRV, false);
     auto clustersInfoBuffer = reg.readBuffer("clusters_info", gapi::BufferState::BF_STATE_SRV, false);
     auto clustersIndirectionBuffer = reg.readBuffer("clusters_indirecion", gapi::BufferState::BF_STATE_SRV, false);
@@ -167,12 +169,14 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
     auto enviSpecular = reg.readTexture("atm_envi_specular", gapi::TextureState::ShaderRead, true);
     auto enviBRDF = reg.readTexture("atm_envi_brdf", gapi::TextureState::ShaderRead, true);
 
-    return [resolve_target,gbuffer_albedo,gbuffer_normal,gbuffer_metal_roughness,clustersLightBuffer,clustersInfoBuffer,clustersIndirectionBuffer,gbuffer_depth,atmParamsBuffer,enviSpecular,enviBRDF,render_size](gapi::CmdEncoder& encoder)
+    return [resolve_target,gbuffer_albedo,gbuffer_normal,gbuffer_metal_roughness,prevPostProcessInput,motionBuf,clustersLightBuffer,clustersInfoBuffer,clustersIndirectionBuffer,gbuffer_depth,atmParamsBuffer,enviSpecular,enviBRDF,render_size](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("resolveTarget", resolve_target.get());
       tfx::set_extern("gbuffer_albedo", gbuffer_albedo.get());
       tfx::set_extern("gbuffer_normal", gbuffer_normal.get());
       tfx::set_extern("gbuffer_metal_roughness", gbuffer_metal_roughness.get());
+      tfx::set_extern("prevPostProcessInput", prevPostProcessInput.get());
+      tfx::set_extern("motionBuf", motionBuf.get());
       tfx::set_extern("clustersLightBuffer", clustersLightBuffer.get());
       tfx::set_extern("clustersInfoBuffer", clustersInfoBuffer.get());
       tfx::set_extern("clustersIndirectionBuffer", clustersIndirectionBuffer.get());
