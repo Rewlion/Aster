@@ -63,15 +63,6 @@ technique ResolveGbuffer {
   #hlsl
     #include "clustered_light/lights_apply.hlsl"
 
-    #define SSR_MIN_DD 0.01
-    #define SSR_MAX_DD 0.25
-
-    #define SSR_MIN_DITHER 1
-    #define SSR_MAX_DITHER 8
-
-    #define SSR_MIN_DEPTH_RANGE 0.016
-    #define SSR_MAX_DEPTH_RANGE 0.023
-
     #define SSR_MAX_STEPS 250
     #define SSR_MAX_DISTANCE 60.0
 
@@ -88,8 +79,6 @@ technique ResolveGbuffer {
       if (beginVS.z >= SSR_MAX_DISTANCE)
         return float3(0,0,0);
 
-      float4 endVS = mul(FrameScope.view, float4(endWorldPos, 1));
-
       float4 beginSS = mul(FrameScope.viewProj, float4(worldPos, 1));
       beginSS.xyz /= beginSS.w;
       beginSS.xy = beginSS.xy * float2(0.5, -0.5) + 0.5;
@@ -98,58 +87,24 @@ technique ResolveGbuffer {
       endSS.xyz /= endSS.w;
       endSS.xy = endSS.xy * float2(0.5, -0.5) + 0.5;
 
-      float2 beginTC = beginSS.xy * screen_size;
-      float2 endTC = endSS.xy * screen_size;
-
-      float begin_w = 1.0 / beginSS.w;
-      float beginZ = beginVS.z * begin_w;
-
-      float end_w = 1.0 / endSS.w;
-      float endZ = endVS.z * end_w;
-
-      float2 deltaPixels = endTC - beginTC;
+      float2 deltaPixels = (beginSS.xy -  endSS.xy) * screen_size ;
       uint maxDeltaPixels = max(max(abs(deltaPixels.x), abs(deltaPixels.y)), 1);
 
-      float2 dirInc = (endSS.xy - beginSS.xy) / maxDeltaPixels;
-      float zInc = (endZ - beginZ) / maxDeltaPixels;
-      float wInc = (end_w - begin_w)  / maxDeltaPixels;
-      float4 rayInc = float4(dirInc, zInc, wInc);
-      
-      float dither[16] = {
-        0,	8,	2,	10,
-        12,	4,	14,	6,
-        3,	11,	1,	9,
-        15,	7,	13,	5
-      };
-      uint xDither = beginTC.x % 4;
-      uint yDither = beginTC.y % 4;
-      uint idDither = xDither + 4 * yDither;
-
-      float t = smoothstep(SSR_MIN_DEPTH_RANGE, SSR_MAX_DEPTH_RANGE, beginSS.z);
-      uint ditherMul = lerp(SSR_MAX_DITHER, SSR_MIN_DITHER, t);
-      float maxDepthDelta = lerp(SSR_MAX_DD, SSR_MIN_DD, t);
-
-      float4 raySamplePrev = float4(beginSS.xy, beginZ, begin_w) + (dither[idDither] + 1.0)*ditherMul * rayInc ;
-      float4 raySample = raySamplePrev;
+      float3 rayInc = (endSS.xyz - beginSS.xyz) / maxDeltaPixels;
+      float3 raySample = beginSS.xyz;
+      float thickness = max(abs(rayInc.z) * 2, 0.00005);
       bool found = false;
-      
       for (uint i = 0; i < SSR_MAX_STEPS; ++i)
       {
-        raySamplePrev = raySample;
-        raySample = raySamplePrev + rayInc;
-
-        float rayZ = raySample.z / raySample.w;
-
+        raySample = raySample + rayInc;
         if (raySample.x < 0 || raySample.x > 1 || raySample.y < 0 || raySample.y > 1)
           break;
 
-        float sceneDepth = gbufferDepth.SampleLevel(linearClampSampler, raySample.xy, 0).r;
-        float sceneZ = linearize_z(sceneDepth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
-        float zDelta = sceneZ - rayZ;
+        float3 sampleNormal = unpackNormal(gbufferNormal.SampleLevel(pointClampSampler, raySample.xy, 0).rgb);
+        float sceneDepth = gbufferDepth.SampleLevel(pointClampSampler, raySample.xy, 0).r;
+        float zDelta = sceneDepth - raySample.z;
 
-        float3 sampleNormal = unpackNormal(gbufferNormal.SampleLevel(linearClampSampler, raySample.xy, 0).rgb);
-
-        if (dot(sampleNormal, R) < 0.001 && zDelta > 0 && zDelta < maxDepthDelta && sceneZ > beginVS.z && sceneZ < endVS.z)
+        if (dot(sampleNormal, R) < 0.001  && sceneDepth > 0 && zDelta >= 0 && zDelta <= thickness && sceneDepth < beginSS.z && sceneDepth > endSS.z)
         {
           found = true;
           break;
