@@ -81,6 +81,11 @@ namespace fg::dsl
 
   template<uint3>
   struct AbsSize{};
+  
+  template<uint32_t>
+  struct AbsMipLevel{};
+
+  struct RelativeMipLevel{};
 
   template<class T>
   struct Extent{};
@@ -88,7 +93,7 @@ namespace fg::dsl
   template<uint32_t layers>
   struct ArrayLayers {};
 
-  template<uint32_t levels>
+  template<class T>
   struct MipLevels {};
 
   template<gapi::TextureSamples samples>
@@ -309,7 +314,8 @@ namespace fg::dsl
 #define TEX_SIZE_RELATIVE_MUL(v) fg::dsl::RelativeSizeMul<uint(v)>
 #define TEX_SIZE(x,y,z) fg::dsl::AbsSize<uint3(x,y,z)>
 #define TEX_SIZE2(xy) fg::dsl::AbsSize<uint3(xy,1)>
-#define TEX_MIPS(n) n
+#define TEX_MIPS(n) fg::dsl::AbsMipLevel<n>
+#define TEX_MIPS_RELATIVE() fg::dsl::RelativeMipLevel
 #define TEX_ARRAY_LAYERS(n) n
 #define TEX_SAMPLES(n) gapi::TextureSamples::s ## n
 #define TEX_USAGE(usage) gapi::TextureUsage::TEX_USAGE_ ## usage
@@ -333,10 +339,13 @@ namespace fg::dsl
   > NAME_WITH_LINE(createTex);
 
 #define CREATE_TEX_2D_EX(name, size, format, mip_levels, usage, state, persisted)\
-  CREATE_TEX_EX(name, size, format, TEX_MIPS(mip_levels), TEX_ARRAY_LAYERS(1), TEX_SAMPLES(1), usage, state, persisted())
+  CREATE_TEX_EX(name, size, format, mip_levels, TEX_ARRAY_LAYERS(1), TEX_SAMPLES(1), usage, state, persisted())
 
 #define CREATE_TEX_2D(name, size, format, usage, state)\
   CREATE_TEX_2D_EX(name, size, format, TEX_MIPS(1), usage, state, TEX_NOT_PERSISTENT)
+
+#define CREATE_TEX_2D_MIP(name, size, format, tex_mip, usage, state)\
+  CREATE_TEX_2D_EX(name, size, format, tex_mip, usage, state, TEX_NOT_PERSISTENT)
 
 #define CREATE_TEX_2D_PERSISTENT(name, size, format, usage, state)\
   CREATE_TEX_2D_EX(name, size, format, TEX_MIPS(1), usage, state, TEX_PERSISTENT)

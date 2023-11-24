@@ -137,7 +137,13 @@ class TemplateParamExtractor:
 
 
   def extractMipLevels(self, tmpl_arg_type):
-    self.mipLevels = self.extractTemplateArgumentsAsIs(tmpl_arg_type)
+    sizeType = tmpl_arg_type.get_template_argument_type(0)
+    sizeTypeName = sizeType.get_declaration().spelling
+    if sizeTypeName == "AbsMipLevel":
+      self.mipLevels = self.extractTemplateArgumentsAsIs(sizeType)
+    elif sizeTypeName == "RelativeMipLevel":
+      self.mipLevels = f"(uint32_t)std::log2(std::min(__renderSize__.x, __renderSize__.y))+1"
+      self.context.markRenderSizeAccess()
 
 
   def extractArrayLayers(self, tmpl_arg_type):
