@@ -363,6 +363,7 @@ namespace gapi
     R16G16B16A16_UNORM,
     R32G32B32A32_S,
     R32_UINT,
+    R32_FLOAT,
     D24_UNORM_S8_UINT,
   };
 
@@ -519,7 +520,7 @@ namespace gapi
     uint32_t aspects = 0;
     uint32_t mipLevel = 0;
     uint32_t baseArrayLayer = 0;
-    uint32_t layerCount = 0;
+    uint32_t layerCount = 1;
   };
 
   struct TextureSubresourceRange
