@@ -434,12 +434,13 @@ class ExecFunctionAction(ExecFnAction):
     encoderName = ""
     for arg in execFn.get_arguments():
       argTypeName = utils.get_cursor_type_name(arg.type)
-      if argTypeName != "gapi::CmdEncoder":
-        captureList.append(arg.spelling)
-        argsList.append(f"{arg.spelling}.get()")
-      else:
+      if argTypeName == "gapi::CmdEncoder":
         encoderName = arg.spelling
         argsList.append(encoderName)
+      else:
+        captureList.append(arg.spelling)
+        isResRequest = argTypeName in ("fg::TextureRequest", "fg::BufferRequest")
+        argsList.append(arg.spelling if isResRequest else f"{arg.spelling}.get()")
     return templates.generate_fg_exec_fn_bridge(encoderName, captureList, argsList, self.name, exec_actions)
 
 
