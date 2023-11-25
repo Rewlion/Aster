@@ -1,0 +1,75 @@
+scope HiZBaseScope
+{
+  reserve:
+    descriptor_set(1);
+    register(texture, 0-1);
+  
+  Texture2D src = extern(hi_z_src);
+  RWTexture2D<float> dst = extern(hi_z_dst);
+};
+
+technique HiZBase
+{
+  support scope HiZBaseScope;
+
+  #hlsl
+  #include "hi_z.hlsl"
+
+  [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
+  void cs_main(uint3 dispatch_thread_id: SV_DispatchThreadID)
+  {
+    dst[dispatch_thread_id.xy] = src.Load(dispatch_thread_id).r;
+  }
+  #end
+
+  compile(cs, cs_main);
+};
+
+scope HiZScope
+{
+  reserve:
+    descriptor_set(1);
+    register(texture, 0-1);
+  
+  RWTexture2D<float> src = extern(hi_z_src);
+  RWTexture2D<float> dst = extern(hi_z_dst);
+};
+
+
+technique HiZHigh
+{
+  support scope HiZScope;
+
+  #hlsl
+  #include "hi_z.hlsl"
+
+  [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
+  void cs_main(uint3 dispatch_thread_id: SV_DispatchThreadID)
+  {
+    uint2 srcSize;
+    dst.GetDimensions(srcSize.x, srcSize.y);
+
+    uint2 dstSize;
+    dst.GetDimensions(dstSize.x, dstSize.y);
+
+    if (any(dispatch_thread_id.xy >= dstSize))
+      return;
+
+    uint2 id = dispatch_thread_id.xy*2;
+    float d0 = src[id + uint2(0,0)];
+    float d1 = src[id + uint2(1,0)];
+    float d2 = src[id + uint2(1,1)];
+    float d3 = src[id + uint2(0,1)];
+
+    bool2 requiresExtraPix = (srcSize % 2) > 0;
+    float extraX = requiresExtraPix.x ? max(src[id + uint2(2,1)], src[id + uint2(2,0)]) : -1.0;
+    float extraY = requiresExtraPix.y ? max(src[id + uint2(1,2)], src[id + uint2(0,2)]) : -1.0;
+    float extraXY = all(requiresExtraPix) ? src[id + uint2(2,2)] : -1.0;
+    float extra = max(max(extraX, extraY), extraXY);
+
+    dst[dispatch_thread_id.xy] = max(max(max(d0,d1), max(d2,d3)), extra);
+  }
+  #end
+
+  compile(cs, cs_main);
+};

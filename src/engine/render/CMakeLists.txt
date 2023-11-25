@@ -58,14 +58,15 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/clustered_light_culling.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/dbg_line_renderer.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/dbg_poly_renderer.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/dbg_text.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/decals.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/frame_preparing.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/hi_z.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/opaque.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/post_process.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/present.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/taa.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/ui.ecs.cpp"
-    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/dbg_text.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/virtual_terrain.ecs.cpp"
 )
 
