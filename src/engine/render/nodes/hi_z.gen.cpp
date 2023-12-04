@@ -32,7 +32,6 @@ void mk_fg_node_HiZ(Event*, ComponentsAccessor&)
       false
     );
 
-    reg.orderMeBefore("gbuffer_resolve");
 
     return [render_size,late_opaque_depth,hi_z_buffer](gapi::CmdEncoder& encoder)
     {

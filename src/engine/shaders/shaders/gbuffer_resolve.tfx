@@ -10,12 +10,12 @@
 
 scope ResolveGbufferScope {
   reserve:
-    descriptor_set(3);
+    descriptor_set(2);
     register(buffer, 0-4);
-    register(texture, 0-8);
+    register(texture, 0-9);
 
   RWStructuredBuffer<float3> atmParamsBuffer = extern(atmParamsBuffer);
-
+  
   RWTexture2D<float4> resolveTarget = extern(resolveTarget);
   Texture2D gbufferAlbedo = extern(gbuffer_albedo);
   Texture2D gbufferNormal = extern(gbuffer_normal);
@@ -25,6 +25,7 @@ scope ResolveGbufferScope {
   Texture2D enviBRDF = extern(enviBRDF);
   Texture2D prevPostProcessInput = extern(prevPostProcessInput);
   Texture2D motionBuf = extern(motionBuf);
+  Texture2D hiZ = extern(hi_z_buffer);
 
   #hlsl
   #include "clustered_light/utils.hlsl"
@@ -63,8 +64,35 @@ technique ResolveGbuffer {
   #hlsl
     #include "clustered_light/lights_apply.hlsl"
 
-    #define SSR_MAX_STEPS 250
     #define SSR_MAX_DISTANCE 60.0
+    #define FLOAT_MAX 3.402823466e+38
+
+    //advance once cell forward to skip self intersection
+    float3 initRaySample(float3 begin, float3 dir, float3 inv_dir, float2 cell_border_step, float2 cell_uv_offset, float2 init_cells_count)
+    {
+      float2 cell = floor(begin.xy * init_cells_count);
+      float2 xyBorders = (cell + cell_border_step) / init_cells_count + cell_uv_offset;
+      float2 t = (xyBorders - begin.xy) * inv_dir.xy;
+      return begin + dir * min(t.x, t.y);
+    }
+
+    bool advanceRaySample(float3 dir, float3 inv_dir, float2 cell_border_step, float2 cell_uv_offset, float2 cells_count, float depth_plane, float hi_z_level, inout float3 ray_sample)
+    {
+      float2 cell = floor(ray_sample.xy * cells_count);
+      float2 xyBorders = (cell + cell_border_step) / cells_count + cell_uv_offset;
+      float zBorder = depth_plane;
+      float3 borders = float3(xyBorders, zBorder);
+      float3 t = (borders - ray_sample) * inv_dir;
+
+      t.z = dir.z < 0 ? t.z : FLOAT_MAX;
+      float tMin = min(t.x, min(t.y, t.z));
+      bool isAboveDepthPlane = ray_sample.z > zBorder;
+
+      ray_sample = isAboveDepthPlane ? ray_sample + dir * tMin : ray_sample;
+
+      bool crossedBorders = asuint(tMin) != asuint(t.z) && isAboveDepthPlane;
+      return crossedBorders;
+    }
 
     float3 ssr(float3 view_dir, float3 R, float3 worldPos, float2 screen_size)
     {
@@ -81,7 +109,8 @@ technique ResolveGbuffer {
 
       float4 beginSS = mul(FrameScope.viewProj, float4(worldPos, 1));
       beginSS.xyz /= beginSS.w;
-      beginSS.xy = beginSS.xy * float2(0.5, -0.5) + 0.5;
+      beginSS.xy = (beginSS.xy) * float2(0.5, -0.5) + 0.5;
+      beginSS.xy = (floor(beginSS.xy * screen_size) + 0.5) / screen_size;
 
       float4 endSS = mul(FrameScope.viewProj, float4(endWorldPos, 1));
       endSS.xyz /= endSS.w;
@@ -90,34 +119,48 @@ technique ResolveGbuffer {
       float2 deltaPixels = (beginSS.xy -  endSS.xy) * screen_size ;
       uint maxDeltaPixels = max(max(abs(deltaPixels.x), abs(deltaPixels.y)), 1);
 
-      float3 rayInc = (endSS.xyz - beginSS.xyz) / maxDeltaPixels;
-      float3 raySample = beginSS.xyz;
-      float thickness = max(abs(rayInc.z) * 2, 0.00005);
-      bool found = false;
-      for (uint i = 0; i < SSR_MAX_STEPS; ++i)
+      float2 cellsCount;
+      hiZ.GetDimensions(cellsCount.x, cellsCount.y);
+
+      float3 rayDir = (endSS.xyz - beginSS.xyz);
+
+      float3 invRayDir = rcp(rayDir);
+      float2 cellBorderStep = rayDir.xy <= 0 ? 0 : 1;
+      float2 cellUvOffset = 0.005 / cellsCount;
+      cellUvOffset = rayDir.xy < 0 ? -cellUvOffset : cellUvOffset;
+      
+      float3 raySample = initRaySample(beginSS.xyz, rayDir, invRayDir, cellBorderStep, cellUvOffset, cellsCount);
+
+      uint maxHiZLevel = 10;
+      uint maxIterations = 100;
+      int hiZLevel = 0;
+      uint iterations = 0;
+
+      while (hiZLevel >= 0 && hiZLevel < maxHiZLevel && iterations < maxIterations && (all(raySample.xy > 0) && all(raySample.xy < 1)))
       {
-        raySample = raySample + rayInc;
-        if (raySample.x < 0 || raySample.x > 1 || raySample.y < 0 || raySample.y > 1)
-          break;
+        float nLevels;
+        hiZ.GetDimensions(hiZLevel, cellsCount.x, cellsCount.y, nLevels);
 
-        float3 sampleNormal = unpackNormal(gbufferNormal.SampleLevel(pointClampSampler, raySample.xy, 0).rgb);
-        float sceneDepth = gbufferDepth.SampleLevel(pointClampSampler, raySample.xy, 0).r;
-        float zDelta = sceneDepth - raySample.z;
+        float2 tc = raySample.xy * cellsCount;
+        int3 pos = int3(tc, hiZLevel);
+        float depthPlane = hiZ.Load(pos).r;
+        bool crossedBorders = advanceRaySample(rayDir, invRayDir, cellBorderStep, cellUvOffset, cellsCount, depthPlane, hiZLevel, raySample);
 
-        if (dot(sampleNormal, R) < 0.001  && sceneDepth > 0 && zDelta >= 0 && zDelta <= thickness && sceneDepth < beginSS.z && sceneDepth > endSS.z)
-        {
-          found = true;
-          break;
-        }
+        hiZLevel += crossedBorders ? 1 : -1;
+        ++iterations;
       }
 
-      if (!found)
-        return float3(0.0, 0.0, 0.0);
-
-      uint3 tc = uint3((uint2)(raySample.xy * screen_size), 0);
-      float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
-      float3 reflection = prevPostProcessInput.SampleLevel(linearClampSampler, raySample.xy - motionVec, 0).rgb;
-      return reflection;
+      bool validHit = hiZLevel < 0 && raySample.z > 0;
+      
+      if (validHit)
+      {
+        uint3 tc = uint3((uint2)(raySample.xy * screen_size), 0);
+        float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
+        float3 reflection = prevPostProcessInput.SampleLevel(linearClampSampler, raySample.xy - motionVec, 0).rgb;
+        return reflection;
+      }
+      
+      return float3(0.0, 0.0, 0.0);
     }
 
     [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]

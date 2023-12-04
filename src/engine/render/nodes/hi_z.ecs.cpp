@@ -59,8 +59,6 @@ NODE_BEGIN(HiZ)
   CREATE_TEX_2D_MIP(hi_z_buffer, TEX_SIZE_RELATIVE(), R32_FLOAT, TEX_MIPS_RELATIVE(),
                     TEX_USAGE2(UAV, SRV), TEX_STATE(ShaderReadWrite))
   EXEC(hi_z)
-
-  ORDER_ME_BEFORE(gbuffer_resolve)
 NODE_END()
 
 

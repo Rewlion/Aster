@@ -100,10 +100,12 @@ Memory
  - https://therealmjp.github.io/posts/gpu-memory-pool/
 
 SSR
+ - https://gpuopen.com/fidelityfx-sssr/
+   GPU Pro 5 RayMarching scheme for the HiZ was originally based on [1.4.2 Quadtree Traversal] GPU Pro 1
  - https://bitsquid.blogspot.com/2017/08/notes-on-screen-space-hiz-tracing.html
  - https://sakibsaikia.github.io/graphics/2016/12/26/Screen-Space-Reflection-in-Killing-Floor-2.html#reflections-of-back-faces
  - Hi-Z Screen-Space Cone-Traced Reflections by Yasin Uludag (GPU Pro5 Advanced Rendering Techniques)
  - Low Complexity, High Fidelity: The Rendering of INSIDE
    https://loopit.dk/rendering_inside.pdf
    https://www.youtube.com/watch?v=RdN06E6Xn9E&t=2427s&ab_channel=GDC
- - https://bartwronski.com/2014/03/23/gdc-follow-up-screenspace-reflections-filtering-and-up-sampling/
+ - https://bartwronski.com/2014/03/23/gdc-follow-up-screenspace-reflections-filtering-and-up-sampling
