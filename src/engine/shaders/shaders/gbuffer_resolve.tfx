@@ -94,11 +94,39 @@ technique ResolveGbuffer {
       return crossedBorders;
     }
 
+    //based on AMD FidelityFX SSSR
+    float calcSSRPower(float2 ray_origin_uv, float3 ray_hit_uvz, int hiz_level, float2 screen_size, float hit_depth_plane, float depth_thickness, float3 world_ray_dir)
+    {
+      if (hit_depth_plane == 0.0 || ray_hit_uvz.z <= 0.0)
+        return 0.0;
+
+      if (hiz_level >= 0)
+        return 0.0;
+      
+      float2 tcDelta = (ray_hit_uvz.xy - ray_origin_uv) * screen_size;
+      bool hasSelfReflection = all(abs(tcDelta) < 2.0);
+      if (hasSelfReflection)
+        return 0.0;
+
+      float3 wHitNormal = unpackNormal(gbufferNormal.SampleLevel(linearClampSampler, ray_hit_uvz.xy, 0).rgb);
+      bool backFaceHit = dot(wHitNormal, world_ray_dir) > 0;
+      if (backFaceHit)
+        return 0.0;
+
+      float2 fov = 0.05 * float2(screen_size.y / screen_size.x, 1);
+      float2 border = smoothstep(0, fov, ray_hit_uvz.xy) * (1 - smoothstep(1 - fov, 1, ray_hit_uvz.xy));
+      float vignette = border.x * border.y;
+
+      float thicknessBorder = 1.0 - smoothstep(0, depth_thickness, hit_depth_plane - ray_hit_uvz.z);
+      float power = thicknessBorder * thicknessBorder * vignette;
+      return power;
+    }
+
     float3 ssr(float3 view_dir, float3 R, float3 worldPos, float2 screen_size)
     {
-      float cameraFacingReflectionAttenuation = 1 - smoothstep(0.25, 0.5, dot(-view_dir, R));
-      if (cameraFacingReflectionAttenuation <= 0)
-        return float3(0,0,0);
+      // float cameraFacingReflectionAttenuation = 1 - smoothstep(0.25, 0.5, dot(-view_dir, R));
+      // if (cameraFacingReflectionAttenuation <= 0)
+      //   return float3(0,0,0);
 
       float maxDist = 5.0;
       float3 endWorldPos = worldPos + R*maxDist;
@@ -116,25 +144,28 @@ technique ResolveGbuffer {
       endSS.xyz /= endSS.w;
       endSS.xy = endSS.xy * float2(0.5, -0.5) + 0.5;
 
-      float2 deltaPixels = (beginSS.xy -  endSS.xy) * screen_size ;
-      uint maxDeltaPixels = max(max(abs(deltaPixels.x), abs(deltaPixels.y)), 1);
-
       float2 cellsCount;
       hiZ.GetDimensions(cellsCount.x, cellsCount.y);
 
       float3 rayDir = (endSS.xyz - beginSS.xyz);
+
+      float2 deltaPixels = (beginSS.xy -  endSS.xy) * screen_size ;
+      uint maxDeltaPixels = max(max(abs(deltaPixels.x), abs(deltaPixels.y)), 1);
+      float depthThickness = max(abs(rayDir.z / maxDeltaPixels) * 10, 0.00005);
 
       float3 invRayDir = rcp(rayDir);
       float2 cellBorderStep = rayDir.xy <= 0 ? 0 : 1;
       float2 cellUvOffset = 0.005 / cellsCount;
       cellUvOffset = rayDir.xy < 0 ? -cellUvOffset : cellUvOffset;
       
-      float3 raySample = initRaySample(beginSS.xyz, rayDir, invRayDir, cellBorderStep, cellUvOffset, cellsCount);
+      float3 rayOrigin = initRaySample(beginSS.xyz, rayDir, invRayDir, cellBorderStep, cellUvOffset, cellsCount);
+      float3 raySample = rayOrigin;
 
       uint maxHiZLevel = 10;
-      uint maxIterations = 100;
+      uint maxIterations = 80;
       int hiZLevel = 0;
       uint iterations = 0;
+      float depthPlane = 0;
 
       while (hiZLevel >= 0 && hiZLevel < maxHiZLevel && iterations < maxIterations && (all(raySample.xy > 0) && all(raySample.xy < 1)))
       {
@@ -143,23 +174,20 @@ technique ResolveGbuffer {
 
         float2 tc = raySample.xy * cellsCount;
         int3 pos = int3(tc, hiZLevel);
-        float depthPlane = hiZ.Load(pos).r;
+        depthPlane = hiZ.Load(pos).r;
         bool crossedBorders = advanceRaySample(rayDir, invRayDir, cellBorderStep, cellUvOffset, cellsCount, depthPlane, hiZLevel, raySample);
 
         hiZLevel += crossedBorders ? 1 : -1;
         ++iterations;
       }
 
-      bool validHit = hiZLevel < 0 && raySample.z > 0;
+      uint3 tc = uint3((uint2)(raySample.xy * screen_size), 0);
+      float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
+      float3 reflection = prevPostProcessInput.SampleLevel(linearClampSampler, raySample.xy - motionVec, 0).rgb;
       
-      if (validHit)
-      {
-        uint3 tc = uint3((uint2)(raySample.xy * screen_size), 0);
-        float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
-        float3 reflection = prevPostProcessInput.SampleLevel(linearClampSampler, raySample.xy - motionVec, 0).rgb;
-        return reflection;
-      }
-      
+      float ssrPower = calcSSRPower(rayOrigin.xy, raySample, hiZLevel, screen_size, depthPlane, depthThickness, R);
+      return reflection * ssrPower;
+
       return float3(0.0, 0.0, 0.0);
     }
 
