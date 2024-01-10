@@ -60,12 +60,20 @@ Image Based Lighthing for Specular:
       https://www.pbr-book.org/3ed-2018/Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions
 
 PBR
+  - Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs
+    https://jcgt.org/published/0003/02/03/paper.pdf
+
+  - Sampling the GGX Distribution of Visible Normals (vNDF)
+    https://jcgt.org/published/0007/04/01/paper.pdf
+  
   - https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf
 
     MS diffuse brdf TODO
     https://www.activision.com/cdn/research/siggraph_2018_opt.pdf
     https://advances.realtimerendering.com/s2018/MaterialAdvancesInWWII.pdf
     https://advances.realtimerendering.com/s2018/MaterialAdvancesInWWII-course_notes.pdf
+
+  - https://boksajak.github.io/files/CrashCourseBRDF.pdf
 
 TAA:
  - https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/
@@ -104,6 +112,8 @@ SSR
    GPU Pro 5 RayMarching scheme for the HiZ was originally based on [1.4.2 Quadtree Traversal] GPU Pro 1
  - https://bitsquid.blogspot.com/2017/08/notes-on-screen-space-hiz-tracing.html
  - https://sakibsaikia.github.io/graphics/2016/12/26/Screen-Space-Reflection-in-Killing-Floor-2.html#reflections-of-back-faces
+ - Stochastic All The Things: Raytracing in Hybrid Real-Time Rendering
+   https://www.ea.com/seed/news/seed-dd18-presentation-slides-raytracing
  - Hi-Z Screen-Space Cone-Traced Reflections by Yasin Uludag (GPU Pro5 Advanced Rendering Techniques)
  - Low Complexity, High Fidelity: The Rendering of INSIDE
    https://loopit.dk/rendering_inside.pdf
