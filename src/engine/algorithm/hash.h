@@ -55,3 +55,12 @@ constexpr string_hash str_hash(const std::string_view str)
 {
   return fnv1a<uint64_t>(str.data(), str.size());
 }
+
+class StringFNV1AHashCompare
+{
+  public:
+    auto operator()(const string& l, const string& r) const -> bool
+    {
+      return str_hash(l.c_str()) < str_hash(r.c_str());
+    }
+};

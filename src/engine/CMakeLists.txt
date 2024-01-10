@@ -11,6 +11,7 @@ target_link_libraries(engine
   deps_tracy
   engine_assets
   engine_console
+  engine_data
   engine_datablock
   engine_dbg_text
   engine_ecs
