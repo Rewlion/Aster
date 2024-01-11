@@ -1,7 +1,9 @@
 #pragma once
 
 #include <engine/algorithm/hash.h>
+#include <engine/assert.h>
 #include <engine/types.h>
+#include <engine/utils/concept.hpp>
 #include <engine/utils/strong_typedef.h>
 
 #include <memory>
@@ -11,20 +13,21 @@
 #include <EASTL/vector.h>
 #include <EASTL/vector_map.h>
 
-#ifndef ED_ASSERT_FMT_RETURN
-#define ED_ASSERT_FMT_RETURN(cond, ret_val, f, ...) ASSERT_FMT_RETURN(cond, ret_val, f, __VA_ARGS__)
-#endif
-
 STRONG_SCALAR_TYPEDEF(uint16_t, engine_data_type_id_t);
 
-enum class ExpectedTypeValue : uint8_t
-{
-  Int, Int2, Int3, Int4,
-  Float, Float2, Float3, Float4,
-  Text, Complex,
+#define ED_BASE_VALUE_TYPES int, int2, int3, int4, float, float2, float3, float4, string
+
+template<class T>
+concept IsEdVarCustomType = !Utils::IsAnyOf<std::remove_cvref_t<T>, ED_BASE_VALUE_TYPES>;
+
+class TEngineData;
+
+template<class T>
+concept HasCtorForEngineData = requires (const TEngineData* data){
+  T{data};
 };
 
-class TypesRegistry
+class CustomTypeRegistry
 {
   class RegisteredCompileTypeId
   {
@@ -48,18 +51,19 @@ class TypesRegistry
     private:
       static engine_data_type_id_t m_LastId;
   };
+  
 public:
   struct Entry
   {
     engine_data_type_id_t compileTypeId;
-    ExpectedTypeValue expectedTypeValue;
     string name;
     string_hash nameHash;
   };
 
   template<class T>
+  requires HasCtorForEngineData<T>
   constexpr
-  void add(const char* type_name, const ExpectedTypeValue expected_type_value)
+  void add(const char* type_name)
   {
     const engine_data_type_id_t tId = RegisteredCompileTypeId::template from<T>();
     const string_hash nameHash = str_hash(type_name);
@@ -68,7 +72,6 @@ public:
 
     m_Entries.push_back(Entry{
       .compileTypeId = tId,
-      .expectedTypeValue = expected_type_value,
       .name = string{type_name},
       .nameHash = nameHash
     });
@@ -96,74 +99,151 @@ public:
     return nullptr;
   }
 
+  template<class T>
+  auto getTypeId() -> engine_data_type_id_t
+  {
+    return RegisteredCompileTypeId::template from<T>();
+  }
+
 private:
   eastl::vector<Entry> m_Entries;
   eastl::vector_map<string_hash, size_t> m_NameHashToEntryId;
   eastl::vector_map<engine_data_type_id_t, size_t> m_CompileTimeIdToEntryId;
 };
 
-template <class ValueConverter>
 class TEngineData
 {
 public:
-  template<class T>
-  struct TrivialValue
+  struct TypeConstructor
   {
-    T data;
-  };
+    TypeConstructor(string&& type_name, std::unique_ptr<TEngineData>&& data)
+      : typeName(std::move(type_name))
+      , data(std::move(data))
+    {
+    }
 
-  struct ComplexValue
-  {
+    TypeConstructor(string&& type_name)
+      : typeName(std::move(type_name))
+    {
+    }
+
+    string typeName;
     std::unique_ptr<TEngineData> data;
-  };
-
-  using AttributeValue = std::variant<
-    TrivialValue<int>,   TrivialValue<int2>,   TrivialValue<int3>,   TrivialValue<int4>,
-    TrivialValue<float>, TrivialValue<float2>, TrivialValue<float3>, TrivialValue<float4>,
-    TrivialValue<string>,
-    ComplexValue
-  >;
-
-  struct Attribute
-  {
-    string name;
-    string annotation;
-    AttributeValue value;
+  private:
+    friend TEngineData;
     engine_data_type_id_t typeId;
   };
 
-public:
-  void addAttribute(string&& name, string&& annotation, AttributeValue&& v, const string& type_name)
+  enum class ValueType : uint8_t
   {
-    const TypesRegistry::Entry* typeReg = m_TypesRegistry->get(type_name);
+    Int, Int2, Int3, Int4,
+    Float, Float2, Float3, Float4,
+    Text, TypeConstructor,
+  };
 
-    ED_ASSERT_FMT_RETURN(typeReg != nullptr, ,
-      "can't add attribute {}:{} because it's not registered in the EngineData", name, type_name);
+  using Value = std::variant<ED_BASE_VALUE_TYPES, TypeConstructor>;
 
-    ED_ASSERT_FMT_RETURN((size_t)typeReg->expectedTypeValue == v.index(), ,
-      "can't add attribute {}:{} because provided value type differs from the registered one", name, type_name);
+  struct Variable
+  {
+    string name;
+    string annotation;
+    Value value;
 
-    m_Attributes.push_back(Attribute{
+    auto getValueType() const -> ValueType
+    {
+      return static_cast<ValueType>(value.index());
+    }
+  };
+
+public:
+  auto addVariable(string&& name, string&& annotation, Value&& value) -> bool
+  {
+    if (TypeConstructor* tc = std::get_if<TypeConstructor>(&value))
+    {
+      const CustomTypeRegistry::Entry* typeReg = m_CustomTypesRegistry->get(tc->typeName);
+      if (!typeReg)
+        return false;
+      
+      tc->typeId = typeReg->compileTypeId;
+    }
+
+    m_Variables.push_back(Variable{
       .name = std::move(name),
       .annotation = std::move(annotation),
-      .value = std::move(v),
-      .typeId = typeReg->compileTypeId
+      .value = std::move(value)
     });
+
+    return true;
+  }
+
+  template<class T, bool verboseFail = true>
+  auto getVariableDefinition(string_view name) const
+    -> const Variable*
+  {
+    using VarType = std::remove_cvref_t<T>;
+
+    for (const Variable& v : m_Variables)
+    {
+      if (v.name == name)
+      {
+        if constexpr (IsEdVarCustomType<T>)
+        {
+          const engine_data_type_id_t varTypeId = m_CustomTypesRegistry->getTypeId<VarType>();
+          if (const TypeConstructor* tc = std::get_if<TypeConstructor>(&v.value); tc->typeId == varTypeId)
+            return &v;
+        }
+        else
+        {
+          if (std::holds_alternative<VarType>(v.value))
+            return &v;
+        }
+      }
+    }
+
+    return nullptr;
+  }
+
+  template<class T>
+  auto getVariableOr(string_view name, const T& def) const
+    -> std::remove_cvref_t<T>
+  {
+    using Type = std::remove_cvref_t<T>;
+    using VarType = typename std::conditional<std::is_same_v<Type, string_view>, string, Type>::type;
+
+    const Variable* var = getVariableDefinition<T, false>(name);
+    if (var)
+    {
+      if constexpr (IsEdVarCustomType<VarType>)
+        return VarType{std::get<TypeConstructor>(var->value).data.get()};
+      else
+        return std::get<VarType>(var->value);
+    }
+
+    return def;
+  }
+
+  template<class T>
+  auto getVariable(string_view name) const
+    -> decltype(getVariableOr<T>(name, {}))
+  {
+    T def{};
+    return getVariableOr(name, def);
   }
 
   void insertScope(TEngineData&& scope)
   {
+    scope.m_CustomTypesRegistry = m_CustomTypesRegistry;
     m_Scopes.push_back(std::move(scope));
   }
 
   TEngineData() = default;
-  TEngineData(const std::shared_ptr<TypesRegistry>& reg)
-    : m_TypesRegistry(reg)
+  TEngineData(const std::shared_ptr<CustomTypeRegistry>& reg)
+    : m_CustomTypesRegistry(reg)
   {
   }
 
 private:
-  std::shared_ptr<TypesRegistry> m_TypesRegistry;
-  eastl::vector<Attribute> m_Attributes;
+  std::shared_ptr<CustomTypeRegistry> m_CustomTypesRegistry;
+  eastl::vector<Variable> m_Variables;
   eastl::vector<TEngineData> m_Scopes;
 };
