@@ -20,10 +20,10 @@ STRONG_SCALAR_TYPEDEF(uint16_t, engine_data_type_id_t);
 template<class T>
 concept IsEdVarCustomType = !Utils::IsAnyOf<std::remove_cvref_t<T>, ED_BASE_VALUE_TYPES>;
 
-class TEngineData;
+class EngineData;
 
 template<class T>
-concept HasCtorForEngineData = requires (const TEngineData* data){
+concept HasCtorForEngineData = requires (const EngineData* data){
   T{data};
 };
 
@@ -80,7 +80,7 @@ public:
     m_CompileTimeIdToEntryId.insert({tId, entryId});
   }
 
-  auto get(const string& type_name) -> const Entry*
+  auto get(string_view type_name) -> const Entry*
   {
     const string_hash nameHash = str_hash(type_name);
     const auto it = m_NameHashToEntryId.find(nameHash);
@@ -100,6 +100,12 @@ public:
   }
 
   template<class T>
+  auto get() -> const Entry*
+  {
+    return get(getTypeId<T>());
+  }
+
+  template<class T>
   auto getTypeId() -> engine_data_type_id_t
   {
     return RegisteredCompileTypeId::template from<T>();
@@ -111,27 +117,14 @@ private:
   eastl::vector_map<engine_data_type_id_t, size_t> m_CompileTimeIdToEntryId;
 };
 
-class TEngineData
+class EngineData
 {
 public:
   struct TypeConstructor
   {
-    TypeConstructor(string&& type_name, std::unique_ptr<TEngineData>&& data)
-      : typeName(std::move(type_name))
-      , data(std::move(data))
-    {
-    }
-
-    TypeConstructor(string&& type_name)
-      : typeName(std::move(type_name))
-    {
-    }
-
-    string typeName;
-    std::unique_ptr<TEngineData> data;
-  private:
-    friend TEngineData;
     engine_data_type_id_t typeId;
+    string typeName;
+    std::unique_ptr<EngineData> data;
   };
 
   enum class ValueType : uint8_t
@@ -156,21 +149,53 @@ public:
   };
 
 public:
-  auto addVariable(string&& name, string&& annotation, Value&& value) -> bool
+  template<class T>
+  requires Utils::IsAnyConvertibleTo<T, ED_BASE_VALUE_TYPES>
+  auto addVariable(string&& name, string&& annotation, T&& value) -> bool
   {
-    if (TypeConstructor* tc = std::get_if<TypeConstructor>(&value))
-    {
-      const CustomTypeRegistry::Entry* typeReg = m_CustomTypesRegistry->get(tc->typeName);
-      if (!typeReg)
-        return false;
-      
-      tc->typeId = typeReg->compileTypeId;
-    }
-
     m_Variables.push_back(Variable{
       .name = std::move(name),
       .annotation = std::move(annotation),
       .value = std::move(value)
+    });
+
+    return true;
+  }
+
+  auto addVariable(string&& name, string&& annotation, string_view custom_type_name, std::unique_ptr<EngineData>&& data)
+  {
+    const CustomTypeRegistry::Entry* typeReg = m_CustomTypesRegistry->get(custom_type_name);
+    if (!typeReg)
+      return false;
+
+    m_Variables.push_back(Variable{
+      .name = std::move(name),
+      .annotation = std::move(annotation),
+      .value = TypeConstructor{
+        .typeId = typeReg->compileTypeId,
+        .typeName = typeReg->name,
+        .data = std::move(data)
+      }
+    });
+
+    return true;
+  }
+
+  template<class T>
+  auto addVariable(string&& name, string&& annotation, std::unique_ptr<EngineData>&& data)
+  {
+    const CustomTypeRegistry::Entry* typeReg = m_CustomTypesRegistry->get<T>();
+    if (!typeReg)
+      return false;
+    
+    m_Variables.push_back(Variable{
+      .name = std::move(name),
+      .annotation = std::move(annotation),
+      .value = TypeConstructor{
+        .typeId = typeReg->compileTypeId,
+        .typeName = typeReg->name,
+        .data = std::move(data)
+      }
     });
 
     return true;
@@ -230,14 +255,14 @@ public:
     return getVariableOr(name, def);
   }
 
-  void insertScope(TEngineData&& scope)
+  void insertScope(EngineData&& scope)
   {
     scope.m_CustomTypesRegistry = m_CustomTypesRegistry;
     m_Scopes.push_back(std::move(scope));
   }
 
-  TEngineData() = default;
-  TEngineData(const std::shared_ptr<CustomTypeRegistry>& reg)
+  EngineData() = default;
+  EngineData(const std::shared_ptr<CustomTypeRegistry>& reg)
     : m_CustomTypesRegistry(reg)
   {
   }
@@ -245,5 +270,5 @@ public:
 private:
   std::shared_ptr<CustomTypeRegistry> m_CustomTypesRegistry;
   eastl::vector<Variable> m_Variables;
-  eastl::vector<TEngineData> m_Scopes;
+  eastl::vector<EngineData> m_Scopes;
 };
