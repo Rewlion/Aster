@@ -7,7 +7,7 @@
 
 TEST(EngineData, Variable)
 {
-  EngineData ed;
+  ed::Scope ed;
   EXPECT_TRUE(ed.addVariable("intvar", "annotation", 3));
   EXPECT_TRUE(ed.addVariable("textvar", "annotation", "valuee"));
 
@@ -18,12 +18,12 @@ TEST(EngineData, Variable)
 
 TEST(EngineData, VariableDefinition)
 {
-  EngineData ed;
+  ed::Scope ed;
   EXPECT_TRUE(ed.addVariable("intvar", "kiki", int2(2,5)));
 
-  const EngineData::Variable* var = ed.getVariableDefinition<int2>("intvar");
+  const ed::Variable* var = ed.getVariableDefinition<int2>("intvar");
   EXPECT_NE(var, nullptr);
-  EXPECT_EQ(var->getValueType(), EngineData::ValueType::Int2);
+  EXPECT_EQ(var->getValueType(), ed::ValueType::Int2);
   EXPECT_EQ(var->name, "intvar");
   EXPECT_EQ(var->annotation, "kiki");
   EXPECT_TRUE(std::holds_alternative<int2>(var->value));
@@ -33,12 +33,12 @@ TEST(EngineData, VariableDefinition)
 
 TEST(EngineData, ObjectVariable)
 {
-  std::shared_ptr<CustomTypeRegistry> registry{new CustomTypeRegistry};
+  std::shared_ptr<ed::CustomTypeRegistry> registry{new ed::CustomTypeRegistry};
 
   struct TestObj
   {
     TestObj(){};
-    TestObj(const EngineData* data)
+    TestObj(const ed::Scope* data)
     {
       EXPECT_NE(data, nullptr);
       i = data->getVariable<int>("intvar");
@@ -55,18 +55,18 @@ TEST(EngineData, ObjectVariable)
   struct TestObjNoData
   {
     TestObjNoData(){};
-    TestObjNoData(const EngineData* data)
+    TestObjNoData(const ed::Scope* data)
     {
       EXPECT_EQ(data, nullptr);
     }
   };
   registry->add<TestObjNoData>("TestObjNoData");
 
-  std::unique_ptr<EngineData> ctor{new EngineData};
+  std::unique_ptr<ed::Scope> ctor{new ed::Scope};
   EXPECT_TRUE(ctor->addVariable("intvar", "annotation", 3));
   EXPECT_TRUE(ctor->addVariable("textvar", "", "kiki"));
 
-  EngineData ed{registry};
+  ed::Scope ed{registry};
   EXPECT_TRUE(ed.addVariable("objvar", "annotation", "TestObj", std::move(ctor)));
   EXPECT_TRUE(ed.addVariable("objvarnodata", "annotation", "TestObjNoData", nullptr));
   EXPECT_FALSE(ed.addVariable("unknown obj var", "annotation", "Foo2", nullptr));
