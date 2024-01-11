@@ -1,4 +1,4 @@
-#include "data.h"
+#include "ed.h"
 
 namespace ed
 {

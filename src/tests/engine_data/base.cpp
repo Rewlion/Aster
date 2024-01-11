@@ -2,7 +2,7 @@
 
 #include <engine/log.h>
 
-#include <engine/data/data.h>
+#include <engine/data/ed.h>
 
 
 TEST(EngineData, Variable)
