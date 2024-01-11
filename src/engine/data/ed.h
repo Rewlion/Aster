@@ -43,7 +43,22 @@ namespace ed
   class Scope
   {
   public:
+    Scope() = default;
+    Scope(Scope&&) = default;
+    Scope(const std::shared_ptr<CustomTypeRegistry>& reg);
+    Scope(string&& name, string&& annotation = "",
+          const std::shared_ptr<CustomTypeRegistry>& reg = nullptr);
+
+    Scope& operator=(Scope&&) = default;
+
+    auto isEmpty() const -> bool;
+
     void addScope(Scope&& scope);
+    auto getScope(string_view path) -> Scope&;
+    auto getScope(string_view path) const -> const Scope&;
+
+    auto getName() const -> string_view { return m_Name; }
+    auto getAnnotation() const -> string_view { return m_Annotation; }
 
     template<class T>
     requires Utils::IsAnyConvertibleTo<T, ED_BASE_VALUE_TYPES>
@@ -69,14 +84,19 @@ namespace ed
       return getVariableOr(name, def);
     }
 
-    Scope() = default;
-    Scope(const std::shared_ptr<CustomTypeRegistry>& reg);
-    Scope(string&& name, string&& annotation,
-          const std::shared_ptr<CustomTypeRegistry>& reg);
+    auto getVariables() const -> const eastl::vector<Variable>&
+    {
+      return m_Variables;
+    }
+
+    auto getScopes() const -> const eastl::vector<Scope>&
+    {
+      return m_Scopes;
+    }
 
   private:
-    string name;
-    string annotation;
+    string m_Name;
+    string m_Annotation;
     std::shared_ptr<CustomTypeRegistry> m_CustomTypesRegistry;
 
     eastl::vector<Variable> m_Variables;
@@ -87,6 +107,9 @@ namespace ed
   requires Utils::IsAnyConvertibleTo<T, ED_BASE_VALUE_TYPES>
   auto Scope::addVariable(string&& name, string&& annotation, T&& value) -> bool
   {
+    if (isEmpty())
+      return false;
+
     m_Variables.push_back(Variable{
       .name = std::move(name),
       .annotation = std::move(annotation),
@@ -99,6 +122,9 @@ namespace ed
   template<class T>
   auto Scope::addVariable(string&& name, string&& annotation, std::unique_ptr<Scope>&& data) -> bool
   {
+    if (isEmpty())
+      return false;
+
     const CustomTypeRegistry::Entry* typeReg = m_CustomTypesRegistry->get<T>();
     if (!typeReg)
       return false;
@@ -160,4 +186,5 @@ namespace ed
     return def;
   }
 
+  static Scope EMPTY_SCOPE;
 }
