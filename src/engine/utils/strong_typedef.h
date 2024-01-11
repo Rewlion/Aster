@@ -1,3 +1,7 @@
+#pragma once
+
+#include <compare>
+
 #define STRONG_SCALAR_TYPEDEF(BASE_TYPE, NEW_TYPE)\
 class NEW_TYPE\
 {\
