@@ -1,0 +1,11 @@
+intvar:i=4
+int2var:i2= 2, 5
+int3var:i3 = 6,6,6
+int4var:i4 = 1, 2, 3, 4
+
+floatvar:f=4
+float2var:f2= 2, 5.0
+float3var:f3 = 6,6,6
+float4var:f4 = 1.0, 2.0, 3.0, 4.0
+
+textvar:t = "kek"

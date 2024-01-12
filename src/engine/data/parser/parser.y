@@ -1,0 +1,356 @@
+
+%{
+  #include "parser.h"
+  
+  #include <engine/log.h>
+  #include <engine/types.h>
+
+  #include <glm/glm.hpp>
+  
+  #include <variant>
+
+// Declare stuff from Flex that Bison needs to know about:
+  extern int edlex(ed::Parser& parser);
+  extern int edparse(ed::Parser& parser);
+  extern void ederror(ed::Parser& parser, const char* msg);
+  extern FILE *edin;
+  extern char* edtext;
+%}
+
+%code requires  {
+  #include "parser.h"
+
+  #include <ranges>
+  #include <variant>
+
+  using ScopeParam = std::variant<std::shared_ptr<ed::Scope>, std::shared_ptr<ed::Variable>>;
+  using ScopeParamArray = eastl::vector<ScopeParam>;
+
+  static
+  auto scope_params_to_scope(ed::Parser& parser, ScopeParamArray& params) -> std::shared_ptr<ed::Scope>
+  {
+    std::shared_ptr<ed::Scope> scope = std::make_shared<ed::Scope>();
+    for (ScopeParam& param: params | std::views::reverse)
+    {
+      if (auto* nestedScope = std::get_if<std::shared_ptr<ed::Scope>>(&param))
+        scope->addScope(std::move(**nestedScope));
+      else
+        parser.addVariableDefinition(std::move(*std::get<std::shared_ptr<ed::Variable>>(param)), *scope);
+    }
+
+    return scope;
+  }
+
+  using Number = std::variant<int, float>;
+  struct Number2
+  {
+    Number v0, v1;
+  };
+
+  struct Number3
+  {
+    Number v0, v1, v2;
+  };
+
+  struct Number4
+  {
+    Number v0, v1, v2, v3;
+  };
+
+  #define EDSTYPE std::variant<                                   \
+    bool, string,                                                 \
+    Number, Number2, Number3, Number4,                            \
+    std::shared_ptr<ed::Scope>, std::shared_ptr<ed::Variable>,    \
+    ScopeParam, std::shared_ptr<ScopeParamArray> \
+  >
+
+  static
+  auto number_to_float(const EDSTYPE& edstype) -> float
+  {
+    const Number& n = std::get<Number>(edstype);
+    if (auto* fl = std::get_if<float>(&n))
+      return *fl;
+    else
+      return static_cast<float>(std::get<int>(n));
+  }
+
+  static
+  auto number_to_int(const EDSTYPE& edstype) -> int
+  {
+    const Number& n = std::get<Number>(edstype);
+    if (auto* v = std::get_if<int>(&n))
+      return *v;
+    else
+      return static_cast<int>(std::get<float>(n));
+  }
+
+  static
+  auto number2_to_float2(const EDSTYPE& edstype) -> float2
+  {
+    const Number2& n = std::get<Number2>(edstype);
+    return float2{
+      number_to_float(n.v0),
+      number_to_float(n.v1)
+    };
+  }
+
+  static
+  auto number3_to_float3(const EDSTYPE& edstype) -> float3
+  {
+    const Number3& n = std::get<Number3>(edstype);
+    return float3{
+      number_to_float(n.v0),
+      number_to_float(n.v1),
+      number_to_float(n.v2)
+    };
+  }
+
+  static
+  auto number4_to_float4(const EDSTYPE& edstype) -> float4
+  {
+    const Number4& n = std::get<Number4>(edstype);
+    return float4{
+      number_to_float(n.v0),
+      number_to_float(n.v1),
+      number_to_float(n.v2),
+      number_to_float(n.v3)
+    };
+  }
+
+  static
+  auto number2_to_int2(const EDSTYPE& edstype) -> int2
+  {
+    const Number2& n = std::get<Number2>(edstype);
+    return int2{
+      number_to_int(n.v0),
+      number_to_int(n.v1)
+    };
+  }
+
+  static
+  auto number3_to_int3(const EDSTYPE& edstype) -> int3
+  {
+    const Number3& n = std::get<Number3>(edstype);
+    return int3{
+      number_to_int(n.v0),
+      number_to_int(n.v1),
+      number_to_int(n.v2)
+    };
+  }
+
+  static
+  auto number4_to_int4(const EDSTYPE& edstype) -> int4
+  {
+    const Number4& n = std::get<Number4>(edstype);
+    return int4{
+      number_to_int(n.v0),
+      number_to_int(n.v1),
+      number_to_int(n.v2),
+      number_to_int(n.v3)
+    };
+  }
+}
+
+%locations
+
+%define parse.error detailed
+%define api.prefix {ed}
+
+%lex-param {ed::Parser& parser}
+%parse-param {ed::Parser& parser}
+
+%token BOOL_VAL
+%token INT_VAL
+%token FLOAT_VAL
+%token TEXT_VAL
+%token NAME_VAL
+%token AT "@"
+%token COLON ":"
+%token SEMICOLON ";"
+%token EQUAL_OP "="
+%token LEFT_PARENTHESIS "("
+%token RIGHT_PARENTHESIS ")"
+%token LEFT_BRACKET "{"
+%token RIGHT_BRACKET "}"
+%token LEFT_SQUARE_BRACKET "["
+%token RIGHT_SQUARE_BRACKET "]"
+%token COMMA ","
+
+%%
+
+ENGINE_DATA
+  : PARAM_LIST[list] {
+    auto& params = std::get<std::shared_ptr<ScopeParamArray>>($list);
+    std::shared_ptr<ed::Scope> scope = scope_params_to_scope(parser, *params);
+    parser.setMainScope(std::move(*scope));
+  }
+  ;
+
+PARAM_LIST
+  : ANNOTATED_PARAM[p] PARAM_LIST[list] {
+    std::get<std::shared_ptr<ScopeParamArray>>($list)->push_back(std::get<ScopeParam>($p));
+    $$ = $list;
+  }
+  | ANNOTATED_PARAM[p] {
+    std::shared_ptr<ScopeParamArray> params = std::make_shared<ScopeParamArray>();
+    params->push_back((std::get<ScopeParam>($p)));
+    $$ = params;
+  }
+  ;
+
+ANNOTATED_PARAM
+  : ANNOTATED_SCOPE[scope] {
+    $$ = $scope;
+  }
+  | ANNOTATED_VARIABLE[variable] {
+    $$ = $variable;
+  }
+  ;
+
+ANNOTATED_SCOPE
+  : PARAM_NAME[name] ANNOTATION[a] SCOPE_BODY[body] {
+    auto& scope = std::get<std::shared_ptr<ed::Scope>>($body);
+    parser.setScopeName(*scope, std::move(std::get<string>($name)));
+    parser.setScopeAnnotation(*scope, std::move(std::get<string>($a)));
+    $$ = ScopeParam{scope};
+  }
+  | PARAM_NAME[name] SCOPE_BODY[body] {
+    auto& scope = std::get<std::shared_ptr<ed::Scope>>($body);
+    parser.setScopeName(*scope, std::move(std::get<string>($name)));
+    $$ = ScopeParam{scope};
+  }
+  ;
+
+SCOPE_BODY
+  : "{" PARAM_LIST[list] "}" {
+    auto& params = std::get<std::shared_ptr<ScopeParamArray>>($list);
+    $$ = scope_params_to_scope(parser, *params);
+  }
+  | "{" "}" {
+    $$ = std::make_shared<ed::Scope>();
+  }
+  ;
+
+ANNOTATED_VARIABLE
+  : VARIABLE[var] ANNOTATION[a] {
+    auto& var = std::get<std::shared_ptr<ed::Variable>>($var);
+    var->annotation = std::move(std::get<string>($a));
+    $$ = ScopeParam{var};
+  }
+  | VARIABLE[var] {
+    $$ = ScopeParam{std::get<std::shared_ptr<ed::Variable>>($var)};
+  }
+  ;
+
+VARIABLE
+  : PARAM_NAME[name] ":" NAME_VAL[ntype] "=" VALUE[value] {
+    const auto& type = std::get<string>($ntype);
+
+    std::shared_ptr<ed::Variable> var{new ed::Variable};
+    var->name = std::move(std::get<string>($name));
+    var->annotation = "";
+
+    try
+    {
+      #define CASE(textType, valueType, getter)             \
+        if (type == textType)                               \
+        {                                                   \
+          if (auto* value = std::get_if<valueType>(&$value))\
+            var->value = getter(*value);                     \
+          else                                              \
+            throw std::runtime_error("invalid value type");                     \
+        }
+      #define NEXT else
+      #define AS_IS(var) var
+
+           CASE("i",  Number,  number_to_int)
+      NEXT CASE("i2", Number2, number2_to_int2)
+      NEXT CASE("i3", Number3, number3_to_int3)
+      NEXT CASE("i4", Number4, number4_to_int4)
+      NEXT CASE("f",  Number,  number_to_float)
+      NEXT CASE("f2", Number2, number2_to_float2)
+      NEXT CASE("f3", Number3, number3_to_float3)
+      NEXT CASE("f4", Number4, number4_to_float4)
+      NEXT CASE("t", string, AS_IS)
+      NEXT {
+        if (auto* scope = std::get_if<std::shared_ptr<ed::Scope>>(&$value))
+        {
+          ed::TypeConstructor tc = parser.buildTypeConstructor(type, std::move(**scope));
+          if (tc.typeId != INVALID_ED_TYPE_ID)
+            var->value = std::move(tc);
+          else
+            throw std::runtime_error(fmt::format("unknown custom type", var->name, type));
+        }
+        else
+          throw std::runtime_error(fmt::format("invalid value type for the custom type. Custom type has to be initialized with scope i.e. '{}:{} = {{ }}'", var->name, type));
+      }
+    }
+    catch(const std::runtime_error& e)
+    {
+      ederror(parser, fmt::format(" error in {}:{}, {} ", var->name, type, e.what()).c_str());
+    }
+
+    $$ = var;
+
+    #undef AS_IS
+    #undef NEXT
+    #undef CASE
+  }
+
+ANNOTATION
+  : "@" "(" TEXT_VAL[a] ")" {
+    $$ = std::move($a);
+  }
+  ;
+
+PARAM_NAME
+  : NAME_VAL[name] { $$ = std::move($name); }
+  | TEXT_VAL[name] { $$ = std::move($name); }
+  ;
+
+VALUE
+  : TEXT_VAL[v]      { $$ = $v; }
+  | BOOL_VAL[v]      { $$ = $v; }
+  | NUMBER_VALUE[v]  { $$ = $v; }
+  | NUMBER2_VALUE[v] { $$ = $v; }
+  | NUMBER3_VALUE[v] { $$ = $v; }
+  | NUMBER4_VALUE[v] { $$ = $v; }
+  ;
+
+NUMBER4_VALUE
+  : NUMBER_VALUE[v0] "," NUMBER_VALUE[v1] "," NUMBER_VALUE[v2] "," NUMBER_VALUE[v3] {
+    $$ = Number4{
+      std::get<Number>($v0),
+      std::get<Number>($v1),
+      std::get<Number>($v2),
+      std::get<Number>($v3)};
+  }
+  ;
+
+NUMBER3_VALUE
+  : NUMBER_VALUE[v0] "," NUMBER_VALUE[v1] "," NUMBER_VALUE[v2] {
+    $$ = Number3{
+      std::get<Number>($v0),
+      std::get<Number>($v1),
+      std::get<Number>($v2)};
+  }
+  ;
+
+NUMBER2_VALUE
+  : NUMBER_VALUE[v0] "," NUMBER_VALUE[v1]{
+    $$ = Number2{
+      std::get<Number>($v0),
+      std::get<Number>($v1)};
+  }
+  ;
+
+NUMBER_VALUE
+  : FLOAT_VAL[v] { $$ = $v; }
+  | INT_VAL[v]   { $$ = $v; }
+  ;
+%%
+
+void ederror(ed::Parser& parser, const char* msg) {
+  const string err = fmt::format("parsing error: {} [{}:{}]", msg, parser.getCurrentFileName(), parser.getLine());
+  parser.markParsingFailed(err);
+}

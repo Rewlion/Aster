@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 SET(tests_src
   "${CMAKE_SOURCE_DIR}/src/tests/engine_data/base.cpp"
+  "${CMAKE_SOURCE_DIR}/src/tests/engine_data/parser.cpp"
   "${CMAKE_SOURCE_DIR}/src/tests/main.cpp"
 )
 

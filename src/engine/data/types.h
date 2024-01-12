@@ -5,6 +5,7 @@
 #include <engine/utils/strong_typedef.h>
 
 STRONG_SCALAR_TYPEDEF(uint16_t, engine_data_type_id_t);
+constexpr engine_data_type_id_t INVALID_ED_TYPE_ID = engine_data_type_id_t{(uint16_t)~0};
 
 #define ED_BASE_VALUE_TYPES int, int2, int3, int4, float, float2, float3, float4, string
 

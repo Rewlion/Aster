@@ -15,7 +15,7 @@ namespace ed
 {
   struct TypeConstructor
   {
-    engine_data_type_id_t typeId;
+    engine_data_type_id_t typeId = INVALID_ED_TYPE_ID;
     string typeName;
     std::unique_ptr<Scope> data;
   };
@@ -42,6 +42,8 @@ namespace ed
 
   class Scope
   {
+    friend class Parser;
+
   public:
     Scope() = default;
     Scope(Scope&&) = default;
