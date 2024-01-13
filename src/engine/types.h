@@ -17,6 +17,7 @@ using float3 = glm::vec3;
 using float4 = glm::vec4;
 using mat3 = glm::mat3;
 using mat4 = glm::mat4;
+using float3x3 = mat3;
 using float4x4 = mat4;
 using string = std::string;
 using wstring = std::wstring;

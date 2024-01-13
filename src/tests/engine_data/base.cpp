@@ -17,6 +17,9 @@ TEST(EngineData, Variable)
   EXPECT_TRUE(ed.addVariable("f3", "a7", float3(3,3,3)));
   EXPECT_TRUE(ed.addVariable("f4", "a8", float4(3,3,3,3)));
   EXPECT_TRUE(ed.addVariable("t", "a9", "text"));
+  EXPECT_TRUE(ed.addVariable("b",  "a10",  true));
+  EXPECT_TRUE(ed.addVariable("m3",  "a11",  float3x3{2.0}));
+  EXPECT_TRUE(ed.addVariable("m4",  "a12",  float4x4{3.0}));
 
   static_assert(std::is_same_v<int, decltype(ed.getVariable<int>("intvar"))>);
   
@@ -29,6 +32,9 @@ TEST(EngineData, Variable)
   EXPECT_EQ(ed.getVariable<float3>("f3"), float3(3,3,3));
   EXPECT_EQ(ed.getVariable<float4>("f4"), float4(3,3,3,3));
   EXPECT_EQ(ed.getVariable<string>("t"), string{"text"});
+  EXPECT_EQ(ed.getVariable<bool>("b"), true);
+  EXPECT_EQ(ed.getVariable<float3x3>("m3"), float3x3{2.0});
+  EXPECT_EQ(ed.getVariable<float4x4>("m4"), float4x4{3.0});
 }
 
 TEST(EngineData, VariableDefinition)
@@ -45,6 +51,92 @@ TEST(EngineData, VariableDefinition)
   EXPECT_EQ(std::get<int2>(var->value), int2(2,5));
 }
 
+TEST(EngineData, ValueTypes)
+{
+  std::shared_ptr<ed::CustomTypeRegistry> registry{new ed::CustomTypeRegistry};
+
+  struct TestObjNoData
+  {
+    TestObjNoData(){};
+    TestObjNoData(const ed::Scope* data)
+    {
+      EXPECT_EQ(data, nullptr);
+    }
+  };
+  registry->add<TestObjNoData>("TestObjNoData");
+
+  ed::Scope ed{registry};
+  EXPECT_TRUE(ed.addVariable<TestObjNoData>("a1", "asd", nullptr));
+  EXPECT_TRUE(ed.addVariable<bool>("b", "asd", true));
+  
+  EXPECT_TRUE(ed.addVariable<int>("i",   "asd", int{1}));
+  EXPECT_TRUE(ed.addVariable<int2>("i2", "asd", int2{1,1}));
+  EXPECT_TRUE(ed.addVariable<int3>("i3", "asd", int3{1,1,1}));
+  EXPECT_TRUE(ed.addVariable<int4>("i4", "asd", int4{1,1,1,1}));
+
+  EXPECT_TRUE(ed.addVariable<float>("f",   "asd", float{1}));
+  EXPECT_TRUE(ed.addVariable<float2>("f2", "asd", float2{1,1}));
+  EXPECT_TRUE(ed.addVariable<float3>("f3", "asd", float3{1,1,1}));
+  EXPECT_TRUE(ed.addVariable<float4>("f4", "asd", float4{1,1,1,1}));
+
+  EXPECT_TRUE(ed.addVariable<float3x3>("m3", "asd", float3x3{1}));
+  EXPECT_TRUE(ed.addVariable<float4x4>("m4", "asd", float4x4{1}));
+
+  EXPECT_TRUE(ed.addVariable<string>("text", "asd", string{""}));
+
+  const ed::Variable* a1 = ed.getVariableDefinition<TestObjNoData>("a1");
+  const ed::Variable* a2 = ed.getVariableDefinition<bool>("b");
+
+  const ed::Variable* i = ed.getVariableDefinition<int>("i");
+  const ed::Variable* i2 = ed.getVariableDefinition<int2>("i2");
+  const ed::Variable* i3 = ed.getVariableDefinition<int3>("i3");
+  const ed::Variable* i4 = ed.getVariableDefinition<int4>("i4");
+
+  const ed::Variable* f =  ed.getVariableDefinition<float>( "f");
+  const ed::Variable* f2 = ed.getVariableDefinition<float2>("f2");
+  const ed::Variable* f3 = ed.getVariableDefinition<float3>("f3");
+  const ed::Variable* f4 = ed.getVariableDefinition<float4>("f4");
+
+  const ed::Variable* m3 = ed.getVariableDefinition<float3x3>("m3");
+  const ed::Variable* m4 = ed.getVariableDefinition<float4x4>("m4");
+
+  const ed::Variable* t = ed.getVariableDefinition<string>("text");
+
+  EXPECT_TRUE(a1);
+  EXPECT_TRUE(a2);
+  EXPECT_TRUE(i);
+  EXPECT_TRUE(i2);
+  EXPECT_TRUE(i3);
+  EXPECT_TRUE(i4);
+  EXPECT_TRUE(f);
+  EXPECT_TRUE(f2);
+  EXPECT_TRUE(f3);
+  EXPECT_TRUE(f4);
+  EXPECT_TRUE(m3);
+  EXPECT_TRUE(m4);
+  EXPECT_TRUE(t);
+
+  if (a1 && a2 && i && i2 && i3 && i4 && f && f2 && f3 && f4 && m3 && m4 && t)
+  {
+    EXPECT_TRUE(a1->getValueType() == ed::ValueType::TypeConstructor);
+    EXPECT_TRUE(a2->getValueType() == ed::ValueType::Bool);
+    
+    EXPECT_TRUE(i->getValueType() == ed::ValueType::Int);
+    EXPECT_TRUE(i2->getValueType() == ed::ValueType::Int2);
+    EXPECT_TRUE(i3->getValueType() == ed::ValueType::Int3);
+    EXPECT_TRUE(i4->getValueType() == ed::ValueType::Int4);
+
+    EXPECT_TRUE(f->getValueType() == ed::ValueType::Float);
+    EXPECT_TRUE(f2->getValueType() == ed::ValueType::Float2);
+    EXPECT_TRUE(f3->getValueType() == ed::ValueType::Float3);
+    EXPECT_TRUE(f4->getValueType() == ed::ValueType::Float4);
+
+    EXPECT_TRUE(m3->getValueType() == ed::ValueType::Mat3);
+    EXPECT_TRUE(m4->getValueType() == ed::ValueType::Mat4);
+
+    EXPECT_TRUE(t->getValueType() == ed::ValueType::Text);
+  }
+}
 
 TEST(EngineData, ObjectVariable)
 {

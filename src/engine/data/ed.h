@@ -20,13 +20,6 @@ namespace ed
     std::unique_ptr<Scope> data;
   };
 
-  enum class ValueType : uint8_t
-  {
-    Int, Int2, Int3, Int4,
-    Float, Float2, Float3, Float4,
-    Text, TypeConstructor,
-  };
-
   using Value = std::variant<ED_BASE_VALUE_TYPES, TypeConstructor>;
   struct Variable
   {
