@@ -1,0 +1,6 @@
+scope1 {
+  v1:i = 200
+  scope2 {
+    v2:t = "asd"
+  }
+}

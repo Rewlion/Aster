@@ -9,23 +9,36 @@ namespace ed
   class Parser
   {
   public:
-    Parser(CustomTypeRegistry& reg)
+    Parser() = default;
+    Parser(std::shared_ptr<CustomTypeRegistry> reg)
       : m_CustomTypeRegistry(reg)
     {
     }
 
     Scope parseFile(string_view path, const bool accept_fails = false);
 
+    auto makeScope() -> std::shared_ptr<ed::Scope>
+    {
+      auto scope = std::make_shared<ed::Scope>();
+      scope->m_CustomTypesRegistry = m_CustomTypeRegistry;
+
+      return scope;
+    }
+
     auto buildTypeConstructor(string_view type_name, ed::Scope&& scope) -> TypeConstructor
     {
       TypeConstructor tc;
-      const CustomTypeRegistry::Entry* typeReg = m_CustomTypeRegistry.get(type_name);
 
-      if (typeReg)
+      if (m_CustomTypeRegistry)
       {
-        tc.typeId = typeReg->compileTypeId;
-        tc.typeName = type_name;
-        tc.data = std::unique_ptr<ed::Scope>(new ed::Scope{std::move(scope)});
+        const CustomTypeRegistry::Entry* typeReg = m_CustomTypeRegistry->get(type_name);
+
+        if (typeReg)
+        {
+          tc.typeId = typeReg->compileTypeId;
+          tc.typeName = type_name;
+          tc.data = std::unique_ptr<ed::Scope>(new ed::Scope{std::move(scope)});
+        }
       }
 
       return tc;
@@ -95,7 +108,7 @@ namespace ed
     };
 
   private:
-    CustomTypeRegistry& m_CustomTypeRegistry;
+    std::shared_ptr<CustomTypeRegistry> m_CustomTypeRegistry;
     bool m_ParsingFailed = false;
     Scope m_MainScope;
     eastl::vector<FileContext> m_FileCtxs;

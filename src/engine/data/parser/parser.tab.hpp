@@ -66,7 +66,7 @@ extern int eddebug;
   static
   auto scope_params_to_scope(ed::Parser& parser, ScopeParamArray& params) -> std::shared_ptr<ed::Scope>
   {
-    std::shared_ptr<ed::Scope> scope = std::make_shared<ed::Scope>();
+    std::shared_ptr<ed::Scope> scope = parser.makeScope();
     for (ScopeParam& param: params | std::views::reverse)
     {
       if (auto* nestedScope = std::get_if<std::shared_ptr<ed::Scope>>(&param))

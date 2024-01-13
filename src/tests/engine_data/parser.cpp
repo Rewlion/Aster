@@ -7,12 +7,14 @@
 
 TEST(EngineDataParser, Variable)
 {
-  ed::CustomTypeRegistry reg;
-  ed::Parser parser{reg};
+  ed::Parser parser{};
   ed::Scope ed = parser.parseFile("cases/engine_data/variables.ed", true);
 
   if (!parser.isParsingOk())
+  {
     FAIL() << parser.getErrors();
+    return;
+  }
 
   EXPECT_EQ(ed.getVariable<int> ("intvar"), 4);
   EXPECT_EQ(ed.getVariable<int2>("int2var"), int2(2,5));
@@ -29,17 +31,146 @@ TEST(EngineDataParser, Variable)
 
 TEST(EngineDataParser, VariableAnnotation)
 {
-  ed::CustomTypeRegistry reg;
-  ed::Parser parser{reg};
+  ed::Parser parser{};
   ed::Scope ed = parser.parseFile("cases/engine_data/annotated_var.ed", true);
   
   if (!parser.isParsingOk())
+  {
     FAIL() << parser.getErrors();
+    return;
+  }
 
   const ed::Variable* var = ed.getVariableDefinition<int>("var");
   EXPECT_NE(var, nullptr);
   if (var)
   {
+    EXPECT_EQ(var->name, string{"var"});
     EXPECT_EQ(var->annotation, string("annotation"));
   }
+}
+
+TEST(EngineDataParser, Scope)
+{
+  ed::Parser parser{};
+  ed::Scope ed = parser.parseFile("cases/engine_data/scope.ed", true);
+  
+  if (!parser.isParsingOk())
+  {
+    FAIL() << parser.getErrors();
+    return;
+  }
+
+  const ed::Scope& s1 = ed.getScope("scope1");
+  EXPECT_TRUE(!s1.isEmpty());
+
+  const ed::Scope& s2 = ed.getScope("scope1/scope2");
+  EXPECT_TRUE(!s2.isEmpty());
+
+  const ed::Scope& s12 = s1.getScope("scope2");
+  EXPECT_TRUE(!s12.isEmpty());
+
+  EXPECT_EQ(s1.getVariable<int>("v1"), 200);
+  EXPECT_EQ(s2.getVariable<string>("v2"), string{"asd"});
+}
+
+TEST(EngineDataParser, ScopeAnnotation)
+{
+  ed::Parser parser{};
+  ed::Scope ed = parser.parseFile("cases/engine_data/annotated_scope.ed", true);
+
+  if (!parser.isParsingOk())
+  {
+    FAIL() << parser.getErrors();
+    return;
+  }
+
+  EXPECT_EQ(ed.getScope("s").getAnnotation(), string{"annotation?"});
+}
+
+TEST(EngineDataParser, CustomType)
+{
+  auto reg = std::make_shared<ed::CustomTypeRegistry>();
+
+  struct FooType
+  {
+    FooType(){};
+    FooType(const ed::Scope* data)
+    {
+      if (data)
+      {
+        health = data->getVariable<int>("health");
+        mana = data->getVariable<int>("mana");
+      }
+    }
+
+    int health = 0;
+    int mana = 0;
+  };
+  reg->add<FooType>("FooType");
+
+  ed::Parser parser{reg};
+  ed::Scope ed = parser.parseFile("cases/engine_data/custom_type.ed", true);
+
+  if (!parser.isParsingOk())
+  {
+    FAIL() << parser.getErrors();
+    return;
+  }
+
+  FooType var = ed.getVariable<FooType>("ctvar");
+  EXPECT_EQ(var.health, 200);
+  EXPECT_EQ(var.mana, 10);
+}
+
+TEST(EngineDataParser, CustomTypeNested)
+{
+  auto reg = std::make_shared<ed::CustomTypeRegistry>();
+
+  struct SpeedComponent
+  {
+    SpeedComponent(){};
+    SpeedComponent(const ed::Scope* data)
+    {
+      if (data)
+      {
+        velocity = data->getVariable<float>("velocity");
+      }
+    }
+
+    float velocity = 0;
+  };
+  reg->add<SpeedComponent>("SpeedComponent");
+
+  struct FooType
+  {
+    FooType(){};
+    FooType(const ed::Scope* data)
+    {
+      if (data)
+      {
+        health = data->getVariable<int>("health");
+        mana = data->getVariable<int>("mana");
+        speed = data->getVariable<SpeedComponent>("speed");
+      }
+    }
+
+    int health = 0;
+    int mana = 0;
+    SpeedComponent speed;
+  };
+  reg->add<FooType>("FooType");
+
+  ed::Parser parser{reg};
+  ed::Scope ed = parser.parseFile("cases/engine_data/custom_type_nested.ed", true);
+
+  if (!parser.isParsingOk())
+  {
+    FAIL() << parser.getErrors();
+    return;
+  }
+
+  FooType var = ed.getVariable<FooType>("ctvar");
+  EXPECT_EQ(var.health, 200);
+  EXPECT_EQ(var.mana, 10);
+  EXPECT_EQ(var.speed.velocity, 200.0f);
 }

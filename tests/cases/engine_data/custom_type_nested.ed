@@ -1,0 +1,7 @@
+ctvar : FooType = {
+  health:i = 200
+  mana:i = 10
+  speed: SpeedComponent = {
+    velocity:f = 200.0
+  }
+}
