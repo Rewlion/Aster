@@ -174,3 +174,19 @@ TEST(EngineDataParser, CustomTypeNested)
   EXPECT_EQ(var.mana, 10);
   EXPECT_EQ(var.speed.velocity, 200.0f);
 }
+
+TEST(EngineDataParser, Include)
+{
+  ed::Parser parser{};
+  ed::Scope ed = parser.parseFile("cases/engine_data/include.ed", true);
+  
+  if (!parser.isParsingOk())
+  {
+    FAIL() << parser.getErrors();
+    return;
+  }
+
+  EXPECT_EQ(ed.getVariable<int>("v"), 1);
+  EXPECT_EQ(ed.getVariable<int>("test"), 250);
+  EXPECT_EQ(ed.getVariable<int>("test2"), 252);
+}
