@@ -20,6 +20,9 @@ TEST(EngineData, Variable)
   EXPECT_TRUE(ed.addVariable("b",  "a10",  true));
   EXPECT_TRUE(ed.addVariable("m3",  "a11",  float3x3{2.0}));
   EXPECT_TRUE(ed.addVariable("m4",  "a12",  float4x4{3.0}));
+  EXPECT_TRUE(ed.addVariable("ivec",  "a13",  ed::IntArray{1,2,3}));
+  EXPECT_TRUE(ed.addVariable("fvec",  "a14",  ed::FloatArray{1.0f, 2.0f, 3.0f}));
+  EXPECT_TRUE(ed.addVariable("tvec",  "a15",  ed::TextArray{"1", "2", "3"}));
 
   static_assert(std::is_same_v<int, decltype(ed.getVariable<int>("intvar"))>);
   
@@ -35,6 +38,10 @@ TEST(EngineData, Variable)
   EXPECT_EQ(ed.getVariable<bool>("b"), true);
   EXPECT_EQ(ed.getVariable<float3x3>("m3"), float3x3{2.0});
   EXPECT_EQ(ed.getVariable<float4x4>("m4"), float4x4{3.0});
+  EXPECT_EQ(ed.getVariable<ed::IntArray>("ivec"), (ed::IntArray{1,2,3}));
+  EXPECT_EQ(ed.getVariable<ed::FloatArray>("fvec"), (ed::FloatArray{1.0f, 2.0f, 3.0f}));
+  EXPECT_EQ(ed.getVariable<ed::TextArray>("tvec"), (ed::TextArray{"1", "2", "3"}));
+
 }
 
 TEST(EngineData, VariableDefinition)
@@ -84,6 +91,10 @@ TEST(EngineData, ValueTypes)
 
   EXPECT_TRUE(ed.addVariable<string>("text", "asd", string{""}));
 
+  EXPECT_TRUE(ed.addVariable("ivec",  "a13",  ed::IntArray{1,2,3}));
+  EXPECT_TRUE(ed.addVariable("fvec",  "a14",  ed::FloatArray{1.0f, 2.0f, 3.0f}));
+  EXPECT_TRUE(ed.addVariable("tvec",  "a15",  ed::TextArray{"1", "2", "3"}));
+
   const ed::Variable* a1 = ed.getVariableDefinition<TestObjNoData>("a1");
   const ed::Variable* a2 = ed.getVariableDefinition<bool>("b");
 
@@ -102,6 +113,10 @@ TEST(EngineData, ValueTypes)
 
   const ed::Variable* t = ed.getVariableDefinition<string>("text");
 
+  const ed::Variable* iarr = ed.getVariableDefinition<ed::IntArray>("ivec");
+  const ed::Variable* farr = ed.getVariableDefinition<ed::FloatArray>("fvec");
+  const ed::Variable* tarr = ed.getVariableDefinition<ed::TextArray>("tvec");
+
   EXPECT_TRUE(a1);
   EXPECT_TRUE(a2);
   EXPECT_TRUE(i);
@@ -115,8 +130,11 @@ TEST(EngineData, ValueTypes)
   EXPECT_TRUE(m3);
   EXPECT_TRUE(m4);
   EXPECT_TRUE(t);
+  EXPECT_TRUE(iarr);
+  EXPECT_TRUE(farr);
+  EXPECT_TRUE(tarr);
 
-  if (a1 && a2 && i && i2 && i3 && i4 && f && f2 && f3 && f4 && m3 && m4 && t)
+  if (a1 && a2 && i && i2 && i3 && i4 && f && f2 && f3 && f4 && m3 && m4 && t && iarr && farr && tarr)
   {
     EXPECT_TRUE(a1->getValueType() == ed::ValueType::TypeConstructor);
     EXPECT_TRUE(a2->getValueType() == ed::ValueType::Bool);
@@ -135,6 +153,10 @@ TEST(EngineData, ValueTypes)
     EXPECT_TRUE(m4->getValueType() == ed::ValueType::Mat4);
 
     EXPECT_TRUE(t->getValueType() == ed::ValueType::Text);
+
+    EXPECT_TRUE(iarr->getValueType() == ed::ValueType::IntArray);
+    EXPECT_TRUE(farr->getValueType() == ed::ValueType::FloatArray);
+    EXPECT_TRUE(tarr->getValueType() == ed::ValueType::TextArray);
   }
 }
 
