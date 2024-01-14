@@ -1,3 +1,10 @@
+b1var:b = true
+b2var:b = false
+b3var:b = yes
+b4var:b = no
+b5var:b = on
+b6var:b = off
+
 intvar:i=4
 int2var:i2= 2, 5
 int3var:i3 = 6,6,6

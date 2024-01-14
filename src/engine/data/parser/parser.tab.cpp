@@ -530,8 +530,8 @@ static const yytype_int8 yytranslate[] =
 static const yytype_int16 yyrline[] =
 {
        0,   182,   182,   190,   194,   202,   205,   211,   217,   225,
-     229,   235,   240,   246,   301,   307,   308,   312,   313,   314,
-     315,   316,   317,   318,   322,   332,   341,   349,   350
+     229,   235,   240,   246,   302,   308,   309,   313,   314,   315,
+     316,   317,   318,   319,   323,   333,   342,   350,   351
 };
 #endif
 
@@ -1568,7 +1568,8 @@ yyreduce:
       #define NEXT else
       #define AS_IS(var) var
 
-           CASE("i",  Number,  number_to_int)
+           CASE("b",  bool,    AS_IS)
+      NEXT CASE("i",  Number,  number_to_int)
       NEXT CASE("i2", Number2, number2_to_int2)
       NEXT CASE("i3", Number3, number3_to_int3)
       NEXT CASE("i4", Number4, number4_to_int4)
@@ -1576,7 +1577,7 @@ yyreduce:
       NEXT CASE("f2", Number2, number2_to_float2)
       NEXT CASE("f3", Number3, number3_to_float3)
       NEXT CASE("f4", Number4, number4_to_float4)
-      NEXT CASE("t", string, AS_IS)
+      NEXT CASE("t",  string,  AS_IS)
       NEXT {
         if (auto* scope = std::get_if<std::shared_ptr<ed::Scope>>(&yyvsp[0]))
         {
@@ -1601,73 +1602,73 @@ yyreduce:
     #undef NEXT
     #undef CASE
   }
-#line 1605 "src/engine/data/parser/parser.tab.cpp"
+#line 1606 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 14: /* ANNOTATION: "@" "(" TEXT_VAL ")"  */
-#line 301 "src/engine/data/parser/parser.y"
+#line 302 "src/engine/data/parser/parser.y"
                             {
     yyval = std::move(yyvsp[-1]);
   }
-#line 1613 "src/engine/data/parser/parser.tab.cpp"
+#line 1614 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 15: /* PARAM_NAME: NAME_VAL  */
-#line 307 "src/engine/data/parser/parser.y"
+#line 308 "src/engine/data/parser/parser.y"
                    { yyval = std::move(yyvsp[0]); }
-#line 1619 "src/engine/data/parser/parser.tab.cpp"
+#line 1620 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 16: /* PARAM_NAME: TEXT_VAL  */
-#line 308 "src/engine/data/parser/parser.y"
+#line 309 "src/engine/data/parser/parser.y"
                    { yyval = std::move(yyvsp[0]); }
-#line 1625 "src/engine/data/parser/parser.tab.cpp"
+#line 1626 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 17: /* VALUE: TEXT_VAL  */
-#line 312 "src/engine/data/parser/parser.y"
+#line 313 "src/engine/data/parser/parser.y"
                      { yyval = yyvsp[0]; }
-#line 1631 "src/engine/data/parser/parser.tab.cpp"
+#line 1632 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 18: /* VALUE: BOOL_VAL  */
-#line 313 "src/engine/data/parser/parser.y"
+#line 314 "src/engine/data/parser/parser.y"
                      { yyval = yyvsp[0]; }
-#line 1637 "src/engine/data/parser/parser.tab.cpp"
+#line 1638 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 19: /* VALUE: NUMBER_VALUE  */
-#line 314 "src/engine/data/parser/parser.y"
+#line 315 "src/engine/data/parser/parser.y"
                      { yyval = yyvsp[0]; }
-#line 1643 "src/engine/data/parser/parser.tab.cpp"
+#line 1644 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 20: /* VALUE: NUMBER2_VALUE  */
-#line 315 "src/engine/data/parser/parser.y"
+#line 316 "src/engine/data/parser/parser.y"
                      { yyval = yyvsp[0]; }
-#line 1649 "src/engine/data/parser/parser.tab.cpp"
+#line 1650 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 21: /* VALUE: NUMBER3_VALUE  */
-#line 316 "src/engine/data/parser/parser.y"
+#line 317 "src/engine/data/parser/parser.y"
                      { yyval = yyvsp[0]; }
-#line 1655 "src/engine/data/parser/parser.tab.cpp"
+#line 1656 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 22: /* VALUE: NUMBER4_VALUE  */
-#line 317 "src/engine/data/parser/parser.y"
+#line 318 "src/engine/data/parser/parser.y"
                      { yyval = yyvsp[0]; }
-#line 1661 "src/engine/data/parser/parser.tab.cpp"
+#line 1662 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 23: /* VALUE: SCOPE_BODY  */
-#line 318 "src/engine/data/parser/parser.y"
+#line 319 "src/engine/data/parser/parser.y"
                      { yyval = yyvsp[0]; }
-#line 1667 "src/engine/data/parser/parser.tab.cpp"
+#line 1668 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 24: /* NUMBER4_VALUE: NUMBER_VALUE "," NUMBER_VALUE "," NUMBER_VALUE "," NUMBER_VALUE  */
-#line 322 "src/engine/data/parser/parser.y"
+#line 323 "src/engine/data/parser/parser.y"
                                                                                     {
     yyval = Number4{
       std::get<Number>(yyvsp[-6]),
@@ -1675,44 +1676,44 @@ yyreduce:
       std::get<Number>(yyvsp[-2]),
       std::get<Number>(yyvsp[0])};
   }
-#line 1679 "src/engine/data/parser/parser.tab.cpp"
+#line 1680 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 25: /* NUMBER3_VALUE: NUMBER_VALUE "," NUMBER_VALUE "," NUMBER_VALUE  */
-#line 332 "src/engine/data/parser/parser.y"
+#line 333 "src/engine/data/parser/parser.y"
                                                                {
     yyval = Number3{
       std::get<Number>(yyvsp[-4]),
       std::get<Number>(yyvsp[-2]),
       std::get<Number>(yyvsp[0])};
   }
-#line 1690 "src/engine/data/parser/parser.tab.cpp"
+#line 1691 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 26: /* NUMBER2_VALUE: NUMBER_VALUE "," NUMBER_VALUE  */
-#line 341 "src/engine/data/parser/parser.y"
+#line 342 "src/engine/data/parser/parser.y"
                                          {
     yyval = Number2{
       std::get<Number>(yyvsp[-2]),
       std::get<Number>(yyvsp[0])};
   }
-#line 1700 "src/engine/data/parser/parser.tab.cpp"
+#line 1701 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 27: /* NUMBER_VALUE: FLOAT_VAL  */
-#line 349 "src/engine/data/parser/parser.y"
+#line 350 "src/engine/data/parser/parser.y"
                  { yyval = yyvsp[0]; }
-#line 1706 "src/engine/data/parser/parser.tab.cpp"
+#line 1707 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 28: /* NUMBER_VALUE: INT_VAL  */
-#line 350 "src/engine/data/parser/parser.y"
+#line 351 "src/engine/data/parser/parser.y"
                  { yyval = yyvsp[0]; }
-#line 1712 "src/engine/data/parser/parser.tab.cpp"
+#line 1713 "src/engine/data/parser/parser.tab.cpp"
     break;
 
 
-#line 1716 "src/engine/data/parser/parser.tab.cpp"
+#line 1717 "src/engine/data/parser/parser.tab.cpp"
 
       default: break;
     }
@@ -1942,7 +1943,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 352 "src/engine/data/parser/parser.y"
+#line 353 "src/engine/data/parser/parser.y"
 
 
 void ederror(ed::Parser& parser, const char* msg) {

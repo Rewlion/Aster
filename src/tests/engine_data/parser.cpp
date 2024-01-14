@@ -16,6 +16,13 @@ TEST(EngineDataParser, Variable)
     return;
   }
 
+  EXPECT_EQ(ed.getVariable<bool>("b1var"), true);
+  EXPECT_EQ(ed.getVariable<bool>("b2var"), false);
+  EXPECT_EQ(ed.getVariable<bool>("b3var"), true);
+  EXPECT_EQ(ed.getVariable<bool>("b4var"), false);
+  EXPECT_EQ(ed.getVariable<bool>("b5var"), true);
+  EXPECT_EQ(ed.getVariable<bool>("b6var"), false);
+
   EXPECT_EQ(ed.getVariable<int> ("intvar"), 4);
   EXPECT_EQ(ed.getVariable<int2>("int2var"), int2(2,5));
   EXPECT_EQ(ed.getVariable<int3>("int3var"), int3(6,6,6));

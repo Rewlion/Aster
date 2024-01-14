@@ -263,7 +263,8 @@ VARIABLE
       #define NEXT else
       #define AS_IS(var) var
 
-           CASE("i",  Number,  number_to_int)
+           CASE("b",  bool,    AS_IS)
+      NEXT CASE("i",  Number,  number_to_int)
       NEXT CASE("i2", Number2, number2_to_int2)
       NEXT CASE("i3", Number3, number3_to_int3)
       NEXT CASE("i4", Number4, number4_to_int4)
@@ -271,7 +272,7 @@ VARIABLE
       NEXT CASE("f2", Number2, number2_to_float2)
       NEXT CASE("f3", Number3, number3_to_float3)
       NEXT CASE("f4", Number4, number4_to_float4)
-      NEXT CASE("t", string, AS_IS)
+      NEXT CASE("t",  string,  AS_IS)
       NEXT {
         if (auto* scope = std::get_if<std::shared_ptr<ed::Scope>>(&$value))
         {
