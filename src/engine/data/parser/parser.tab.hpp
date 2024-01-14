@@ -97,8 +97,9 @@ extern int eddebug;
   #define EDSTYPE std::variant<                                   \
     bool, string,                                                 \
     Number, Number2, Number3, Number4,                            \
+    float3x3, float4x4,                                           \
     std::shared_ptr<ed::Scope>, std::shared_ptr<ed::Variable>,    \
-    ScopeParam, std::shared_ptr<ScopeParamArray> \
+    ScopeParam, std::shared_ptr<ScopeParamArray>                  \
   >
 
   static
@@ -187,7 +188,7 @@ extern int eddebug;
     };
   }
 
-#line 191 "src/engine/data/parser/parser.tab.hpp"
+#line 192 "src/engine/data/parser/parser.tab.hpp"
 
 /* Token kinds.  */
 #ifndef EDTOKENTYPE

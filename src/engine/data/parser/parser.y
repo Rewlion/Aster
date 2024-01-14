@@ -60,8 +60,9 @@
   #define EDSTYPE std::variant<                                   \
     bool, string,                                                 \
     Number, Number2, Number3, Number4,                            \
+    float3x3, float4x4,                                           \
     std::shared_ptr<ed::Scope>, std::shared_ptr<ed::Variable>,    \
-    ScopeParam, std::shared_ptr<ScopeParamArray> \
+    ScopeParam, std::shared_ptr<ScopeParamArray>                  \
   >
 
   static
@@ -263,16 +264,18 @@ VARIABLE
       #define NEXT else
       #define AS_IS(var) var
 
-           CASE("b",  bool,    AS_IS)
-      NEXT CASE("i",  Number,  number_to_int)
-      NEXT CASE("i2", Number2, number2_to_int2)
-      NEXT CASE("i3", Number3, number3_to_int3)
-      NEXT CASE("i4", Number4, number4_to_int4)
-      NEXT CASE("f",  Number,  number_to_float)
-      NEXT CASE("f2", Number2, number2_to_float2)
-      NEXT CASE("f3", Number3, number3_to_float3)
-      NEXT CASE("f4", Number4, number4_to_float4)
-      NEXT CASE("t",  string,  AS_IS)
+           CASE("b",  bool,     AS_IS)
+      NEXT CASE("i",  Number,   number_to_int)
+      NEXT CASE("i2", Number2,  number2_to_int2)
+      NEXT CASE("i3", Number3,  number3_to_int3)
+      NEXT CASE("i4", Number4,  number4_to_int4)
+      NEXT CASE("f",  Number,   number_to_float)
+      NEXT CASE("f2", Number2,  number2_to_float2)
+      NEXT CASE("f3", Number3,  number3_to_float3)
+      NEXT CASE("f4", Number4,  number4_to_float4)
+      NEXT CASE("m3", float3x3, AS_IS)
+      NEXT CASE("m4", float4x4, AS_IS)
+      NEXT CASE("t",  string,   AS_IS)
       NEXT {
         if (auto* scope = std::get_if<std::shared_ptr<ed::Scope>>(&$value))
         {
@@ -316,7 +319,52 @@ VALUE
   | NUMBER2_VALUE[v] { $$ = $v; }
   | NUMBER3_VALUE[v] { $$ = $v; }
   | NUMBER4_VALUE[v] { $$ = $v; }
+  | MAT3_VALUE[v]    { $$ = $v; }
+  | MAT4_VALUE[v]    { $$ = $v; }
   | SCOPE_BODY[v]    { $$ = $v; }
+  ;
+
+MAT4_VALUE
+  : "[" ROW4_VALUE[r1] "," ROW4_VALUE[r2] "," ROW4_VALUE[r3] "," ROW4_VALUE[r4] "]" {
+    float4 rows[4];
+    rows[0] = number4_to_float4(std::get<Number4>($r1));
+    rows[1] = number4_to_float4(std::get<Number4>($r2));
+    rows[2] = number4_to_float4(std::get<Number4>($r3));
+    rows[3] = number4_to_float4(std::get<Number4>($r4));
+
+    float4 columns[4];
+    for (int i = 0; i < 4; ++i)
+      for (int j = 0; j < 4; ++j)
+        columns[i][j] = rows[j][i];
+
+    $$ = float4x4{columns[0], columns[1], columns[2], columns[3]};
+  }
+
+MAT3_VALUE
+  : "[" ROW3_VALUE[r1] "," ROW3_VALUE[r2] "," ROW3_VALUE[r3] "]" {
+    float3 rows[4];
+    rows[0] = number3_to_float3(std::get<Number3>($r1));
+    rows[1] = number3_to_float3(std::get<Number3>($r2));
+    rows[2] = number3_to_float3(std::get<Number3>($r3));
+
+    float3 columns[3];
+    for (int i = 0; i < 3; ++i)
+      for (int j = 0; j < 3; ++j)
+        columns[i][j] = rows[j][i];
+
+    $$ = float3x3{columns[0], columns[1], columns[2]};
+  }
+
+ROW4_VALUE
+  : "[" NUMBER4_VALUE[v] "]" {
+    $$ = $v;
+  }
+  ;
+
+ROW3_VALUE
+  : "[" NUMBER3_VALUE[v] "]" {
+    $$ = $v;
+  }
   ;
 
 NUMBER4_VALUE

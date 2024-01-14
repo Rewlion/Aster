@@ -33,6 +33,9 @@ TEST(EngineDataParser, Variable)
   EXPECT_EQ(ed.getVariable<float3>("float3var"), float3(6.0f,6.0f,6.0f));
   EXPECT_EQ(ed.getVariable<float4>("float4var"), float4(1.0f,2.0f,3.0f,4.0f));
 
+  EXPECT_EQ(ed.getVariable<float3x3>("m3var"), float3x3{2.0});
+  EXPECT_EQ(ed.getVariable<float4x4>("m4var"), float4x4{2.0});
+
   EXPECT_EQ(ed.getVariable<string>("textvar"), string("kek"));
 }
 
