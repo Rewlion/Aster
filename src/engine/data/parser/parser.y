@@ -57,13 +57,29 @@
     Number v0, v1, v2, v3;
   };
 
-  #define EDSTYPE std::variant<                                   \
-    bool, string,                                                 \
-    Number, Number2, Number3, Number4,                            \
-    float3x3, float4x4,                                           \
-    std::shared_ptr<ed::Scope>, std::shared_ptr<ed::Variable>,    \
-    ScopeParam, std::shared_ptr<ScopeParamArray>                  \
+  #define EDSTYPE std::variant<                                                                    \
+    bool, string,                                                                                  \
+    Number, Number2, Number3, Number4,                                                             \
+    float3x3, float4x4,                                                                            \
+    std::shared_ptr<ed::IntArray>, std::shared_ptr<ed::FloatArray>, std::shared_ptr<ed::TextArray>,\
+    std::shared_ptr<eastl::vector<Number>>                                        ,                \
+    std::shared_ptr<ed::Scope>, std::shared_ptr<ed::Variable>,                                     \
+    ScopeParam, std::shared_ptr<ScopeParamArray>                                                   \
   >
+
+  template<class T>
+  static
+  auto number_to(const EDSTYPE& edstype) -> T
+  {
+    const Number& n = std::get<Number>(edstype);
+    if (auto* fl = std::get_if<T>(&n))
+      return *fl;
+    else
+    {
+      using FromType = typename std::conditional<std::is_same_v<T,int>, float, int>::type;
+      return static_cast<T>(std::get<FromType>(n));
+    }
+  }
 
   static
   auto number_to_float(const EDSTYPE& edstype) -> float
@@ -150,6 +166,32 @@
       number_to_int(n.v3)
     };
   }
+
+  template<class T>
+  static
+  auto number_array_to_T_array(const EDSTYPE& edstype) -> eastl::vector<T>
+  {
+    const auto& from = std::get<std::shared_ptr<eastl::vector<Number>>>(edstype);
+    eastl::vector<T> to;
+
+    to.reserve(from->size());
+    for (const Number& n: *from)
+      to.push_back(number_to<T>(n));
+
+    return to;
+  }
+
+  static
+  auto number_array_to_int_array(const EDSTYPE& edstype) -> ed::IntArray
+  {
+    return number_array_to_T_array<int>(edstype);
+  }
+
+  static
+  auto number_array_to_float_array(const EDSTYPE& edstype) -> ed::FloatArray
+  {
+    return number_array_to_T_array<float>(edstype);
+  }
 }
 
 %locations
@@ -167,7 +209,6 @@
 %token NAME_VAL
 %token AT "@"
 %token COLON ":"
-%token SEMICOLON ";"
 %token EQUAL_OP "="
 %token LEFT_PARENTHESIS "("
 %token RIGHT_PARENTHESIS ")"
@@ -253,29 +294,30 @@ VARIABLE
 
     try
     {
-      #define CASE(textType, valueType, getter)             \
+      #define CASE_VAR(textType, valueType, getter)             \
         if (type == textType)                               \
         {                                                   \
           if (auto* value = std::get_if<valueType>(&$value))\
-            var->value = getter(*value);                     \
+            var->value = getter(*value);                    \
           else                                              \
-            throw std::runtime_error("invalid value type");                     \
+            throw std::runtime_error("invalid value type"); \
         }
       #define NEXT else
       #define AS_IS(var) var
+      #define AS_IS_UNREF(var) *var
 
-           CASE("b",  bool,     AS_IS)
-      NEXT CASE("i",  Number,   number_to_int)
-      NEXT CASE("i2", Number2,  number2_to_int2)
-      NEXT CASE("i3", Number3,  number3_to_int3)
-      NEXT CASE("i4", Number4,  number4_to_int4)
-      NEXT CASE("f",  Number,   number_to_float)
-      NEXT CASE("f2", Number2,  number2_to_float2)
-      NEXT CASE("f3", Number3,  number3_to_float3)
-      NEXT CASE("f4", Number4,  number4_to_float4)
-      NEXT CASE("m3", float3x3, AS_IS)
-      NEXT CASE("m4", float4x4, AS_IS)
-      NEXT CASE("t",  string,   AS_IS)
+           CASE_VAR("b",  bool,     AS_IS)
+      NEXT CASE_VAR("i",  Number,   number_to_int)
+      NEXT CASE_VAR("i2", Number2,  number2_to_int2)
+      NEXT CASE_VAR("i3", Number3,  number3_to_int3)
+      NEXT CASE_VAR("i4", Number4,  number4_to_int4)
+      NEXT CASE_VAR("f",  Number,   number_to_float)
+      NEXT CASE_VAR("f2", Number2,  number2_to_float2)
+      NEXT CASE_VAR("f3", Number3,  number3_to_float3)
+      NEXT CASE_VAR("f4", Number4,  number4_to_float4)
+      NEXT CASE_VAR("m3", float3x3, AS_IS)
+      NEXT CASE_VAR("m4", float4x4, AS_IS)
+      NEXT CASE_VAR("t",  string,   AS_IS)
       NEXT {
         if (auto* scope = std::get_if<std::shared_ptr<ed::Scope>>(&$value))
         {
@@ -295,11 +337,35 @@ VARIABLE
     }
 
     $$ = var;
+  }
+  | PARAM_NAME[name] ":" NAME_VAL[ntype] "[""]" "=" VALUE[value] {
+    const auto& type = std::get<string>($ntype);
 
+    std::shared_ptr<ed::Variable> var{new ed::Variable};
+    var->name = std::move(std::get<string>($name));
+    var->annotation = "";
+    try
+    {
+           CASE_VAR("i", std::shared_ptr<eastl::vector<Number>>, number_array_to_int_array)
+      NEXT CASE_VAR("f", std::shared_ptr<eastl::vector<Number>>, number_array_to_float_array)
+      NEXT CASE_VAR("t", std::shared_ptr<eastl::vector<string>>, AS_IS_UNREF)
+      NEXT {
+        throw std::runtime_error(string{"unknown array type"});
+      }
+    }
+    catch(const std::runtime_error& e)
+    {
+      ederror(parser, fmt::format(" error in {}:{}, {} ", var->name, type, e.what()).c_str());
+    }
+
+    $$ = var;
+
+    #undef AS_IS_UNREF
     #undef AS_IS
     #undef NEXT
-    #undef CASE
+    #undef CASE_VAR
   }
+  ;
 
 ANNOTATION
   : "@" "(" TEXT_VAL[a] ")" {
@@ -313,15 +379,16 @@ PARAM_NAME
   ;
 
 VALUE
-  : TEXT_VAL[v]      { $$ = $v; }
-  | BOOL_VAL[v]      { $$ = $v; }
-  | NUMBER_VALUE[v]  { $$ = $v; }
-  | NUMBER2_VALUE[v] { $$ = $v; }
-  | NUMBER3_VALUE[v] { $$ = $v; }
-  | NUMBER4_VALUE[v] { $$ = $v; }
-  | MAT3_VALUE[v]    { $$ = $v; }
-  | MAT4_VALUE[v]    { $$ = $v; }
-  | SCOPE_BODY[v]    { $$ = $v; }
+  : TEXT_VAL[v]       { $$ = $v; }
+  | BOOL_VAL[v]       { $$ = $v; }
+  | NUMBER_VALUE[v]   { $$ = $v; }
+  | NUMBER2_VALUE[v]  { $$ = $v; }
+  | NUMBER3_VALUE[v]  { $$ = $v; }
+  | NUMBER4_VALUE[v]  { $$ = $v; }
+  | MAT4_VALUE[v]     { $$ = $v; }
+  | MAT3_VALUE[v]     { $$ = $v; }
+  | ARRAY_VALUE[v]    { $$ = $v; }
+  | SCOPE_BODY[v]     { $$ = $v; }
   ;
 
 MAT4_VALUE
@@ -398,6 +465,41 @@ NUMBER_VALUE
   : FLOAT_VAL[v] { $$ = $v; }
   | INT_VAL[v]   { $$ = $v; }
   ;
+
+ARRAY_VALUE
+  : "[" NUMBER_LIST[l] "]" {
+    $$ = $l;
+  }
+  | "[" TEXT_LIST[l] "]" {
+    $$ = $l;
+  }
+  ;
+
+NUMBER_LIST
+ : NUMBER_VALUE[n] "," NUMBER_LIST[list] {
+  auto& l = std::get<std::shared_ptr<eastl::vector<Number>>>($list);
+  l->push_back(std::get<Number>($n));
+  $$ = l;
+ }
+ | NUMBER_VALUE[n] {
+  auto l = std::make_shared<eastl::vector<Number>>();
+  l->push_back(std::get<Number>($n));
+  $$ = l;
+ }
+ ;
+
+TEXT_LIST
+ : TEXT_VAL[t] "," TEXT_LIST[list] {
+  auto& l = std::get<std::shared_ptr<eastl::vector<string>>>($list);
+  l->push_back(std::move(std::get<string>($t)));
+  $$ = l;
+ }
+ | TEXT_VAL[t] {
+  auto l = std::make_shared<eastl::vector<string>>();
+  l->push_back(std::move(std::get<string>($t)));
+  $$ = l;
+ }
+ ;
 %%
 
 void ederror(ed::Parser& parser, const char* msg) {

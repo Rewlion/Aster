@@ -133,34 +133,36 @@ enum yysymbol_kind_t
   YYSYMBOL_NAME_VAL = 7,                   /* NAME_VAL  */
   YYSYMBOL_AT = 8,                         /* "@"  */
   YYSYMBOL_COLON = 9,                      /* ":"  */
-  YYSYMBOL_SEMICOLON = 10,                 /* ";"  */
-  YYSYMBOL_EQUAL_OP = 11,                  /* "="  */
-  YYSYMBOL_LEFT_PARENTHESIS = 12,          /* "("  */
-  YYSYMBOL_RIGHT_PARENTHESIS = 13,         /* ")"  */
-  YYSYMBOL_LEFT_BRACKET = 14,              /* "{"  */
-  YYSYMBOL_RIGHT_BRACKET = 15,             /* "}"  */
-  YYSYMBOL_LEFT_SQUARE_BRACKET = 16,       /* "["  */
-  YYSYMBOL_RIGHT_SQUARE_BRACKET = 17,      /* "]"  */
-  YYSYMBOL_COMMA = 18,                     /* ","  */
-  YYSYMBOL_YYACCEPT = 19,                  /* $accept  */
-  YYSYMBOL_ENGINE_DATA = 20,               /* ENGINE_DATA  */
-  YYSYMBOL_PARAM_LIST = 21,                /* PARAM_LIST  */
-  YYSYMBOL_ANNOTATED_PARAM = 22,           /* ANNOTATED_PARAM  */
-  YYSYMBOL_ANNOTATED_SCOPE = 23,           /* ANNOTATED_SCOPE  */
-  YYSYMBOL_SCOPE_BODY = 24,                /* SCOPE_BODY  */
-  YYSYMBOL_ANNOTATED_VARIABLE = 25,        /* ANNOTATED_VARIABLE  */
-  YYSYMBOL_VARIABLE = 26,                  /* VARIABLE  */
-  YYSYMBOL_ANNOTATION = 27,                /* ANNOTATION  */
-  YYSYMBOL_PARAM_NAME = 28,                /* PARAM_NAME  */
-  YYSYMBOL_VALUE = 29,                     /* VALUE  */
-  YYSYMBOL_MAT4_VALUE = 30,                /* MAT4_VALUE  */
-  YYSYMBOL_MAT3_VALUE = 31,                /* MAT3_VALUE  */
-  YYSYMBOL_ROW4_VALUE = 32,                /* ROW4_VALUE  */
-  YYSYMBOL_ROW3_VALUE = 33,                /* ROW3_VALUE  */
-  YYSYMBOL_NUMBER4_VALUE = 34,             /* NUMBER4_VALUE  */
-  YYSYMBOL_NUMBER3_VALUE = 35,             /* NUMBER3_VALUE  */
-  YYSYMBOL_NUMBER2_VALUE = 36,             /* NUMBER2_VALUE  */
-  YYSYMBOL_NUMBER_VALUE = 37               /* NUMBER_VALUE  */
+  YYSYMBOL_EQUAL_OP = 10,                  /* "="  */
+  YYSYMBOL_LEFT_PARENTHESIS = 11,          /* "("  */
+  YYSYMBOL_RIGHT_PARENTHESIS = 12,         /* ")"  */
+  YYSYMBOL_LEFT_BRACKET = 13,              /* "{"  */
+  YYSYMBOL_RIGHT_BRACKET = 14,             /* "}"  */
+  YYSYMBOL_LEFT_SQUARE_BRACKET = 15,       /* "["  */
+  YYSYMBOL_RIGHT_SQUARE_BRACKET = 16,      /* "]"  */
+  YYSYMBOL_COMMA = 17,                     /* ","  */
+  YYSYMBOL_YYACCEPT = 18,                  /* $accept  */
+  YYSYMBOL_ENGINE_DATA = 19,               /* ENGINE_DATA  */
+  YYSYMBOL_PARAM_LIST = 20,                /* PARAM_LIST  */
+  YYSYMBOL_ANNOTATED_PARAM = 21,           /* ANNOTATED_PARAM  */
+  YYSYMBOL_ANNOTATED_SCOPE = 22,           /* ANNOTATED_SCOPE  */
+  YYSYMBOL_SCOPE_BODY = 23,                /* SCOPE_BODY  */
+  YYSYMBOL_ANNOTATED_VARIABLE = 24,        /* ANNOTATED_VARIABLE  */
+  YYSYMBOL_VARIABLE = 25,                  /* VARIABLE  */
+  YYSYMBOL_ANNOTATION = 26,                /* ANNOTATION  */
+  YYSYMBOL_PARAM_NAME = 27,                /* PARAM_NAME  */
+  YYSYMBOL_VALUE = 28,                     /* VALUE  */
+  YYSYMBOL_MAT4_VALUE = 29,                /* MAT4_VALUE  */
+  YYSYMBOL_MAT3_VALUE = 30,                /* MAT3_VALUE  */
+  YYSYMBOL_ROW4_VALUE = 31,                /* ROW4_VALUE  */
+  YYSYMBOL_ROW3_VALUE = 32,                /* ROW3_VALUE  */
+  YYSYMBOL_NUMBER4_VALUE = 33,             /* NUMBER4_VALUE  */
+  YYSYMBOL_NUMBER3_VALUE = 34,             /* NUMBER3_VALUE  */
+  YYSYMBOL_NUMBER2_VALUE = 35,             /* NUMBER2_VALUE  */
+  YYSYMBOL_NUMBER_VALUE = 36,              /* NUMBER_VALUE  */
+  YYSYMBOL_ARRAY_VALUE = 37,               /* ARRAY_VALUE  */
+  YYSYMBOL_NUMBER_LIST = 38,               /* NUMBER_LIST  */
+  YYSYMBOL_TEXT_LIST = 39                  /* TEXT_LIST  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -473,19 +475,19 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  10
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   70
+#define YYLAST   87
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  19
+#define YYNTOKENS  18
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  19
+#define YYNNTS  22
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  34
+#define YYNRULES  42
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  80
+#define YYNSTATES  95
 
 /* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   273
+#define YYMAXUTOK   272
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -526,17 +528,18 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15,    16,    17,    18
+      15,    16,    17
 };
 
 #if EDDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   183,   183,   191,   195,   203,   206,   212,   218,   226,
-     230,   236,   241,   247,   305,   311,   312,   316,   317,   318,
-     319,   320,   321,   322,   323,   324,   328,   344,   359,   365,
-     371,   381,   390,   398,   399
+       0,   234,   234,   242,   246,   254,   257,   263,   269,   277,
+     281,   287,   292,   298,   351,   381,   387,   388,   392,   393,
+     394,   395,   396,   397,   398,   399,   400,   401,   405,   421,
+     436,   442,   448,   458,   467,   475,   476,   480,   483,   489,
+     494,   502,   507
 };
 #endif
 
@@ -554,12 +557,13 @@ yysymbol_name (yysymbol_kind_t yysymbol)
   static const char *const yy_sname[] =
   {
   "end of file", "error", "invalid token", "BOOL_VAL", "INT_VAL",
-  "FLOAT_VAL", "TEXT_VAL", "NAME_VAL", "@", ":", ";", "=", "(", ")", "{",
-  "}", "[", "]", ",", "$accept", "ENGINE_DATA", "PARAM_LIST",
-  "ANNOTATED_PARAM", "ANNOTATED_SCOPE", "SCOPE_BODY", "ANNOTATED_VARIABLE",
-  "VARIABLE", "ANNOTATION", "PARAM_NAME", "VALUE", "MAT4_VALUE",
-  "MAT3_VALUE", "ROW4_VALUE", "ROW3_VALUE", "NUMBER4_VALUE",
-  "NUMBER3_VALUE", "NUMBER2_VALUE", "NUMBER_VALUE", YY_NULLPTR
+  "FLOAT_VAL", "TEXT_VAL", "NAME_VAL", "@", ":", "=", "(", ")", "{", "}",
+  "[", "]", ",", "$accept", "ENGINE_DATA", "PARAM_LIST", "ANNOTATED_PARAM",
+  "ANNOTATED_SCOPE", "SCOPE_BODY", "ANNOTATED_VARIABLE", "VARIABLE",
+  "ANNOTATION", "PARAM_NAME", "VALUE", "MAT4_VALUE", "MAT3_VALUE",
+  "ROW4_VALUE", "ROW3_VALUE", "NUMBER4_VALUE", "NUMBER3_VALUE",
+  "NUMBER2_VALUE", "NUMBER_VALUE", "ARRAY_VALUE", "NUMBER_LIST",
+  "TEXT_LIST", YY_NULLPTR
   };
   return yy_sname[yysymbol];
 }
@@ -571,11 +575,11 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 static const yytype_int16 yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,   271,   272,   273
+     265,   266,   267,   268,   269,   270,   271,   272
 };
 #endif
 
-#define YYPACT_NINF (-47)
+#define YYPACT_NINF (-56)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -589,14 +593,16 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      -2,   -47,   -47,    14,   -47,    -2,   -47,   -47,    19,    29,
-     -47,   -47,    11,   -47,    24,    15,   -47,    21,    27,    30,
-     -47,    31,   -47,    32,     4,   -47,   -47,   -47,   -47,   -47,
-     -47,    26,   -47,   -47,   -47,   -47,   -47,   -47,   -47,    33,
-      35,    34,    36,    35,    38,    39,    40,    28,    37,    41,
-     -47,   -47,    35,    35,    42,    35,    43,    35,    41,    44,
-      28,    45,    37,    46,    35,    47,    35,    49,    35,    50,
-      28,    51,   -47,   -47,    35,    53,    35,    46,   -47,   -47
+      35,   -56,   -56,    11,   -56,    35,   -56,   -56,    -4,    23,
+     -56,   -56,    37,   -56,    32,    15,   -56,    33,    44,    28,
+     -56,    38,   -56,    41,     4,    39,   -56,   -56,   -56,   -56,
+     -56,   -56,     9,   -56,   -56,   -56,   -56,   -56,   -56,   -56,
+      43,   -56,    46,    45,    40,    47,    48,    49,    42,    51,
+      40,     4,    55,    52,    53,    54,    57,    58,    40,   -56,
+     -56,    59,   -56,   -56,   -56,   -56,    40,    40,    60,    40,
+      61,   -56,    40,    59,    62,    57,    63,    58,    64,    40,
+      65,    40,    67,    40,    68,    57,    69,   -56,   -56,    40,
+      71,    40,    64,   -56,   -56
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -604,28 +610,32 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,    16,    15,     0,     2,     4,     5,     6,    12,     0,
+       0,    17,    16,     0,     2,     4,     5,     6,    12,     0,
        1,     3,     0,    11,     0,     0,     8,     0,     0,     0,
-      10,     0,     7,     0,     0,     9,    14,    18,    34,    33,
-      17,     0,    25,    13,    24,    23,    22,    21,    20,    19,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,    32,
-      28,    29,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    31,     0,     0,     0,     0,     0,     0,
-       0,     0,    27,    30,     0,     0,     0,     0,    26,    31
+      10,     0,     7,     0,     0,     0,     9,    15,    19,    36,
+      35,    18,     0,    27,    13,    24,    25,    23,    22,    21,
+      20,    26,     0,    42,     0,     0,     0,    40,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,    37,
+      38,    34,    14,    41,    30,    31,     0,     0,     0,     0,
+       0,    39,     0,     0,     0,     0,     0,     0,    33,     0,
+       0,     0,     0,     0,     0,     0,     0,    29,    32,     0,
+       0,     0,     0,    28,    33
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -47,   -47,    -4,   -47,   -47,     8,   -47,   -47,    48,   -47,
-     -47,   -47,   -47,   -41,   -46,    23,    25,   -47,   -40
+     -56,   -56,     1,   -56,   -56,    16,   -56,   -56,    66,   -56,
+       3,   -56,   -56,   -55,   -54,   -39,   -42,   -56,   -32,   -56,
+       5,    18
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     3,     4,     5,     6,    16,     7,     8,    13,     9,
-      33,    34,    35,    41,    42,    44,    45,    38,    39
+      -1,     3,     4,     5,     6,    33,     7,     8,    13,     9,
+      34,    35,    36,    45,    46,    37,    38,    39,    40,    41,
+      48,    49
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -633,58 +643,64 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      46,    11,    56,    49,     1,     2,    54,    27,    28,    29,
-      30,    21,    58,    59,    10,    61,    67,    63,    15,    65,
-      31,     1,     2,    18,    69,    22,    71,    12,    73,    75,
-      20,    19,    32,    23,    77,    15,    79,    12,    14,    28,
-      29,    24,    40,    15,    53,    26,    25,    36,     0,    37,
-       0,    43,    47,    55,    48,    50,    51,    17,    52,    57,
-      60,    62,    64,    66,    68,    70,    72,     0,    74,    76,
-      78
+      47,    68,    54,    70,    12,    53,    11,    28,    29,    30,
+      31,    10,    55,    29,    30,    43,    21,    15,    61,    32,
+      80,     1,     2,    82,    44,    16,    47,    54,    53,    20,
+      90,    12,    14,    22,    73,    74,    15,    76,    24,    19,
+      78,     1,     2,    25,    29,    30,    15,    84,    18,    86,
+      23,    88,    26,    27,    62,    42,    51,    92,    59,    94,
+      50,    43,    52,    71,    56,    57,    58,    60,    64,    65,
+      63,    66,    67,    69,     0,    17,    72,    75,    77,    79,
+      81,    83,    85,    87,     0,    89,    91,    93
 };
 
 static const yytype_int8 yycheck[] =
 {
-      40,     5,    48,    43,     6,     7,    47,     3,     4,     5,
-       6,    15,    52,    53,     0,    55,    62,    57,    14,    60,
-      16,     6,     7,    12,    64,    17,    66,     8,    68,    70,
-      15,     7,    24,     6,    74,    14,    76,     8,     9,     4,
-       5,    11,    16,    14,    16,    13,    15,    24,    -1,    24,
-      -1,    18,    18,    16,    18,    17,    17,     9,    18,    18,
-      18,    18,    18,    18,    18,    18,    17,    -1,    18,    18,
-      17
+      32,    56,    44,    57,     8,    44,     5,     3,     4,     5,
+       6,     0,    44,     4,     5,     6,    15,    13,    50,    15,
+      75,     6,     7,    77,    15,     9,    58,    69,    67,    14,
+      85,     8,     9,    17,    66,    67,    13,    69,    10,     7,
+      72,     6,     7,    15,     4,     5,    13,    79,    11,    81,
+       6,    83,    14,    12,    51,    16,    10,    89,    16,    91,
+      17,     6,    17,    58,    17,    17,    17,    16,    16,    16,
+      52,    17,    15,    15,    -1,     9,    17,    17,    17,    17,
+      17,    17,    17,    16,    -1,    17,    17,    16
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     6,     7,    20,    21,    22,    23,    25,    26,    28,
-       0,    21,     8,    27,     9,    14,    24,    27,    12,     7,
-      15,    21,    24,     6,    11,    15,    13,     3,     4,     5,
-       6,    16,    24,    29,    30,    31,    34,    35,    36,    37,
-      16,    32,    33,    18,    34,    35,    37,    18,    18,    37,
-      17,    17,    18,    16,    32,    16,    33,    18,    37,    37,
-      18,    37,    18,    37,    18,    32,    18,    33,    18,    37,
-      18,    37,    17,    37,    18,    32,    18,    37,    17,    37
+       0,     6,     7,    19,    20,    21,    22,    24,    25,    27,
+       0,    20,     8,    26,     9,    13,    23,    26,    11,     7,
+      14,    20,    23,     6,    10,    15,    14,    12,     3,     4,
+       5,     6,    15,    23,    28,    29,    30,    33,    34,    35,
+      36,    37,    16,     6,    15,    31,    32,    36,    38,    39,
+      17,    10,    17,    33,    34,    36,    17,    17,    17,    16,
+      16,    36,    28,    39,    16,    16,    17,    15,    31,    15,
+      32,    38,    17,    36,    36,    17,    36,    17,    36,    17,
+      31,    17,    32,    17,    36,    17,    36,    16,    36,    17,
+      31,    17,    36,    16,    36
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    19,    20,    21,    21,    22,    22,    23,    23,    24,
-      24,    25,    25,    26,    27,    28,    28,    29,    29,    29,
-      29,    29,    29,    29,    29,    29,    30,    31,    32,    33,
-      34,    35,    36,    37,    37
+       0,    18,    19,    20,    20,    21,    21,    22,    22,    23,
+      23,    24,    24,    25,    25,    26,    27,    27,    28,    28,
+      28,    28,    28,    28,    28,    28,    28,    28,    29,    30,
+      31,    32,    33,    34,    35,    36,    36,    37,    37,    38,
+      38,    39,    39
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_int8 yyr2[] =
 {
        0,     2,     1,     2,     1,     1,     1,     3,     2,     3,
-       2,     2,     1,     5,     4,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     9,     7,     3,     3,
-       7,     5,     3,     1,     1
+       2,     2,     1,     5,     7,     4,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     9,     7,
+       3,     3,     7,     5,     3,     1,     1,     3,     3,     3,
+       1,     3,     1
 };
 
 
@@ -1471,108 +1487,108 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* ENGINE_DATA: PARAM_LIST  */
-#line 183 "src/engine/data/parser/parser.y"
+#line 234 "src/engine/data/parser/parser.y"
                      {
     auto& params = std::get<std::shared_ptr<ScopeParamArray>>(yyvsp[0]);
     std::shared_ptr<ed::Scope> scope = scope_params_to_scope(parser, *params);
     parser.setMainScope(std::move(*scope));
   }
-#line 1481 "src/engine/data/parser/parser.tab.cpp"
+#line 1497 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 3: /* PARAM_LIST: ANNOTATED_PARAM PARAM_LIST  */
-#line 191 "src/engine/data/parser/parser.y"
+#line 242 "src/engine/data/parser/parser.y"
                                         {
     std::get<std::shared_ptr<ScopeParamArray>>(yyvsp[0])->push_back(std::get<ScopeParam>(yyvsp[-1]));
     yyval = yyvsp[0];
   }
-#line 1490 "src/engine/data/parser/parser.tab.cpp"
+#line 1506 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 4: /* PARAM_LIST: ANNOTATED_PARAM  */
-#line 195 "src/engine/data/parser/parser.y"
+#line 246 "src/engine/data/parser/parser.y"
                        {
     std::shared_ptr<ScopeParamArray> params = std::make_shared<ScopeParamArray>();
     params->push_back((std::get<ScopeParam>(yyvsp[0])));
     yyval = params;
   }
-#line 1500 "src/engine/data/parser/parser.tab.cpp"
-    break;
-
-  case 5: /* ANNOTATED_PARAM: ANNOTATED_SCOPE  */
-#line 203 "src/engine/data/parser/parser.y"
-                           {
-    yyval = yyvsp[0];
-  }
-#line 1508 "src/engine/data/parser/parser.tab.cpp"
-    break;
-
-  case 6: /* ANNOTATED_PARAM: ANNOTATED_VARIABLE  */
-#line 206 "src/engine/data/parser/parser.y"
-                                 {
-    yyval = yyvsp[0];
-  }
 #line 1516 "src/engine/data/parser/parser.tab.cpp"
     break;
 
+  case 5: /* ANNOTATED_PARAM: ANNOTATED_SCOPE  */
+#line 254 "src/engine/data/parser/parser.y"
+                           {
+    yyval = yyvsp[0];
+  }
+#line 1524 "src/engine/data/parser/parser.tab.cpp"
+    break;
+
+  case 6: /* ANNOTATED_PARAM: ANNOTATED_VARIABLE  */
+#line 257 "src/engine/data/parser/parser.y"
+                                 {
+    yyval = yyvsp[0];
+  }
+#line 1532 "src/engine/data/parser/parser.tab.cpp"
+    break;
+
   case 7: /* ANNOTATED_SCOPE: PARAM_NAME ANNOTATION SCOPE_BODY  */
-#line 212 "src/engine/data/parser/parser.y"
+#line 263 "src/engine/data/parser/parser.y"
                                                     {
     auto& scope = std::get<std::shared_ptr<ed::Scope>>(yyvsp[0]);
     parser.setScopeName(*scope, std::move(std::get<string>(yyvsp[-2])));
     parser.setScopeAnnotation(*scope, std::move(std::get<string>(yyvsp[-1])));
     yyval = ScopeParam{scope};
   }
-#line 1527 "src/engine/data/parser/parser.tab.cpp"
+#line 1543 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 8: /* ANNOTATED_SCOPE: PARAM_NAME SCOPE_BODY  */
-#line 218 "src/engine/data/parser/parser.y"
+#line 269 "src/engine/data/parser/parser.y"
                                       {
     auto& scope = std::get<std::shared_ptr<ed::Scope>>(yyvsp[0]);
     parser.setScopeName(*scope, std::move(std::get<string>(yyvsp[-1])));
     yyval = ScopeParam{scope};
   }
-#line 1537 "src/engine/data/parser/parser.tab.cpp"
+#line 1553 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 9: /* SCOPE_BODY: "{" PARAM_LIST "}"  */
-#line 226 "src/engine/data/parser/parser.y"
+#line 277 "src/engine/data/parser/parser.y"
                              {
     auto& params = std::get<std::shared_ptr<ScopeParamArray>>(yyvsp[-1]);
     yyval = scope_params_to_scope(parser, *params);
   }
-#line 1546 "src/engine/data/parser/parser.tab.cpp"
+#line 1562 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 10: /* SCOPE_BODY: "{" "}"  */
-#line 230 "src/engine/data/parser/parser.y"
+#line 281 "src/engine/data/parser/parser.y"
             {
     yyval = parser.makeScope();
   }
-#line 1554 "src/engine/data/parser/parser.tab.cpp"
+#line 1570 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 11: /* ANNOTATED_VARIABLE: VARIABLE ANNOTATION  */
-#line 236 "src/engine/data/parser/parser.y"
+#line 287 "src/engine/data/parser/parser.y"
                                 {
     auto& var = std::get<std::shared_ptr<ed::Variable>>(yyvsp[-1]);
     var->annotation = std::move(std::get<string>(yyvsp[0]));
     yyval = ScopeParam{var};
   }
-#line 1564 "src/engine/data/parser/parser.tab.cpp"
+#line 1580 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 12: /* ANNOTATED_VARIABLE: VARIABLE  */
-#line 241 "src/engine/data/parser/parser.y"
+#line 292 "src/engine/data/parser/parser.y"
                   {
     yyval = ScopeParam{std::get<std::shared_ptr<ed::Variable>>(yyvsp[0])};
   }
-#line 1572 "src/engine/data/parser/parser.tab.cpp"
+#line 1588 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 13: /* VARIABLE: PARAM_NAME ":" NAME_VAL "=" VALUE  */
-#line 247 "src/engine/data/parser/parser.y"
+#line 298 "src/engine/data/parser/parser.y"
                                                           {
     const auto& type = std::get<string>(yyvsp[-2]);
 
@@ -1582,29 +1598,30 @@ yyreduce:
 
     try
     {
-      #define CASE(textType, valueType, getter)             \
+      #define CASE_VAR(textType, valueType, getter)             \
         if (type == textType)                               \
         {                                                   \
           if (auto* value = std::get_if<valueType>(&yyvsp[0]))\
-            var->value = getter(*value);                     \
+            var->value = getter(*value);                    \
           else                                              \
-            throw std::runtime_error("invalid value type");                     \
+            throw std::runtime_error("invalid value type"); \
         }
       #define NEXT else
       #define AS_IS(var) var
+      #define AS_IS_UNREF(var) *var
 
-           CASE("b",  bool,     AS_IS)
-      NEXT CASE("i",  Number,   number_to_int)
-      NEXT CASE("i2", Number2,  number2_to_int2)
-      NEXT CASE("i3", Number3,  number3_to_int3)
-      NEXT CASE("i4", Number4,  number4_to_int4)
-      NEXT CASE("f",  Number,   number_to_float)
-      NEXT CASE("f2", Number2,  number2_to_float2)
-      NEXT CASE("f3", Number3,  number3_to_float3)
-      NEXT CASE("f4", Number4,  number4_to_float4)
-      NEXT CASE("m3", float3x3, AS_IS)
-      NEXT CASE("m4", float4x4, AS_IS)
-      NEXT CASE("t",  string,   AS_IS)
+           CASE_VAR("b",  bool,     AS_IS)
+      NEXT CASE_VAR("i",  Number,   number_to_int)
+      NEXT CASE_VAR("i2", Number2,  number2_to_int2)
+      NEXT CASE_VAR("i3", Number3,  number3_to_int3)
+      NEXT CASE_VAR("i4", Number4,  number4_to_int4)
+      NEXT CASE_VAR("f",  Number,   number_to_float)
+      NEXT CASE_VAR("f2", Number2,  number2_to_float2)
+      NEXT CASE_VAR("f3", Number3,  number3_to_float3)
+      NEXT CASE_VAR("f4", Number4,  number4_to_float4)
+      NEXT CASE_VAR("m3", float3x3, AS_IS)
+      NEXT CASE_VAR("m4", float4x4, AS_IS)
+      NEXT CASE_VAR("t",  string,   AS_IS)
       NEXT {
         if (auto* scope = std::get_if<std::shared_ptr<ed::Scope>>(&yyvsp[0]))
         {
@@ -1624,90 +1641,124 @@ yyreduce:
     }
 
     yyval = var;
-
-    #undef AS_IS
-    #undef NEXT
-    #undef CASE
   }
-#line 1633 "src/engine/data/parser/parser.tab.cpp"
+#line 1646 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 14: /* ANNOTATION: "@" "(" TEXT_VAL ")"  */
-#line 305 "src/engine/data/parser/parser.y"
+  case 14: /* VARIABLE: PARAM_NAME ":" NAME_VAL "[" "]" "=" VALUE  */
+#line 351 "src/engine/data/parser/parser.y"
+                                                                 {
+    const auto& type = std::get<string>(yyvsp[-4]);
+
+    std::shared_ptr<ed::Variable> var{new ed::Variable};
+    var->name = std::move(std::get<string>(yyvsp[-6]));
+    var->annotation = "";
+    try
+    {
+           CASE_VAR("i", std::shared_ptr<eastl::vector<Number>>, number_array_to_int_array)
+      NEXT CASE_VAR("f", std::shared_ptr<eastl::vector<Number>>, number_array_to_float_array)
+      NEXT CASE_VAR("t", std::shared_ptr<eastl::vector<string>>, AS_IS_UNREF)
+      NEXT {
+        throw std::runtime_error(string{"unknown array type"});
+      }
+    }
+    catch(const std::runtime_error& e)
+    {
+      ederror(parser, fmt::format(" error in {}:{}, {} ", var->name, type, e.what()).c_str());
+    }
+
+    yyval = var;
+
+    #undef AS_IS_UNREF
+    #undef AS_IS
+    #undef NEXT
+    #undef CASE_VAR
+  }
+#line 1678 "src/engine/data/parser/parser.tab.cpp"
+    break;
+
+  case 15: /* ANNOTATION: "@" "(" TEXT_VAL ")"  */
+#line 381 "src/engine/data/parser/parser.y"
                             {
     yyval = std::move(yyvsp[-1]);
   }
-#line 1641 "src/engine/data/parser/parser.tab.cpp"
+#line 1686 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 15: /* PARAM_NAME: NAME_VAL  */
-#line 311 "src/engine/data/parser/parser.y"
+  case 16: /* PARAM_NAME: NAME_VAL  */
+#line 387 "src/engine/data/parser/parser.y"
                    { yyval = std::move(yyvsp[0]); }
-#line 1647 "src/engine/data/parser/parser.tab.cpp"
+#line 1692 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 16: /* PARAM_NAME: TEXT_VAL  */
-#line 312 "src/engine/data/parser/parser.y"
+  case 17: /* PARAM_NAME: TEXT_VAL  */
+#line 388 "src/engine/data/parser/parser.y"
                    { yyval = std::move(yyvsp[0]); }
-#line 1653 "src/engine/data/parser/parser.tab.cpp"
+#line 1698 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 17: /* VALUE: TEXT_VAL  */
-#line 316 "src/engine/data/parser/parser.y"
-                     { yyval = yyvsp[0]; }
-#line 1659 "src/engine/data/parser/parser.tab.cpp"
+  case 18: /* VALUE: TEXT_VAL  */
+#line 392 "src/engine/data/parser/parser.y"
+                      { yyval = yyvsp[0]; }
+#line 1704 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 18: /* VALUE: BOOL_VAL  */
-#line 317 "src/engine/data/parser/parser.y"
-                     { yyval = yyvsp[0]; }
-#line 1665 "src/engine/data/parser/parser.tab.cpp"
+  case 19: /* VALUE: BOOL_VAL  */
+#line 393 "src/engine/data/parser/parser.y"
+                      { yyval = yyvsp[0]; }
+#line 1710 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 19: /* VALUE: NUMBER_VALUE  */
-#line 318 "src/engine/data/parser/parser.y"
-                     { yyval = yyvsp[0]; }
-#line 1671 "src/engine/data/parser/parser.tab.cpp"
+  case 20: /* VALUE: NUMBER_VALUE  */
+#line 394 "src/engine/data/parser/parser.y"
+                      { yyval = yyvsp[0]; }
+#line 1716 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 20: /* VALUE: NUMBER2_VALUE  */
-#line 319 "src/engine/data/parser/parser.y"
-                     { yyval = yyvsp[0]; }
-#line 1677 "src/engine/data/parser/parser.tab.cpp"
+  case 21: /* VALUE: NUMBER2_VALUE  */
+#line 395 "src/engine/data/parser/parser.y"
+                      { yyval = yyvsp[0]; }
+#line 1722 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 21: /* VALUE: NUMBER3_VALUE  */
-#line 320 "src/engine/data/parser/parser.y"
-                     { yyval = yyvsp[0]; }
-#line 1683 "src/engine/data/parser/parser.tab.cpp"
+  case 22: /* VALUE: NUMBER3_VALUE  */
+#line 396 "src/engine/data/parser/parser.y"
+                      { yyval = yyvsp[0]; }
+#line 1728 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 22: /* VALUE: NUMBER4_VALUE  */
-#line 321 "src/engine/data/parser/parser.y"
-                     { yyval = yyvsp[0]; }
-#line 1689 "src/engine/data/parser/parser.tab.cpp"
-    break;
-
-  case 23: /* VALUE: MAT3_VALUE  */
-#line 322 "src/engine/data/parser/parser.y"
-                     { yyval = yyvsp[0]; }
-#line 1695 "src/engine/data/parser/parser.tab.cpp"
+  case 23: /* VALUE: NUMBER4_VALUE  */
+#line 397 "src/engine/data/parser/parser.y"
+                      { yyval = yyvsp[0]; }
+#line 1734 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 24: /* VALUE: MAT4_VALUE  */
-#line 323 "src/engine/data/parser/parser.y"
-                     { yyval = yyvsp[0]; }
-#line 1701 "src/engine/data/parser/parser.tab.cpp"
+#line 398 "src/engine/data/parser/parser.y"
+                      { yyval = yyvsp[0]; }
+#line 1740 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 25: /* VALUE: SCOPE_BODY  */
-#line 324 "src/engine/data/parser/parser.y"
-                     { yyval = yyvsp[0]; }
-#line 1707 "src/engine/data/parser/parser.tab.cpp"
+  case 25: /* VALUE: MAT3_VALUE  */
+#line 399 "src/engine/data/parser/parser.y"
+                      { yyval = yyvsp[0]; }
+#line 1746 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 26: /* MAT4_VALUE: "[" ROW4_VALUE "," ROW4_VALUE "," ROW4_VALUE "," ROW4_VALUE "]"  */
-#line 328 "src/engine/data/parser/parser.y"
+  case 26: /* VALUE: ARRAY_VALUE  */
+#line 400 "src/engine/data/parser/parser.y"
+                      { yyval = yyvsp[0]; }
+#line 1752 "src/engine/data/parser/parser.tab.cpp"
+    break;
+
+  case 27: /* VALUE: SCOPE_BODY  */
+#line 401 "src/engine/data/parser/parser.y"
+                      { yyval = yyvsp[0]; }
+#line 1758 "src/engine/data/parser/parser.tab.cpp"
+    break;
+
+  case 28: /* MAT4_VALUE: "[" ROW4_VALUE "," ROW4_VALUE "," ROW4_VALUE "," ROW4_VALUE "]"  */
+#line 405 "src/engine/data/parser/parser.y"
                                                                                     {
     float4 rows[4];
     rows[0] = number4_to_float4(std::get<Number4>(yyvsp[-7]));
@@ -1722,11 +1773,11 @@ yyreduce:
 
     yyval = float4x4{columns[0], columns[1], columns[2], columns[3]};
   }
-#line 1726 "src/engine/data/parser/parser.tab.cpp"
+#line 1777 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 27: /* MAT3_VALUE: "[" ROW3_VALUE "," ROW3_VALUE "," ROW3_VALUE "]"  */
-#line 344 "src/engine/data/parser/parser.y"
+  case 29: /* MAT3_VALUE: "[" ROW3_VALUE "," ROW3_VALUE "," ROW3_VALUE "]"  */
+#line 421 "src/engine/data/parser/parser.y"
                                                                  {
     float3 rows[4];
     rows[0] = number3_to_float3(std::get<Number3>(yyvsp[-5]));
@@ -1740,27 +1791,27 @@ yyreduce:
 
     yyval = float3x3{columns[0], columns[1], columns[2]};
   }
-#line 1744 "src/engine/data/parser/parser.tab.cpp"
+#line 1795 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 28: /* ROW4_VALUE: "[" NUMBER4_VALUE "]"  */
-#line 359 "src/engine/data/parser/parser.y"
+  case 30: /* ROW4_VALUE: "[" NUMBER4_VALUE "]"  */
+#line 436 "src/engine/data/parser/parser.y"
                              {
     yyval = yyvsp[-1];
   }
-#line 1752 "src/engine/data/parser/parser.tab.cpp"
+#line 1803 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 29: /* ROW3_VALUE: "[" NUMBER3_VALUE "]"  */
-#line 365 "src/engine/data/parser/parser.y"
+  case 31: /* ROW3_VALUE: "[" NUMBER3_VALUE "]"  */
+#line 442 "src/engine/data/parser/parser.y"
                              {
     yyval = yyvsp[-1];
   }
-#line 1760 "src/engine/data/parser/parser.tab.cpp"
+#line 1811 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 30: /* NUMBER4_VALUE: NUMBER_VALUE "," NUMBER_VALUE "," NUMBER_VALUE "," NUMBER_VALUE  */
-#line 371 "src/engine/data/parser/parser.y"
+  case 32: /* NUMBER4_VALUE: NUMBER_VALUE "," NUMBER_VALUE "," NUMBER_VALUE "," NUMBER_VALUE  */
+#line 448 "src/engine/data/parser/parser.y"
                                                                                     {
     yyval = Number4{
       std::get<Number>(yyvsp[-6]),
@@ -1768,44 +1819,100 @@ yyreduce:
       std::get<Number>(yyvsp[-2]),
       std::get<Number>(yyvsp[0])};
   }
-#line 1772 "src/engine/data/parser/parser.tab.cpp"
+#line 1823 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 31: /* NUMBER3_VALUE: NUMBER_VALUE "," NUMBER_VALUE "," NUMBER_VALUE  */
-#line 381 "src/engine/data/parser/parser.y"
+  case 33: /* NUMBER3_VALUE: NUMBER_VALUE "," NUMBER_VALUE "," NUMBER_VALUE  */
+#line 458 "src/engine/data/parser/parser.y"
                                                                {
     yyval = Number3{
       std::get<Number>(yyvsp[-4]),
       std::get<Number>(yyvsp[-2]),
       std::get<Number>(yyvsp[0])};
   }
-#line 1783 "src/engine/data/parser/parser.tab.cpp"
+#line 1834 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 32: /* NUMBER2_VALUE: NUMBER_VALUE "," NUMBER_VALUE  */
-#line 390 "src/engine/data/parser/parser.y"
+  case 34: /* NUMBER2_VALUE: NUMBER_VALUE "," NUMBER_VALUE  */
+#line 467 "src/engine/data/parser/parser.y"
                                          {
     yyval = Number2{
       std::get<Number>(yyvsp[-2]),
       std::get<Number>(yyvsp[0])};
   }
-#line 1793 "src/engine/data/parser/parser.tab.cpp"
+#line 1844 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 33: /* NUMBER_VALUE: FLOAT_VAL  */
-#line 398 "src/engine/data/parser/parser.y"
+  case 35: /* NUMBER_VALUE: FLOAT_VAL  */
+#line 475 "src/engine/data/parser/parser.y"
                  { yyval = yyvsp[0]; }
-#line 1799 "src/engine/data/parser/parser.tab.cpp"
+#line 1850 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 34: /* NUMBER_VALUE: INT_VAL  */
-#line 399 "src/engine/data/parser/parser.y"
+  case 36: /* NUMBER_VALUE: INT_VAL  */
+#line 476 "src/engine/data/parser/parser.y"
                  { yyval = yyvsp[0]; }
-#line 1805 "src/engine/data/parser/parser.tab.cpp"
+#line 1856 "src/engine/data/parser/parser.tab.cpp"
+    break;
+
+  case 37: /* ARRAY_VALUE: "[" NUMBER_LIST "]"  */
+#line 480 "src/engine/data/parser/parser.y"
+                           {
+    yyval = yyvsp[-1];
+  }
+#line 1864 "src/engine/data/parser/parser.tab.cpp"
+    break;
+
+  case 38: /* ARRAY_VALUE: "[" TEXT_LIST "]"  */
+#line 483 "src/engine/data/parser/parser.y"
+                         {
+    yyval = yyvsp[-1];
+  }
+#line 1872 "src/engine/data/parser/parser.tab.cpp"
+    break;
+
+  case 39: /* NUMBER_LIST: NUMBER_VALUE "," NUMBER_LIST  */
+#line 489 "src/engine/data/parser/parser.y"
+                                         {
+  auto& l = std::get<std::shared_ptr<eastl::vector<Number>>>(yyvsp[0]);
+  l->push_back(std::get<Number>(yyvsp[-2]));
+  yyval = l;
+ }
+#line 1882 "src/engine/data/parser/parser.tab.cpp"
+    break;
+
+  case 40: /* NUMBER_LIST: NUMBER_VALUE  */
+#line 494 "src/engine/data/parser/parser.y"
+                   {
+  auto l = std::make_shared<eastl::vector<Number>>();
+  l->push_back(std::get<Number>(yyvsp[0]));
+  yyval = l;
+ }
+#line 1892 "src/engine/data/parser/parser.tab.cpp"
+    break;
+
+  case 41: /* TEXT_LIST: TEXT_VAL "," TEXT_LIST  */
+#line 502 "src/engine/data/parser/parser.y"
+                                   {
+  auto& l = std::get<std::shared_ptr<eastl::vector<string>>>(yyvsp[0]);
+  l->push_back(std::move(std::get<string>(yyvsp[-2])));
+  yyval = l;
+ }
+#line 1902 "src/engine/data/parser/parser.tab.cpp"
+    break;
+
+  case 42: /* TEXT_LIST: TEXT_VAL  */
+#line 507 "src/engine/data/parser/parser.y"
+               {
+  auto l = std::make_shared<eastl::vector<string>>();
+  l->push_back(std::move(std::get<string>(yyvsp[0])));
+  yyval = l;
+ }
+#line 1912 "src/engine/data/parser/parser.tab.cpp"
     break;
 
 
-#line 1809 "src/engine/data/parser/parser.tab.cpp"
+#line 1916 "src/engine/data/parser/parser.tab.cpp"
 
       default: break;
     }
@@ -2035,7 +2142,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 401 "src/engine/data/parser/parser.y"
+#line 513 "src/engine/data/parser/parser.y"
 
 
 void ederror(ed::Parser& parser, const char* msg) {

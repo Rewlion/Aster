@@ -94,13 +94,29 @@ extern int eddebug;
     Number v0, v1, v2, v3;
   };
 
-  #define EDSTYPE std::variant<                                   \
-    bool, string,                                                 \
-    Number, Number2, Number3, Number4,                            \
-    float3x3, float4x4,                                           \
-    std::shared_ptr<ed::Scope>, std::shared_ptr<ed::Variable>,    \
-    ScopeParam, std::shared_ptr<ScopeParamArray>                  \
+  #define EDSTYPE std::variant<                                                                    \
+    bool, string,                                                                                  \
+    Number, Number2, Number3, Number4,                                                             \
+    float3x3, float4x4,                                                                            \
+    std::shared_ptr<ed::IntArray>, std::shared_ptr<ed::FloatArray>, std::shared_ptr<ed::TextArray>,\
+    std::shared_ptr<eastl::vector<Number>>                                        ,                \
+    std::shared_ptr<ed::Scope>, std::shared_ptr<ed::Variable>,                                     \
+    ScopeParam, std::shared_ptr<ScopeParamArray>                                                   \
   >
+
+  template<class T>
+  static
+  auto number_to(const EDSTYPE& edstype) -> T
+  {
+    const Number& n = std::get<Number>(edstype);
+    if (auto* fl = std::get_if<T>(&n))
+      return *fl;
+    else
+    {
+      using FromType = typename std::conditional<std::is_same_v<T,int>, float, int>::type;
+      return static_cast<T>(std::get<FromType>(n));
+    }
+  }
 
   static
   auto number_to_float(const EDSTYPE& edstype) -> float
@@ -188,7 +204,43 @@ extern int eddebug;
     };
   }
 
-#line 192 "src/engine/data/parser/parser.tab.hpp"
+  // static
+  // auto number_array_to_int_array(const EDSTYPE& edstype) -> std::shared_ptr<ed::IntArray>
+  // {
+  //   const auto& from = std::get<std::shared_ptr<eastl::vector<Number>>>(edstype);
+  //   auto to = std::make_shared<ed::IntArray>();
+
+  //   to->reserve(from->size());
+  //   for (const Number& n: *from)
+  //     to->push_back(number_to_int(n));
+  // }
+  template<class T>
+  static
+  auto number_array_to_T_array(const EDSTYPE& edstype) -> eastl::vector<T>
+  {
+    const auto& from = std::get<std::shared_ptr<eastl::vector<Number>>>(edstype);
+    eastl::vector<T> to;
+
+    to.reserve(from->size());
+    for (const Number& n: *from)
+      to.push_back(number_to<T>(n));
+
+    return to;
+  }
+
+  static
+  auto number_array_to_int_array(const EDSTYPE& edstype) -> ed::IntArray
+  {
+    return number_array_to_T_array<int>(edstype);
+  }
+
+  static
+  auto number_array_to_float_array(const EDSTYPE& edstype) -> ed::FloatArray
+  {
+    return number_array_to_T_array<float>(edstype);
+  }
+
+#line 244 "src/engine/data/parser/parser.tab.hpp"
 
 /* Token kinds.  */
 #ifndef EDTOKENTYPE
@@ -206,15 +258,14 @@ extern int eddebug;
     NAME_VAL = 262,                /* NAME_VAL  */
     AT = 263,                      /* "@"  */
     COLON = 264,                   /* ":"  */
-    SEMICOLON = 265,               /* ";"  */
-    EQUAL_OP = 266,                /* "="  */
-    LEFT_PARENTHESIS = 267,        /* "("  */
-    RIGHT_PARENTHESIS = 268,       /* ")"  */
-    LEFT_BRACKET = 269,            /* "{"  */
-    RIGHT_BRACKET = 270,           /* "}"  */
-    LEFT_SQUARE_BRACKET = 271,     /* "["  */
-    RIGHT_SQUARE_BRACKET = 272,    /* "]"  */
-    COMMA = 273                    /* ","  */
+    EQUAL_OP = 265,                /* "="  */
+    LEFT_PARENTHESIS = 266,        /* "("  */
+    RIGHT_PARENTHESIS = 267,       /* ")"  */
+    LEFT_BRACKET = 268,            /* "{"  */
+    RIGHT_BRACKET = 269,           /* "}"  */
+    LEFT_SQUARE_BRACKET = 270,     /* "["  */
+    RIGHT_SQUARE_BRACKET = 271,    /* "]"  */
+    COMMA = 272                    /* ","  */
   };
   typedef enum edtokentype edtoken_kind_t;
 #endif
