@@ -73,10 +73,10 @@ namespace ed
 
     template<class T>
     auto getVariable(string_view name) const
-      -> decltype(getVariableOr<T>(name, {}))
+      -> decltype(getVariableOr<T>(name, T{}))
     {
       T def{};
-      return getVariableOr(name, def);
+      return getVariableOr<T>(name, def);
     }
 
     auto getVariables() const -> const eastl::vector<Variable>&
@@ -163,13 +163,52 @@ namespace ed
     return nullptr;
   }
 
+  namespace detail
+  {
+    template<class T, class TView>
+    struct ViewPair {};
+
+    template<class T, class ... U>
+    struct FirstFromTemplatePack
+    {
+      using type = T;
+    };
+
+    template<class ...T>
+    struct UnviewType {
+    };
+
+    template<class T, class U, class UView, class ...Rest>
+    struct UnviewType<T, ViewPair<U,UView>, Rest...>
+    {
+      using type = typename std::conditional<
+        std::is_same_v<T, UView>,
+        U,
+        typename UnviewType<T, Rest...>::type
+      >::type;
+    };
+
+    template<class T>
+    struct UnviewType<T>
+    {
+      using type = T;
+    };
+  }
+
   template<class T>
   auto Scope::getVariableOr(string_view name, const T& def) const -> std::remove_cvref_t<T>
   {
     using Type = std::remove_cvref_t<T>;
-    using VarType = typename std::conditional<std::is_same_v<Type, string_view>, string, Type>::type;
+    using VarType =
+      typename detail::UnviewType<
+        Type,
+        detail::ViewPair<string,     string_view>,
+        detail::ViewPair<IntArray,   IntArrayView>,
+        detail::ViewPair<FloatArray, FloatArrayView>,
+        detail::ViewPair<TextArray,  TextArrayView>
+      >::type;
 
-    const Variable* var = getVariableDefinition<T, false>(name);
+    const Variable* var = getVariableDefinition<VarType, false>(name);
     if (var)
     {
       if constexpr (IsEdVarCustomType<VarType>)

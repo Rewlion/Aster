@@ -4,7 +4,6 @@
 
 #include <engine/data/ed.h>
 
-
 TEST(EngineData, Variable)
 {
   ed::Scope ed;
@@ -24,23 +23,36 @@ TEST(EngineData, Variable)
   EXPECT_TRUE(ed.addVariable("fvec",  "a14",  ed::FloatArray{1.0f, 2.0f, 3.0f}));
   EXPECT_TRUE(ed.addVariable("tvec",  "a15",  ed::TextArray{"1", "2", "3"}));
 
-  static_assert(std::is_same_v<int, decltype(ed.getVariable<int>("intvar"))>);
+  static_assert(std::is_same_v<int, decltype(ed.getVariable<int>(""))>);
+  static_assert(std::is_same_v<string_view, decltype(ed.getVariable<string_view>(""))>);
+  static_assert(std::is_same_v<ed::IntArrayView, decltype(ed.getVariable<ed::IntArrayView>(""))>);
+  static_assert(std::is_same_v<ed::FloatArrayView, decltype(ed.getVariable<ed::FloatArrayView>(""))>);
+  static_assert(std::is_same_v<ed::TextArrayView, decltype(ed.getVariable<ed::TextArrayView>(""))>);
   
   EXPECT_EQ(ed.getVariable<int>("i"),  3);
   EXPECT_EQ(ed.getVariable<int2>("i2"), int2(3,3));
   EXPECT_EQ(ed.getVariable<int3>("i3"), int3(3,3,3));
   EXPECT_EQ(ed.getVariable<int4>("i4"), int4(3,3,3,3));
+
   EXPECT_EQ(ed.getVariable<float>("f"),  3.0f);
   EXPECT_EQ(ed.getVariable<float2>("f2"), float2(3,3));
   EXPECT_EQ(ed.getVariable<float3>("f3"), float3(3,3,3));
   EXPECT_EQ(ed.getVariable<float4>("f4"), float4(3,3,3,3));
+
   EXPECT_EQ(ed.getVariable<string>("t"), string{"text"});
+  EXPECT_EQ(ed.getVariable<string_view>("t"), string{"text"});
+
   EXPECT_EQ(ed.getVariable<bool>("b"), true);
+
   EXPECT_EQ(ed.getVariable<float3x3>("m3"), float3x3{2.0});
   EXPECT_EQ(ed.getVariable<float4x4>("m4"), float4x4{3.0});
+
   EXPECT_EQ(ed.getVariable<ed::IntArray>("ivec"), (ed::IntArray{1,2,3}));
+  EXPECT_EQ(ed.getVariable<ed::IntArrayView>("ivec"), (ed::IntArrayView{ed::IntArray{1,2,3}}));
   EXPECT_EQ(ed.getVariable<ed::FloatArray>("fvec"), (ed::FloatArray{1.0f, 2.0f, 3.0f}));
+  EXPECT_EQ(ed.getVariable<ed::FloatArrayView>("fvec"), (ed::FloatArrayView{ed::FloatArray{1.0f, 2.0f, 3.0f}}));
   EXPECT_EQ(ed.getVariable<ed::TextArray>("tvec"), (ed::TextArray{"1", "2", "3"}));
+  EXPECT_EQ(ed.getVariable<ed::TextArrayView>("tvec"), (ed::TextArrayView{ed::TextArray{"1", "2", "3"}}));
 
 }
 
