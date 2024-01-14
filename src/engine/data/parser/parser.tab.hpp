@@ -60,24 +60,6 @@ extern int eddebug;
   #include <ranges>
   #include <variant>
 
-  using ScopeParam = std::variant<std::shared_ptr<ed::Scope>, std::shared_ptr<ed::Variable>>;
-  using ScopeParamArray = eastl::vector<ScopeParam>;
-
-  static
-  auto scope_params_to_scope(ed::Parser& parser, ScopeParamArray& params) -> std::shared_ptr<ed::Scope>
-  {
-    std::shared_ptr<ed::Scope> scope = parser.makeScope();
-    for (ScopeParam& param: params | std::views::reverse)
-    {
-      if (auto* nestedScope = std::get_if<std::shared_ptr<ed::Scope>>(&param))
-        scope->addScope(std::move(**nestedScope));
-      else
-        parser.addVariableDefinition(std::move(*std::get<std::shared_ptr<ed::Variable>>(param)), *scope);
-    }
-
-    return scope;
-  }
-
   using Number = std::variant<int, float>;
   struct Number2
   {
@@ -94,15 +76,65 @@ extern int eddebug;
     Number v0, v1, v2, v3;
   };
 
-  #define EDSTYPE std::variant<                                                                    \
-    bool, string,                                                                                  \
-    Number, Number2, Number3, Number4,                                                             \
-    float3x3, float4x4,                                                                            \
-    std::shared_ptr<ed::IntArray>, std::shared_ptr<ed::FloatArray>, std::shared_ptr<ed::TextArray>,\
-    std::shared_ptr<eastl::vector<Number>>                                        ,                \
-    std::shared_ptr<ed::Scope>, std::shared_ptr<ed::Variable>,                                     \
-    ScopeParam, std::shared_ptr<ScopeParamArray>                                                   \
+  #define DECL_NODE_NAMED(type, typeName)                        \
+    struct typeName ## Node                                      \
+    {                                                            \
+      using Ptr = std::shared_ptr<typeName ## Node>;             \
+                                                                 \
+      typeName ## Node() = default;                              \
+      typeName ## Node(type&& v) : val(std::move(v)) {}          \
+                                                                 \
+      static                                                     \
+      auto make(type&& v) -> Ptr                                 \
+      {                                                          \
+        return std::make_shared<typeName ## Node>(std::move(v)); \
+      }                                                          \
+                                                                 \
+      type val;                                                  \
+    };                                                           \
+    using typeName ## NodePtr = std::shared_ptr<typeName ## Node>
+  
+  #define DECL_NODE(type) DECL_NODE_NAMED(type, type)
+
+  DECL_NODE(Number2);
+  DECL_NODE(Number3);
+  DECL_NODE(Number4);
+  DECL_NODE_NAMED(float3x3, Mat3);
+  DECL_NODE_NAMED(float4x4, Mat4);
+  DECL_NODE_NAMED(ed::IntArray, IntArray);
+  DECL_NODE_NAMED(ed::FloatArray, FloatArray);
+  DECL_NODE_NAMED(ed::TextArray, TextArray);
+  DECL_NODE_NAMED(eastl::vector<Number>, NumberArray);
+  DECL_NODE_NAMED(ed::Scope, Scope);
+  DECL_NODE_NAMED(ed::Variable, Variable);
+
+  using ScopeParam = std::variant<ScopeNodePtr, VariableNodePtr>;
+  using ScopeParamArray = eastl::vector<ScopeParam>;
+  DECL_NODE(ScopeParamArray);
+
+  #define EDSTYPE std::variant<                                                \
+    bool, Number, string,                                                      \
+    Number2NodePtr, Number3NodePtr, Number4NodePtr,                            \
+    Mat3NodePtr, Mat4NodePtr,                                                  \
+    IntArrayNodePtr, FloatArrayNodePtr, TextArrayNodePtr, NumberArrayNodePtr,  \
+    ScopeNodePtr, VariableNodePtr,                                             \
+    ScopeParam, ScopeParamArrayNodePtr                                         \
   >
+
+  static
+  auto scope_params_to_scope(ed::Parser& parser, ScopeParamArray& params) -> ScopeNodePtr
+  {
+    ed::Scope scope = parser.makeScope();
+    for (ScopeParam& param: params | std::views::reverse)
+    {
+      if (auto* nestedScope = std::get_if<ScopeNodePtr>(&param))
+        scope.addScope(std::move((*nestedScope)->val));
+      else
+        parser.addVariableDefinition(std::move(std::get<VariableNodePtr>(param)->val), scope);
+    }
+
+    return ScopeNode::make(std::move(scope));
+  }
 
   template<class T>
   static
@@ -121,108 +153,90 @@ extern int eddebug;
   static
   auto number_to_float(const EDSTYPE& edstype) -> float
   {
-    const Number& n = std::get<Number>(edstype);
-    if (auto* fl = std::get_if<float>(&n))
-      return *fl;
-    else
-      return static_cast<float>(std::get<int>(n));
+    return number_to<float>(edstype);
   }
 
   static
   auto number_to_int(const EDSTYPE& edstype) -> int
   {
-    const Number& n = std::get<Number>(edstype);
-    if (auto* v = std::get_if<int>(&n))
-      return *v;
-    else
-      return static_cast<int>(std::get<float>(n));
+    return number_to<int>(edstype);
   }
 
   static
   auto number2_to_float2(const EDSTYPE& edstype) -> float2
   {
-    const Number2& n = std::get<Number2>(edstype);
+    const auto& n = std::get<Number2NodePtr>(edstype);
     return float2{
-      number_to_float(n.v0),
-      number_to_float(n.v1)
+      number_to_float(n->val.v0),
+      number_to_float(n->val.v1)
     };
   }
 
   static
   auto number3_to_float3(const EDSTYPE& edstype) -> float3
   {
-    const Number3& n = std::get<Number3>(edstype);
+    const auto& n = std::get<Number3NodePtr>(edstype);
     return float3{
-      number_to_float(n.v0),
-      number_to_float(n.v1),
-      number_to_float(n.v2)
+      number_to_float(n->val.v0),
+      number_to_float(n->val.v1),
+      number_to_float(n->val.v2)
     };
   }
 
   static
   auto number4_to_float4(const EDSTYPE& edstype) -> float4
   {
-    const Number4& n = std::get<Number4>(edstype);
+    const auto& n = std::get<Number4NodePtr>(edstype);
     return float4{
-      number_to_float(n.v0),
-      number_to_float(n.v1),
-      number_to_float(n.v2),
-      number_to_float(n.v3)
+      number_to_float(n->val.v0),
+      number_to_float(n->val.v1),
+      number_to_float(n->val.v2),
+      number_to_float(n->val.v3)
     };
   }
 
   static
   auto number2_to_int2(const EDSTYPE& edstype) -> int2
   {
-    const Number2& n = std::get<Number2>(edstype);
+    const auto& n = std::get<Number2NodePtr>(edstype);
     return int2{
-      number_to_int(n.v0),
-      number_to_int(n.v1)
+      number_to_int(n->val.v0),
+      number_to_int(n->val.v1)
     };
   }
 
   static
   auto number3_to_int3(const EDSTYPE& edstype) -> int3
   {
-    const Number3& n = std::get<Number3>(edstype);
+    const auto& n = std::get<Number3NodePtr>(edstype);
     return int3{
-      number_to_int(n.v0),
-      number_to_int(n.v1),
-      number_to_int(n.v2)
+      number_to_int(n->val.v0),
+      number_to_int(n->val.v1),
+      number_to_int(n->val.v2)
     };
   }
 
   static
   auto number4_to_int4(const EDSTYPE& edstype) -> int4
   {
-    const Number4& n = std::get<Number4>(edstype);
+    const auto& n = std::get<Number4NodePtr>(edstype);
     return int4{
-      number_to_int(n.v0),
-      number_to_int(n.v1),
-      number_to_int(n.v2),
-      number_to_int(n.v3)
+      number_to_int(n->val.v0),
+      number_to_int(n->val.v1),
+      number_to_int(n->val.v2),
+      number_to_int(n->val.v3)
     };
   }
 
-  // static
-  // auto number_array_to_int_array(const EDSTYPE& edstype) -> std::shared_ptr<ed::IntArray>
-  // {
-  //   const auto& from = std::get<std::shared_ptr<eastl::vector<Number>>>(edstype);
-  //   auto to = std::make_shared<ed::IntArray>();
-
-  //   to->reserve(from->size());
-  //   for (const Number& n: *from)
-  //     to->push_back(number_to_int(n));
-  // }
   template<class T>
   static
   auto number_array_to_T_array(const EDSTYPE& edstype) -> eastl::vector<T>
   {
-    const auto& from = std::get<std::shared_ptr<eastl::vector<Number>>>(edstype);
+    const auto& from = std::get<NumberArrayNodePtr>(edstype);
     eastl::vector<T> to;
 
-    to.reserve(from->size());
-    for (const Number& n: *from)
+    to.reserve(from->val.size());
+    for (const Number& n: from->val)
       to.push_back(number_to<T>(n));
 
     return to;
@@ -240,7 +254,7 @@ extern int eddebug;
     return number_array_to_T_array<float>(edstype);
   }
 
-#line 244 "src/engine/data/parser/parser.tab.hpp"
+#line 258 "src/engine/data/parser/parser.tab.hpp"
 
 /* Token kinds.  */
 #ifndef EDTOKENTYPE

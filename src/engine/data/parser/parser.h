@@ -17,10 +17,10 @@ namespace ed
 
     Scope parseFile(string_view path, const bool accept_fails = false);
 
-    auto makeScope() -> std::shared_ptr<ed::Scope>
+    auto makeScope() -> ed::Scope
     {
-      auto scope = std::make_shared<ed::Scope>();
-      scope->m_CustomTypesRegistry = m_CustomTypeRegistry;
+      auto scope = ed::Scope{};
+      scope.m_CustomTypesRegistry = m_CustomTypeRegistry;
 
       return scope;
     }

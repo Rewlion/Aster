@@ -535,11 +535,11 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   234,   234,   242,   246,   254,   257,   263,   269,   277,
-     281,   287,   292,   298,   351,   381,   387,   388,   392,   393,
-     394,   395,   396,   397,   398,   399,   400,   401,   405,   421,
-     436,   442,   448,   458,   467,   475,   476,   480,   483,   489,
-     494,   502,   507
+       0,   248,   248,   256,   261,   269,   272,   278,   284,   292,
+     296,   302,   307,   313,   366,   396,   402,   403,   407,   408,
+     409,   410,   411,   412,   413,   414,   415,   416,   420,   436,
+     451,   457,   463,   476,   488,   499,   500,   504,   507,   513,
+     518,   526,   531
 };
 #endif
 
@@ -1487,114 +1487,115 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* ENGINE_DATA: PARAM_LIST  */
-#line 234 "src/engine/data/parser/parser.y"
+#line 248 "src/engine/data/parser/parser.y"
                      {
-    auto& params = std::get<std::shared_ptr<ScopeParamArray>>(yyvsp[0]);
-    std::shared_ptr<ed::Scope> scope = scope_params_to_scope(parser, *params);
-    parser.setMainScope(std::move(*scope));
+    auto& params = std::get<ScopeParamArrayNodePtr>(yyvsp[0]);
+    ScopeNodePtr scope = scope_params_to_scope(parser, params->val);
+    parser.setMainScope(std::move(scope->val));
   }
 #line 1497 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 3: /* PARAM_LIST: ANNOTATED_PARAM PARAM_LIST  */
-#line 242 "src/engine/data/parser/parser.y"
+#line 256 "src/engine/data/parser/parser.y"
                                         {
-    std::get<std::shared_ptr<ScopeParamArray>>(yyvsp[0])->push_back(std::get<ScopeParam>(yyvsp[-1]));
-    yyval = yyvsp[0];
+    auto l = std::get<ScopeParamArrayNodePtr>(yyvsp[0]);
+    l->val.push_back(std::get<ScopeParam>(yyvsp[-1]));
+    yyval = l;
   }
-#line 1506 "src/engine/data/parser/parser.tab.cpp"
+#line 1507 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 4: /* PARAM_LIST: ANNOTATED_PARAM  */
-#line 246 "src/engine/data/parser/parser.y"
+#line 261 "src/engine/data/parser/parser.y"
                        {
-    std::shared_ptr<ScopeParamArray> params = std::make_shared<ScopeParamArray>();
-    params->push_back((std::get<ScopeParam>(yyvsp[0])));
+    auto params = ScopeParamArrayNode::make({});
+    params->val.push_back((std::get<ScopeParam>(yyvsp[0])));
     yyval = params;
   }
-#line 1516 "src/engine/data/parser/parser.tab.cpp"
+#line 1517 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 5: /* ANNOTATED_PARAM: ANNOTATED_SCOPE  */
-#line 254 "src/engine/data/parser/parser.y"
+#line 269 "src/engine/data/parser/parser.y"
                            {
     yyval = yyvsp[0];
   }
-#line 1524 "src/engine/data/parser/parser.tab.cpp"
+#line 1525 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 6: /* ANNOTATED_PARAM: ANNOTATED_VARIABLE  */
-#line 257 "src/engine/data/parser/parser.y"
+#line 272 "src/engine/data/parser/parser.y"
                                  {
     yyval = yyvsp[0];
   }
-#line 1532 "src/engine/data/parser/parser.tab.cpp"
+#line 1533 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 7: /* ANNOTATED_SCOPE: PARAM_NAME ANNOTATION SCOPE_BODY  */
-#line 263 "src/engine/data/parser/parser.y"
+#line 278 "src/engine/data/parser/parser.y"
                                                     {
-    auto& scope = std::get<std::shared_ptr<ed::Scope>>(yyvsp[0]);
-    parser.setScopeName(*scope, std::move(std::get<string>(yyvsp[-2])));
-    parser.setScopeAnnotation(*scope, std::move(std::get<string>(yyvsp[-1])));
+    auto& scope = std::get<ScopeNodePtr>(yyvsp[0]);
+    parser.setScopeName(scope->val, std::move(std::get<string>(yyvsp[-2])));
+    parser.setScopeAnnotation(scope->val, std::move(std::get<string>(yyvsp[-1])));
     yyval = ScopeParam{scope};
   }
-#line 1543 "src/engine/data/parser/parser.tab.cpp"
+#line 1544 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 8: /* ANNOTATED_SCOPE: PARAM_NAME SCOPE_BODY  */
-#line 269 "src/engine/data/parser/parser.y"
+#line 284 "src/engine/data/parser/parser.y"
                                       {
-    auto& scope = std::get<std::shared_ptr<ed::Scope>>(yyvsp[0]);
-    parser.setScopeName(*scope, std::move(std::get<string>(yyvsp[-1])));
+    auto& scope = std::get<ScopeNodePtr>(yyvsp[0]);
+    parser.setScopeName(scope->val, std::move(std::get<string>(yyvsp[-1])));
     yyval = ScopeParam{scope};
   }
-#line 1553 "src/engine/data/parser/parser.tab.cpp"
+#line 1554 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 9: /* SCOPE_BODY: "{" PARAM_LIST "}"  */
-#line 277 "src/engine/data/parser/parser.y"
+#line 292 "src/engine/data/parser/parser.y"
                              {
-    auto& params = std::get<std::shared_ptr<ScopeParamArray>>(yyvsp[-1]);
-    yyval = scope_params_to_scope(parser, *params);
+    auto& params = std::get<ScopeParamArrayNodePtr>(yyvsp[-1]);
+    yyval = scope_params_to_scope(parser, params->val);
   }
-#line 1562 "src/engine/data/parser/parser.tab.cpp"
+#line 1563 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 10: /* SCOPE_BODY: "{" "}"  */
-#line 281 "src/engine/data/parser/parser.y"
+#line 296 "src/engine/data/parser/parser.y"
             {
-    yyval = parser.makeScope();
+    yyval = ScopeNode::make(parser.makeScope());
   }
-#line 1570 "src/engine/data/parser/parser.tab.cpp"
+#line 1571 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 11: /* ANNOTATED_VARIABLE: VARIABLE ANNOTATION  */
-#line 287 "src/engine/data/parser/parser.y"
+#line 302 "src/engine/data/parser/parser.y"
                                 {
-    auto& var = std::get<std::shared_ptr<ed::Variable>>(yyvsp[-1]);
-    var->annotation = std::move(std::get<string>(yyvsp[0]));
+    auto& var = std::get<VariableNodePtr>(yyvsp[-1]);
+    var->val.annotation = std::move(std::get<string>(yyvsp[0]));
     yyval = ScopeParam{var};
   }
-#line 1580 "src/engine/data/parser/parser.tab.cpp"
+#line 1581 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 12: /* ANNOTATED_VARIABLE: VARIABLE  */
-#line 292 "src/engine/data/parser/parser.y"
+#line 307 "src/engine/data/parser/parser.y"
                   {
-    yyval = ScopeParam{std::get<std::shared_ptr<ed::Variable>>(yyvsp[0])};
+    yyval = ScopeParam{std::get<VariableNodePtr>(yyvsp[0])};
   }
-#line 1588 "src/engine/data/parser/parser.tab.cpp"
+#line 1589 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 13: /* VARIABLE: PARAM_NAME ":" NAME_VAL "=" VALUE  */
-#line 298 "src/engine/data/parser/parser.y"
+#line 313 "src/engine/data/parser/parser.y"
                                                           {
-    const auto& type = std::get<string>(yyvsp[-2]);
+    const string& type = std::get<string>(yyvsp[-2]);
 
-    std::shared_ptr<ed::Variable> var{new ed::Variable};
-    var->name = std::move(std::get<string>(yyvsp[-4]));
-    var->annotation = "";
+    ed::Variable var;
+    var.name = std::move(std::get<string>(yyvsp[-4]));
+    var.annotation = "";
 
     try
     {
@@ -1602,317 +1603,326 @@ yyreduce:
         if (type == textType)                               \
         {                                                   \
           if (auto* value = std::get_if<valueType>(&yyvsp[0]))\
-            var->value = getter(*value);                    \
+            var.value = getter(*value);                    \
           else                                              \
             throw std::runtime_error("invalid value type"); \
         }
       #define NEXT else
       #define AS_IS(var) var
-      #define AS_IS_UNREF(var) *var
+      #define AS_IS_DEREF(ptr) (*ptr).val
 
-           CASE_VAR("b",  bool,     AS_IS)
-      NEXT CASE_VAR("i",  Number,   number_to_int)
-      NEXT CASE_VAR("i2", Number2,  number2_to_int2)
-      NEXT CASE_VAR("i3", Number3,  number3_to_int3)
-      NEXT CASE_VAR("i4", Number4,  number4_to_int4)
-      NEXT CASE_VAR("f",  Number,   number_to_float)
-      NEXT CASE_VAR("f2", Number2,  number2_to_float2)
-      NEXT CASE_VAR("f3", Number3,  number3_to_float3)
-      NEXT CASE_VAR("f4", Number4,  number4_to_float4)
-      NEXT CASE_VAR("m3", float3x3, AS_IS)
-      NEXT CASE_VAR("m4", float4x4, AS_IS)
-      NEXT CASE_VAR("t",  string,   AS_IS)
+           CASE_VAR("b",  bool,            AS_IS)
+      NEXT CASE_VAR("i",  Number,          number_to_int)
+      NEXT CASE_VAR("i2", Number2NodePtr,  number2_to_int2)
+      NEXT CASE_VAR("i3", Number3NodePtr,  number3_to_int3)
+      NEXT CASE_VAR("i4", Number4NodePtr,  number4_to_int4)
+      NEXT CASE_VAR("f",  Number,          number_to_float)
+      NEXT CASE_VAR("f2", Number2NodePtr,  number2_to_float2)
+      NEXT CASE_VAR("f3", Number3NodePtr,  number3_to_float3)
+      NEXT CASE_VAR("f4", Number4NodePtr,  number4_to_float4)
+      NEXT CASE_VAR("m3", Mat3NodePtr,     AS_IS_DEREF)
+      NEXT CASE_VAR("m4", Mat4NodePtr,     AS_IS_DEREF)
+      NEXT CASE_VAR("t",  string,          AS_IS)
       NEXT {
-        if (auto* scope = std::get_if<std::shared_ptr<ed::Scope>>(&yyvsp[0]))
+        if (auto* scope = std::get_if<ScopeNodePtr>(&yyvsp[0]))
         {
-          ed::TypeConstructor tc = parser.buildTypeConstructor(type, std::move(**scope));
+          ed::TypeConstructor tc = parser.buildTypeConstructor(type, std::move((*scope)->val));
           if (tc.typeId != INVALID_ED_TYPE_ID)
-            var->value = std::move(tc);
+            var.value = std::move(tc);
           else
-            throw std::runtime_error(fmt::format("unknown custom type", var->name, type));
+            throw std::runtime_error(fmt::format("unknown custom type", var.name, type));
         }
         else
-          throw std::runtime_error(fmt::format("invalid value type for the custom type. Custom type has to be initialized with scope i.e. '{}:{} = {{ }}'", var->name, type));
+          throw std::runtime_error(fmt::format("invalid value type for the custom type. Custom type has to be initialized with scope i.e. '{}:{} = {{ }}'", var.name, type));
       }
     }
     catch(const std::runtime_error& e)
     {
-      ederror(parser, fmt::format(" error in {}:{}, {} ", var->name, type, e.what()).c_str());
+      ederror(parser, fmt::format(" error in {}:{}, {} ", var.name, type, e.what()).c_str());
     }
 
-    yyval = var;
+    yyval = VariableNode::make(std::move(var));
   }
-#line 1646 "src/engine/data/parser/parser.tab.cpp"
+#line 1647 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 14: /* VARIABLE: PARAM_NAME ":" NAME_VAL "[" "]" "=" VALUE  */
-#line 351 "src/engine/data/parser/parser.y"
+#line 366 "src/engine/data/parser/parser.y"
                                                                  {
     const auto& type = std::get<string>(yyvsp[-4]);
 
-    std::shared_ptr<ed::Variable> var{new ed::Variable};
-    var->name = std::move(std::get<string>(yyvsp[-6]));
-    var->annotation = "";
+    ed::Variable var;
+    var.name = std::move(std::get<string>(yyvsp[-6]));
+    var.annotation = "";
     try
     {
-           CASE_VAR("i", std::shared_ptr<eastl::vector<Number>>, number_array_to_int_array)
-      NEXT CASE_VAR("f", std::shared_ptr<eastl::vector<Number>>, number_array_to_float_array)
-      NEXT CASE_VAR("t", std::shared_ptr<eastl::vector<string>>, AS_IS_UNREF)
+           CASE_VAR("i", NumberArrayNodePtr, number_array_to_int_array)
+      NEXT CASE_VAR("f", NumberArrayNodePtr, number_array_to_float_array)
+      NEXT CASE_VAR("t", TextArrayNodePtr,   AS_IS_DEREF)
       NEXT {
         throw std::runtime_error(string{"unknown array type"});
       }
     }
     catch(const std::runtime_error& e)
     {
-      ederror(parser, fmt::format(" error in {}:{}, {} ", var->name, type, e.what()).c_str());
+      ederror(parser, fmt::format(" error in {}:{}, {} ", var.name, type, e.what()).c_str());
     }
 
-    yyval = var;
+    yyval = VariableNode::make(std::move(var));
 
-    #undef AS_IS_UNREF
+    #undef AS_IS_DEREF
     #undef AS_IS
     #undef NEXT
     #undef CASE_VAR
   }
-#line 1678 "src/engine/data/parser/parser.tab.cpp"
+#line 1679 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 15: /* ANNOTATION: "@" "(" TEXT_VAL ")"  */
-#line 381 "src/engine/data/parser/parser.y"
+#line 396 "src/engine/data/parser/parser.y"
                             {
     yyval = std::move(yyvsp[-1]);
   }
-#line 1686 "src/engine/data/parser/parser.tab.cpp"
+#line 1687 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 16: /* PARAM_NAME: NAME_VAL  */
-#line 387 "src/engine/data/parser/parser.y"
+#line 402 "src/engine/data/parser/parser.y"
                    { yyval = std::move(yyvsp[0]); }
-#line 1692 "src/engine/data/parser/parser.tab.cpp"
+#line 1693 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 17: /* PARAM_NAME: TEXT_VAL  */
-#line 388 "src/engine/data/parser/parser.y"
+#line 403 "src/engine/data/parser/parser.y"
                    { yyval = std::move(yyvsp[0]); }
-#line 1698 "src/engine/data/parser/parser.tab.cpp"
+#line 1699 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 18: /* VALUE: TEXT_VAL  */
-#line 392 "src/engine/data/parser/parser.y"
+#line 407 "src/engine/data/parser/parser.y"
                       { yyval = yyvsp[0]; }
-#line 1704 "src/engine/data/parser/parser.tab.cpp"
+#line 1705 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 19: /* VALUE: BOOL_VAL  */
-#line 393 "src/engine/data/parser/parser.y"
+#line 408 "src/engine/data/parser/parser.y"
                       { yyval = yyvsp[0]; }
-#line 1710 "src/engine/data/parser/parser.tab.cpp"
+#line 1711 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 20: /* VALUE: NUMBER_VALUE  */
-#line 394 "src/engine/data/parser/parser.y"
+#line 409 "src/engine/data/parser/parser.y"
                       { yyval = yyvsp[0]; }
-#line 1716 "src/engine/data/parser/parser.tab.cpp"
+#line 1717 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 21: /* VALUE: NUMBER2_VALUE  */
-#line 395 "src/engine/data/parser/parser.y"
+#line 410 "src/engine/data/parser/parser.y"
                       { yyval = yyvsp[0]; }
-#line 1722 "src/engine/data/parser/parser.tab.cpp"
+#line 1723 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 22: /* VALUE: NUMBER3_VALUE  */
-#line 396 "src/engine/data/parser/parser.y"
+#line 411 "src/engine/data/parser/parser.y"
                       { yyval = yyvsp[0]; }
-#line 1728 "src/engine/data/parser/parser.tab.cpp"
+#line 1729 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 23: /* VALUE: NUMBER4_VALUE  */
-#line 397 "src/engine/data/parser/parser.y"
+#line 412 "src/engine/data/parser/parser.y"
                       { yyval = yyvsp[0]; }
-#line 1734 "src/engine/data/parser/parser.tab.cpp"
+#line 1735 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 24: /* VALUE: MAT4_VALUE  */
-#line 398 "src/engine/data/parser/parser.y"
+#line 413 "src/engine/data/parser/parser.y"
                       { yyval = yyvsp[0]; }
-#line 1740 "src/engine/data/parser/parser.tab.cpp"
+#line 1741 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 25: /* VALUE: MAT3_VALUE  */
-#line 399 "src/engine/data/parser/parser.y"
+#line 414 "src/engine/data/parser/parser.y"
                       { yyval = yyvsp[0]; }
-#line 1746 "src/engine/data/parser/parser.tab.cpp"
+#line 1747 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 26: /* VALUE: ARRAY_VALUE  */
-#line 400 "src/engine/data/parser/parser.y"
+#line 415 "src/engine/data/parser/parser.y"
                       { yyval = yyvsp[0]; }
-#line 1752 "src/engine/data/parser/parser.tab.cpp"
+#line 1753 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 27: /* VALUE: SCOPE_BODY  */
-#line 401 "src/engine/data/parser/parser.y"
+#line 416 "src/engine/data/parser/parser.y"
                       { yyval = yyvsp[0]; }
-#line 1758 "src/engine/data/parser/parser.tab.cpp"
+#line 1759 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 28: /* MAT4_VALUE: "[" ROW4_VALUE "," ROW4_VALUE "," ROW4_VALUE "," ROW4_VALUE "]"  */
-#line 405 "src/engine/data/parser/parser.y"
+#line 420 "src/engine/data/parser/parser.y"
                                                                                     {
     float4 rows[4];
-    rows[0] = number4_to_float4(std::get<Number4>(yyvsp[-7]));
-    rows[1] = number4_to_float4(std::get<Number4>(yyvsp[-5]));
-    rows[2] = number4_to_float4(std::get<Number4>(yyvsp[-3]));
-    rows[3] = number4_to_float4(std::get<Number4>(yyvsp[-1]));
+    rows[0] = number4_to_float4(yyvsp[-7]);
+    rows[1] = number4_to_float4(yyvsp[-5]);
+    rows[2] = number4_to_float4(yyvsp[-3]);
+    rows[3] = number4_to_float4(yyvsp[-1]);
 
     float4 columns[4];
     for (int i = 0; i < 4; ++i)
       for (int j = 0; j < 4; ++j)
         columns[i][j] = rows[j][i];
 
-    yyval = float4x4{columns[0], columns[1], columns[2], columns[3]};
+    yyval = Mat4Node::make(float4x4{columns[0], columns[1], columns[2], columns[3]});
   }
-#line 1777 "src/engine/data/parser/parser.tab.cpp"
+#line 1778 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 29: /* MAT3_VALUE: "[" ROW3_VALUE "," ROW3_VALUE "," ROW3_VALUE "]"  */
-#line 421 "src/engine/data/parser/parser.y"
+#line 436 "src/engine/data/parser/parser.y"
                                                                  {
     float3 rows[4];
-    rows[0] = number3_to_float3(std::get<Number3>(yyvsp[-5]));
-    rows[1] = number3_to_float3(std::get<Number3>(yyvsp[-3]));
-    rows[2] = number3_to_float3(std::get<Number3>(yyvsp[-1]));
+    rows[0] = number3_to_float3(yyvsp[-5]);
+    rows[1] = number3_to_float3(yyvsp[-3]);
+    rows[2] = number3_to_float3(yyvsp[-1]);
 
     float3 columns[3];
     for (int i = 0; i < 3; ++i)
       for (int j = 0; j < 3; ++j)
         columns[i][j] = rows[j][i];
 
-    yyval = float3x3{columns[0], columns[1], columns[2]};
+    yyval = Mat3Node::make(float3x3{columns[0], columns[1], columns[2]});
   }
-#line 1795 "src/engine/data/parser/parser.tab.cpp"
+#line 1796 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 30: /* ROW4_VALUE: "[" NUMBER4_VALUE "]"  */
-#line 436 "src/engine/data/parser/parser.y"
+#line 451 "src/engine/data/parser/parser.y"
                              {
     yyval = yyvsp[-1];
   }
-#line 1803 "src/engine/data/parser/parser.tab.cpp"
+#line 1804 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 31: /* ROW3_VALUE: "[" NUMBER3_VALUE "]"  */
-#line 442 "src/engine/data/parser/parser.y"
+#line 457 "src/engine/data/parser/parser.y"
                              {
     yyval = yyvsp[-1];
   }
-#line 1811 "src/engine/data/parser/parser.tab.cpp"
+#line 1812 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 32: /* NUMBER4_VALUE: NUMBER_VALUE "," NUMBER_VALUE "," NUMBER_VALUE "," NUMBER_VALUE  */
-#line 448 "src/engine/data/parser/parser.y"
+#line 463 "src/engine/data/parser/parser.y"
                                                                                     {
-    yyval = Number4{
-      std::get<Number>(yyvsp[-6]),
-      std::get<Number>(yyvsp[-4]),
-      std::get<Number>(yyvsp[-2]),
-      std::get<Number>(yyvsp[0])};
+    yyval = Number4Node::make(
+      Number4{
+        std::get<Number>(yyvsp[-6]),
+        std::get<Number>(yyvsp[-4]),
+        std::get<Number>(yyvsp[-2]),
+        std::get<Number>(yyvsp[0])
+      }
+    );
   }
-#line 1823 "src/engine/data/parser/parser.tab.cpp"
+#line 1827 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 33: /* NUMBER3_VALUE: NUMBER_VALUE "," NUMBER_VALUE "," NUMBER_VALUE  */
-#line 458 "src/engine/data/parser/parser.y"
+#line 476 "src/engine/data/parser/parser.y"
                                                                {
-    yyval = Number3{
-      std::get<Number>(yyvsp[-4]),
-      std::get<Number>(yyvsp[-2]),
-      std::get<Number>(yyvsp[0])};
+    yyval = Number3Node::make(
+      Number3{
+        std::get<Number>(yyvsp[-4]),
+        std::get<Number>(yyvsp[-2]),
+        std::get<Number>(yyvsp[0])
+      }
+    );
   }
-#line 1834 "src/engine/data/parser/parser.tab.cpp"
+#line 1841 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 34: /* NUMBER2_VALUE: NUMBER_VALUE "," NUMBER_VALUE  */
-#line 467 "src/engine/data/parser/parser.y"
+#line 488 "src/engine/data/parser/parser.y"
                                          {
-    yyval = Number2{
-      std::get<Number>(yyvsp[-2]),
-      std::get<Number>(yyvsp[0])};
+    yyval = Number2Node::make(
+      Number2{
+        std::get<Number>(yyvsp[-2]),
+        std::get<Number>(yyvsp[0])
+      }
+    );
   }
-#line 1844 "src/engine/data/parser/parser.tab.cpp"
+#line 1854 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 35: /* NUMBER_VALUE: FLOAT_VAL  */
-#line 475 "src/engine/data/parser/parser.y"
+#line 499 "src/engine/data/parser/parser.y"
                  { yyval = yyvsp[0]; }
-#line 1850 "src/engine/data/parser/parser.tab.cpp"
+#line 1860 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 36: /* NUMBER_VALUE: INT_VAL  */
-#line 476 "src/engine/data/parser/parser.y"
+#line 500 "src/engine/data/parser/parser.y"
                  { yyval = yyvsp[0]; }
-#line 1856 "src/engine/data/parser/parser.tab.cpp"
+#line 1866 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 37: /* ARRAY_VALUE: "[" NUMBER_LIST "]"  */
-#line 480 "src/engine/data/parser/parser.y"
+#line 504 "src/engine/data/parser/parser.y"
                            {
     yyval = yyvsp[-1];
   }
-#line 1864 "src/engine/data/parser/parser.tab.cpp"
+#line 1874 "src/engine/data/parser/parser.tab.cpp"
     break;
 
   case 38: /* ARRAY_VALUE: "[" TEXT_LIST "]"  */
-#line 483 "src/engine/data/parser/parser.y"
+#line 507 "src/engine/data/parser/parser.y"
                          {
     yyval = yyvsp[-1];
   }
-#line 1872 "src/engine/data/parser/parser.tab.cpp"
-    break;
-
-  case 39: /* NUMBER_LIST: NUMBER_VALUE "," NUMBER_LIST  */
-#line 489 "src/engine/data/parser/parser.y"
-                                         {
-  auto& l = std::get<std::shared_ptr<eastl::vector<Number>>>(yyvsp[0]);
-  l->push_back(std::get<Number>(yyvsp[-2]));
-  yyval = l;
- }
 #line 1882 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 40: /* NUMBER_LIST: NUMBER_VALUE  */
-#line 494 "src/engine/data/parser/parser.y"
-                   {
-  auto l = std::make_shared<eastl::vector<Number>>();
-  l->push_back(std::get<Number>(yyvsp[0]));
+  case 39: /* NUMBER_LIST: NUMBER_VALUE "," NUMBER_LIST  */
+#line 513 "src/engine/data/parser/parser.y"
+                                         {
+  auto& l = std::get<NumberArrayNodePtr>(yyvsp[0]);
+  l->val.push_back(std::get<Number>(yyvsp[-2]));
   yyval = l;
  }
 #line 1892 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 41: /* TEXT_LIST: TEXT_VAL "," TEXT_LIST  */
-#line 502 "src/engine/data/parser/parser.y"
-                                   {
-  auto& l = std::get<std::shared_ptr<eastl::vector<string>>>(yyvsp[0]);
-  l->push_back(std::move(std::get<string>(yyvsp[-2])));
+  case 40: /* NUMBER_LIST: NUMBER_VALUE  */
+#line 518 "src/engine/data/parser/parser.y"
+                   {
+  auto l = NumberArrayNode::make({});
+  l->val.push_back(std::get<Number>(yyvsp[0]));
   yyval = l;
  }
 #line 1902 "src/engine/data/parser/parser.tab.cpp"
     break;
 
-  case 42: /* TEXT_LIST: TEXT_VAL  */
-#line 507 "src/engine/data/parser/parser.y"
-               {
-  auto l = std::make_shared<eastl::vector<string>>();
-  l->push_back(std::move(std::get<string>(yyvsp[0])));
+  case 41: /* TEXT_LIST: TEXT_VAL "," TEXT_LIST  */
+#line 526 "src/engine/data/parser/parser.y"
+                                   {
+  auto l = std::get<TextArrayNodePtr>(yyvsp[0]);
+  l->val.push_back(std::move(std::get<string>(yyvsp[-2])));
   yyval = l;
  }
 #line 1912 "src/engine/data/parser/parser.tab.cpp"
     break;
 
+  case 42: /* TEXT_LIST: TEXT_VAL  */
+#line 531 "src/engine/data/parser/parser.y"
+               {
+  auto l = TextArrayNode::make({});
+  l->val.push_back(std::move(std::get<string>(yyvsp[0])));
+  yyval = l;
+ }
+#line 1922 "src/engine/data/parser/parser.tab.cpp"
+    break;
 
-#line 1916 "src/engine/data/parser/parser.tab.cpp"
+
+#line 1926 "src/engine/data/parser/parser.tab.cpp"
 
       default: break;
     }
@@ -2142,7 +2152,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 513 "src/engine/data/parser/parser.y"
+#line 537 "src/engine/data/parser/parser.y"
 
 
 void ederror(ed::Parser& parser, const char* msg) {
