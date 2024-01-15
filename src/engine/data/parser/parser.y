@@ -253,7 +253,7 @@ ENGINE_DATA
   ;
 
 PARAM_LIST
-  : ANNOTATED_PARAM[p] PARAM_LIST[list] {
+  : PARAM_LIST[list] ANNOTATED_PARAM[p] {
     auto l = std::get<ScopeParamArrayNodePtr>($list);
     l->val.push_back(std::get<ScopeParam>($p));
     $$ = l;

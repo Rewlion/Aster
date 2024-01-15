@@ -203,3 +203,30 @@ TEST(EngineDataParser, Include)
   EXPECT_EQ(ed.getVariable<int>("test"), 250);
   EXPECT_EQ(ed.getVariable<int>("test2"), 252);
 }
+
+TEST(EngineDataParser, ParamsOrder)
+{
+  ed::Parser parser{};
+  ed::Scope ed = parser.parseFile("cases/engine_data/param_order.ed", true);
+  
+  if (!parser.isParsingOk())
+  {
+    FAIL() << parser.getErrors();
+    return;
+  }
+
+  const eastl::vector<ed::Variable>& vars = ed.getVariables();
+  const eastl::vector<ed::Scope>& scopes = ed.getScopes();
+
+  EXPECT_EQ(vars.size(), 2);
+  EXPECT_EQ(scopes.size(), 2);
+
+  if (vars.size() != 2 || scopes.size() != 2)
+    return;
+
+
+  EXPECT_EQ(vars[0].name, "v1");
+  EXPECT_EQ(vars[1].name, "v2");
+  EXPECT_EQ(scopes[0].getName(), "s1");
+  EXPECT_EQ(scopes[1].getName(), "s2");
+}
