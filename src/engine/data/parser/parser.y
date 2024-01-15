@@ -88,7 +88,7 @@
   auto scope_params_to_scope(ed::Parser& parser, ScopeParamArray& params) -> ScopeNodePtr
   {
     ed::Scope scope = parser.makeScope();
-    for (ScopeParam& param: params | std::views::reverse)
+    for (ScopeParam& param: params)
     {
       if (auto* nestedScope = std::get_if<ScopeNodePtr>(&param))
         scope.addScope(std::move((*nestedScope)->val));
@@ -510,7 +510,7 @@ ARRAY_VALUE
   ;
 
 NUMBER_LIST
- : NUMBER_VALUE[n] "," NUMBER_LIST[list] {
+ : NUMBER_LIST[list] "," NUMBER_VALUE[n] {
   auto& l = std::get<NumberArrayNodePtr>($list);
   l->val.push_back(std::get<Number>($n));
   $$ = l;
@@ -523,7 +523,7 @@ NUMBER_LIST
  ;
 
 TEXT_LIST
- : TEXT_VAL[t] "," TEXT_LIST[list] {
+ : TEXT_LIST[list] "," TEXT_VAL[t] {
   auto l = std::get<TextArrayNodePtr>($list);
   l->val.push_back(std::move(std::get<string>($t)));
   $$ = l;

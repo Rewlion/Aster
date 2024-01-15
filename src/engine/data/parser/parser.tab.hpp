@@ -125,7 +125,7 @@ extern int eddebug;
   auto scope_params_to_scope(ed::Parser& parser, ScopeParamArray& params) -> ScopeNodePtr
   {
     ed::Scope scope = parser.makeScope();
-    for (ScopeParam& param: params | std::views::reverse)
+    for (ScopeParam& param: params)
     {
       if (auto* nestedScope = std::get_if<ScopeNodePtr>(&param))
         scope.addScope(std::move((*nestedScope)->val));

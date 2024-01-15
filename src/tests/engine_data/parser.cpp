@@ -37,6 +37,9 @@ TEST(EngineDataParser, Variable)
   EXPECT_EQ(ed.getVariable<float4x4>("m4var"), float4x4{2.0});
 
   EXPECT_EQ(ed.getVariable<string>("textvar"), string("kek"));
+  EXPECT_EQ(ed.getVariable<ed::IntArray>("iarr"), (ed::IntArray{1,2,3}));
+  EXPECT_EQ(ed.getVariable<ed::FloatArray>("farr"), (ed::FloatArray{1.0f, 2.0f, 3.0f}));
+  EXPECT_EQ(ed.getVariable<ed::TextArray>("tarr"), (ed::TextArray{"1", "2"}));
 }
 
 TEST(EngineDataParser, VariableAnnotation)
