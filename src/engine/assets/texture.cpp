@@ -8,12 +8,12 @@
 
 namespace Engine
 {
-  TextureAsset AssetsManager::loadTexture(const string& file, gapi::CmdEncoder& encoder, const gapi::TextureFormat format)
+  TextureAsset AssetsManager::loadTexture(const string_view file, gapi::CmdEncoder& encoder, const gapi::TextureFormat format)
   {
     ktxTexture* texture;
 
     const KTX_error_code error = ktxTexture_CreateFromNamedFile(
-      file.c_str(),
+      file.data(),
       KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
       &texture);
 
@@ -44,12 +44,12 @@ namespace Engine
     return asset;
   }
 
-  TextureAsset AssetsManager::loadCubeMapTexture(const string& file, gapi::CmdEncoder& encoder, const gapi::TextureFormat format)
+  TextureAsset AssetsManager::loadCubeMapTexture(const string_view file, gapi::CmdEncoder& encoder, const gapi::TextureFormat format)
   {
     ktxTexture* texture;
 
     const KTX_error_code error = ktxTexture_CreateFromNamedFile(
-      file.c_str(),
+      file.data(),
       KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
       &texture);
 

@@ -24,10 +24,10 @@ namespace Engine
   {
     std::unique_ptr<gapi::CmdEncoder> encoder{gapi::allocate_cmd_encoder()};
 
-    DataBlock* assets = get_app_settings()->getChildBlock("assets");
-    for (const DataBlock& asset: assets->getChildBlocks())
+    const ed::Scope& assets = get_app_settings().getScope("assets");
+    for (const ed::Scope& asset: assets.getScopes())
     {
-      const string assetType = asset.getName();
+      const string_view assetType = asset.getName();
 
       if (assetType == "texture")
         loadTextureAsset(asset, *encoder);
@@ -75,22 +75,22 @@ namespace Engine
   }
 
   static
-  auto get_texture_asset_format(const DataBlock& asset) -> gapi::TextureFormat
+  auto get_texture_asset_format(const ed::Scope& asset) -> gapi::TextureFormat
   {
-    const string format = asset.getText("format");
+    const string_view format = asset.getVariable<string_view>("format");
     return format == "r16" ? gapi::TextureFormat::R16_UNORM
                            : gapi::TextureFormat::R8G8B8A8_UNORM;
   }
 
-  void AssetsManager::loadTextureAsset(const DataBlock& asset, gapi::CmdEncoder& encoder)
+  void AssetsManager::loadTextureAsset(const ed::Scope& asset, gapi::CmdEncoder& encoder)
   {
-    const bool isCubeMap = asset.getBool("cubemap", false);
-    const string file = asset.getText("bin");
-    const string name = asset.getText("name");
+    const bool isCubeMap = asset.getVariableOr<bool>("cubemap", false);
+    const string_view file = asset.getVariable<string_view>("bin");
+    const string_view name = asset.getVariable<string_view>("name");
     const gapi::TextureFormat format = get_texture_asset_format(asset);
 
     loginfo("asset manager: loading texture: {} as {}", file, name);
-    const string_hash nameHash = str_hash(name.c_str());
+    const string_hash nameHash = str_hash(name);
 
     TextureAsset textureAsset = isCubeMap ?
                                   loadCubeMapTexture(file,encoder, format) :
@@ -102,13 +102,13 @@ namespace Engine
       });
   }
 
-  void AssetsManager::loadStaticMesh(const DataBlock& asset, gapi::CmdEncoder& encoder)
+  void AssetsManager::loadStaticMesh(const ed::Scope& asset, gapi::CmdEncoder& encoder)
   {
-    const string file = asset.getText("bin");
-    const string name = asset.getText("name");
+    const string_view file = asset.getVariable<string_view>("bin");
+    const string_view name = asset.getVariable<string_view>("name");
 
     loginfo("asset manager: loading static_mesh: {} as {}", file, name);
-    const string_hash nameHash = str_hash(name.c_str());
+    const string_hash nameHash = str_hash(name);
 
     StaticMesh staticMeshAsset = loadGltf(file, encoder);
     m_StaticMeshes.insert({
@@ -117,11 +117,11 @@ namespace Engine
     });
   }
 
-  void AssetsManager::loadModelAsset(const DataBlock& asset)
+  void AssetsManager::loadModelAsset(const ed::Scope& asset)
   {
-    const string name = asset.getText("name");
-    const string mesh = asset.getText("mesh");
-    const string_hash meshHash = str_hash(mesh.c_str());
+    const string_view name = asset.getVariable<string_view>("name");
+    const string_view mesh = asset.getVariable<string_view>("mesh");
+    const string_hash meshHash = str_hash(mesh);
 
     loginfo("asset manager: loading model_asset: {}", name);
 
@@ -131,7 +131,7 @@ namespace Engine
     ModelAsset model;
     model.mesh = &meshIt->second;
 
-    for (const auto& material: asset.getChildBlocks())
+    for (const ed::Scope& material: asset.getScopes())
     {
       if (material.getName() != "material")
         continue;
@@ -140,28 +140,28 @@ namespace Engine
     }
 
     m_ModelAssets.insert({
-      str_hash(name.c_str()),
+      str_hash(name),
       std::move(model)
     });
   }
 
-  tfx::Material AssetsManager::createMaterial(const DataBlock& matBlk)
+  tfx::Material AssetsManager::createMaterial(const ed::Scope& mat)
   {
     tfx::Material material;
-    material.technique = matBlk.getAnnotation();
+    material.technique = mat.getAnnotation();
 
-    for (const auto& attribute: matBlk.getAttributes())
+    for (const ed::Variable& var: mat.getVariables())
     {
-      if (attribute.type != DataBlock::Attribute::Type::Text || attribute.annotation != "texture")
+      if (var.getValueType() != ed::ValueType::Text || var.annotation != "texture")
         continue;
 
-      const string textureName = std::get<string>(attribute.as);
+      const string_view textureName = std::get<string>(var.value);
       TextureAsset asset;
-      bool r = getTexture(str_hash(textureName.c_str()), asset);
+      bool r = getTexture(str_hash(textureName), asset);
       ASSERT(r != false);
 
       material.params.push_back(tfx::ParamDescription{
-        .name = attribute.name,
+        .name = var.name,
         .value = asset.texture
       });
     }

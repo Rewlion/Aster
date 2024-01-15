@@ -1,9 +1,9 @@
 #pragma once
 
-#include <engine/datablock/datablock.h>
+#include <engine/data/ed.h>
 
 namespace Engine
 {
-  void load_app_settings(const char* path);
-  DataBlock* get_app_settings();
+  void load_app_settings(const string_view path);
+  auto get_app_settings() -> ed::Scope&;
 }

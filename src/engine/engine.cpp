@@ -36,7 +36,7 @@ namespace Engine
     InitLog();
     Time::init_clock();
 
-    load_app_settings("game_data/settings.blk");
+    load_app_settings("game_data/settings.ed");
     vfs::init();
 
     Window::init_window();
@@ -47,13 +47,14 @@ namespace Engine
     init_input();
     editor::Manager::init();
 
-    const DataBlock* settings = Engine::get_app_settings();
-    const string matBinPath = settings->getChildBlock("graphics")->getText("materials_bin");
+    const ed::Scope& settings = Engine::get_app_settings();
+    const string_view matBinPath = settings.getScope("graphics")
+                                           .getVariable<string_view>("materials_bin");
     tfx::load_materials_bin(matBinPath);
 
     ecs::init_from_settings();
 
-    load_level(settings->getText("init_level") );
+    load_level(settings.getVariable<string_view>("init_level"));
 
     imgui::Manager::init();
     Render::world_render.init();

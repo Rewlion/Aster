@@ -1,6 +1,6 @@
 #include "scene.h"
 
-#include <engine/datablock/datablock.h>
+#include <engine/data/ed.h>
 #include <engine/math.h>
 
 namespace Engine
@@ -16,19 +16,19 @@ namespace Engine
     return angles;
   }
 
-  void Scene::loadScene(const DataBlock& sceneBlk)
+  void Scene::loadScene(const ed::Scope& scene)
   {
     m_SceneObjects.clear();
 
-    for (const auto& obj: sceneBlk.getChildBlocks())
+    for (const auto& obj: scene.getScopes())
     {
       if (obj.getName() == "object")
       {
         Object newObj;
-        newObj.model = obj.getText("model");
-        newObj.pos = obj.getFloat3("pos");
-        newObj.scale = obj.getFloat3("scale", {1, 1, 1});
-        newObj.rot = to_radians(obj.getFloat3("rot", {0, 0, 0}));
+        newObj.model = obj.getVariable<string_view>("model");
+        newObj.pos = obj.getVariable<float3>("pos");
+        newObj.scale = obj.getVariableOr<float3>("scale", {1, 1, 1});
+        newObj.rot = to_radians(obj.getVariableOr<float3>("rot", {0, 0, 0}));
         m_SceneObjects.push_back(std::move(newObj));
       }
     }

@@ -1,0 +1,6 @@
+texture
+{
+  cubemap:b = yes
+  bin:t = "bin/assets/skybox/skybox.ktx2"
+  name:t = "skybox"
+}

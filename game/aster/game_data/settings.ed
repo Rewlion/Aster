@@ -1,0 +1,37 @@
+app_name:t ="aster"
+
+#include "bin/assets/assets.ed"
+
+fonts_folder:t = "bin/fonts"
+
+entity_templates
+{
+  template:t = "game_data/templates/templates.ed"
+}
+
+vfs
+{
+  "@engine_res"
+  {
+    source:t = "../../src/engine/resources"
+  }
+}
+
+init_level:t = "game_data/levels/test_level.ed"
+
+input_settings:t = "game_data/input.ed"
+input_mappings:t = "game_data/input_mappings.ed"
+
+graphics
+{
+  gapi:t = "vulkan"
+  debug_marks:b = yes
+  resolution:t = "1980x1024"
+  materials_bin:t = "bin/shaders_spirv.bin"
+}
+
+vulkan
+{
+  validation:b = on
+}
+

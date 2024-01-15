@@ -55,12 +55,12 @@ namespace gapi::vulkan
         m_SupportedInstanceExts.set((size_t)InstanceExtensionsBits::DebugUtils);
     }
 
-    const auto appName = Engine::get_app_settings()->getText("app_name");
+    const string_view appName = Engine::get_app_settings().getVariable<string_view>("app_name");
 
     const auto appInfo = vk::ApplicationInfo()
-      .setPApplicationName(appName.c_str())
+      .setPApplicationName(appName.data())
       .setApplicationVersion(VK_MAKE_VERSION(-1, 0, 0))
-      .setPEngineName(appName.c_str())
+      .setPEngineName(appName.data())
       .setEngineVersion(VK_MAKE_VERSION(-1, 0, 0))
       .setApiVersion(ENGINE_VK_VERSION);
 
@@ -86,8 +86,8 @@ namespace gapi::vulkan
     const uint32_t validationLayersCount =
     #if CFG_DEBUG_VALIDATION
       Engine::get_app_settings()
-        ->getChildBlock("vulkan")
-        ->getBool("validation", false) ? (sizeof(validationLayers) / sizeof(validationLayers[0])) : 0;
+        .getScope("vulkan")
+        .getVariableOr<bool>("validation", false) ? (sizeof(validationLayers) / sizeof(validationLayers[0])) : 0;
     #else
       0;
     #endif
@@ -237,7 +237,7 @@ namespace gapi::vulkan
     Device::Capabilities caps;
   #if CFG_DEBUG_UTILS
     if (m_SupportedInstanceExts.isSet((size_t)InstanceExtensionsBits::DebugUtils) &&
-      Engine::get_app_settings()->getChildBlock("graphics")->getBool("debug_marks", false))
+      Engine::get_app_settings().getScope("graphics").getVariableOr<bool>("debug_marks", false))
     {
       caps.set((size_t)Device::CapabilitiesBits::DebugMarks);
     }

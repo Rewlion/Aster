@@ -1,6 +1,0 @@
-texture
-{
-  text bin = "bin/assets/level/detail/grass_albedo_dbg.ktx"
-  text name = "test_level.detail.albedo"
-}
-

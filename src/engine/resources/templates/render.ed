@@ -1,0 +1,60 @@
+template @("name: CoreRender") {
+  component @("FontRender font_render") {}
+  component @("GuiRender gui_render") {}
+  component @("ImGuiRender imgui_render") {}
+  component @("ClusteredLights clustered_lights") {}
+
+  render_window_size:i2 = 0, 0
+  
+  //TAA
+  render_prev_view_proj:m4 = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+  render_prev_jitter:f2 = 0, 0
+}
+
+template @("name: CoreRenderDebug; extends: CoreRender") {
+  component @("TextDbgQueue dbg_text_queue") {}
+  component @("DbgLineRenderer dbg_line_renderer") {}
+  component @("DbgPolyRenderer dbg_poly_renderer") {}
+}
+
+template @("name: Atmosphere") {
+  atm_radius_top_km:f = 6420
+  atm_radius_bot_km:f = 6360
+}
+
+template @("name: AtmosphereRender") {
+  atm_lut_state:i = 0
+  atm_render_tag:i = 0
+}
+
+template @("name: Sun") {
+  sun_azimuth:f = 40
+  sun_altitude:f = 35
+}
+
+template @("name: VirtualTerrain") {
+  vterrain_name:t = ""
+  vterrain_heightmapMinMaxBorder:f2 = 0, 1 //texture values borders
+  vterrain_heightmapMaxHeight:f = 30
+  vterrain_patchSideBits:i = 5 // LOD 0 splits on 32x32 1meter patches
+  vterrain_worldSize_meters:i = 1024
+
+  vterrain_detailSize:i = 256
+  vterrain_detail:t = ""
+}
+
+template @("name: VirtualTerrainRender") {
+  component @("TerrainRender vterrain_render") {}
+}
+
+template @("name: Decal") {
+  decal_name:t = ""
+  size:f3 = 1, 1, 1
+  pos:f3 = 0, 0, 0
+}
+
+template @("name: PointLight") {
+  pos:f3 = 0, 0, 0
+  point_light_attenuation_radius:f = 1
+  point_light_color:f3 = 1, 1, 1
+}

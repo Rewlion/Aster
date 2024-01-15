@@ -1,0 +1,37 @@
+texture
+{
+  bin:t = "bin/assets/damaged_helmet/albedo.ktx"
+  name:t = "damaged_helmet.albedo"
+}
+
+texture
+{
+  bin:t = "bin/assets/damaged_helmet/metal_roughness.ktx"
+  name:t = "damaged_helmet.metal_roughness"
+}
+
+texture
+{
+  bin:t = "bin/assets/damaged_helmet/normal.ktx"
+  name:t = "damaged_helmet.normal"
+}
+
+
+static_mesh
+{
+  bin:t = "bin/assets/damaged_helmet/DamagedHelmet.gltf"
+  name:t = "damaged_helmet"
+}
+
+model_asset
+{
+  name:t = "damaged_helmet"
+  mesh:t = "damaged_helmet"
+
+  material @("SceneOpaque")
+  {
+    "albedo":t = "damaged_helmet.albedo" @("texture")
+    "metal_roughness":t = "damaged_helmet.metal_roughness" @("texture")
+    "normal":t = "damaged_helmet.normal" @("texture")
+  }
+}

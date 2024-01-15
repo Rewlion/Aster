@@ -1,0 +1,22 @@
+texture
+{
+  bin:t = "bin/assets/cube/container.ktx"
+  name:t = "cube.container"
+}
+
+static_mesh
+{
+  bin:t = "bin/assets/cube/cube.gltf"
+  name:t = "cube"
+}
+
+model_asset
+{
+  name:t = "cube"
+  mesh:t = "cube"
+
+  material @("TestStaticMesh")
+  {
+    "albedo":t = "cube.container" @("texture")
+  }
+}

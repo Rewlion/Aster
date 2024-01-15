@@ -32,7 +32,7 @@ namespace gapi
 
   void init()
   {
-    const string& api = Engine::get_app_settings()->getText("gapi", "vulkan");
+    const string_view api = Engine::get_app_settings().getVariableOr<string_view>("gapi", "vulkan");
     if (api == "vulkan")
       vulkan::init();
     else

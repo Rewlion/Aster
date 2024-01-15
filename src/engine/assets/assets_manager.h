@@ -7,7 +7,10 @@
 
 #include <memory>
 
-class DataBlock;
+namespace ed
+{
+  class Scope;
+}
 
 namespace gapi
 {
@@ -55,13 +58,13 @@ namespace Engine
 
     private:
       void loadAssetsFromFs();
-      StaticMesh loadGltf(const string& file, gapi::CmdEncoder& encoder);
-      TextureAsset loadTexture(const string& file, gapi::CmdEncoder& encoder, const gapi::TextureFormat);
-      TextureAsset loadCubeMapTexture(const string& file, gapi::CmdEncoder& encoder, const gapi::TextureFormat);
-      void loadTextureAsset(const DataBlock& asset, gapi::CmdEncoder& encoder);
-      void loadStaticMesh(const DataBlock& asset, gapi::CmdEncoder& encoder);
-      void loadModelAsset(const DataBlock& asset);
-      tfx::Material createMaterial(const DataBlock& matBlk);
+      StaticMesh loadGltf(const string_view file, gapi::CmdEncoder& encoder);
+      TextureAsset loadTexture(const string_view file, gapi::CmdEncoder& encoder, const gapi::TextureFormat);
+      TextureAsset loadCubeMapTexture(const string_view file, gapi::CmdEncoder& encoder, const gapi::TextureFormat);
+      void loadTextureAsset(const ed::Scope& asset, gapi::CmdEncoder& encoder);
+      void loadStaticMesh(const ed::Scope& asset, gapi::CmdEncoder& encoder);
+      void loadModelAsset(const ed::Scope& asset);
+      tfx::Material createMaterial(const ed::Scope& matBlk);
     private:
       eastl::hash_map<string_hash, StaticMesh> m_StaticMeshes;
       eastl::hash_map<string_hash, TextureAsset> m_Textures;

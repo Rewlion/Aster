@@ -21,28 +21,28 @@ namespace ecs
 
     registry.reset(new Registry);
 
-    DataBlock* settings = Engine::get_app_settings();
+    const ed::Scope& settings = Engine::get_app_settings();
 
     loginfo("ecs: initializing components meta");
     init_meta_storage();
 
     loginfo("ecs: init templates");
     for (const char* p: {
-      "@engine_res/templates/render.bk"})
+      "@engine_res/templates/render.ed"})
     {
       loginfo("ecs: reading templates from {}", p);
-      add_templates_from_blk(*registry, p);
+      add_templates_from_ed(*registry, p);
     }
 
-    DataBlock* templates = settings->getChildBlock("entity_templates");
-    for(const auto& attr: templates->getAttributes())
+    const ed::Scope& templates = settings.getScope("entity_templates");
+    for(const ed::Variable& var: templates.getVariables())
     {
-      if (attr.type == DataBlock::Attribute::Type::Text)
+      if (var.getValueType() == ed::ValueType::Text)
       {
-        const string blkWithTemplates = std::get<string>(attr.as);
-        loginfo("ecs: reading templates from {}", blkWithTemplates);
+        const string_view edWithTemplates = std::get<string>(var.value);
+        loginfo("ecs: reading templates from {}", edWithTemplates);
 
-        add_templates_from_blk(*registry, blkWithTemplates);
+        add_templates_from_ed(*registry, edWithTemplates);
       }
     }
 

@@ -1,7 +1,6 @@
 #include "level.h"
 
-#include <engine/datablock/datablock.h>
-#include <engine/datablock/utils.h>
+#include <engine/data/utils.h>
 #include <engine/ecs/ecs.h>
 #include <engine/input/input.h>
 #include <engine/scene/scene.h>
@@ -10,21 +9,21 @@
 
 namespace
 {
-  ecs::EntityComponents entity_components(const DataBlock& entity)
+  ecs::EntityComponents entity_components(const ed::Scope& entity)
   {
     ecs::EntityComponents init;
 
-    #define DECL_COMP_INIT(blk_type, type)\
-      case DataBlock::Attribute::Type::blk_type:\
+    #define DECL_COMP_INIT(ed_type, type)\
+      case ed::ValueType::ed_type:\
       {\
-        init[attr.name.c_str()] = std::get<type>(attr.as);\
+        init[var.name.c_str()] = std::get<type>(var.value);\
         break;\
       }
 
 
-    for(const auto& attr: entity.getAttributes())
+    for(const ed::Variable& var: entity.getVariables())
     {
-      switch(attr.type)
+      switch(var.getValueType())
       {
         DECL_COMP_INIT(Int,    int)
         DECL_COMP_INIT(Int2,   int2)
@@ -38,6 +37,7 @@ namespace
         DECL_COMP_INIT(Bool,   bool)
         DECL_COMP_INIT(Mat3,   mat3)
         DECL_COMP_INIT(Mat4,   mat4)
+        default: {}
       }
     }
     #undef DECL_COMP_INIT
@@ -47,35 +47,34 @@ namespace
 
 namespace Engine
 {
-  static void add_entity(const DataBlock& entityBlk)
+  static void add_entity(const ed::Scope& entity)
   {
-    string tmpl = entityBlk.getAnnotation();
+    const string_view tmpl = entity.getAnnotation();
     if (tmpl != "")
     {
-      ecs::get_registry().createEntity(tmpl, entity_components(entityBlk));
+      ecs::get_registry().createEntity(tmpl, entity_components(entity));
     }
     else
     {
-      logerror("entity `{}` doesn't have template", entityBlk.getName());
+      logerror("entity `{}` doesn't have a template", entity.getName());
       return;
     }
   }
 
-  void load_level(const string& levelBlk)
+  void load_level(const string_view file)
   {
-    DataBlock blk;
-    const bool levelLoaded = load_blk_from_file(&blk, levelBlk.c_str());
-    ASSERT(levelLoaded);
+    std::optional<ed::Scope> level = ed::load_from_file(file);
+    ASSERT_FMT_RETURN(level.has_value(), , "failed to load the level `{}`", file);
 
-    for(const DataBlock& entityBlk: blk.getChildBlocks())
-      if (entityBlk.getName() == "entity")
-        add_entity(entityBlk);
+    for(const ed::Scope& entity: level->getScopes())
+      if (entity.getName() == "entity")
+        add_entity(entity);
 
-    const string actionSet = blk.getText("input.initial_action_set");
+    const string actionSet = level->getVariable<string>("input.initial_action_set");
     Input::Manager::enableActionSet(actionSet, true);
 
-    const DataBlock* sceneBlk = blk.getChildBlock("scene");
-    ::Engine::scene.loadScene(*sceneBlk);
+    const ed::Scope& scene = level->getScope("scene");
+    ::Engine::scene.loadScene(scene);
   }
 
 }

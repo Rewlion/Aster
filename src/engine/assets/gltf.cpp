@@ -215,14 +215,14 @@ namespace Engine
     return asset;
   }
 
-  StaticMesh AssetsManager::loadGltf(const string& file, gapi::CmdEncoder& encoder)
+  StaticMesh AssetsManager::loadGltf(const string_view file, gapi::CmdEncoder& encoder)
   {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
     string err;
     string warn;
 
-    bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, file.c_str());
+    bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, file.data());
 
     if (!warn.empty())
       logwarn("asset manager: failed to load `{}` :{}", file, warn);

@@ -29,11 +29,11 @@ namespace Engine::Render
 
   void FontRender::init()
   {
-    const DataBlock* settings = Engine::get_app_settings();
-    const string fontFolder = settings->getText("fonts_folder");
+    const ed::Scope& settings = Engine::get_app_settings();
+    const string_view fontFolder = settings.getVariable<string_view>("fonts_folder");
     if (fontFolder != "")
     {
-      const string font = fontFolder + "/arial.ttf";
+      const string font = fmt::format("{}/arial.ttf", fontFolder);
       init(font);
     }
     else

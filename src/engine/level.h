@@ -4,5 +4,5 @@
 
 namespace Engine
 {
-  void load_level(const string& levelBlk);
+  void load_level(const string_view levelBlk);
 }

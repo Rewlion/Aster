@@ -105,14 +105,13 @@ namespace vfs
 {
   void init()
   {
-    const DataBlock* vfsBk = Engine::get_app_settings()->getChildBlock("vfs");
-    for (const auto& bk : vfsBk->getChildBlocks())
+    const ed::Scope& vfsEd = Engine::get_app_settings().getScope("vfs");
+    for (const ed::Scope& ed : vfsEd.getScopes())
     {
-      const string& mountPoint = bk.getName();
-      const string def;
-      const string& dst = bk.getText("source", def);
+      const string_view& mountPoint = ed.getName();
+      const string_view dst = ed.getVariable<string_view>("source");
 
-      ASSERT_FMT(dst != def, "vfs: source mount point {} don't have dst", mountPoint);
+      ASSERT_FMT(dst != string_view{}, "vfs: source mount point {} doesn't have a dst", mountPoint);
 
       vfsManager.mountSource(mountPoint, dst);
     }

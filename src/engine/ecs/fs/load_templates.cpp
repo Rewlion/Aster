@@ -1,7 +1,7 @@
 #include "load_templates.h"
 
-#include <engine/datablock/datablock.h>
-#include <engine/datablock/utils.h>
+#include <engine/assert.h>
+#include <engine/data/utils.h>
 #include <engine/ecs/registry.h>
 #include <engine/log.h>
 #include <engine/types.h>
@@ -23,20 +23,20 @@ namespace ecs
     };
   }
 
-  auto get_template_components(const DataBlock& tmpl) -> TemplateComponentsMap 
+  auto get_template_components(const ed::Scope& tmpl) -> TemplateComponentsMap 
   {
     TemplateComponentsMap comps;
-    #define ADD_TMPL_COMP(blk_type, _type) \
-      case DataBlock::Attribute::Type::blk_type:\
+    #define ADD_TMPL_COMP(ed_type, _type) \
+      case ed::ValueType::ed_type:\
       {\
-        const string& name = attr.name;\
-        comps[name] = std::get<_type>(attr.as);\
+        const string& name = var.name;\
+        comps[name] = std::get<_type>(var.value);\
         break;\
       }
 
-    for(auto& attr: tmpl.getAttributes())
+    for(const ed::Variable& var: tmpl.getVariables())
     {
-      switch(attr.type)
+      switch(var.getValueType())
       {
         ADD_TMPL_COMP(Int, int)
         ADD_TMPL_COMP(Int2, int2)
@@ -49,15 +49,19 @@ namespace ecs
         ADD_TMPL_COMP(Mat4, mat4)
         ADD_TMPL_COMP(Text, string)
         ADD_TMPL_COMP(Bool, bool)
+        default:
+        {
+          logwarn("ecs: template `{}`, ignored component: `{}` ", tmpl.getName(), var.name);
+        }
       }
     }
 
     #undef ADD_TMPL_COMP
 
-    for (auto& child: tmpl.getChildBlocks())
+    for (const ed::Scope& child: tmpl.getScopes())
     {
-      const string& type = child.getName();
-      const string& name = child.getAnnotation();
+      const string_view type = child.getName();
+      const string_view name = child.getAnnotation();
 
       if (type == "entity_id")
       {
@@ -79,14 +83,15 @@ namespace ecs
   }
 
   static
-  auto get_template_annotations(string& raw_str) -> Annotations
+  auto get_template_annotations(const string_view raw_str) -> Annotations
   {
     Annotations annotations;
     eastl::vector<string> strs;
 
+    string rawStr{raw_str};
     if (!raw_str.empty())
     {
-      string_view strs{raw_str.begin(), std::remove(raw_str.begin(), raw_str.end(), ' ')};     
+      string_view strs{rawStr.begin(), std::remove(rawStr.begin(), rawStr.end(), ' ')};     
 
       for (const auto& strRange: std::views::split(strs, ';'))
       {
@@ -125,21 +130,17 @@ namespace ecs
     loginfo("adding template {} {}", annotations.name, extends);
   }
 
-  void add_templates_from_blk(Registry& registry, const string& blkPath)
+  void add_templates_from_ed(Registry& registry, const string_view file)
   {
-    DataBlock blk;
-    if (!load_blk_from_file(&blk, blkPath.c_str()))
-    {
-      logerror("failed to load templates from {}", blkPath);
-      return;
-    }
+    std::optional<ed::Scope> templates = ed::load_from_file(file);
+    ASSERT_FMT_RETURN(templates.has_value(), , "failed to load ecs templates from `{}`", file);
 
-    for(const auto& tmpl: blk.getChildBlocks())
+    for(const ed::Scope& tmpl: templates->getScopes())
     {
       if (tmpl.getName() != "template")
         continue;
 
-      string rawAnnotations = tmpl.getAnnotation();
+      string_view rawAnnotations = tmpl.getAnnotation();
       auto annotations = get_template_annotations(rawAnnotations);
 
       if (annotations.name.empty())

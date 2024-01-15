@@ -2,7 +2,6 @@
 
 #include <engine/algorithm/hash.h>
 #include <engine/assert.h>
-#include <engine/datablock/utils.h>
 #include <engine/gapi/vulkan/device.h>
 #include <engine/gapi/vulkan/gapi_to_vk.h>
 #include <engine/log.h>

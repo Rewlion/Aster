@@ -1,0 +1,71 @@
+template @("name: template1"){
+  test_float2:f2 = 33.0, 33.0
+  test_float:f = 22.0
+  test_str:t = "a"
+}
+
+template @("name: template2") {
+  test_float2:f2 = 0.0, 66.0
+  default_str:t = "default value"
+}
+
+template @("name: template3; extends: template1, template2") {
+  test_str:t = "new_a"
+  test_float3:f3 = 11.0, 11.0, 11.0
+}
+
+template @("name: camera")
+{
+  pos:f3 = 0.0, 0.0, 0.0
+  camera_fov:f = 0.0
+  camera_zNear:f = 0.0
+  camera_zFar:f = 0.0
+  camera_rotations:f2 = 0.0, 0.0
+  forward:f3 = 0.0, 0.0, 0.0
+}
+
+template @("name: src_tmpl")
+{
+  fl_data:f = 0.1
+  txt_data:t = "myText"
+}
+
+template @("name: dst_tmpl")
+{
+  fl_data:f = 0.2
+  txt_data2:t = "newText"
+}
+
+template @("name: subt")
+{
+  flag:b = true
+}
+
+template @("name: pawn")
+{
+  pawn_pos:f = 0.24
+}
+
+template @("name: controller")
+{
+  entity_id @("pawn_eid") {}
+  controller_flag:b = false
+}
+
+template @("name: MovingDecal; extends: Decal")
+{
+  moving_decal_flag:b = true
+  center_pos:f3 = 0, 0, 0
+}
+
+template @("name: CollisionTests")
+{
+  collision_test_tag:b = true
+  center:f3 = 0, 0, 0
+}
+
+template @("name: MovingPointLight; extends: PointLight")
+{
+  center_pos:f3 = 0, 0, 0
+  moving_point_light_tag:b = yes
+}

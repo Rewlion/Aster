@@ -1,22 +1,25 @@
 #include "settings.h"
 
 #include <engine/assert.h>
-#include <engine/datablock/datablock.h>
-#include <engine/datablock/utils.h>
+#include <engine/data/utils.h>
 #include <engine/log.h>
 
 namespace Engine
 {
-  static DataBlock SETTINGS_BLK;
+  static ed::Scope SETTINGS_DATA;
 
-  void load_app_settings(const char* blkPath)
+  void load_app_settings(const string_view file)
   {
-    ASSERT_FMT(load_blk_from_file(&SETTINGS_BLK, blkPath),
-      "failed to load application settings from {}", blkPath);
+    std::optional<ed::Scope> settings = ed::load_from_file(file);
+
+    ASSERT_FMT_RETURN(settings.has_value(), ,
+      "failed to load application settings from {}", file);
+
+    SETTINGS_DATA = std::move(settings.value());
   }
 
-  DataBlock* get_app_settings()
+  ed::Scope& get_app_settings()
   {
-    return &SETTINGS_BLK;
+    return SETTINGS_DATA;
   }
 }

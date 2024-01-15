@@ -1,0 +1,12 @@
+texture
+{
+  bin:t = "bin/assets/level/diffuse.ktx2"
+  name:t = "test_level.albedo"
+}
+
+texture
+{
+  format:t = "r16"
+  bin:t = "bin/assets/level/heightmap.ktx2"
+  name:t = "test_level.heightmap"
+}

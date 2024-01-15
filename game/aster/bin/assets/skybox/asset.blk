@@ -1,6 +1,0 @@
-texture
-{
-  bool cubemap = yes
-  text bin = "bin/assets/skybox/skybox.ktx2"
-  text name = "skybox"
-}

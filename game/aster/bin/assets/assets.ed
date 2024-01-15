@@ -1,0 +1,9 @@
+assets
+{
+  #include "bin/assets/cube/asset.ed"
+  #include "bin/assets/damaged_helmet/asset.ed"
+  #include "bin/assets/decals/asset.ed"
+  #include "bin/assets/skybox/asset.ed"
+  #include "bin/assets/level/asset.ed"
+  #include "bin/assets/level/detail/asset.ed"
+}

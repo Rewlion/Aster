@@ -15,7 +15,10 @@
 
 #undef max
 
-class DataBlock;
+namespace ed
+{
+  class Scope;
+}
 
 namespace Engine::Input
 {
@@ -72,8 +75,8 @@ namespace Engine::Input
       auto getAnalogActionData(const int id) -> int2;
 
     private:
-      void loadRegisteredActions(const DataBlock& inputSettings);
-      void loadControllerMappings(const DataBlock& controllerMappings);
+      void loadRegisteredActions(const ed::Scope& inputSettings);
+      void loadControllerMappings(const ed::Scope& controllerMappings);
       void removeActionsWithoutBinding();
 
       void processInputMessages();

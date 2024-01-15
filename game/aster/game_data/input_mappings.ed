@@ -1,0 +1,58 @@
+Bindings
+{
+  MoveLeft
+  {
+    device:i = 0
+    button:i = 34
+  }
+
+  MoveRight
+  {
+    device:i = 0
+    button:i = 37
+  }
+
+  MoveForward
+  {
+    device:i = 0
+    button:i = 56
+  }
+
+  MoveBackward
+  {
+    device:i = 0
+    button:i = 52
+  }
+
+  MoveUp
+  {
+    device:i = 0
+    button:i = 10
+  }
+
+  MoveDown
+  {
+    device:i = 0
+    button:i = 21
+  }
+
+  CameraRotation
+  {
+    device:i = 1
+    x_axis:i = 0
+    y_axis:i = 1
+  }
+
+  GuiMouseClick
+  {
+    device:i = 1
+    button:i = 0
+  }
+
+  GuiMouseMove
+  {
+    device:i = 1
+    x_axis:i = 0
+    y_axis:i = 1
+  }
+}

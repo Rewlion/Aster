@@ -1,7 +1,7 @@
 #include "input.h"
 
 #include <engine/assert.h>
-#include <engine/datablock/utils.h>
+#include <engine/data/utils.h>
 #include <engine/debug_marks.h>
 #include <engine/log.h>
 #include <engine/settings.h>
@@ -55,26 +55,24 @@ namespace Engine::Input
     ASSERT(Manager::m_This == nullptr);
     Manager::m_This = new Manager;
 
-    string inputFile = Engine::get_app_settings()->getText("input_settings");
+    const string_view inputFile = Engine::get_app_settings().getVariable<string_view>("input_settings");
     ASSERT(inputFile != "");
 
     loginfo("loading input settings from {}", inputFile);
 
-    DataBlock inputSettings;
-    const bool inputLoaded = load_blk_from_file(&inputSettings, inputFile.c_str());
-    ASSERT(inputLoaded);
+    std::optional<ed::Scope> inputSettings = ed::load_from_file(inputFile);
+    ASSERT_FMT_RETURN(inputSettings.has_value(), , "failed to load input settings from `{}`", inputFile);
 
-    Manager::m_This->loadRegisteredActions(*inputSettings.getChildBlock("ActionSets"));
+    Manager::m_This->loadRegisteredActions(inputSettings->getScope("ActionSets"));
 
-    string mappingsFile = Engine::get_app_settings()->getText("input_mappings");
-    ASSERT(mappingsFile != "");
+    const string_view mappingsFile = Engine::get_app_settings().getVariable<string_view>("input_mappings");
+    ASSERT_FMT_RETURN(mappingsFile != "", , "input settings file `{}` misses input_mappings:t with mappings file location", inputFile, mappingsFile);
 
-    DataBlock controllerMappings;
-    const bool mappingsLoaded = load_blk_from_file(&controllerMappings, mappingsFile.c_str());
-    ASSERT(mappingsLoaded);
+    std::optional<ed::Scope> controllerMappings = ed::load_from_file(mappingsFile);
+    ASSERT_FMT_RETURN(controllerMappings.has_value(), , "failed to load input mappings from `{}`", mappingsFile);
 
-    DataBlock* bindingsBlk = controllerMappings.getChildBlock("Bindings");
-    Manager::m_This->loadControllerMappings(*bindingsBlk);
+    const ed::Scope& bindingsEd = controllerMappings->getScope("Bindings");
+    Manager::m_This->loadControllerMappings(bindingsEd);
 
     Manager::m_This->removeActionsWithoutBinding();
   }
@@ -87,9 +85,9 @@ namespace Engine::Input
   }
 
   static
-  auto read_action_type(const DataBlock& action) -> ActionType
+  auto read_action_type(const ed::Scope& action) -> ActionType
   {
-    const string& type = action.getAnnotation();
+    const string_view type = action.getAnnotation();
     if      (type == "button")    return ActionType::Button;
     else if (type == "joy_move")  return ActionType::JoyMove;
     else if (type == "joy_delta") return ActionType::JoyDelta;
@@ -97,9 +95,9 @@ namespace Engine::Input
   }
 
   static
-  auto read_button_action(const DataBlock& action) -> ButtonAction::Mode
+  auto read_button_action(const ed::Scope& action) -> ButtonAction::Mode
   {
-    const string& mode = action.getText("mode");
+    const string_view mode = action.getVariable<string_view>("mode");
     if      (mode == "on_press")        return ButtonAction::Mode::OnPress;
     else if (mode == "on_release")      return ButtonAction::Mode::OnRelease;
     else if (mode == "on_double_click") return ButtonAction::Mode::OnDblClick;
@@ -114,12 +112,12 @@ namespace Engine::Input
     }
   }
 
-  void Manager::loadRegisteredActions(const DataBlock& actions_blk)
+  void Manager::loadRegisteredActions(const ed::Scope& actions)
   {
-    for (const auto& set: actions_blk.getChildBlocks())
+    for (const ed::Scope& set: actions.getScopes())
     {
-      const auto& actSetName = set.getName();
-      bool alreadyRegistered = m_ActionSets.find(actSetName) != m_ActionSets.end();
+      const string actSetName{set.getName()};
+      bool alreadyRegistered = m_ActionSets.find(string{actSetName}) != m_ActionSets.end();
       if (alreadyRegistered) [[unlikely]]
       {
         logerror("input: action_set `{}` is already registered", actSetName);
@@ -128,9 +126,9 @@ namespace Engine::Input
 
       ActionSet newActSet;
 
-      for (const auto& action: set.getChildBlocks())
+      for (const ed::Scope& action: set.getScopes())
       {
-        const auto& actName = action.getName();
+        const string actName{action.getName()};
         alreadyRegistered = m_NameToActionInfo.find(actName) != m_NameToActionInfo.end();
         if (alreadyRegistered) [[unlikely]]
         {
@@ -164,19 +162,19 @@ namespace Engine::Input
     }
   }
 
-  InputDevice read_input_device(const DataBlock& binding)
+  InputDevice read_input_device(const ed::Scope& binding)
   {
-    int device = binding.getInt("device", -1);
+    int device = binding.getVariableOr<int>("device", -1);
     device = (device >= 0 && device < (int)InputDevice::End) ? device : -1;
 
     return InputDevice{device};
   }
 
-  void Manager::loadControllerMappings(const DataBlock& bindings_blk)
+  void Manager::loadControllerMappings(const ed::Scope& bindings)
   {
-    for (const auto binding: bindings_blk.getChildBlocks())
+    for (const ed::Scope& binding: bindings.getScopes())
     {
-      const auto& name = binding.getName();
+      const string name{binding.getName()};
       const auto actInfoIt =  m_NameToActionInfo.find(name);
       const bool hasCorrespondingAction = actInfoIt != m_NameToActionInfo.end();
       if (!hasCorrespondingAction)
@@ -194,7 +192,7 @@ namespace Engine::Input
 
       if (actInfoIt->second.type == ActionType::Button)
       {
-        const int button = binding.getInt("button", -1);
+        const int button = binding.getVariableOr<int>("button", -1);
         if (button == -1)
         {
           logerror("input: binding `{}` is a button binding but doesn't have a button specified", name);
@@ -210,8 +208,8 @@ namespace Engine::Input
       }
       else
       {
-        const int xAxis = binding.getInt("x_axis", 0);
-        const int yAxis = binding.getInt("y_axis", 0);
+        const int xAxis = binding.getVariableOr<int>("x_axis", 0);
+        const int yAxis = binding.getVariableOr<int>("y_axis", 0);
         const int bindingId = m_ActionBindings.size();
 
         m_ActionBindings.push_back() = AnalogActionBinding{.device = device, .axis = int2{xAxis, yAxis}};

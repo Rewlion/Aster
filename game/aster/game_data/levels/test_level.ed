@@ -1,0 +1,131 @@
+input.initial_action_set:t = "FlyingCamera"
+
+scene
+{
+  object
+  {
+    pos:f3 = 0.0 , 602.0 , 15.0
+    model:t = "cube"
+  }
+
+  object
+  {
+    pos:f3 = 0.0 , 599.0 , 0.0
+    scale:f3 = 5.0, 0.1, 5.0
+    model:t = "cube"
+  }
+
+  object
+  {
+    pos:f3 = 0.0 , 600.0 , 5.0
+    rot:f3 = 90.0, 180.0, 0.0
+    model:t = "damaged_helmet"
+  }
+
+  object
+  {
+    pos:f3 = 5.0 , 600.0 , 5.0
+    rot:f3 = 90.0, 180.0, 0.0
+    model:t = "damaged_helmet"
+  }
+
+  object
+  {
+    pos:f3 = 5.0 , 605.0 , 5.0
+    rot:f3 = 90.0, 180.0, 0.0
+    model:t = "damaged_helmet"
+  }
+  
+  object
+  {
+    pos:f3 = 5.0 , 600.0 , 0.0
+    rot:f3 = 90.0, 180.0, 0.0
+    model:t = "damaged_helmet"
+  }
+
+  object
+  {
+    pos:f3 = 0.0 , 600.0 , -5.0
+    rot:f3 = 90.0, 180.0, 0.0
+    model:t = "damaged_helmet"
+  }
+
+  object
+  {
+    pos:f3 = -5.0 , 600.0 , -5.0
+    rot:f3 = 90.0, 180.0, 0.0
+    model:t = "damaged_helmet"
+  }
+
+  object
+  {
+    pos:f3 = -5.0 , 595.0 , -5.0
+    rot:f3 = 90.0, 180.0, 0.0
+    model:t = "damaged_helmet"
+  }
+  
+  object
+  {
+    pos:f3 = -5.0 , 600.0 , 0.0
+    rot:f3 = 90.0, 180.0, 0.0
+    model:t = "damaged_helmet"
+  }
+}
+
+entity @("template1")
+{
+  test_float2:f2 = 23.0, 1.0
+  test_float:f = 112.0
+  test_str:t = "some text"
+}
+
+entity @("template2")
+{
+  test_float2:f2 = 213.0, 1.0
+}
+
+entity @("template3")
+{
+  test_str:t = "template3_string"
+  test_float2:f2 = 12.0, 11.0
+  test_float3:f3 = 3.0, 4.0, 5.0
+}
+
+entity @("camera")
+{
+  pos:f3 = 0.0, 600.0, 0.0
+  camera_fov:f = 60.0
+  camera_zNear:f = 0.1
+  camera_zFar:f = 3000.0
+  camera_rotations:f2 = 0.0, 0.0
+  forward:f3 = 0.0, 0.0, 1.0
+}
+
+entity @("Atmosphere")
+{
+}
+
+entity @("Sun")
+{
+  sun_altitude:f = 20
+  sun_azimuth:f = 180
+}
+
+entity @("VirtualTerrain")
+{
+  vterrain_name:t = "test_level"
+  vterrain_heightmapMinMaxBorder:f2 = 0.28, 0.42
+  vterrain_heightmapMaxHeight:f = 140
+
+  vterrain_worldSize_meters:i = 2048
+  vterrain_patchSideBits:i = 5
+
+  vterrain_detail:t = "test_level.detail"
+}
+
+entity @("MovingDecal")
+{
+  decal_name:t = "test_decal"
+  size:f3 = 0.5, 0.5, 0.5
+  pos:f3 = 5, 600, 4.5
+}

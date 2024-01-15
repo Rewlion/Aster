@@ -1,5 +1,0 @@
-texture
-{
-  text bin = "bin/assets/decals/test_decal.ktx2"
-  text name = "test_decal.albedo"
-}

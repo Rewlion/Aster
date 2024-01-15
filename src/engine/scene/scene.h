@@ -4,7 +4,10 @@
 
 #include <EASTL/vector.h>
 
-class DataBlock;
+namespace ed
+{
+  class Scope;
+}
 
 namespace Engine
 {
@@ -20,7 +23,7 @@ namespace Engine
       };
 
     public:
-      void loadScene(const DataBlock& sceneBlk);
+      void loadScene(const ed::Scope& sceneBlk);
       eastl::vector<Object> queueObjects() const;
 
     private:

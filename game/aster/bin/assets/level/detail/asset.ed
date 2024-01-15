@@ -1,0 +1,6 @@
+texture
+{
+  bin:t = "bin/assets/level/detail/grass_albedo_dbg.ktx"
+  name:t = "test_level.detail.albedo"
+}
+

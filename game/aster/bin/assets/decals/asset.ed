@@ -1,0 +1,5 @@
+texture
+{
+  bin:t = "bin/assets/decals/test_decal.ktx2"
+  name:t = "test_decal.albedo"
+}

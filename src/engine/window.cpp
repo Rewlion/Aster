@@ -40,18 +40,18 @@ namespace Engine::Window
     return window_size;
   }
 
-  static bool SplitResolutionString(const string& str, unsigned int& width, unsigned int& height)
+  static bool split_resolution_string(const string_view str, unsigned int& width, unsigned int& height)
   {
     try
     {
       const auto d = str.find('x');
       if (d != std::string::npos && str.length() > 3)
       {
-        const string widthStr = str.substr(0, d);
-        const string heightStr = str.substr(d+1, str.length());
+        const string_view widthStr = str.substr(0, d);
+        const string_view heightStr = str.substr(d+1, str.length());
 
-        width = std::stoul(widthStr);
-        height = std::stoul(heightStr);
+        width = std::stoul(widthStr.data());
+        height = std::stoul(heightStr.data());
 
         return true;
       }
@@ -134,13 +134,13 @@ namespace Engine::Window
 
   void init_window()
   {
-    DataBlock* blk = Engine::get_app_settings();
-    DataBlock* graphicsBlk = blk->getChildBlock("graphics");
-    const string resolution = graphicsBlk->getText("resolution");
+    const ed::Scope& settings = Engine::get_app_settings();
+    const ed::Scope& graphics = settings.getScope("graphics");
+    const string_view resolution = graphics.getVariable<string_view>("resolution");
     unsigned int width = 0;
     unsigned int height = 0;
 
-    ASSERT(SplitResolutionString(resolution, width, height));
+    ASSERT(split_resolution_string(resolution, width, height));
 
     InitWin32Window(width, height);
 
