@@ -4,7 +4,7 @@
 #include "spirv.h"
 
 #include <engine/assert.h>
-#include <engine/datablock/utils.h>
+#include <engine/data/utils.h>
 #include <engine/log.h>
 
 #include <argparse/argparse.hpp>
@@ -20,8 +20,8 @@ int main(int argc, char** argv)
   Engine::InitLog();
 
   argparse::ArgumentParser opts("Shaders Compiler");
-  opts.add_argument("--blk")
-      .help("path to blk with shaders list");
+  opts.add_argument("--ed")
+      .help("path to engine data with shaders list");
   
   opts.add_argument("--o")
       .help("output dir");
@@ -44,24 +44,24 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  if (opts["-h"] != false || opts["--help"] != false || !opts.is_used("--blk") || !opts.is_used("--o"))
+  if (opts["-h"] != false || opts["--help"] != false || !opts.is_used("--ed") || !opts.is_used("--o"))
   {
     loginfo("{}", opts.usage());
     return 0;
   }
 
-  const string blk = opts.get("--blk");
+  const string edFile = opts.get("--ed");
   const string outputDir = opts.get("--o");
   const bool debugMode = opts["--D"] == true;
 
-  DataBlock shadersBlk;
-  if (!load_blk_from_file(&shadersBlk, blk.c_str()))
+  std::optional<ed::Scope> shaders = ed::load_from_file(edFile);
+  if (!shaders.has_value())
   {
-    logerror("failed to load shaders from `{}`", blk);
+    logerror("failed to load shaders from `{}`", edFile);
     return -1;
   }
 
-  DataBlock* shadersList = shadersBlk.getChildBlock("shaders_list");
+  auto shadersList = shaders->getVariable<ed::TextArrayView>("shaders_list");
 
   const string outFile = outputDir + "/shaders_spirv.bin";
   loginfo("compiling shaders to {}", outFile);
@@ -75,10 +75,10 @@ int main(int argc, char** argv)
   }
 
   ShadersSystem::Compiler compiler;
-  const string blkDir = fs::path(blk).parent_path().string();
-  for (const auto& shader: shadersList->getChildBlocks())
+  const string edDir = fs::path(edFile).parent_path().string();
+  for (const string_view shader: shadersList)
   {
-    const auto shFile = blkDir + "/" + shader.getName();
+    const string shFile = fmt::format("{}/{}", edDir, shader);
     loginfo("compiling {}", shFile);
     const bool isOk = compiler.compileModuleFromFile(shFile, debugMode);
     if (!isOk)
