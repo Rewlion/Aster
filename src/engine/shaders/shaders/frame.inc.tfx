@@ -32,6 +32,7 @@ scope FrameScope {
 
   float2 zNear_zFar = extern(zNear_zFar);
 
+  uint iFrame = extern(iFrame);
   float secSinceStart = extern(sec_since_start);
   float2 viewPortSize = extern(viewport_size);
 };

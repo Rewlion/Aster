@@ -139,6 +139,7 @@ void frame_preparing_exec(gapi::CmdEncoder& encoder,
   tfx::set_extern("rbView_VS", float3(fpViewVS.rightBot));
 
   tfx::set_extern("sec_since_start", Engine::Time::get_sec_since_start());
+  tfx::set_extern("iFrame", (uint)iFrame);
 
   tfx::set_extern("viewport_size", float2(window_size.x, window_size.y));
   tfx::activate_scope("FrameScope", encoder);
