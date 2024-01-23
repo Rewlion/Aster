@@ -165,12 +165,10 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
     auto clustersInfoBuffer = reg.readBuffer("clusters_info", gapi::BufferState::BF_STATE_SRV, false);
     auto clustersIndirectionBuffer = reg.readBuffer("clusters_indirecion", gapi::BufferState::BF_STATE_SRV, false);
     auto gbuffer_depth = reg.renameTexture("late_opaque_depth", "gbuffer_depth", gapi::TextureState::DepthReadStencilRead);
-    auto hi_z_buffer = reg.readTexture("hi_z_buffer", gapi::TextureState::ShaderRead, false);
     auto atmParamsBuffer = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_SRV, false);
-    auto enviSpecular = reg.readTexture("atm_envi_specular", gapi::TextureState::ShaderRead, true);
-    auto enviBRDF = reg.readTexture("atm_envi_brdf", gapi::TextureState::ShaderRead, true);
+    auto specularLight = reg.readTexture("specular_light", gapi::TextureState::ShaderRead, false);
 
-    return [resolve_target,gbuffer_albedo,gbuffer_normal,gbuffer_metal_roughness,prevPostProcessInput,motionBuf,clustersLightBuffer,clustersInfoBuffer,clustersIndirectionBuffer,gbuffer_depth,hi_z_buffer,atmParamsBuffer,enviSpecular,enviBRDF,render_size](gapi::CmdEncoder& encoder)
+    return [resolve_target,gbuffer_albedo,gbuffer_normal,gbuffer_metal_roughness,prevPostProcessInput,motionBuf,clustersLightBuffer,clustersInfoBuffer,clustersIndirectionBuffer,gbuffer_depth,atmParamsBuffer,specularLight,render_size](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("resolveTarget", resolve_target.get());
       tfx::set_extern("gbuffer_albedo", gbuffer_albedo.get());
@@ -182,10 +180,8 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
       tfx::set_extern("clustersInfoBuffer", clustersInfoBuffer.get());
       tfx::set_extern("clustersIndirectionBuffer", clustersIndirectionBuffer.get());
       tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
-      tfx::set_extern("hi_z_buffer", hi_z_buffer.get());
       tfx::set_extern("atmParamsBuffer", atmParamsBuffer.get());
-      tfx::set_extern("enviSpecular", enviSpecular.get());
-      tfx::set_extern("enviBRDF", enviBRDF.get());
+      tfx::set_extern("specularLight", specularLight.get());
       gbuffer_resolve_exec(encoder, render_size.get());
     };
   });

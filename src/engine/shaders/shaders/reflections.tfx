@@ -1,0 +1,259 @@
+#include "depth.inc.tfx"
+#include "frame.inc.tfx"
+#include "materials.inc.tfx"
+#include "math.inc.tfx"
+#include "noise.inc.tfx"
+#include "pbr.inc.tfx"
+#include "screen_space.inc.tfx"
+
+scope SpecularReflectionScope {
+  reserve:
+    descriptor_set(2);
+    register(buffer, 0);
+    register(texture, 0-8);
+
+  RWTexture2D<float4> reflectionsTarget = extern(reflectionsTarget);
+  Texture2D prevPostProcessInput = extern(prevPostProcessInput);
+  Texture2D motionBuf = extern(motionBuf);
+
+  Texture2D gbufferNormal = extern(gbuffer_normal);
+  Texture2D gbufferMetalRoughness = extern(gbuffer_metal_roughness);
+  Texture2D gbufferDepth = extern(gbuffer_depth);
+  Texture2D hiZ = extern(hi_z_buffer);
+
+  Texture2D enviSpecular = extern(enviSpecular);
+  Texture2D enviBRDF = extern(enviBRDF);
+  float enviMips = extern(enviMips);
+};
+
+technique SpecularReflection {
+  activate scope SpecularReflectionScope;
+  support scope FrameScope;
+
+  USE_MATH();
+
+  USE_NOISE();
+  USE_PBR();
+  USE_MATERIALS_NORMAL_UNPACK();
+  USE_MATERIALS_ROUGHNESS_UNPACK();
+  USE_DEPTH_UTILS();
+
+#hlsl
+  #include "reflections.hlsl"
+
+  #define SSR_MAX_DISTANCE 60.0
+  #define FLOAT_MAX 3.402823466e+38
+
+  //advance once cell forward to skip self intersection
+  float3 initRaySample(float3 begin, float3 dir, float3 inv_dir, float2 cell_border_step, float2 cell_uv_offset, float2 init_cells_count)
+  {
+    float2 cell = floor(begin.xy * init_cells_count);
+    float2 xyBorders = (cell + cell_border_step) / init_cells_count + cell_uv_offset;
+    float2 t = (xyBorders - begin.xy) * inv_dir.xy;
+    return begin + dir * min(t.x, t.y);
+  }
+
+  bool advanceRaySample(float3 dir, float3 inv_dir, float2 cell_border_step, float2 cell_uv_offset, float2 cells_count, float depth_plane, float hi_z_level, inout float3 ray_sample)
+  {
+    float2 cell = floor(ray_sample.xy * cells_count);
+    float2 xyBorders = (cell + cell_border_step) / cells_count + cell_uv_offset;
+    float zBorder = depth_plane;
+    float3 borders = float3(xyBorders, zBorder);
+    float3 t = (borders - ray_sample) * inv_dir;
+
+    t.z = dir.z < 0 ? t.z : FLOAT_MAX;
+    float tMin = min(t.x, min(t.y, t.z));
+    bool isAboveDepthPlane = ray_sample.z > zBorder;
+
+    ray_sample = isAboveDepthPlane ? ray_sample + dir * tMin : ray_sample;
+
+    bool crossedBorders = asuint(tMin) != asuint(t.z) && isAboveDepthPlane;
+    return crossedBorders;
+  }
+
+  //based on AMD FidelityFX SSSR
+  float calcSSRPower(float2 ray_origin_uv, float3 ray_hit_uvz, int hiz_level, float2 screen_size, float hit_depth_plane, float depth_thickness, float3 world_ray_dir)
+  {
+    if (hit_depth_plane == 0.0 || ray_hit_uvz.z <= 0.0)
+      return 0.0;
+
+    if (hiz_level >= 0)
+      return 0.0;
+    
+    float2 tcDelta = (ray_hit_uvz.xy - ray_origin_uv) * screen_size;
+    bool hasSelfReflection = all(abs(tcDelta) < 2.0);
+    if (hasSelfReflection)
+      return 0.0;
+
+    float3 wHitNormal = unpackNormal(gbufferNormal.SampleLevel(linearClampSampler, ray_hit_uvz.xy, 0).rgb);
+    bool backFaceHit = dot(wHitNormal, world_ray_dir) > 0;
+    if (backFaceHit)
+      return 0.0;
+
+    float2 fov = 0.05 * float2(screen_size.y / screen_size.x, 1);
+    float2 border = smoothstep(0, fov, ray_hit_uvz.xy) * (1 - smoothstep(1 - fov, 1, ray_hit_uvz.xy));
+    float vignette = border.x * border.y;
+
+    float thicknessBorder = 1.0 - smoothstep(0, depth_thickness, hit_depth_plane - ray_hit_uvz.z);
+    float power = thicknessBorder * thicknessBorder * vignette;
+    return power;
+  }
+
+  #define M_PI PI
+  // http://jcgt.org/published/0007/04/01/paper.pdf by Eric Heitz
+  // Input Ve: view direction
+  // Input alpha_x, alpha_y: roughness parameters
+  // Input U1, U2: uniform random numbers
+  // Output Ne: normal sampled with PDF D_Ve(Ne) = G1(Ve) * max(0, dot(Ve, Ne)) * D(Ne) / Ve.z
+  float3 SampleGGXVNDF(float3 Ve, float alpha_x, float alpha_y, float U1, float U2) {
+      // Section 3.2: transforming the view direction to the hemisphere configuration
+      float3 Vh = normalize(float3(alpha_x * Ve.x, alpha_y * Ve.y, Ve.z));
+      // Section 4.1: orthonormal basis (with special case if cross product is zero)
+      float lensq = Vh.x * Vh.x + Vh.y * Vh.y;
+      float3 T1 = lensq > 0 ? float3(-Vh.y, Vh.x, 0) * rsqrt(lensq) : float3(1, 0, 0);
+      float3 T2 = cross(Vh, T1);
+      // Section 4.2: parameterization of the projected area
+      float r = sqrt(U1);
+      float phi = 2.0 * M_PI * U2;
+      float t1 = r * cos(phi);
+      float t2 = r * sin(phi);
+      float s = 0.5 * (1.0 + Vh.z);
+      t2 = (1.0 - s) * sqrt(1.0 - t1 * t1) + s * t2;
+      // Section 4.3: reprojection onto hemisphere
+      float3 Nh = t1 * T1 + t2 * T2 + sqrt(max(0.0, 1.0 - t1 * t1 - t2 * t2)) * Vh;
+      // Section 3.4: transforming the normal back to the ellipsoid configuration
+      float3 Ne = normalize(float3(alpha_x * Nh.x, alpha_y * Nh.y, max(0.0, Nh.z)));
+      return Ne;
+  }
+
+  float3 Sample_GGX_VNDF_Ellipsoid(float3 Ve, float alpha_x, float alpha_y, float U1, float U2) {
+      return SampleGGXVNDF(Ve, alpha_x, alpha_y, U1, U2);
+  }
+
+  float3 Sample_GGX_VNDF_Hemisphere(float3 Ve, float alpha, float U1, float U2) {
+      return Sample_GGX_VNDF_Ellipsoid(Ve, alpha, alpha, U1, U2);
+  }
+
+  float3 sample_ssr_reflection_vector(float3 view_dir, float3 N, float ggx_alpha, uint2 px)
+  {
+    float3x3 wsToTsTm = tsToWs(N);
+    float3 viewDir_ts = mul(-view_dir, wsToTsTm);
+
+    uint i = FrameScope.iFrame;
+    float3 random = random_pcg3d(uint3(px, i));
+    float3 Nh_ts = Sample_GGX_VNDF_Hemisphere(viewDir_ts.xzy, ggx_alpha, random.x, random.y).xzy;
+
+    float3 R_ts = reflect(-viewDir_ts, Nh_ts);
+    float3x3 tsToWsTm = transpose(wsToTsTm);
+    float3 R_ws = mul(R_ts, tsToWsTm);
+
+    return R_ws;
+  }
+
+  float3 ssr(float3 view_dir, float3 N, float3 worldPos, float2 screen_size, float ggx_alpha, uint2 px)
+  {
+    ggx_alpha = 0.1 * 0.1;
+    float3 R = sample_ssr_reflection_vector(view_dir, N, ggx_alpha, px);
+    //float3 R = reflect(viewDir, N);
+    // float cameraFacingReflectionAttenuation = 1 - smoothstep(0.25, 0.5, dot(-view_dir, R));
+    // if (cameraFacingReflectionAttenuation <= 0)
+    //   return float3(0,0,0);
+
+    float maxDist = 5.0;
+    float3 endWorldPos = worldPos + R*maxDist;
+
+    float4 beginVS = mul(FrameScope.view, float4(worldPos, 1));
+    if (beginVS.z >= SSR_MAX_DISTANCE)
+      return float3(0,0,0);
+
+    float4 beginSS = mul(FrameScope.viewProj, float4(worldPos, 1));
+    beginSS.xyz /= beginSS.w;
+    beginSS.xy = (beginSS.xy) * float2(0.5, -0.5) + 0.5;
+    beginSS.xy = (floor(beginSS.xy * screen_size) + 0.5) / screen_size;
+
+    float4 endSS = mul(FrameScope.viewProj, float4(endWorldPos, 1));
+    endSS.xyz /= endSS.w;
+    endSS.xy = endSS.xy * float2(0.5, -0.5) + 0.5;
+
+    float2 cellsCount;
+    hiZ.GetDimensions(cellsCount.x, cellsCount.y);
+
+    float3 rayDir = (endSS.xyz - beginSS.xyz);
+
+    float2 deltaPixels = (beginSS.xy -  endSS.xy) * screen_size ;
+    uint maxDeltaPixels = max(max(abs(deltaPixels.x), abs(deltaPixels.y)), 1);
+    float depthThickness = max(abs(rayDir.z / maxDeltaPixels) * 10, 0.00005);
+
+    float3 invRayDir = rcp(rayDir);
+    float2 cellBorderStep = rayDir.xy <= 0 ? 0 : 1;
+    float2 cellUvOffset = 0.005 / cellsCount;
+    cellUvOffset = rayDir.xy < 0 ? -cellUvOffset : cellUvOffset;
+    
+    float3 rayOrigin = initRaySample(beginSS.xyz, rayDir, invRayDir, cellBorderStep, cellUvOffset, cellsCount);
+    float3 raySample = rayOrigin;
+
+    uint maxHiZLevel = 10;
+    uint maxIterations = 80;
+    int hiZLevel = 0;
+    uint iterations = 0;
+    float depthPlane = 0;
+
+    while (hiZLevel >= 0 && hiZLevel < maxHiZLevel && iterations < maxIterations && (all(raySample.xy > 0) && all(raySample.xy < 1)))
+    {
+      float nLevels;
+      hiZ.GetDimensions(hiZLevel, cellsCount.x, cellsCount.y, nLevels);
+
+      float2 tc = raySample.xy * cellsCount;
+      int3 pos = int3(tc, hiZLevel);
+      depthPlane = hiZ.Load(pos).r;
+      bool crossedBorders = advanceRaySample(rayDir, invRayDir, cellBorderStep, cellUvOffset, cellsCount, depthPlane, hiZLevel, raySample);
+
+      hiZLevel += crossedBorders ? 1 : -1;
+      ++iterations;
+    }
+
+    uint3 tc = uint3((uint2)(raySample.xy * screen_size), 0);
+    float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
+    float3 reflection = prevPostProcessInput.SampleLevel(linearClampSampler, raySample.xy - motionVec, 0).rgb;
+    
+    float ssrPower = calcSSRPower(rayOrigin.xy, raySample, hiZLevel, screen_size, depthPlane, depthThickness, R);
+    return reflection * ssrPower;
+
+    return float3(0.0, 0.0, 0.0);
+  }
+
+  [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
+  void cs_main(uint3 dispatch_thread_id: SV_DispatchThreadID)
+  {
+    uint2 renderSize;
+    reflectionsTarget.GetDimensions(renderSize.x, renderSize.y);
+
+    if (any(dispatch_thread_id.xy >= renderSize))
+      return;
+
+    uint3 tc = dispatch_thread_id;
+    float depth = gbufferDepth.Load(tc).r;
+
+    if (depth == 0.0)
+      return;
+
+    float3 leftRight = FrameScope.rtView_WS - FrameScope.ltView_WS;
+    float3 topBot = FrameScope.lbView_WS - FrameScope.ltView_WS;
+
+    float2 t = float2(tc.xy) / float2(renderSize - uint2(1, 1));
+    float3 farPlainPoint = FrameScope.ltView_WS + leftRight * t.x + topBot * t.y;
+    float3 viewDir = normalize(farPlainPoint);
+
+    float3 N = unpackMaterialNormal(tc);
+    float ggxAlpha = roughnessToGGXAlpha(unpackMaterialRoughness(tc));
+    float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+    
+    float3 ssrPart = ssr(viewDir, N, worldPos, float2(renderSize), ggxAlpha, tc.xy);
+
+    float3 Lo = ssrPart;
+    reflectionsTarget[tc.xy] = float4(Lo, 1.0);
+  }
+#end
+
+  compile(cs, cs_main);
+};

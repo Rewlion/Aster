@@ -102,12 +102,10 @@ NODE_BEGIN(gbuffer_resolve)
 
   RENAME_TEX_RO_DEPTH(late_opaque_depth, gbuffer_depth)
   BIND_SHADER_VAR_AS(gbuffer_depth, gbuffer_depth)
-  BIND_TEX_SRV_AS(hi_z_buffer, hi_z_buffer)
 
   BIND_BUF_SRV_AS(sph_buf, atmParamsBuffer)
 
-  BIND_OPTIONAL_TEX_SRV_AS(atm_envi_specular, enviSpecular)
-  BIND_OPTIONAL_TEX_SRV_AS(atm_envi_brdf, enviBRDF)
+  BIND_TEX_SRV_AS(specular_light, specularLight)
 
   EXEC(gbuffer_resolve_exec)
 NODE_END()

@@ -18,6 +18,7 @@ shaders_list:t[] = [
   "shaders/hi_z.tfx",
   "shaders/imgui.tfx",
   "shaders/post_process.tfx",
+  "shaders/reflections.tfx",
   "shaders/scene_opaque.tfx",
   "shaders/show_tex.tfx",
   "shaders/taa.tfx",

@@ -65,6 +65,7 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/opaque.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/post_process.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/present.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/reflections.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/taa.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/ui.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/virtual_terrain.ecs.cpp"

@@ -52,5 +52,10 @@ technique_macro USE_PBR
     return (D*G*F) / (4.0 * NoL * NoV + 0.0001);
   }
 
+  float roughnessToGGXAlpha(float roughness)
+  {
+    return roughness * roughness;
+  }
+
   #end
 };
