@@ -1,0 +1,43 @@
+#include "frame.inc.tfx"
+
+scope TemporalAccumulationScope
+{
+  reserve:
+    descriptor_set(1);
+    register(texture, 0-3);
+
+  Texture2D taInput = extern(taInput);
+  RWTexture2D<float4> taOutput = extern(taOutput);
+  Texture2D taHistory = extern(taHistory);
+  Texture2D motionBuf = extern(motionBuf);
+};
+
+technique TemporalAccumulation
+{
+  activate scope TemporalAccumulationScope;
+  support scope FrameScope;
+  
+  #hlsl
+  [numthreads(8,8,1)]
+  void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
+  {
+    uint2 texSize;
+    taInput.GetDimensions(texSize.x, texSize.y);
+
+    uint3 tc = uint3(dispatch_thread_id.xy, 0);
+    float2 uv = float2(tc.xy) / float2(texSize-1);
+
+    if (any(tc.xy >= texSize))
+      return;
+
+    float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
+    float3 curPixel = taInput.Load(tc).rgb;
+    float3 prevPixel = taHistory.SampleLevel(linearClampSampler, uv-motionVec, 0).rgb;
+
+    float w = 0.95;
+    taOutput[tc.xy] = float4(lerp(curPixel, prevPixel, w), 1.0);
+  }
+  #end
+
+  compile(cs, cs_main);
+};

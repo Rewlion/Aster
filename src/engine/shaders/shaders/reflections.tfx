@@ -152,7 +152,7 @@ technique SpecularReflection {
 
   float3 ssr(float3 view_dir, float3 N, float3 worldPos, float2 screen_size, float ggx_alpha, uint2 px)
   {
-    ggx_alpha = 0.1 * 0.1;
+    ggx_alpha = 0.2 * 0.2;
     float3 R = sample_ssr_reflection_vector(view_dir, N, ggx_alpha, px);
     //float3 R = reflect(viewDir, N);
     // float cameraFacingReflectionAttenuation = 1 - smoothstep(0.25, 0.5, dot(-view_dir, R));

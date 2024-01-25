@@ -31,9 +31,37 @@ void mk_fg_node_reflections_resources(Event*, ComponentsAccessor&)
     );
 
 
-    return [reflections_target](gapi::CmdEncoder& encoder)
+    auto reflections_acc = reg.createTexture("reflections_acc",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R32G32B32A32_S,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_UAV | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::ShaderReadWrite,
+      false
+    );
+
+
+    auto reflections_target_filtered = reg.createTexture("reflections_target_filtered",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R32G32B32A32_S,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_UAV | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::ShaderReadWrite,
+      false
+    );
+
+
+    return [reflections_target,reflections_acc,reflections_target_filtered](gapi::CmdEncoder& encoder)
     {
-      reflections_resources(encoder, reflections_target.get());
+      reflections_resources(encoder, reflections_target.get(), reflections_acc.get(), reflections_target_filtered.get());
     };
   });
 }
@@ -95,11 +123,77 @@ EventSystemRegistration mk_fg_node_reflections_registration(
 
 //Engine::OnFrameGraphInit handler
 static
+void mk_fg_node_reflections_temporal_acc(Event*, ComponentsAccessor&)
+{
+  fg::register_node("reflections_temporal_acc", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    const uint2 __renderSize__ = reg.getRenderSize();
+
+    fg::dsl::AccessDecorator render_size{__renderSize__};
+    auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead, false);
+    auto taInput = reg.readTexture("reflections_target_filtered", gapi::TextureState::ShaderRead, false);
+    auto taHistory = reg.readTexture("reflections_acc", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+    auto taOutput = reg.modifyTexture("reflections_acc", gapi::TextureState::ShaderReadWrite);
+
+    return [motionBuf,taInput,taHistory,taOutput,render_size](gapi::CmdEncoder& encoder)
+    {
+      tfx::set_extern("motionBuf", motionBuf.get());
+      tfx::set_extern("taInput", taInput.get());
+      tfx::set_extern("taHistory", taHistory.get());
+      tfx::set_extern("taOutput", taOutput.get());
+      reflections_temporal_acc(encoder, render_size.get());
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_reflections_temporal_acc_registration(
+  mk_fg_node_reflections_temporal_acc,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_reflections_temporal_acc"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_reflections_blur(Event*, ComponentsAccessor&)
+{
+  fg::register_node("reflections_blur", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    const uint2 __renderSize__ = reg.getRenderSize();
+
+    fg::dsl::AccessDecorator render_size{__renderSize__};
+    auto blurInput = reg.readTexture("reflections_target", gapi::TextureState::ShaderRead, false);
+    auto blurOutput = reg.modifyTexture("reflections_target_filtered", gapi::TextureState::ShaderReadWrite);
+
+    return [blurInput,blurOutput,render_size](gapi::CmdEncoder& encoder)
+    {
+      tfx::set_extern("blurInput", blurInput.get());
+      tfx::set_extern("blurOutput", blurOutput.get());
+      reflections_blur(encoder, render_size.get());
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_reflections_blur_registration(
+  mk_fg_node_reflections_blur,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_reflections_blur"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
 void mk_fg_node_reflections_sync(Event*, ComponentsAccessor&)
 {
   fg::register_node("reflections_sync", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto specular_light = reg.renameTexture("reflections_target", "specular_light", gapi::TextureState::ShaderRead);
+    auto specular_light = reg.renameTexture("reflections_acc", "specular_light", gapi::TextureState::ShaderRead);
     return [](gapi::CmdEncoder&){};
   });
 }
