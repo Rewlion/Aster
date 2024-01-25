@@ -86,6 +86,7 @@ void mk_fg_node_reflections(Event*, ComponentsAccessor&)
 
     fg::dsl::AccessDecorator render_size{__renderSize__};
     auto reflectionsTarget = reg.modifyTexture("reflections_target", gapi::TextureState::ShaderReadWrite);
+    auto gbuffer_albedo = reg.readTexture("gbuf0", gapi::TextureState::ShaderRead, false);
     auto gbuffer_normal = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
     auto gbuffer_metal_roughness = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead, false);
     auto prevPostProcessInput = reg.readTexture("post_process_input", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
@@ -95,9 +96,10 @@ void mk_fg_node_reflections(Event*, ComponentsAccessor&)
     auto enviSpecular = reg.readTexture("atm_envi_specular", gapi::TextureState::ShaderRead, true);
     auto enviBRDF = reg.readTexture("atm_envi_brdf", gapi::TextureState::ShaderRead, true);
 
-    return [reflectionsTarget,gbuffer_normal,gbuffer_metal_roughness,prevPostProcessInput,motionBuf,gbuffer_depth,hi_z_buffer,enviSpecular,enviBRDF,render_size](gapi::CmdEncoder& encoder)
+    return [reflectionsTarget,gbuffer_albedo,gbuffer_normal,gbuffer_metal_roughness,prevPostProcessInput,motionBuf,gbuffer_depth,hi_z_buffer,enviSpecular,enviBRDF,render_size](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("reflectionsTarget", reflectionsTarget.get());
+      tfx::set_extern("gbuffer_albedo", gbuffer_albedo.get());
       tfx::set_extern("gbuffer_normal", gbuffer_normal.get());
       tfx::set_extern("gbuffer_metal_roughness", gbuffer_metal_roughness.get());
       tfx::set_extern("prevPostProcessInput", prevPostProcessInput.get());

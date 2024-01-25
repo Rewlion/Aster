@@ -1,3 +1,4 @@
+#include "atmosphere/envi.inc.tfx"
 #include "depth.inc.tfx"
 #include "frame.inc.tfx"
 #include "materials.inc.tfx"
@@ -10,12 +11,13 @@ scope SpecularReflectionScope {
   reserve:
     descriptor_set(2);
     register(buffer, 0);
-    register(texture, 0-8);
+    register(texture, 0-9);
 
   RWTexture2D<float4> reflectionsTarget = extern(reflectionsTarget);
   Texture2D prevPostProcessInput = extern(prevPostProcessInput);
   Texture2D motionBuf = extern(motionBuf);
 
+  Texture2D gbufferAlbedo = extern(gbuffer_albedo);
   Texture2D gbufferNormal = extern(gbuffer_normal);
   Texture2D gbufferMetalRoughness = extern(gbuffer_metal_roughness);
   Texture2D gbufferDepth = extern(gbuffer_depth);
@@ -34,9 +36,9 @@ technique SpecularReflection {
 
   USE_NOISE();
   USE_PBR();
-  USE_MATERIALS_NORMAL_UNPACK();
-  USE_MATERIALS_ROUGHNESS_UNPACK();
+  USE_MATERIALS_UNPACKING();
   USE_DEPTH_UTILS();
+  USE_ENVI_IBL();
 
 #hlsl
   #include "reflections.hlsl"
@@ -150,9 +152,8 @@ technique SpecularReflection {
     return R_ws;
   }
 
-  float3 ssr(float3 view_dir, float3 N, float3 worldPos, float2 screen_size, float ggx_alpha, uint2 px)
+  float3 ssr(float3 view_dir, float3 N, float3 worldPos, float2 screen_size, float ggx_alpha, uint2 px, out float ssr_power)
   {
-    ggx_alpha = 0.2 * 0.2;
     float3 R = sample_ssr_reflection_vector(view_dir, N, ggx_alpha, px);
     //float3 R = reflect(viewDir, N);
     // float cameraFacingReflectionAttenuation = 1 - smoothstep(0.25, 0.5, dot(-view_dir, R));
@@ -216,10 +217,8 @@ technique SpecularReflection {
     float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
     float3 reflection = prevPostProcessInput.SampleLevel(linearClampSampler, raySample.xy - motionVec, 0).rgb;
     
-    float ssrPower = calcSSRPower(rayOrigin.xy, raySample, hiZLevel, screen_size, depthPlane, depthThickness, R);
-    return reflection * ssrPower;
-
-    return float3(0.0, 0.0, 0.0);
+    ssr_power = calcSSRPower(rayOrigin.xy, raySample, hiZLevel, screen_size, depthPlane, depthThickness, R);
+    return reflection * ssr_power;
   }
 
   [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
@@ -243,14 +242,24 @@ technique SpecularReflection {
     float2 t = float2(tc.xy) / float2(renderSize - uint2(1, 1));
     float3 farPlainPoint = FrameScope.ltView_WS + leftRight * t.x + topBot * t.y;
     float3 viewDir = normalize(farPlainPoint);
+    float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
 
     float3 N = unpackMaterialNormal(tc);
-    float ggxAlpha = roughnessToGGXAlpha(unpackMaterialRoughness(tc));
-    float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
-    
-    float3 ssrPart = ssr(viewDir, N, worldPos, float2(renderSize), ggxAlpha, tc.xy);
+    float3 V = normalize(FrameScope.cameraPos - worldPos);
+    float3 R = reflect(-V,N);
+    float NoV = dot(N,V);
 
-    float3 Lo = ssrPart;
+    ProcessedMaterial mat = processMaterial(unpackMaterial(tc));
+    mat.roughness = 0.2;
+    mat.ggxAlpha = roughnessToGGXAlpha(mat.roughness);
+    
+    float ssrPower;
+    float3 enviSpecular = sampleEnviSpecular(SpecularReflectionScope.enviMips, mat.roughness, R);
+    float3 ssrPart = ssr(viewDir, N, worldPos, float2(renderSize), mat.ggxAlpha, tc.xy, ssrPower);
+
+    float3 specular = ssrPower == 0.0 ? enviSpecular : ssrPart;
+    float3 Lo = calcSpecularIBL(specular, mat.specularReflection, mat.roughness, NoV, R);
+
     reflectionsTarget[tc.xy] = float4(Lo, 1.0);
   }
 #end

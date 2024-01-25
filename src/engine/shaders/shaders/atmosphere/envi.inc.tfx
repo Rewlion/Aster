@@ -1,8 +1,8 @@
 technique_macro USE_ENVI_IBL {
   #hlsl
-  float3 sampleEnviSpecular(float roughness, float3 N)
+  float3 sampleEnviSpecular(float envi_mips, float roughness, float3 N)
   {
-    uint mipLevel = roughness * (ResolveGbufferScope.enviMips-1.0);
+    uint mipLevel = roughness * (envi_mips-1.0);
 
     float2 thetaPhi = decartianToSpherical(N);
     float2 uv = (thetaPhi / float2(PI, 2 * PI)).yx;
@@ -14,12 +14,17 @@ technique_macro USE_ENVI_IBL {
     return enviBRDF.SampleLevel(linearClampSampler, float2(NoV, roughness), 0).rg;
   }
 
-  float3 enviSpecularIBL(float3 F0, float roughness, float NoV, float3 R)
+  float3 calcSpecularIBL(float3 specular, float3 F0, float roughness, float NoV, float3 R)
   {
-    float3 specular = sampleEnviSpecular(roughness, R);
     float2 brdf = sampleEnviBRDF(roughness, NoV);
-
     return specular * (F0 * brdf.x + brdf.y);
   }
+
+  float3 enviSpecularIBL(float envi_mips, float3 F0, float roughness, float NoV, float3 R)
+  {
+    float3 specular = sampleEnviSpecular(envi_mips, roughness, R);
+    return calcSpecularIBL(specular, F0, roughness, NoV, R);
+  }
+
   #end
 };
