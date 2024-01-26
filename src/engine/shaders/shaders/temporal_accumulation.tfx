@@ -1,4 +1,5 @@
 #include "frame.inc.tfx"
+#include "color_spaces.inc.tfx"
 
 scope TemporalAccumulationScope
 {
@@ -17,6 +18,8 @@ technique TemporalAccumulation
   activate scope TemporalAccumulationScope;
   support scope FrameScope;
   
+  USE_COLOR_SPACES();
+
   #hlsl
   [numthreads(8,8,1)]
   void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
@@ -30,12 +33,40 @@ technique TemporalAccumulation
     if (any(tc.xy >= texSize))
       return;
 
-    float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
-    float3 curPixel = taInput.Load(tc).rgb;
-    float3 prevPixel = taHistory.SampleLevel(linearClampSampler, uv-motionVec, 0).rgb;
+    float3 bbMin = float3(1e3,1e3,1e3);
+    float3 bbMax = float3(-1e3,-1e3,-1e3);
 
-    float w = 0.95;
-    taOutput[tc.xy] = float4(lerp(curPixel, prevPixel, w), 1.0);
+    [UNROLL]
+    for (int i = -1; i <= 1; ++i)
+    {
+      [UNROLL]
+      for (int j = -1; j <= 1; ++j)
+      {
+        float3 nTC = float3(float2(tc.xy) + float2(i,j), 0);
+        nTC = clamp(nTC, 0.0, float3(texSize - 1.0, 0.0));
+
+        float3 nColor = RGB2YCbCR(max(0.0, taInput.Load(nTC).rgb));
+        bbMin = min(nColor, bbMin);
+        bbMax = max(nColor, bbMax);
+      }
+    }
+
+    float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
+    float3 curPixel = RGB2YCbCR(taInput.Load(tc).rgb);
+    float2 historyUVReprojected = uv - motionVec;
+
+    if (any(historyUVReprojected != saturate(historyUVReprojected)))
+    {
+      taOutput[tc.xy] = float4(YCbCr2RGB(curPixel), 1.0);
+      return;
+    }
+
+    float3 historyPixel = RGB2YCbCR(taHistory.SampleLevel(linearClampSampler,historyUVReprojected, 0).rgb);
+    historyPixel = clamp(historyPixel, bbMin, bbMax);
+
+    float w = 0.90;
+    float3 res = YCbCr2RGB(lerp(curPixel, historyPixel, w));
+    taOutput[tc.xy] = float4(res, 1.0);
   }
   #end
 
