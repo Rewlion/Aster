@@ -71,6 +71,7 @@ NODE_BEGIN(reflections_temporal_acc)
   BIND_TEX_SRV_AS           (reflections_target_filtered, taInput)
   BIND_PREV_FRAME_TEX_SRV_AS(reflections_acc, taHistory)
   BIND_TEX_RW_UAV_AS        (reflections_acc, taOutput)
+  BIND_TEX_RO_DEPTH_AS      (late_opaque_depth, gbuffer_depth)
   EXEC(reflections_temporal_acc)
 NODE_END()
 

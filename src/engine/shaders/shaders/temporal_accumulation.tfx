@@ -5,12 +5,13 @@ scope TemporalAccumulationScope
 {
   reserve:
     descriptor_set(1);
-    register(texture, 0-3);
+    register(texture, 0-4);
 
   Texture2D taInput = extern(taInput);
   RWTexture2D<float4> taOutput = extern(taOutput);
   Texture2D taHistory = extern(taHistory);
   Texture2D motionBuf = extern(motionBuf);
+  Texture2D gbufferDepth = extern(gbuffer_depth);
 };
 
 technique TemporalAccumulation
@@ -35,6 +36,8 @@ technique TemporalAccumulation
 
     float3 bbMin = float3(1e3,1e3,1e3);
     float3 bbMax = float3(-1e3,-1e3,-1e3);
+    float closestDepth = 1000.0;
+    float3 closestNeighborTC = float3(0,0,0);
 
     [UNROLL]
     for (int i = -1; i <= 1; ++i)
@@ -45,13 +48,20 @@ technique TemporalAccumulation
         float3 nTC = float3(float2(tc.xy) + float2(i,j), 0);
         nTC = clamp(nTC, 0.0, float3(texSize - 1.0, 0.0));
 
+        float nDepth = gbufferDepth.Load(nTC).r;
+        if (nDepth < closestDepth)
+        {
+          closestDepth = nDepth;
+          closestNeighborTC = nTC;
+        }
+
         float3 nColor = RGB2YCbCR(max(0.0, taInput.Load(nTC).rgb));
         bbMin = min(nColor, bbMin);
         bbMax = max(nColor, bbMax);
       }
     }
 
-    float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
+    float2 motionVec = motionBuf.Load(closestNeighborTC).rg * float2(0.5, -0.5);
     float3 curPixel = RGB2YCbCR(taInput.Load(tc).rgb);
     float2 historyUVReprojected = uv - motionVec;
 

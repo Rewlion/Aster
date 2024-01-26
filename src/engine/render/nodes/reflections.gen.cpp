@@ -136,13 +136,15 @@ void mk_fg_node_reflections_temporal_acc(Event*, ComponentsAccessor&)
     auto taInput = reg.readTexture("reflections_target_filtered", gapi::TextureState::ShaderRead, false);
     auto taHistory = reg.readTexture("reflections_acc", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
     auto taOutput = reg.modifyTexture("reflections_acc", gapi::TextureState::ShaderReadWrite);
+    auto gbuffer_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
 
-    return [motionBuf,taInput,taHistory,taOutput,render_size](gapi::CmdEncoder& encoder)
+    return [motionBuf,taInput,taHistory,taOutput,gbuffer_depth,render_size](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("motionBuf", motionBuf.get());
       tfx::set_extern("taInput", taInput.get());
       tfx::set_extern("taHistory", taHistory.get());
       tfx::set_extern("taOutput", taOutput.get());
+      tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
       reflections_temporal_acc(encoder, render_size.get());
     };
   });
