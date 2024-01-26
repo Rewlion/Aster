@@ -49,6 +49,10 @@ technique TemporalAccumulation
         nTC = clamp(nTC, 0.0, float3(texSize - 1.0, 0.0));
 
         float nDepth = gbufferDepth.Load(nTC).r;
+
+        if (nDepth == 0.0)
+          continue;
+
         if (nDepth < closestDepth)
         {
           closestDepth = nDepth;
