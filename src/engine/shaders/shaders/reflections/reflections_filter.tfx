@@ -1,4 +1,4 @@
-scope BilateralFilterScope
+scope ReflectionsFilterScope
 {
   reserve:
     descriptor_set(2);
@@ -8,12 +8,12 @@ scope BilateralFilterScope
   RWTexture2D<float4> blurOutput = extern(blurOutput);
 };
 
-technique BilateralFilter
+technique ReflectionsFilter
 {
-  activate scope BilateralFilterScope;
+  activate scope ReflectionsFilterScope;
   
   #hlsl
-  #include "bilateral_filter.hlsl"
+  #include "reflections_filter.hlsl"
 
   #define MAX_RANGE 64
   #define RANGE 11

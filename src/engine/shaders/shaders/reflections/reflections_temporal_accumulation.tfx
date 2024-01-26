@@ -1,7 +1,7 @@
-#include "frame.inc.tfx"
-#include "color_spaces.inc.tfx"
+#include "../frame.inc.tfx"
+#include "../color_spaces.inc.tfx"
 
-scope TemporalAccumulationScope
+scope ReflectionsTemporalAccumulationScope
 {
   reserve:
     descriptor_set(1);
@@ -14,9 +14,9 @@ scope TemporalAccumulationScope
   Texture2D gbufferDepth = extern(gbuffer_depth);
 };
 
-technique TemporalAccumulation
+technique ReflectionsTemporalAccumulation
 {
-  activate scope TemporalAccumulationScope;
+  activate scope ReflectionsTemporalAccumulationScope;
   support scope FrameScope;
   
   USE_COLOR_SPACES();

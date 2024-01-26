@@ -1,11 +1,11 @@
-#include "atmosphere/envi.inc.tfx"
-#include "depth.inc.tfx"
-#include "frame.inc.tfx"
-#include "materials.inc.tfx"
-#include "math.inc.tfx"
-#include "noise.inc.tfx"
-#include "pbr.inc.tfx"
-#include "screen_space.inc.tfx"
+#include "../atmosphere/envi.inc.tfx"
+#include "../depth.inc.tfx"
+#include "../frame.inc.tfx"
+#include "../materials.inc.tfx"
+#include "../math.inc.tfx"
+#include "../noise.inc.tfx"
+#include "../pbr.inc.tfx"
+#include "../screen_space.inc.tfx"
 
 scope SpecularReflectionScope {
   reserve:

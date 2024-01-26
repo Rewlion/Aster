@@ -2,8 +2,8 @@
 
 #include <engine/render/frame_graph/dsl.h>
 
-#include <engine/shaders/shaders/reflections.hlsl>
-#include <engine/shaders/shaders/bilateral_filter.hlsl>
+#include <engine/shaders/shaders/reflections/reflections.hlsl>
+#include <engine/shaders/shaders/reflections/reflections_filter.hlsl>
 
 NODE_BEGIN(reflections_resources)
   CREATE_TEX_2D ( reflections_target, TEX_SIZE_RELATIVE(), R32G32B32A32_S,
@@ -79,8 +79,8 @@ NODE_EXEC()
 static
 void reflections_temporal_acc(gapi::CmdEncoder& encoder, const uint2& render_size)
 {
-  tfx::activate_scope("TemporalAccumulationScope", encoder);
-  tfx::activate_technique("TemporalAccumulation", encoder);
+  tfx::activate_scope("ReflectionsTemporalAccumulationScope", encoder);
+  tfx::activate_technique("ReflectionsTemporalAccumulation", encoder);
   
   encoder.updateResources();
   encoder.dispatch(get_group_size(render_size.x, 8),
@@ -100,8 +100,8 @@ NODE_EXEC()
 static
 void reflections_blur(gapi::CmdEncoder& encoder, const uint2& render_size)
 {
-  tfx::activate_scope("BilateralFilterScope", encoder);
-  tfx::activate_technique("BilateralFilter", encoder);
+  tfx::activate_scope("ReflectionsFilterScope", encoder);
+  tfx::activate_technique("ReflectionsFilter", encoder);
   
   encoder.updateResources();
   encoder.dispatch(get_group_size(render_size.x, BLF_TILE_DIM_X),
