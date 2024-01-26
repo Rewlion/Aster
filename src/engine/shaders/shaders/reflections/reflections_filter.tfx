@@ -16,10 +16,10 @@ technique ReflectionsFilter
   #include "reflections_filter.hlsl"
 
   #define MAX_RANGE 64
-  #define RANGE 11
+  #define RANGE 9
   #define RANGE_BORDER (RANGE-1)/2
-  #define SIGMA_S 64.0
-  #define SIGMA_R 0.01
+  #define SIGMA_S 4.0
+  #define SIGMA_R 0.1
 
   float gauss_kernel(float sigma, float range)
   {

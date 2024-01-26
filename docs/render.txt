@@ -119,3 +119,8 @@ SSR
    https://loopit.dk/rendering_inside.pdf
    https://www.youtube.com/watch?v=RdN06E6Xn9E&t=2427s&ab_channel=GDC
  - https://bartwronski.com/2014/03/23/gdc-follow-up-screenspace-reflections-filtering-and-up-sampling
+
+Denoise / Filters
+ - https://developer.nvidia.com/gtc/2020/video/s22699-vid
+   Dmitry Zhdan
+   Fast Denoising with Self Stabilizing Recurrent Blurs

@@ -133,8 +133,8 @@ void mk_fg_node_reflections_temporal_acc(Event*, ComponentsAccessor&)
 
     fg::dsl::AccessDecorator render_size{__renderSize__};
     auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead, false);
-    auto taInput = reg.readTexture("reflections_target_filtered", gapi::TextureState::ShaderRead, false);
-    auto taHistory = reg.readTexture("reflections_acc", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+    auto taInput = reg.readTexture("reflections_target", gapi::TextureState::ShaderRead, false);
+    auto taHistory = reg.readTexture("reflections_target_filtered", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
     auto taOutput = reg.modifyTexture("reflections_acc", gapi::TextureState::ShaderReadWrite);
     auto gbuffer_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
 
@@ -169,7 +169,7 @@ void mk_fg_node_reflections_blur(Event*, ComponentsAccessor&)
     const uint2 __renderSize__ = reg.getRenderSize();
 
     fg::dsl::AccessDecorator render_size{__renderSize__};
-    auto blurInput = reg.readTexture("reflections_target", gapi::TextureState::ShaderRead, false);
+    auto blurInput = reg.readTexture("reflections_acc", gapi::TextureState::ShaderRead, false);
     auto blurOutput = reg.modifyTexture("reflections_target_filtered", gapi::TextureState::ShaderReadWrite);
 
     return [blurInput,blurOutput,render_size](gapi::CmdEncoder& encoder)
@@ -197,7 +197,7 @@ void mk_fg_node_reflections_sync(Event*, ComponentsAccessor&)
 {
   fg::register_node("reflections_sync", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto specular_light = reg.renameTexture("reflections_acc", "specular_light", gapi::TextureState::ShaderRead);
+    auto specular_light = reg.renameTexture("reflections_target_filtered", "specular_light", gapi::TextureState::ShaderRead);
     return [](gapi::CmdEncoder&){};
   });
 }

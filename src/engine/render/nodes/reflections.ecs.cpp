@@ -68,8 +68,8 @@ void reflections(gapi::CmdEncoder& encoder,
 NODE_BEGIN(reflections_temporal_acc)
   READ_RENDER_SIZE_AS       (render_size)
   BIND_TEX_SRV_AS           (motionBuf, motionBuf)
-  BIND_TEX_SRV_AS           (reflections_target_filtered, taInput)
-  BIND_PREV_FRAME_TEX_SRV_AS(reflections_acc, taHistory)
+  BIND_TEX_SRV_AS           (reflections_target, taInput)
+  BIND_PREV_FRAME_TEX_SRV_AS(reflections_target_filtered, taHistory)
   BIND_TEX_RW_UAV_AS        (reflections_acc, taOutput)
   BIND_TEX_RO_DEPTH_AS      (late_opaque_depth, gbuffer_depth)
   EXEC(reflections_temporal_acc)
@@ -90,7 +90,7 @@ void reflections_temporal_acc(gapi::CmdEncoder& encoder, const uint2& render_siz
 
 NODE_BEGIN(reflections_blur)
   READ_RENDER_SIZE_AS (render_size)
-  BIND_TEX_SRV_AS     (reflections_target, blurInput)
+  BIND_TEX_SRV_AS     (reflections_acc, blurInput)
   BIND_TEX_RW_UAV_AS  (reflections_target_filtered, blurOutput)
 
   EXEC(reflections_blur)
@@ -110,6 +110,6 @@ void reflections_blur(gapi::CmdEncoder& encoder, const uint2& render_size)
 }
 
 NODE_BEGIN(reflections_sync)
-  RENAME_TEX(reflections_acc, specular_light, TEX_STATE(ShaderRead))
+  RENAME_TEX(reflections_target_filtered, specular_light, TEX_STATE(ShaderRead))
   NO_EXEC()
 NODE_END()
