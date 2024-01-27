@@ -5,13 +5,15 @@ scope ReflectionsTemporalAccumulationScope
 {
   reserve:
     descriptor_set(1);
-    register(texture, 0-4);
+    register(texture, 0-7);
 
   Texture2D taInput = extern(taInput);
   RWTexture2D<float4> taOutput = extern(taOutput);
   Texture2D taHistory = extern(taHistory);
   Texture2D motionBuf = extern(motionBuf);
   Texture2D gbufferDepth = extern(gbuffer_depth);
+  Texture2D taVarianceHistory = extern(taVarianceHistory);
+  RWTexture2D<float2> taVarianceOutput = extern(taVarianceOutput);
 };
 
 technique ReflectionsTemporalAccumulation
@@ -22,6 +24,15 @@ technique ReflectionsTemporalAccumulation
   USE_COLOR_SPACES();
 
   #hlsl
+
+  float calcVariance(float3 radiance, float3 history_radiance)
+  {
+    float curLuminance = luminance(radiance);
+    float historyLuminance = luminance(history_radiance);
+    float diff = abs(historyLuminance - curLuminance) / max(max(historyLuminance, curLuminance), 0.5);
+    return diff * diff;
+  }
+
   [numthreads(8,8,1)]
   void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
   {
@@ -66,7 +77,8 @@ technique ReflectionsTemporalAccumulation
     }
 
     float2 motionVec = motionBuf.Load(closestNeighborTC).rg * float2(0.5, -0.5);
-    float3 curPixel = RGB2YCbCR(taInput.Load(tc).rgb);
+    float3 curRadiance = taInput.Load(tc).rgb;
+    float3 curPixel = RGB2YCbCR(curRadiance);
     float2 historyUVReprojected = uv - motionVec;
 
     if (any(historyUVReprojected != saturate(historyUVReprojected)))
@@ -77,10 +89,17 @@ technique ReflectionsTemporalAccumulation
 
     float3 historyPixel = RGB2YCbCR(taHistory.SampleLevel(linearClampSampler,historyUVReprojected, 0).rgb);
     historyPixel = clamp(historyPixel, bbMin, bbMax);
+    float3 historyRadiance = YCbCr2RGB(historyPixel);
 
     float w = 0.90;
-    float3 res = YCbCr2RGB(lerp(curPixel, historyPixel, w));
-    taOutput[tc.xy] = float4(res, 1.0);
+    float3 newPixel = YCbCr2RGB(lerp(curPixel, historyPixel, w));
+
+    float curVariance = calcVariance(curRadiance, historyRadiance);
+    float historyVariance = taVarianceHistory.Load(tc).r;
+    float newVariance = lerp(curVariance, historyVariance, w);
+
+    taOutput[tc.xy] = float4(newPixel, 1.0);
+    taVarianceOutput[tc.xy] = newVariance;
   }
   #end
 

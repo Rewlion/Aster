@@ -18,5 +18,10 @@ technique_macro USE_COLOR_SPACES
     res.z = 298.082 / 256.0 * ycbcr.x + 516.412 / 256.0 * ycbcr.y - 276.836;
     return res / 256.0;
   }
+
+  float luminance(float3 rgb)
+  {
+    return max(dot(rgb, float3(0.299, 0.587, 0.144)), 0.001);
+  }
   #end
 };

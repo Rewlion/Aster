@@ -12,6 +12,9 @@ NODE_BEGIN(reflections_resources)
   CREATE_TEX_2D ( reflections_acc, TEX_SIZE_RELATIVE(), R32G32B32A32_S,
                   TEX_USAGE2(UAV,SRV), TEX_STATE(ShaderReadWrite) )
 
+  CREATE_TEX_2D ( reflections_variance, TEX_SIZE_RELATIVE(), R8_UNORM,
+                  TEX_USAGE2(UAV,SRV), TEX_STATE(ShaderReadWrite) )
+
   CREATE_TEX_2D ( reflections_target_filtered, TEX_SIZE_RELATIVE(), R32G32B32A32_S,
                   TEX_USAGE2(UAV,SRV), TEX_STATE(ShaderReadWrite) )
 
@@ -23,12 +26,16 @@ static
 void reflections_resources(gapi::CmdEncoder& encoder,
                            const gapi::TextureHandle reflections_target,
                            const gapi::TextureHandle reflections_acc,
+                           const gapi::TextureHandle reflections_variance,
                            const gapi::TextureHandle reflections_target_filtered)
 {
   encoder.clearColorTexture(reflections_target,
     gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
 
   encoder.clearColorTexture(reflections_acc,
+    gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
+
+  encoder.clearColorTexture(reflections_variance,
     gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
 
   encoder.clearColorTexture(reflections_target_filtered,
@@ -70,6 +77,8 @@ NODE_BEGIN(reflections_temporal_acc)
   BIND_TEX_SRV_AS           (motionBuf, motionBuf)
   BIND_TEX_SRV_AS           (reflections_target, taInput)
   BIND_PREV_FRAME_TEX_SRV_AS(reflections_target_filtered, taHistory)
+  BIND_PREV_FRAME_TEX_SRV_AS(reflections_variance, taVarianceHistory)
+  BIND_TEX_RW_UAV_AS        (reflections_variance, taVarianceOutput)
   BIND_TEX_RW_UAV_AS        (reflections_acc, taOutput)
   BIND_TEX_RO_DEPTH_AS      (late_opaque_depth, gbuffer_depth)
   EXEC(reflections_temporal_acc)

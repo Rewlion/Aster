@@ -45,6 +45,20 @@ void mk_fg_node_reflections_resources(Event*, ComponentsAccessor&)
     );
 
 
+    auto reflections_variance = reg.createTexture("reflections_variance",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R8_UNORM,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_UAV | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::ShaderReadWrite,
+      false
+    );
+
+
     auto reflections_target_filtered = reg.createTexture("reflections_target_filtered",
       gapi::TextureAllocationDescription{
         .format =          gapi::TextureFormat::R32G32B32A32_S,
@@ -59,9 +73,9 @@ void mk_fg_node_reflections_resources(Event*, ComponentsAccessor&)
     );
 
 
-    return [reflections_target,reflections_acc,reflections_target_filtered](gapi::CmdEncoder& encoder)
+    return [reflections_target,reflections_acc,reflections_variance,reflections_target_filtered](gapi::CmdEncoder& encoder)
     {
-      reflections_resources(encoder, reflections_target.get(), reflections_acc.get(), reflections_target_filtered.get());
+      reflections_resources(encoder, reflections_target.get(), reflections_acc.get(), reflections_variance.get(), reflections_target_filtered.get());
     };
   });
 }
@@ -135,14 +149,18 @@ void mk_fg_node_reflections_temporal_acc(Event*, ComponentsAccessor&)
     auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead, false);
     auto taInput = reg.readTexture("reflections_target", gapi::TextureState::ShaderRead, false);
     auto taHistory = reg.readTexture("reflections_target_filtered", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+    auto taVarianceHistory = reg.readTexture("reflections_variance", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+    auto taVarianceOutput = reg.modifyTexture("reflections_variance", gapi::TextureState::ShaderReadWrite);
     auto taOutput = reg.modifyTexture("reflections_acc", gapi::TextureState::ShaderReadWrite);
     auto gbuffer_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
 
-    return [motionBuf,taInput,taHistory,taOutput,gbuffer_depth,render_size](gapi::CmdEncoder& encoder)
+    return [motionBuf,taInput,taHistory,taVarianceHistory,taVarianceOutput,taOutput,gbuffer_depth,render_size](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("motionBuf", motionBuf.get());
       tfx::set_extern("taInput", taInput.get());
       tfx::set_extern("taHistory", taHistory.get());
+      tfx::set_extern("taVarianceHistory", taVarianceHistory.get());
+      tfx::set_extern("taVarianceOutput", taVarianceOutput.get());
       tfx::set_extern("taOutput", taOutput.get());
       tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
       reflections_temporal_acc(encoder, render_size.get());
