@@ -208,11 +208,13 @@ namespace gapi::vulkan
       case TextureFormat::R8_UINT:             return vk::Format::eR8Uint;
       case TextureFormat::R8_SINT:             return vk::Format::eR8Sint;
       case TextureFormat::R8_SRGB:             return vk::Format::eR8Srgb;
+      case TextureFormat::R8G8_UNORM:          return vk::Format::eR8G8Unorm;
       case TextureFormat::B8G8R8A8_UNORM:      return vk::Format::eB8G8R8A8Unorm;
       case TextureFormat::R8G8B8A8_SNORM:      return vk::Format::eR8G8B8A8Snorm;
       case TextureFormat::R8G8B8A8_UNORM:      return vk::Format::eR8G8B8A8Unorm;
       case TextureFormat::R8G8B8A8_UINT:       return vk::Format::eR8G8B8A8Uint;
       case TextureFormat::R16_UNORM:           return vk::Format::eR16Unorm;
+      case TextureFormat::R16_SFLOAT:          return vk::Format::eR16Sfloat;
       case TextureFormat::R16G16B16A16_SFLOAT: return vk::Format::eR16G16B16A16Sfloat;
       case TextureFormat::R16G16B16A16_SINT:   return vk::Format::eR16G16B16A16Sint;
       case TextureFormat::R16G16B16A16_SNORM:  return vk::Format::eR16G16B16A16Snorm;
@@ -255,12 +257,14 @@ namespace gapi::vulkan
       case vk::Format::eR8Uint:
       case vk::Format::eR8Sint:
       case vk::Format::eR8Srgb:
+      case vk::Format::eR8G8Unorm:
       case vk::Format::eB8G8R8A8Unorm:
       case vk::Format::eB8G8R8A8Srgb:
       case vk::Format::eR8G8B8A8Snorm:
       case vk::Format::eR8G8B8A8Unorm:
       case vk::Format::eR8G8B8A8Uint:
       case vk::Format::eR16Unorm:
+      case vk::Format::eR16Sfloat:
       case vk::Format::eR16G16B16A16Sfloat:
       case vk::Format::eR16G16B16A16Sint:
       case vk::Format::eR16G16B16A16Snorm:
