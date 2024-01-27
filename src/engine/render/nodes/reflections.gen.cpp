@@ -189,11 +189,15 @@ void mk_fg_node_reflections_blur(Event*, ComponentsAccessor&)
     fg::dsl::AccessDecorator render_size{__renderSize__};
     auto blurInput = reg.readTexture("reflections_acc", gapi::TextureState::ShaderRead, false);
     auto blurOutput = reg.modifyTexture("reflections_target_filtered", gapi::TextureState::ShaderReadWrite);
+    auto gbuffer_metal_roughness = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead, false);
+    auto taVariance = reg.readTexture("reflections_variance", gapi::TextureState::ShaderRead, false);
 
-    return [blurInput,blurOutput,render_size](gapi::CmdEncoder& encoder)
+    return [blurInput,blurOutput,gbuffer_metal_roughness,taVariance,render_size](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("blurInput", blurInput.get());
       tfx::set_extern("blurOutput", blurOutput.get());
+      tfx::set_extern("gbuffer_metal_roughness", gbuffer_metal_roughness.get());
+      tfx::set_extern("taVariance", taVariance.get());
       reflections_blur(encoder, render_size.get());
     };
   });

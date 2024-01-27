@@ -101,6 +101,8 @@ NODE_BEGIN(reflections_blur)
   READ_RENDER_SIZE_AS (render_size)
   BIND_TEX_SRV_AS     (reflections_acc, blurInput)
   BIND_TEX_RW_UAV_AS  (reflections_target_filtered, blurOutput)
+  BIND_TEX_SRV_AS     (gbuf2, gbuffer_metal_roughness)
+  BIND_TEX_SRV_AS     (reflections_variance, taVariance)
 
   EXEC(reflections_blur)
 NODE_END()

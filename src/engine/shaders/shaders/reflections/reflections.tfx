@@ -250,8 +250,6 @@ technique SpecularReflection {
     float NoV = dot(N,V);
 
     ProcessedMaterial mat = processMaterial(unpackMaterial(tc));
-    mat.roughness = 0.2;
-    mat.ggxAlpha = roughnessToGGXAlpha(mat.roughness);
     
     float ssrPower;
     float3 enviSpecular = sampleEnviSpecular(SpecularReflectionScope.enviMips, mat.roughness, R);

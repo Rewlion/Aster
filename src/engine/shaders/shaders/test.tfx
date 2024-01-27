@@ -43,7 +43,7 @@ technique TestStaticMesh {
       UnpackedMaterial mat;
       initAlbedo(mat, float3(1.0, 1.0, 1.0));
       initMetal(mat, 1.0);
-      initRoughness(mat, 0.0);
+      initRoughness(mat, 0.1);
       initNormal(mat, input.normal);
       initMotionVector(mat, input.prevPos, input.curPos);
 

@@ -1,25 +1,26 @@
+#include "../materials.inc.tfx"
+
 scope ReflectionsFilterScope
 {
   reserve:
     descriptor_set(2);
-    register(texture, 0-1);
+    register(texture, 0-3);
   
   Texture2D<float4> blurInput = extern(blurInput);
   RWTexture2D<float4> blurOutput = extern(blurOutput);
+
+  Texture2D gbufferMetalRoughness = extern(gbuffer_metal_roughness);
+  Texture2D<float> taVariance = extern(taVariance);
 };
 
 technique ReflectionsFilter
 {
   activate scope ReflectionsFilterScope;
   
+  USE_MATERIALS_ROUGHNESS_UNPACK();
+
   #hlsl
   #include "reflections_filter.hlsl"
-
-  #define MAX_RANGE 64
-  #define RANGE 9
-  #define RANGE_BORDER (RANGE-1)/2
-  #define SIGMA_S 4.0
-  #define SIGMA_R 0.1
 
   float gauss_kernel(float sigma, float range)
   {
@@ -41,14 +42,23 @@ technique ReflectionsFilter
   {
     uint2 renderSize;
     blurInput.GetDimensions(renderSize.x, renderSize.y);
-    if (any(dispatch_thread_id.xy > renderSize))
+    if (any(dispatch_thread_id.xy >= renderSize))
      return;
     
-    //blurOutput[dispatch_thread_id.xy] = blurInput.Load(dispatch_thread_id.xyz); return;
+    float roughness = unpackMaterialRoughness(dispatch_thread_id);
+    float variance = taVariance.Load(dispatch_thread_id);
+    bool isMirrorLike = roughness < 0.05;
 
-    // float spatial_gauss_kernels[RANGE];
-    // for (int r = 0; r < RANGE_BORDER; ++r)
-    //   spatial_gauss_kernels[RANGE_BORDER+r] = spatial_gauss_kernels[RANGE_BORDER-r] = gauss_kernel(SIGMA, float(r));
+    if (isMirrorLike || variance < 1e-5)
+    {
+      blurOutput[dispatch_thread_id.xy] = blurInput.Load(dispatch_thread_id);
+      return;
+    }
+
+    float t = saturate(variance / 0.004);
+    int range = int(lerp(2.0, 11.0, t)+0.5);
+    float sigmaS = lerp(4.0, 32.0, t);
+    float sigmaR = lerp(0.01, 0.3, t);
 
     float Wp = 0;
     uint2 p = dispatch_thread_id.xy;
@@ -56,9 +66,9 @@ technique ReflectionsFilter
     float3 Ip = blurInput.Load(uint3(p,0)).rgb;
     float3 BFp = float3(0,0,0);
 
-    for (int i = -RANGE_BORDER; i <= RANGE_BORDER; ++i)
+    for (int i = -range; i <= range; ++i)
     {
-      for (int j = -RANGE_BORDER; j <= RANGE_BORDER; ++j)
+      for (int j = -range; j <= range; ++j)
       {
         int2 q = p + int2(i,j);
         if (any(q < 0 || q > renderSize))
@@ -68,7 +78,7 @@ technique ReflectionsFilter
         float spatialDist = dot(q-p, q-p);
         float colorDist = intencity(Iq) - intencity(Ip);//dot(Iq-Ip, Iq-Ip);
         //float colorDist = dot(Iq-Ip, Iq-Ip) * 255.0;
-        float Wp_ij = gauss_kernel(SIGMA_S, spatialDist) * gauss_kernel(SIGMA_R, colorDist);
+        float Wp_ij = gauss_kernel(sigmaS, spatialDist) * gauss_kernel(sigmaR, colorDist);
         //float Wp_ij = gauss_kernel(SIGMA_R, colorDist);
 
         Wp += Wp_ij;
