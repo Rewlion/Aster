@@ -7,6 +7,7 @@
 
 #include <Unknwn.h>
 #include <dxc/dxcapi.h>
+#include <dxc/d3d12shader.h>
 
 #include <algorithm>
 #include <charconv>
@@ -15,6 +16,7 @@
 #include <wrl/client.h>
 
 namespace fs = std::filesystem;
+using Microsoft::WRL::ComPtr;
 
 namespace ShadersSystem
 {
@@ -26,7 +28,6 @@ namespace ShadersSystem
                                     const string& entryName, const string& currentDir,
                                     const bool debug)
     {
-      using Microsoft::WRL::ComPtr;
       ComPtr<IDxcUtils> pUtils;
       DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(pUtils.GetAddressOf()));
 
@@ -158,6 +159,7 @@ namespace ShadersSystem
             scopes.push_back(&m_Compiler.getScope(n));
 
           m_DescriptorSets = spirv::v2::reflect(scopes, m_Stages);
+          spirv::v2::insert_shaders_reflection(m_Shaders);
         }
 
         vk::DescriptorSetLayoutBinding& accessDsetBinding(const size_t set, const size_t binding)

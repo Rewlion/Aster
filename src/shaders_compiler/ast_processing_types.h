@@ -8,19 +8,27 @@
 
 namespace ShadersSystem
 {
+  struct ShaderReflection
+  {
+    uint3 numthreads = {0,0,0};
+    bool operator==(const ShaderReflection&) const = default;
+  };
+
   struct ShaderBlob
   {
     string name;
     string entry;
     gapi::ShaderStage stage;
     eastl::vector<char> data;
+    ShaderReflection reflection;
 
     bool operator==(const ShaderBlob& rvl) const
     {
       return name == rvl.name &&
         entry == rvl.entry &&
         stage == rvl.stage &&
-        data == rvl.data;
+        data == rvl.data &&
+        reflection == rvl.reflection;
     }
   };
 

@@ -38,6 +38,26 @@ namespace spirv
       }
     }
 
+    void insert_shaders_reflection(eastl::vector<ShadersSystem::ShaderBlob>& blobs)
+    {
+      ShadersSystem::ShaderReflection reflection;
+      if (blobs.size() == 1 && blobs[0].stage == gapi::ShaderStage::Compute)
+      {
+        const eastl::vector<char>& spirv = blobs[0].data;
+        const string& entryPoint = blobs[0].entry;
+
+        const uint32_t* code = (uint32_t*)spirv.data();
+        const uint32_t words = spirv.size() / sizeof(uint32_t);
+
+        spirv_cross::CompilerGLSL comp{code, words};
+        spirv_cross::SPIREntryPoint::WorkgroupSize wgSize =
+          comp.get_entry_point(entryPoint, spv::ExecutionModel::ExecutionModelGLCompute)
+              .workgroup_size;
+        
+        blobs[0].reflection.numthreads = uint3{wgSize.x, wgSize.y, wgSize.z};
+      }
+    }
+
     eastl::vector<DescriptorSet> reflect(const eastl::vector<const ShadersSystem::ScopeDeclaration*> scopes, const gapi::ShaderStage stages)
     {
       struct BindingInfo
