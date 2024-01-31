@@ -6,8 +6,9 @@
     {"include": "#type_decl"},
     {"include": "#macro_invoke"},
     {"include": "#constants"},
-		{"include": "#keywords" },
-		{"include": "#strings" },
+	{"include": "#keywords" },
+	{"include": "#strings" },
+    {"include": "#sysincludes"},
     {"include": "#names"},
     {"include": "#comments"},
     {"include": "#operators"}
@@ -87,6 +88,17 @@
 			"name": "string.quoted.double.tfx",
 			"begin": "\"",
 			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.tfx",
+					"match": "\\\\."
+				}
+			]
+		},
+		"sysincludes": {
+			"name": "string.quoted.double.tfx",
+			"begin": "<",
+			"end": ">",
 			"patterns": [
 				{
 					"name": "constant.character.escape.tfx",
