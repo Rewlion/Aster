@@ -1,5 +1,5 @@
-#include "../frame.inc.tfx"
-#include "../materials.inc.tfx"
+#include <frame.inc.tfx>
+#include <materials.inc.tfx>
 #include "virtual_texture.tfx"
 
 scope TerrainScope

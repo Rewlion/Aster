@@ -1,5 +1,5 @@
-#include "../frame.inc.tfx"
-#include "../screen_space.inc.tfx"
+#include <frame.inc.tfx>
+#include <screen_space.inc.tfx>
 
 scope DebugClustersScope
 {

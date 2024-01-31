@@ -1,4 +1,4 @@
-#include "../depth.inc.tfx"
+#include <depth.inc.tfx>
 
 scope BuildClustersScope
 {

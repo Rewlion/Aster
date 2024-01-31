@@ -1,5 +1,5 @@
-#include "../frame.inc.tfx"
-#include "../math.inc.tfx"
+#include <frame.inc.tfx>
+#include <math.inc.tfx>
 #include "atmosphere.inc.tfx"
 #include "ebruneton.inc.tfx"
 #include "multiple_scattering.inc.tfx"

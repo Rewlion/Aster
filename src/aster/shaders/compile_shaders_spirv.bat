@@ -1,1 +1,1 @@
-..\..\..\tools\shaders_compiler-debug.exe --ed=../../engine/shaders/shaders.ed --o=../../../game/aster/bin %1
+..\..\..\tools\shaders_compiler-debug.exe --I=../../engine/shaders/shaders --ed=../../engine/shaders/shaders.ed --o=../../../game/aster/bin %1

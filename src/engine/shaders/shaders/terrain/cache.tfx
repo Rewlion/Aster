@@ -1,5 +1,5 @@
-#include "../screen_space.inc.tfx"
-#include "../frame.inc.tfx"
+#include <screen_space.inc.tfx>
+#include <frame.inc.tfx>
 #include "virtual_texture.tfx"
 
 scope TerrainTileScope
