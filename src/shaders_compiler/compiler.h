@@ -9,8 +9,10 @@
 
 #include <memory>
 
+#include <EASTL/span.h>
 #include <EASTL/vector_map.h>
 #include <EASTL/vector_set.h>
+
 
 namespace ShadersSystem
 {
@@ -21,6 +23,8 @@ namespace ShadersSystem
   class Compiler
   {
     public:
+      Compiler(eastl::span<const string> include_dirs);
+
       bool compileModuleFromFile(const string& file, const int flags);
 
       inline void markCompilationFailed() { m_IsCompilationOk = false; }
@@ -50,7 +54,12 @@ namespace ShadersSystem
       auto getLine() const -> unsigned int { return m_FileCtxs.back().line; }
       auto getCurrentFileName() const -> const string& { return m_FileCtxs.back().fileName; }
       auto getFlags() const -> int { return m_CompileFlags; }
+      auto resolveLocalInclude(const string_view file) -> std::optional<string>;
+      auto resolveSystemInclude(const string_view file) -> std::optional<string>;
+      auto openIncludeFile(const string_view file, const bool is_local) -> FILE*;
     private:
+      eastl::span<const string> m_IncludeDirs;
+
       struct FileContext
       {
         string fileName;

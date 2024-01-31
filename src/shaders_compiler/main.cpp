@@ -34,6 +34,11 @@ int main(int argc, char** argv)
       .flag()
       .help("enable debugging and disable all optimizations");
 
+  opts.add_argument("--I")
+      .append()
+      .default_value(std::vector<string>{})
+      .help("add directory to the end of the list of include search path");
+
   try
   {
     opts.parse_args(argc, argv);
@@ -53,6 +58,7 @@ int main(int argc, char** argv)
   const string edFile = opts.get("--ed");
   const string outputDir = opts.get("--o");
   const bool debugMode = opts["--D"] == true;
+  const std::vector<string> includeDirs = opts.get<std::vector<string>>("--I");
 
   std::optional<ed::Scope> shaders = ed::load_from_file(edFile);
   if (!shaders.has_value())
@@ -73,8 +79,7 @@ int main(int argc, char** argv)
     loginfo("failed to create output directory `{}`:{}", outputDir, ec.message());
     return -1;
   }
-
-  ShadersSystem::Compiler compiler;
+  ShadersSystem::Compiler compiler{eastl::span<const string>{includeDirs}};
   const string edDir = fs::path(edFile).parent_path().string();
   for (const string_view shader: shadersList)
   {

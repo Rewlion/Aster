@@ -3,6 +3,7 @@
 #include <engine/assert.h>
 #include <engine/log.h>
 
+#include <filesystem>
 #include <exception>
 #include <cstdio>
 extern int shparse(ShadersSystem::Compiler& compiler);
@@ -11,6 +12,11 @@ extern FILE *shin;
 
 namespace ShadersSystem
 {
+  Compiler::Compiler(eastl::span<const string> include_dirs)
+    : m_IncludeDirs(include_dirs)
+  {
+  }
+
   string Compiler::getScopeHlsl(const string& scope) const
   {
     return m_DeclaredScopes.find(str_hash(scope.c_str()))->second.hlslResourceDeclaration;
@@ -58,5 +64,46 @@ namespace ShadersSystem
     fclose(f);
 
     return m_IsCompilationOk;
+  }
+
+  auto Compiler::resolveLocalInclude(const string_view file) -> std::optional<string>
+  {
+    const string localDir = std::filesystem::path(getCurrentFileName()).parent_path().string();
+    const string resolvedPath = fmt::format("{}/{}", localDir, file);
+
+    if (std::filesystem::exists(resolvedPath))
+      return string{resolvedPath};
+
+    return resolveSystemInclude(file);
+  }
+
+  auto Compiler::resolveSystemInclude(const string_view file) -> std::optional<string>
+  {
+    for (string_view incDir : m_IncludeDirs)
+    {
+      const string resolvedPath = fmt::format("{}/{}", incDir, file);
+      if (std::filesystem::exists(resolvedPath))
+        return resolvedPath;
+    }
+
+    return std::nullopt;
+  }
+
+  auto Compiler::openIncludeFile(const string_view file, const bool is_local) -> FILE*
+  {
+    const std::optional<string> resolvedPath = is_local ?
+                                                resolveLocalInclude(file) :
+                                                resolveSystemInclude(file);
+    if (!resolvedPath.has_value())
+      throw std::runtime_error(fmt::format("can't include file `{}`: File not found", file));
+
+    FILE* fd = fopen(resolvedPath->c_str(), "r" );
+    if (!fd)
+      throw std::runtime_error(fmt::format("can't include file `{}`: error:{}, {}",
+                               resolvedPath.value(), errno, strerror(errno)));
+
+    pushFile(resolvedPath.value());
+
+    return fd;
   }
 }

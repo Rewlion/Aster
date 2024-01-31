@@ -5,8 +5,11 @@
 
     #include <engine/log.h>
 
-    #include <stdio.h>
+    #include <cstring>
+    #include <cerrno>
     #include <filesystem>
+    #include <stdio.h>
+
     #include "parser.tab.hpp"
 
     void sherror(ShadersSystem::Compiler& compiler, const char* msg);
@@ -52,24 +55,29 @@
 
 }
 
-<include>["][^ \t\r\n]+["] {
-  char* fileName = yytext + 1;
-  fileName[strlen(yytext) - 2] = '\0';
-
-  const string currentDir = fs::path(compiler.getCurrentFileName()).parent_path().string();
-  const string file = fmt::format("{}/{}", currentDir, fileName);
-  yyin = fopen( file.c_str(), "r" );
-
-  if (!yyin)
+<include>[\<"][^ \t\r\n]+["\>] {
+  const size_t len = strlen(yytext);
+  if ((yytext[0] == '<' && yytext[len-1] == '"') ||
+     ((yytext[0] == '"' && yytext[len-1] == '>')))
   {
-    const string error = fmt::format("can't include file `{}`: File not found", fileName);
-    sherror(compiler, error.c_str());
+    sherror(compiler, fmt::format("invalid include '{}', expected: <...> or \"...\"", yytext).c_str());
     yyterminate();
   }
 
-  compiler.pushFile(file);
+  try
+  {
+    const bool isLocal = yytext[0] == '"';
+    char* fileName = yytext + 1;
+    fileName[strlen(yytext) - 2] = '\0';
+    yyin = compiler.openIncludeFile(fileName, isLocal);
+    yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
+  }
+  catch(std::runtime_error& e)
+  {
+    sherror(compiler, e.what());
+    yyterminate();
+  }
 
-	yypush_buffer_state(yy_create_buffer( yyin, YY_BUF_SIZE ));
   BEGIN(INITIAL);
 }
 
