@@ -55,7 +55,7 @@ technique ResolveGbuffer {
   #hlsl
     #include "clustered_light/lights_apply.hlsl"
 
-    [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
+    [numthreads(8, 8, 1)]
     void cs_main(uint3 dispatch_thread_id: SV_DispatchThreadID)
     {
       uint2 renderSize;

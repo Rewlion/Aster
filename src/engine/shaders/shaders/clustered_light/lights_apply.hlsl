@@ -3,7 +3,6 @@
 #ifndef LIGHTS_APPLY_INCLUDE_GUARD
 #define LIGHTS_APPLY_INCLUDE_GUARD
 
-#include "tiles.hlsl"
 #include "utils.hlsl"
 
 float pointLightAttenuation(float light_radius, float distance_sq)

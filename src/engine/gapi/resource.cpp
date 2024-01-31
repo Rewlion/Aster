@@ -72,6 +72,9 @@ namespace gapi
 
     hash_combine(hash, layout);
     hash_combine(hash, shader);
+    hash_combine(hash, numthreads.x);
+    hash_combine(hash, numthreads.y);
+    hash_combine(hash, numthreads.z);
 
     return hash;
   }

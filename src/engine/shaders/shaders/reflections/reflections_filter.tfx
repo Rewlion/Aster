@@ -20,8 +20,6 @@ technique ReflectionsFilter
   USE_MATERIALS_ROUGHNESS_UNPACK();
 
   #hlsl
-  #include "reflections_filter.hlsl"
-
   float gauss_kernel(float sigma, float range)
   {
     float oneOverSqrtTwoPi = 0.39894;
@@ -37,7 +35,7 @@ technique ReflectionsFilter
     return d == 0.0 ? 0.0 : d / cMax;
   }
 
-  [numthreads(BLF_TILE_DIM_X, BLF_TILE_DIM_X, 1)]
+  [numthreads(8, 8, 1)]
   void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
   {
     uint2 renderSize;

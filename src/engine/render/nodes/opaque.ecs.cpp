@@ -6,8 +6,6 @@
 
 #include <glm/gtx/transform.hpp>
 
-#include <engine/shaders/shaders/clustered_light/tiles.hlsl>
-
 NODE_BEGIN(gbuffer_main_pass)
   ORDER_ME_AFTER(frame_preparing)
 
@@ -123,7 +121,8 @@ void gbuffer_resolve_exec(gapi::CmdEncoder& encoder,
     return render_dim / tile_dim + add;
   };
 
-  encoder.dispatch(getGroupSize(render_size.x, TILE_DIM_X), getGroupSize(render_size.y, TILE_DIM_X), 1);
+  const uint3 gc = tfx::calc_group_count("ResolveGbuffer", uint3{render_size, 1});
+  encoder.dispatch(gc.x, gc.y, 1);
 }
 
 NODE_BEGIN(post_opaque_sync)

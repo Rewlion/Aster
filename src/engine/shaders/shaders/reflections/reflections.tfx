@@ -41,8 +41,6 @@ technique SpecularReflection {
   USE_ENVI_IBL();
 
 #hlsl
-  #include "reflections.hlsl"
-
   #define SSR_MAX_DISTANCE 60.0
   #define FLOAT_MAX 3.402823466e+38
 
@@ -221,7 +219,7 @@ technique SpecularReflection {
     return reflection * ssr_power;
   }
 
-  [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
+  [numthreads(8, 8, 1)]
   void cs_main(uint3 dispatch_thread_id: SV_DispatchThreadID)
   {
     uint2 renderSize;

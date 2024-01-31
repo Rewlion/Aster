@@ -316,7 +316,8 @@ namespace tfx
         technique.pipelineDesc = gapi::ComputePipelineDescription{
           .layout = layout,
           .shader = modules[0],
-          .name = t.name
+          .name = t.name,
+          .numthreads = t.blobs[0].reflection.numthreads
         };
       }
 
@@ -396,5 +397,35 @@ namespace tfx
 
     Processor pr;
     pr.activateTechnique(it->second, &cmd_encoder);
+  }
+
+  auto calc_group_count(const string_view cs_technique_name, const uint3 threads_count) -> uint3
+  {
+    const string_hash h = str_hash(cs_technique_name);
+    const auto it = techniques_storage.find(h);
+
+    ASSERT_FMT(it != techniques_storage.end(), "Missing material `{}`", cs_technique_name);
+    Technique& t = it->second;
+
+    uint3 groupSize{0,0,0};
+    if (const auto* desc = std::get_if<gapi::ComputePipelineDescription>(&t.pipelineDesc))
+    {
+      ASSERT(desc->numthreads != (uint3{0,0,0}));
+      groupSize = desc->numthreads;
+    }
+
+    const auto calcDim = [](const uint dim, const uint div) -> uint
+    {
+      const uint add = dim % div > 0 ? 1 : 0;
+      return dim / div + add;
+    };
+
+    const uint3 groupCount = uint3{
+      calcDim(threads_count.x, groupSize.x),
+      calcDim(threads_count.y, groupSize.y),
+      calcDim(threads_count.z, groupSize.z),
+    };
+    
+    return groupCount;
   }
 }

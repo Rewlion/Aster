@@ -1,7 +1,5 @@
 #include <engine/render/frame_graph/dsl.h>
 
-#include <engine/shaders/shaders/hi_z.hlsl>
-
 static
 void generate_base_mip(gapi::CmdEncoder& encoder,
                        const uint2& render_size,
@@ -14,12 +12,8 @@ void generate_base_mip(gapi::CmdEncoder& encoder,
   tfx::activate_technique("HiZBase", encoder);
   encoder.updateResources();
 
-  const auto getGroupSize = [](uint render_dim, uint tile_dim) {
-    uint add = render_dim % tile_dim > 0 ? 1 : 0;
-    return render_dim / tile_dim + add;
-  };
-
-  encoder.dispatch(getGroupSize(render_size.x, TILE_DIM_X), getGroupSize(render_size.y, TILE_DIM_X), 1);
+  const uint3 gc = tfx::calc_group_count("HiZBase", uint3{render_size, 1});
+  encoder.dispatch(gc.x, gc.y, 1);
   encoder.transitTextureState(hi_z_buffer, gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite);
 }                        
 
@@ -31,23 +25,18 @@ void generate_high_mips(gapi::CmdEncoder& encoder,
   const uint32_t mips = hi_z_buffer.describe().mipLevels;
   const gapi::TextureHandle tex = hi_z_buffer.get();
   
-  const auto getGroupSize = [](uint render_dim, uint tile_dim) {
-    uint add = render_dim % tile_dim > 0 ? 1 : 0;
-    return render_dim / tile_dim + add;
-  };
-  
   uint2 size = render_size;
   for (uint32_t i = 1; i < mips; ++i)
   {
     size /= 2;
-    uint3 dispatchSize{getGroupSize(size.x, TILE_DIM_X), getGroupSize(size.y, TILE_DIM_X), 1};
 
     tfx::set_extern("hi_z_src", tfx::Texture{tex, i-1});
     tfx::set_extern("hi_z_dst", tfx::Texture{tex, i});
     tfx::activate_scope("HiZScope", encoder);
     tfx::activate_technique("HiZHigh", encoder);
     encoder.updateResources();
-    encoder.dispatch(dispatchSize.x, dispatchSize.y, dispatchSize.z);
+    const uint3 gc = tfx::calc_group_count("HiZHigh", uint3{size, 1});
+    encoder.dispatch(gc.x, gc.y, 1);
     
     encoder.transitTextureState(tex, gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite, i, 1);
   }

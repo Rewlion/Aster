@@ -615,6 +615,7 @@ namespace gapi
     PipelineLayoutHandler layout;
     ShaderModuleHandler   shader;
     string                name;
+    uint3                 numthreads;
 
     size_t hash() const;
   };
