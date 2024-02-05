@@ -286,7 +286,7 @@ namespace fg
       for (const auto& rt: rp.mrt)
       {
         const auto resId = getResourceId(rt.vResId);
-        const auto [tex, currentState] = storage.getTextureAndCurrentState(resId);
+        const auto [tex, currentState] = storage.getTextureAndCurrentState(resId).unwrap();
 
         if (currentState != gapi::TextureState::RenderTarget)
         {
@@ -312,7 +312,7 @@ namespace fg
       if (rp.depth.vResId != INVALID_VIRT_RES_ID)
       {
         const auto resId = getResourceId(rp.depth.vResId);
-        const auto [tex, currentState] = storage.getTextureAndCurrentState(resId);
+        const auto [tex, currentState] = storage.getTextureAndCurrentState(resId).unwrap();
 
         if (!gapi::is_depth_rp_state(currentState))
         {
@@ -498,5 +498,17 @@ namespace fg
     }
     
     return nullptr;
+  }
+
+  auto Manager::getCurFrameTexture(const char* name) -> gapi::TextureViewWithState
+  {
+    const virt_res_id_t vResId = m_Registry.getVirtResourceId(name);
+    if (vResId != INVALID_VIRT_RES_ID) [[likely]]
+    {
+      const res_id_t resId = getResourceId(vResId);
+      return getStorage().getTextureAndCurrentState(resId);
+    }
+    
+    return {};
   }
 }

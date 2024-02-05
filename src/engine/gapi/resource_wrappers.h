@@ -2,6 +2,8 @@
 
 #include "gapi.h"
 
+#include <EASTL/utility.h>
+
 namespace gapi
 {
   class TextureWrapper
@@ -24,16 +26,22 @@ namespace gapi
   {
     public:
       TextureViewWithState();
+      TextureViewWithState(const TextureViewWithState&) = default;
       TextureViewWithState(const TextureHandle h, gapi::TextureState m_State);
       TextureViewWithState(TextureViewWithState&& rvl);
-      ~TextureViewWithState() {};
 
-      auto operator=(const TextureViewWithState&) -> const TextureViewWithState& = delete;
+      auto operator=(const TextureViewWithState&) -> TextureViewWithState& = default;
       auto operator=(TextureViewWithState&&) -> TextureViewWithState&;
       operator TextureHandle() const { return m_Handle; }
 
       auto getState() const -> gapi::TextureState { return m_State; }
       void transitState(gapi::CmdEncoder& encoder, const gapi::TextureState to_state);
+
+      auto unwrap() const
+        -> eastl::pair<gapi::TextureHandle, gapi::TextureState>
+      {
+        return {m_Handle, m_State};
+      }
 
     private:
       gapi::TextureHandle m_Handle;

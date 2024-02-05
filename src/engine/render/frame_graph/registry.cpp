@@ -240,6 +240,14 @@ namespace fg
     return {*this, m_Nodes[m_CurrentExecNodeId].execState};
   }
 
+  auto Registry::getVirtResourceId(const char* name) const -> virt_res_id_t
+  {
+    const name_id_t nameId = m_ResourcesNames.getStringId(name);
+    return nameId != INVALID_NAME_ID ?
+                    to_virt_res_id(nameId) :
+                    INVALID_VIRT_RES_ID;
+  }
+
   auto Registry::RpBuilder::addTarget(const TextureRequest tex_req, const gapi::LoadOp load, const gapi::StoreOp store,
                                       const gapi::ClearColorValue& clear_color) && -> RpBuilder&&
   {

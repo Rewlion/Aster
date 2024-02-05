@@ -44,4 +44,9 @@ namespace fg
   {
     manager->setRenderSize(size);
   }
+
+  auto get_cur_frame_texture(const char* name) -> gapi::TextureViewWithState
+  {
+    return manager->getCurFrameTexture(name);
+  }
 }

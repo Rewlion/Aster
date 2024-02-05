@@ -134,10 +134,10 @@ namespace fg
   }
 
   auto ResourceStorage::getTextureAndCurrentState(const res_id_t res_id)
-    -> eastl::pair<gapi::TextureHandle, gapi::TextureState>
+    -> gapi::TextureViewWithState
   {
     const auto& res = std::get<TextureResource>(m_Resources.get(res_id));
-    return {res.texture, res.texture.getState()};
+    return res.texture;
   }
 
   auto ResourceStorage::getSampler(const res_id_t res_id) -> gapi::SamplerHandler

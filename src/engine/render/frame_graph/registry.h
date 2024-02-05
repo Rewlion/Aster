@@ -110,6 +110,8 @@ namespace fg
 
       auto requestRenderPass() -> RpBuilder;
 
+      auto getVirtResourceId(const char*) const -> virt_res_id_t;
+
     private:
       using ModifyCb = fu2::function<void(const virt_res_id_t, NodeInfo&)>;
       using ReadCb = ModifyCb;
