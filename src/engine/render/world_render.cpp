@@ -3,10 +3,8 @@
 
 #include <engine/debug_marks.h>
 #include <engine/ecs/ecs.h>
-#include <engine/events.h>
-#include <engine/render/font/font_render.h>
+#include <engine/events_render.h>
 #include <engine/render/frame_graph/frame_graph.h>
-#include <engine/render/imgui/imgui_render.h>
 #include <engine/window.h>
 
 namespace Engine::Render

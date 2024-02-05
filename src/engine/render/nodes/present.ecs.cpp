@@ -1,4 +1,6 @@
 #include <engine/render/frame_graph/dsl.h>
+#include <engine/ecs/ecs.h>
+#include <engine/debug_marks.h>
 
 NODE_BEGIN(present_producer)
   RENAME_TEX_RT(final_target, present_src)
@@ -10,6 +12,37 @@ NODE_BEGIN(present)
   MODIFY_TEX_TRANSFER_DST(backbuffer)
   EXEC(present_exec)
 NODE_END()
+
+#ifdef DEBUG
+  void on_before_present_impl(gapi::CmdEncoder& encoder, gapi::TextureViewWithState& bb)
+  {
+    GAPI_MARK("before present", encoder);
+
+    Engine::DebugOnBeforePresent evt;
+    evt.encoder = &encoder;
+    evt.backbuffer = &bb;
+
+    ecs::get_registry()
+      .broadcastEventSync(std::move(evt));
+
+    if (bb.getState() != gapi::TextureState::Present)
+      bb.transitState(encoder, gapi::TextureState::Present);
+  }
+#else
+  void on_before_present_impl(gapi::CmdEncoder&, gapi::TextureViewWithState&) {}
+#endif
+
+static
+void on_before_present(gapi::CmdEncoder& encoder)
+{
+  GAPI_MARK("before present", encoder);
+
+  gapi::TextureViewWithState bb = fg::get_cur_frame_texture("backbuffer");
+  on_before_present_impl(encoder, bb);
+
+  if (bb.getState() != gapi::TextureState::Present)
+    bb.transitState(encoder, gapi::TextureState::Present);
+}
 
 NODE_EXEC()
 static
@@ -34,5 +67,5 @@ void present_exec(gapi::CmdEncoder& encoder,
   };
 
   encoder.blitTexture(present_src, backbuffer, 1, &blit, gapi::ImageFilter::Nearest);
-  encoder.transitTextureState(backbuffer, gapi::TextureState::TransferDst, gapi::TextureState::Present);
+  on_before_present(encoder);
 }

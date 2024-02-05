@@ -50,8 +50,6 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/virtual_texture/vtile_lru.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/world_render.cpp"
 
-
-    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes_cmd/show_tex.cpp"
   ECS_FILES
     "${CMAKE_SOURCE_DIR}/src/engine/render/clustered_lights.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/atmosphere.ecs.cpp"
@@ -69,6 +67,7 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/taa.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/ui.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/virtual_terrain.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/show_tex.ecs.cpp"
 )
 
 set(FONT_SRC

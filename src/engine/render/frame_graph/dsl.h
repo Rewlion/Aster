@@ -4,6 +4,7 @@
 
 #include <engine/ecs/macros.h>
 #include <engine/events.h>
+#include <engine/events_render.h>
 #include <engine/gapi/gapi.h>
 #include <engine/gapi/resources.h>
 #include <engine/render/frame_graph/frame_graph.h>

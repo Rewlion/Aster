@@ -2,7 +2,7 @@
 
 #include <engine/ecs/type_meta.h>
 #include <engine/ecs/macros.h>
-#include <engine/events.h>
+#include <engine/events_render.h>
 
 ECS_EVENT_SYSTEM()
 void dbg_queue_tick(const Engine::OnBeforeRender&,
