@@ -37,6 +37,42 @@ namespace gapi
     return *this;
   }
 
+  TextureViewWithState::TextureViewWithState()
+    : m_Handle(TextureHandle::Invalid)
+    , m_State(TextureState::Undefined)
+  {
+  }
+
+  TextureViewWithState::TextureViewWithState(const TextureHandle h,
+                                             const TextureState st)
+    : m_Handle(h)
+    , m_State(st)
+  {
+  }
+
+  TextureViewWithState::TextureViewWithState(TextureViewWithState&& rvl)
+    : m_Handle(rvl.m_Handle)
+    , m_State(rvl.m_State)
+  {
+    rvl.m_Handle = TextureHandle::Invalid;
+    rvl.m_State = TextureState::Undefined;
+  }
+
+  auto TextureViewWithState::operator=(TextureViewWithState&& rvl)
+    -> TextureViewWithState&
+  {
+    std::swap(m_Handle, rvl.m_Handle);
+    std::swap(m_State, rvl.m_State);
+    return *this;
+  }
+
+  void TextureViewWithState::transitState(gapi::CmdEncoder& encoder,
+                                          const gapi::TextureState to_state)
+  {
+    encoder.transitTextureState(m_Handle, m_State, to_state);
+    m_State = to_state;
+  }
+
   BufferWrapper::BufferWrapper()
     : m_Handle(BufferHandler::Invalid)
   {

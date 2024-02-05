@@ -46,8 +46,10 @@ namespace fg
     ASSERT(std::holds_alternative<std::monostate>(res));
 
     res = TextureResource{
-      .texture = gapi::allocate_texture(alloc_desc),
-      .currentState = gapi::TextureState::Undefined,
+      .texture = gapi::TextureViewWithState{
+        gapi::allocate_texture(alloc_desc),
+        gapi::TextureState::Undefined
+      },
       .imported = false
     };
   }
@@ -82,8 +84,7 @@ namespace fg
     ASSERT(std::holds_alternative<std::monostate>(res));
 
     res = TextureResource{
-      .texture = h,
-      .currentState = init_state,
+      .texture = gapi::TextureViewWithState{h, init_state},
       .imported = true
     };
   }
@@ -102,12 +103,9 @@ namespace fg
 
   void ResourceStorage::transitTextureState(const res_id_t res_id, const gapi::TextureState to_state, gapi::CmdEncoder& encoder)
   {
-    TextureResource& tex = std::get<TextureResource>(m_Resources.get(res_id));
-    if (tex.currentState != to_state)
-    {
-      encoder.transitTextureState(tex.texture, tex.currentState, to_state);
-      tex.currentState = to_state;
-    }
+    TextureResource& res = std::get<TextureResource>(m_Resources.get(res_id));
+    if (res.texture.getState() != to_state)
+      res.texture.transitState(encoder,to_state);
   }
 
   void ResourceStorage::transitBufferState(const res_id_t res_id, const gapi::BufferState to_state, gapi::CmdEncoder& encoder)
@@ -138,8 +136,8 @@ namespace fg
   auto ResourceStorage::getTextureAndCurrentState(const res_id_t res_id)
     -> eastl::pair<gapi::TextureHandle, gapi::TextureState>
   {
-    const auto& tex = std::get<TextureResource>(m_Resources.get(res_id));
-    return {tex.texture, tex.currentState};
+    const auto& res = std::get<TextureResource>(m_Resources.get(res_id));
+    return {res.texture, res.texture.getState()};
   }
 
   auto ResourceStorage::getSampler(const res_id_t res_id) -> gapi::SamplerHandler
@@ -186,7 +184,7 @@ namespace fg
     if (auto* tex = std::get_if<ResourceStorage::TextureResource>(&m_Storage.m_Resources[res_id]))
     {
       ASSERT(tex->texture != gapi::TextureHandle::Invalid);
-      to.importTexture(res_id, tex->texture, tex->currentState);
+      to.importTexture(res_id, tex->texture, tex->texture.getState());
     }
     else if (auto* buf = std::get_if<ResourceStorage::BufferResource>(&m_Storage.m_Resources[res_id]))
     {

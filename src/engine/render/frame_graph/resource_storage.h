@@ -3,6 +3,7 @@
 #include "id.h"
 #include "registry.h"
 
+#include <engine/gapi/resource_wrappers.h>
 #include <engine/utils/resizable_vector.hpp>
 
 #include <EASTL/vector.h>
@@ -52,8 +53,7 @@ namespace fg
     private:
       struct TextureResource
       {
-        gapi::TextureHandle texture = gapi::TextureHandle::Invalid;
-        gapi::TextureState currentState = gapi::TextureState::Undefined;
+        gapi::TextureViewWithState texture;
         bool imported = false;
       };
 

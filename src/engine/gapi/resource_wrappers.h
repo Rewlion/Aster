@@ -20,6 +20,26 @@ namespace gapi
       gapi::TextureHandle m_Handle;
   };
 
+  class TextureViewWithState
+  {
+    public:
+      TextureViewWithState();
+      TextureViewWithState(const TextureHandle h, gapi::TextureState m_State);
+      TextureViewWithState(TextureViewWithState&& rvl);
+      ~TextureViewWithState() {};
+
+      auto operator=(const TextureViewWithState&) -> const TextureViewWithState& = delete;
+      auto operator=(TextureViewWithState&&) -> TextureViewWithState&;
+      operator TextureHandle() const { return m_Handle; }
+
+      auto getState() const -> gapi::TextureState { return m_State; }
+      void transitState(gapi::CmdEncoder& encoder, const gapi::TextureState to_state);
+
+    private:
+      gapi::TextureHandle m_Handle;
+      gapi::TextureState m_State;
+  };
+
   class BufferWrapper
   {
     public:
