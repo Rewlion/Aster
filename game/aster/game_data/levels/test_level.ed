@@ -2,6 +2,22 @@ input.initial_action_set:t = "FlyingCamera"
 
 scene
 {
+  ///////
+  object
+  {
+    pos:f3 = 0.0 , 602.0 , 300.0
+    scale:f3 = 500.0, 500.0, 1.0
+    model:t = "cube_rough"
+  }
+
+  object
+  {
+    pos:f3 = 0.0 , 202.0 , 300.0
+    scale:f3 = 500.0, 1.0, 500.0
+    model:t = "cube_rough"
+  }
+  ///////
+
   object
   {
     pos:f3 = 0.0 , 602.0 , 15.0
