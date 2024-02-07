@@ -37,11 +37,13 @@ void on_before_present(gapi::CmdEncoder& encoder)
 {
   GAPI_MARK("before present", encoder);
 
-  gapi::TextureViewWithState bb = fg::get_cur_frame_texture("backbuffer");
-  on_before_present_impl(encoder, bb);
+  gapi::TextureViewWithState* bb = fg::get_cur_frame_texture("backbuffer");
+  ASSERT(bb);
 
-  if (bb.getState() != gapi::TextureState::Present)
-    bb.transitState(encoder, gapi::TextureState::Present);
+  on_before_present_impl(encoder, *bb);
+
+  if (bb->getState() != gapi::TextureState::Present)
+    bb->transitState(encoder, gapi::TextureState::Present);
 }
 
 NODE_EXEC()

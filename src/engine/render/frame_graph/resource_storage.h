@@ -34,6 +34,7 @@ namespace fg
       auto getBlob(const size_t offset) -> std::byte*;
       auto getTexture(const res_id_t) -> gapi::TextureHandle;
       auto getTextureAndCurrentState(const res_id_t) -> gapi::TextureViewWithState;
+      auto accessTextureAndCurrentState(const res_id_t) -> gapi::TextureViewWithState&;
       auto getSampler(const res_id_t) -> gapi::SamplerHandler;
       auto getBuffer(const res_id_t) -> gapi::BufferHandler;
 

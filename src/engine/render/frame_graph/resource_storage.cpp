@@ -140,6 +140,13 @@ namespace fg
     return res.texture;
   }
 
+  auto ResourceStorage::accessTextureAndCurrentState(const res_id_t res_id)
+    -> gapi::TextureViewWithState&
+  {
+    auto& res = std::get<TextureResource>(m_Resources.get(res_id));
+    return res.texture;
+  }
+
   auto ResourceStorage::getSampler(const res_id_t res_id) -> gapi::SamplerHandler
   {
     return std::get<SamplerResource>(m_Resources.get(res_id)).sampler;

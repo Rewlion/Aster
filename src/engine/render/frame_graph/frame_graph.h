@@ -17,5 +17,5 @@ namespace fg
 
   void set_closing_node(const char* node);
 
-  auto get_cur_frame_texture(const char* name) -> gapi::TextureViewWithState;
+  auto get_cur_frame_texture(const char* name) -> gapi::TextureViewWithState*;
 }

@@ -61,15 +61,15 @@ void render_tex_on_bb(Engine::DebugOnBeforePresent& evt)
 
   gapi::CmdEncoder& encoder = *evt.encoder;
 
-  gapi::TextureViewWithState fgTex = fg::get_cur_frame_texture(params.texToShow.c_str());
-  if ((gapi::TextureHandle)fgTex == gapi::TextureHandle::Invalid)
+  gapi::TextureViewWithState* fgTex = fg::get_cur_frame_texture(params.texToShow.c_str());
+  if (!fgTex || (gapi::TextureHandle)*fgTex == gapi::TextureHandle::Invalid)
   {
     params.texToShow = "";
     return;
   }
   
-  if (fgTex.getState() != gapi::TextureState::ShaderRead)
-    fgTex.transitState(encoder, gapi::TextureState::ShaderRead);
+  if (fgTex->getState() != gapi::TextureState::ShaderRead)
+    fgTex->transitState(encoder, gapi::TextureState::ShaderRead);
 
   if (evt.backbuffer->getState() != gapi::TextureState::RenderTarget)
     evt.backbuffer->transitState(encoder, gapi::TextureState::RenderTarget);
@@ -77,7 +77,7 @@ void render_tex_on_bb(Engine::DebugOnBeforePresent& evt)
   encoder.beginRenderpass({gapi::RenderPassAttachment{*evt.backbuffer}}, {});
   {
     const float2 renderSize = encoder.getRenderSize();
-    tfx::set_extern("texToShow", (gapi::TextureHandle)fgTex);
+    tfx::set_extern("texToShow", (gapi::TextureHandle)*fgTex);
     tfx::activate_technique("ShowTex", encoder);
 
     gapi::Viewport vp {

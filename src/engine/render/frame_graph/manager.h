@@ -30,7 +30,7 @@ namespace fg
       auto getBlob(const virt_res_id_t) -> std::byte*;
 
       void imGuiDrawFramegraph();
-      auto getCurFrameTexture(const char* name) -> gapi::TextureViewWithState;
+      auto getCurFrameTexture(const char* name) -> gapi::TextureViewWithState*;
 
     private:
       auto getResourceId(const virt_res_id_t) -> res_id_t;

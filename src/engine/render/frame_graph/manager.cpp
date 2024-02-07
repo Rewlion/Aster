@@ -500,15 +500,15 @@ namespace fg
     return nullptr;
   }
 
-  auto Manager::getCurFrameTexture(const char* name) -> gapi::TextureViewWithState
+  auto Manager::getCurFrameTexture(const char* name) -> gapi::TextureViewWithState*
   {
     const virt_res_id_t vResId = m_Registry.getVirtResourceId(name);
     if (vResId != INVALID_VIRT_RES_ID) [[likely]]
     {
       const res_id_t resId = getResourceId(vResId);
-      return getStorage().getTextureAndCurrentState(resId);
+      return &getStorage().accessTextureAndCurrentState(resId);
     }
     
-    return {};
+    return nullptr;
   }
 }
