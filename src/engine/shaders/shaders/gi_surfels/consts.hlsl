@@ -2,8 +2,8 @@
 #define SURFELS_CONSTS_HLSL
 
 #define CELLS_DIM                         21
-#define CELLS_DIMS                        uint3(CELLS_DIM, CELLS_DIM, CELLS_DIM)
-#define CELLS_HALF_DIM                    uint3((CELLS_DIMS - 1.0.xxx)/2)
+#define CELLS_DIMS                        int3(CELLS_DIM, CELLS_DIM, CELLS_DIM)
+#define CELLS_HALF_DIM                    int3((CELLS_DIMS - 1.0.xxx)/2)
 #define CELLS_DIMS_F                      float3(CELLS_DIM, CELLS_DIM, CELLS_DIM)
 #define CELL_SIZE                         1.0
 

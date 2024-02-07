@@ -1,14 +1,15 @@
 #include "consts.hlsl"
 
-int4 calcLinearIndex(float3 raw_id)
+int4 calcLinearIndex(float3 camera_to_wpos)
 {
-  int3 id = int3(raw_id) + CELLS_HALF_DIM;
+  float3 cameraToBegin = -float3(CELLS_DIM.xxx)*0.5;
+  int3 id = int3((camera_to_wpos - cameraToBegin) / CELL_SIZE);
   return int4(id, CASCADE_ZERO);
 }
 
 //we have a perpsective transformation with 90* fov frustum for each principal axis
 //it's basically a cube map sampling like
-int4 calcNonLinearIndex(float3 raw_id, float3 camera_to_wpos, float far_plane)
+int4 calcNonLinearIndex(float3 camera_to_wpos, float far_plane)
 {
   float3 absDir = abs(camera_to_wpos);
   float dist = 0;
@@ -40,7 +41,7 @@ int4 calcNonLinearIndex(float3 raw_id, float3 camera_to_wpos, float far_plane)
   uv = uv * 0.5 + 0.5;
   float2 xy = uv * float2(CELLS_DIM - 1.0, CELLS_DIM - 1.0);
   
-  float nearPlane = CELLS_DIM * CELL_SIZE;
+  float nearPlane = CELLS_DIM * CELL_SIZE; //+0.5 cell size?
   //z = znear * (zfar/znear)^(slice/nslices) from DOOM
   float zSlice = floor(log(dist/ nearPlane) / log(far_plane / nearPlane) * CELLS_DIM);  
 
@@ -49,11 +50,10 @@ int4 calcNonLinearIndex(float3 raw_id, float3 camera_to_wpos, float far_plane)
 
 int4 calcSpatialIndex(float3 camera_to_wpos, float far_plane)
 {
-  float3 rawId = camera_to_wpos / CELL_SIZE;
-  bool isLinearTransform = all(abs(rawId) < CELLS_HALF_DIM);
+  bool isLinearTransform = all(abs(camera_to_wpos) < (CELLS_HALF_DIM + 0.5*CELL_SIZE));
   [BRANCH]
   if (isLinearTransform)
-    return calcLinearIndex(rawId);
+    return calcLinearIndex(camera_to_wpos);
   else
-    return calcNonLinearIndex(rawId, camera_to_wpos, far_plane);
+    return calcNonLinearIndex(camera_to_wpos, far_plane);
 }
