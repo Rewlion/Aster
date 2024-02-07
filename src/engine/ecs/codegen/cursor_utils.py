@@ -18,6 +18,8 @@ def get_real_type_name(real_type):
     return real_type.get_typedef_name()
   elif real_type.kind == clang.cindex.TypeKind.ELABORATED:
     return real_type.get_named_type().spelling
+  elif real_type.kind == clang.cindex.TypeKind.RECORD:
+    return real_type.spelling
   elif real_type.kind == clang.cindex.TypeKind.INT:
     return "int"
   elif real_type.kind == clang.cindex.TypeKind.FLOAT:
@@ -25,7 +27,7 @@ def get_real_type_name(real_type):
   elif real_type.kind == clang.cindex.TypeKind.BOOL:
     return "bool"
   else:
-    raise Exception('{} is unknown type'.format(real_type.spelling))
+    raise Exception('{} is unknown type ({})'.format(real_type.spelling, real_type.kind))
 
 def get_cursor_type_name(cursor_type):
   realType = get_real_type(cursor_type)
