@@ -16,6 +16,16 @@ scene
     scale:f3 = 500.0, 1.0, 500.0
     model:t = "cube_rough"
   }
+
+
+  object
+  {
+    pos:f3 = 0.0 , 602.0 , 45.0
+    scale:f3 = 30, 30, 30
+    model:t = "cube_rough"
+  }
+
+
   ///////
 
   object

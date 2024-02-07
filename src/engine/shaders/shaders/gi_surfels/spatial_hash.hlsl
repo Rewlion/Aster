@@ -39,7 +39,7 @@ int4 calcNonLinearIndex(float3 camera_to_wpos, float far_plane)
   }
   uv = uv / dist; // project on the cube face
   uv = uv * 0.5 + 0.5;
-  float2 xy = uv * float2(CELLS_DIM - 1.0, CELLS_DIM - 1.0);
+  float2 xy = uv * float2(CELLS_DIM, CELLS_DIM);
   
   float nearPlane = CELLS_DIM * CELL_SIZE; //+0.5 cell size?
   //z = znear * (zfar/znear)^(slice/nslices) from DOOM

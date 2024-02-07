@@ -57,7 +57,8 @@ technique GIBS_AllocateSurfels
 
     int3 dId = (spatialIndex.xyz % 2);
     //float m = all(dId == int3(0,0,0)) || all(dId == int3(1,1,1)) ? 0.5 : 1.0;
-    float m = all(dId.xy == int2(0,0)) || all(dId.xy == int2(1,1)) ? 0.5 : 1.0;
+    //float m = all(dId.xy == int2(0,0)) || all(dId.xy == int2(1,1)) ? 0.5 : 1.0;
+    float m = all(dId == int3(1,1,1)) ||  all(dId == int3(0,0,1)) ||  all(dId == int3(0,1,0)) ||  all(dId == int3(1,0,0)) ? 1.0 : 0.5;
     //float m = dId.x == 0 ? 1.0 : 0.5;
     dbgOutput[tc.xy] = float4(colors[spatialIndex.w % 7] * m, 1.0);
   }
