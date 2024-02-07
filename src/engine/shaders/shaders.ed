@@ -14,6 +14,7 @@ shaders_list:t[] = [
   "shaders/decal.tfx",
   "shaders/font.tfx",
   "shaders/gbuffer_resolve.tfx",
+  "shaders/gi_surfels/allocate_surfels.tfx",
   "shaders/gui.tfx",
   "shaders/hi_z.tfx",
   "shaders/imgui.tfx",

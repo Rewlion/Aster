@@ -1,0 +1,66 @@
+#include <frame.inc.tfx>
+#include <depth.inc.tfx>
+
+scope GIBS_AllocateSurfelsScope
+{
+  reserve:
+    descriptor_set(1);
+    register(texture, 0-1);
+
+  RWTexture2D<float4> dbgOutput = extern(dbgTex);
+  Texture2D gbufferDepth = extern(gbuffer_depth);
+};
+
+technique GIBS_AllocateSurfels
+{
+  activate scope FrameScope;
+  activate scope GIBS_AllocateSurfelsScope;
+
+  USE_DEPTH_UTILS();
+
+  #hlsl
+  #include "spatial_hash.hlsl"
+  
+  [numthreads(8,8,1)]
+  void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
+  {
+    uint2 renderSize;
+    dbgOutput.GetDimensions(renderSize.x, renderSize.y);
+
+    if (any(dispatch_thread_id.xy >= renderSize))
+      return;
+
+    uint3 tc = uint3(dispatch_thread_id.xy, 0);
+    float depth = gbufferDepth.Load(tc).r;
+    if (depth == 0)
+      return;
+
+    float3 leftRight = FrameScope.rtView_WS - FrameScope.ltView_WS;
+    float3 topBot = FrameScope.lbView_WS - FrameScope.ltView_WS;
+
+    float2 t = float2(tc.xy) / float2(renderSize - uint2(1, 1));
+    float3 farPlainPoint = FrameScope.ltView_WS + leftRight * t.x + topBot * t.y;
+
+    float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+    float3 cameraToWorldPos = worldPos - FrameScope.cameraPos;
+    int4 spatialIndex = calcSpatialIndex(cameraToWorldPos, FrameScope.zNear_zFar.x);
+
+    float3 colors[1+6] = {
+      float3(0.8,0.8,0.8),
+      float3(0.8, 0, 0),
+      float3(0.4, 0.1, 0.1),
+      float3(0, 0.8, 0),
+      float3(0.1, 0.4, 0.1),
+      float3(0, 0, 0.8),
+      float3(0.1, 0.1, 0.4)
+    };
+
+    int3 dId = (spatialIndex.xyz % 2);
+    //float m = all(dId == int3(0,0,0)) || all(dId == int3(1,1,1)) ? 1.0 : 0.5;
+    float m = dId.z == 0 ? 1.0 : 0.5;
+    dbgOutput[tc.xy] = float4(colors[spatialIndex.w % 7] * m, 1.0);
+  }
+  #end
+
+  compile(cs, cs_main);
+};

@@ -3,6 +3,7 @@ template @("name: CoreRender") {
   component @("GuiRender gui_render") {}
   component @("ImGuiRender imgui_render") {}
   component @("ClusteredLights clustered_lights") {}
+  component @("GIOnSurfels state") {}
 
   render_window_size:i2 = 0, 0
   

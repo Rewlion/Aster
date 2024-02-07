@@ -65,5 +65,5 @@ namespace tfx
 
   void activate_technique(string_view name, gapi::CmdEncoder& cmd_encoder);
 
-  auto calc_group_count(const string_view technique_name, const uint3 cs_technique_name) -> uint3;
+  auto calc_group_count(const string_view technique_name, const uint3 threads_count) -> uint3;
 }

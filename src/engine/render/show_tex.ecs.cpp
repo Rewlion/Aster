@@ -64,6 +64,7 @@ void render_tex_on_bb(Engine::DebugOnBeforePresent& evt)
   gapi::TextureViewWithState* fgTex = fg::get_cur_frame_texture(params.texToShow.c_str());
   if (!fgTex || (gapi::TextureHandle)*fgTex == gapi::TextureHandle::Invalid)
   {
+    console::clogerror(fmt::format("unknown texture `{}`", params.texToShow));
     params.texToShow = "";
     return;
   }
