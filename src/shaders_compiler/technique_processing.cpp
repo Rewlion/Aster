@@ -57,6 +57,7 @@ namespace ShadersSystem
       args.push_back(dir.c_str());
       args.push_back(L"-Zi");
       args.push_back(debug ? L"-O0" : L"-O3");
+      args.push_back(debug ? L"-Od" : L"");
 
       DxcBuffer dxcSrc;
       dxcSrc.Ptr = pSource->GetBufferPointer();
