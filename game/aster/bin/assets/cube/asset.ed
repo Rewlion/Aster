@@ -18,5 +18,20 @@ model_asset
   material @("TestStaticMesh")
   {
     "albedo":t = "cube.container" @("texture")
+    roughness:f = 0.1
+    metal:f = 1.0
+  }
+}
+
+model_asset
+{
+  name:t = "cube_rough"
+  mesh:t = "cube"
+
+  material @("TestStaticMesh")
+  {
+    "albedo":t = "cube.container" @("texture")
+    roughness:f = 0.6
+    metal:f = 0.4
   }
 }

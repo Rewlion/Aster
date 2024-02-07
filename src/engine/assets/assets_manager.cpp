@@ -145,6 +145,24 @@ namespace Engine
     });
   }
 
+  template<class T>
+  static
+  auto extract_material_param(const ed::Variable& var) -> tfx::ParamDescription
+  {
+    return tfx::ParamDescription{
+      .name = var.name,
+      .value = std::get<T>(var.value)
+    };
+  }
+
+  template<class T>
+  static
+  auto push_material_param(tfx::Material& mat, const ed::Variable& var)
+  {
+    mat.params.push_back(extract_material_param<T>(var));
+  }
+
+
   tfx::Material AssetsManager::createMaterial(const ed::Scope& mat)
   {
     tfx::Material material;
@@ -152,18 +170,73 @@ namespace Engine
 
     for (const ed::Variable& var: mat.getVariables())
     {
-      if (var.getValueType() != ed::ValueType::Text || var.annotation != "texture")
-        continue;
+      switch (var.getValueType())
+      {
+        case ed::ValueType::Text:
+        {
+          if (var.annotation == "texture")
+          {
+            const string_view textureName = std::get<string>(var.value);
+            TextureAsset asset;
+            bool r = getTexture(str_hash(textureName), asset);
+            ASSERT(r != false);
 
-      const string_view textureName = std::get<string>(var.value);
-      TextureAsset asset;
-      bool r = getTexture(str_hash(textureName), asset);
-      ASSERT(r != false);
-
-      material.params.push_back(tfx::ParamDescription{
-        .name = var.name,
-        .value = asset.texture
-      });
+            material.params.push_back(tfx::ParamDescription{
+              .name = var.name,
+              .value = asset.texture
+            });
+          }
+          else
+            logerror("Assets: material '{}' has invalid text parameter '{}' with unsupported annotation `{}`",
+              mat.getName(), var.name, var.annotation);
+          break;
+        }
+        case ed::ValueType::Float:
+        {
+          push_material_param<float>(material, var);
+          break;
+        }
+        case ed::ValueType::Float2:
+        {
+          push_material_param<float2>(material, var);
+          break;
+        }
+        case ed::ValueType::Float3:
+        {
+          push_material_param<float3>(material, var);
+          break;
+        }
+        case ed::ValueType::Float4:
+        {
+          push_material_param<float4>(material, var);
+          break;
+        }
+        case ed::ValueType::Int:
+        {
+          push_material_param<int>(material, var);
+          break;
+        }
+        case ed::ValueType::Int2:
+        {
+          push_material_param<int2>(material, var);
+          break;
+        }
+        case ed::ValueType::Int3:
+        {
+          push_material_param<int3>(material, var);
+          break;
+        }
+        case ed::ValueType::Int4:
+        {
+          push_material_param<int4>(material, var);
+          break;
+        }
+        default:
+        {
+          logerror("Assets: material '{}' has parameter '{}' with unsupported type",
+            mat.getName(), var.name);
+        }
+      }
     }
 
     return material;
