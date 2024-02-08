@@ -1,0 +1,2 @@
+#define SURFEL_STATE_UNUSED 0
+#define SURFEL_STATE_ALIVE  1

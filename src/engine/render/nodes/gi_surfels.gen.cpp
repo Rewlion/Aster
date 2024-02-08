@@ -50,13 +50,23 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
       false
     );
 
+    auto gibs_surfels_state = reg.createBuffer(
+      "gibs_surfels_state",
+      gapi::BufferAllocationDescription{
+        .size = (250 * 1024) * sizeof(uint),
+        .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
+      },
+      gapi::BufferState::BF_STATE_UAV_RW,
+      fg::PERSISTENT
+    );
     auto gibs_surfels_storage = reg.createBuffer(
       "gibs_surfels_storage",
       gapi::BufferAllocationDescription{
         .size = (250 * 1024) * sizeof(SurfelData),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_UAV_RW
+      gapi::BufferState::BF_STATE_UAV_RW,
+      fg::PERSISTENT
     );
     auto gibs_surfels_pool = reg.createBuffer(
       "gibs_surfels_pool",
@@ -64,12 +74,22 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
         .size = (250 * 1024) * sizeof(uint),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_UAV_RW
+      gapi::BufferState::BF_STATE_UAV_RW,
+      fg::PERSISTENT
+    );
+    auto gibs_surfels_allocation_locks = reg.createBuffer(
+      "gibs_surfels_allocation_locks",
+      gapi::BufferAllocationDescription{
+        .size = int(6 * 21 * 21 * 21) * sizeof(uint),
+        .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
+      },
+      gapi::BufferState::BF_STATE_UAV_RW,
+      false
     );
 
-    return [gibs_dbg_alloc](gapi::CmdEncoder& encoder)
+    return [gibs_dbg_alloc,gibs_surfels_state,gibs_surfels_storage,gibs_surfels_pool,gibs_surfels_allocation_locks](gapi::CmdEncoder& encoder)
     {
-      gibs_resources_init(encoder, gibs_dbg_alloc.get());
+      gibs_resources_init(encoder, gibs_dbg_alloc.get(), gibs_surfels_state.get(), gibs_surfels_storage.get(), gibs_surfels_pool.get(), gibs_surfels_allocation_locks.get());
     };
   });
 }

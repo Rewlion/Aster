@@ -438,6 +438,8 @@ namespace gapi::vulkan
   void CmdEncoder::fillBuffer(const BufferHandler buffer, const uint32_t offset,
                               const uint32_t size, const uint32_t data)
   {
+    ASSERT((size % 4) == 0);
+    
     insureActiveCmd();
     Buffer* b = m_Device.getAllocatedBuffer(buffer);
     m_CmdBuf.fillBuffer(b->buffer, offset, size, data);

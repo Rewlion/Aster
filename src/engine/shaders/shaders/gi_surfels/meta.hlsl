@@ -1,0 +1,4 @@
+struct SurfelsMeta
+{
+  uint allocatedSurfelsCount;
+};

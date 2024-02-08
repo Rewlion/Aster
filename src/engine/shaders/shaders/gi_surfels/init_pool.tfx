@@ -1,0 +1,26 @@
+scope GIBS_InitSurfelsPoolScope
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0-1);
+
+  RWStructuredBuffer<uint> pool = extern(gibsSurfelsPool);
+  
+  uint surfelsCount = extern(gibsSurfelsCount);
+};
+
+technique GIBS_InitSurfelsPool
+{
+  activate scope GIBS_InitSurfelsPoolScope;
+
+  #hlsl
+  [numthreads(64,1,1)]
+  void cs_main(uint3 id : SV_DispatchThreadID)
+  {
+    if (id.x < GIBS_InitSurfelsPoolScope.surfelsCount)
+      pool[id.x] = id.x;
+  }
+  #end
+
+  compile(cs, cs_main);
+};
