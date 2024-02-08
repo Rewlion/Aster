@@ -85,6 +85,8 @@ namespace gapi::vulkan
 
       void writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags) override;
 
+      void fillBuffer(const BufferHandler buffer, const uint32_t offset, const uint32_t size, const uint32_t data) override;
+
       void copyTextureToBuffer(const TextureHandle src, const BufferHandler dst) override;
 
       void copyBufferToTexture(const TextureHandle texture, const void* src, const size_t size) override;

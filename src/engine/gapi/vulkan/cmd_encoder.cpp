@@ -435,6 +435,14 @@ namespace gapi::vulkan
     m_FrameGc.addBuffer(std::move(staging));
   }
 
+  void CmdEncoder::fillBuffer(const BufferHandler buffer, const uint32_t offset,
+                              const uint32_t size, const uint32_t data)
+  {
+    insureActiveCmd();
+    Buffer* b = m_Device.getAllocatedBuffer(buffer);
+    m_CmdBuf.fillBuffer(b->buffer, offset, size, data);
+  }
+
   void CmdEncoder::copyTextureToBuffer(const TextureHandle src, const BufferHandler dst)
   {
     insureActiveCmd();

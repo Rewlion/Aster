@@ -93,6 +93,9 @@ namespace gapi
       void writeBuffer(const BufferHandler buffer, const void* src, const size_t offset, const size_t size, const int flags = 0) = 0;
 
       virtual
+      void fillBuffer(const BufferHandler buffer, const uint32_t offset, const uint32_t size, const uint32_t data) = 0;
+
+      virtual
       void copyTextureToBuffer(const TextureHandle src, const BufferHandler dst) = 0;
 
       virtual
