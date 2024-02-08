@@ -87,7 +87,7 @@ namespace fg
       void orderMeBefore(const char* node);
       void orderMeAfter(const char* node);
 
-      auto createBuffer(const char* name, const gapi::BufferAllocationDescription&, const gapi::BufferState init_state) -> BufferRequest;
+      auto createBuffer(const char* name, const gapi::BufferAllocationDescription&, const gapi::BufferState init_state, const bool persistent = false) -> BufferRequest;
       auto importBufferProducer(const char* name, BufferProduceFunction) -> BufferRequest;
       auto modifyBuffer(const char* name, const gapi::BufferState state) -> BufferRequest;
       auto readBuffer(const char* name, const gapi::BufferState state, const bool optional = false) -> BufferRequest;

@@ -34,16 +34,18 @@ namespace fg
     m_Nodes[m_CurrentExecNodeId].prevNodes.push_back(to_node_id(nameId));
   }
 
-  auto Registry::createBuffer(const char* name, const gapi::BufferAllocationDescription& desc, const gapi::BufferState init_state) -> BufferRequest
+  auto Registry::createBuffer(const char* name, const gapi::BufferAllocationDescription& desc,
+                              const gapi::BufferState init_state, const bool persistent) -> BufferRequest
   {
     if (!desc.name)
       const_cast<gapi::BufferAllocationDescription&>(desc).name = name;
 
     return createResourceInternal(name, BufferResource{.allocDesc = desc, .initState = init_state},
-      [this, init_state](const virt_res_id_t virt_res_id, NodeInfo& node)
+      [this, init_state, persistent](const virt_res_id_t virt_res_id, NodeInfo& node)
     {
-      auto& mChain = m_VirtResources[virt_res_id].modificationChain;
-      mChain.insert(mChain.begin(), m_CurrentExecNodeId);
+      auto& vRes = m_VirtResources[virt_res_id];
+      vRes.persistent = persistent;
+      vRes.modificationChain.insert(vRes.modificationChain.begin(), m_CurrentExecNodeId);
     });
   }
 
