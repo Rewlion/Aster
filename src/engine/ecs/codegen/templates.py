@@ -176,14 +176,15 @@ def generate_fg_order_after(node_name):
   return f"""    reg.orderMeAfter("{node_name}");"""
 
 
-def generate_fg_create_buffer(name, usage, state, size):
+def generate_fg_create_buffer(name, usage, state, size, persistent_storage):
   return f"""    auto {name} = reg.createBuffer(
       "{name}",
       gapi::BufferAllocationDescription{{
         .size = {size},
         .usage = {usage}
       }},
-      {state}
+      {state},
+      {persistent_storage if persistent_storage != "" else "false"}
     );"""
 
 

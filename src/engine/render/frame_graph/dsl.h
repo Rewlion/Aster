@@ -260,15 +260,21 @@ namespace fg::dsl
 #define BUF_STATE(state) gapi::BufferState::BF_STATE_ ## state
 #define BUF_SIZE_CB(cb) fg::dsl::FnName<#cb>
 #define BUF_SIZE(size) fg::dsl::AbsBufSize<size>
+#define BUF_PERSISTENT() , fg::dsl::PersistentStorage
+#define BUF_NOT_PERSISTENT() 
 
-#define CREATE_BUF_EX(name, usage, state, size, Gpu_Cpu) fg::dsl::CreateBuffer<\
+#define CREATE_BUF_EX(name, usage, state, size, Gpu_Cpu, persistent) fg::dsl::CreateBuffer<\
   fg::dsl::Name<#name>,\
   fg::dsl::BufferUsage<usage | gapi::BufferUsage:: MACRO_CONCAT(MACRO_CONCAT(BF_,Gpu_Cpu), Visible)>,\
   fg::dsl::BufferSize<size>,\
-  fg::dsl::BufferState<state>> NAME_WITH_LINE(createBuffer);
+  fg::dsl::BufferState<state>\
+  persistent()\
+  > NAME_WITH_LINE(createBuffer);
 
-#define CREATE_CPU_BUF(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Cpu)
-#define CREATE_GPU_BUF(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Gpu)
+#define CREATE_CPU_BUF(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Cpu, BUF_NOT_PERSISTENT)
+#define CREATE_GPU_BUF(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Gpu, BUF_NOT_PERSISTENT)
+#define CREATE_CPU_BUF_PERSISTENT(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Cpu, BUF_PERSISTENT)
+#define CREATE_GPU_BUF_PERSISTENT(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Gpu, BUF_PERSISTENT)
 
 #define IMPORT_BUF(name, import_fn)\
   fg::dsl::ImportBufferProducer<\

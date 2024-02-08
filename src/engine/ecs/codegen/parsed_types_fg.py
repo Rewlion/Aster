@@ -246,11 +246,12 @@ class CreateBufferAction(BuildAction):
     self.bufferUsage = ""
     self.bufferState = ""
     self.bufferSize = ""
+    self.persistentStorage = ""
     self.extractParams(field_cursor)
     context.markResourceAccess(self.name)
 
   def generate(self):
-    return templates.generate_fg_create_buffer(self.name, self.bufferUsage, self.bufferState, self.bufferSize)
+    return templates.generate_fg_create_buffer(self.name, self.bufferUsage, self.bufferState, self.bufferSize, self.persistentStorage)
 
 
 class ImportBufferProducerAction(BuildAction):
