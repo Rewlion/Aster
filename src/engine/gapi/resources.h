@@ -469,6 +469,31 @@ namespace gapi
     BF_STATE_LAST
   };
 
+  inline
+  bool is_modification_state(const TextureState st)
+  {
+    switch (st)
+    {
+      case TextureState::DepthWrite:
+      case TextureState::StencilWrite:
+      case TextureState::DepthStencilWrite:
+      case TextureState::DepthWriteStencilRead:
+      case TextureState::DepthReadStencilWrite:
+      case TextureState::DepthWriteStencilWrite:
+      case TextureState::ShaderReadWrite:
+      case TextureState::RenderTarget:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  inline
+  bool is_modification_state(const BufferState st)
+  {
+    return !!(st & BufferState::BF_STATE_UAV_RW);
+  }
+
   struct RenderPassAttachment
   {
     TextureHandle texture      = TextureHandle::Invalid;

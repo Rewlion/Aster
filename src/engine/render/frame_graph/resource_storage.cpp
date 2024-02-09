@@ -104,14 +104,20 @@ namespace fg
   void ResourceStorage::transitTextureState(const res_id_t res_id, const gapi::TextureState to_state, gapi::CmdEncoder& encoder)
   {
     TextureResource& res = std::get<TextureResource>(m_Resources.get(res_id));
-    if (res.texture.getState() != to_state)
+    const bool isSameState = res.texture.getState() == to_state;
+    const bool isModificationState = gapi::is_modification_state(to_state);
+
+    if (!isSameState || isModificationState)
       res.texture.transitState(encoder,to_state);
   }
 
   void ResourceStorage::transitBufferState(const res_id_t res_id, const gapi::BufferState to_state, gapi::CmdEncoder& encoder)
   {
     BufferResource& buf = std::get<BufferResource>(m_Resources.get(res_id));
-    if (buf.currentState != to_state)
+    const bool isSameState = buf.currentState == to_state;
+    const bool isModificationState = gapi::is_modification_state(to_state);
+    
+    if (!isSameState || isModificationState)
     {
       encoder.insertGlobalBufferBarrier(buf.currentState, to_state);
       buf.currentState = to_state;
