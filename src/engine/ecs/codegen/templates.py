@@ -200,6 +200,10 @@ def generate_fg_read_optional_buffer(name, name_alias, state, optional):
   return f"""    auto {name_alias if name_alias != "" else name} = reg.readBuffer("{name}", {state}{f", {optional}" if optional != "" else ""});"""
 
 
+def generate_fg_rename_buffer(from_name, to_name, state):
+  return f"""    auto {to_name} = reg.renameBuffer("{from_name}", "{to_name}", {state});"""
+
+
 def generate_fg_create_texture(
   name, tex_format, extent, mip_levels,
   array_layers, samples_per_pixel,

@@ -120,6 +120,9 @@ namespace fg::dsl
   template<class ...T>
   struct CreateBuffer {};
 
+  template<class nameFrom, class nameTo, class state>
+  struct RenameBuffer {};
+
   template<class nameFrom, class nameTo>
   struct ImportBufferProducer {};
 
@@ -275,6 +278,13 @@ namespace fg::dsl
 #define CREATE_GPU_BUF(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Gpu, BUF_NOT_PERSISTENT)
 #define CREATE_CPU_BUF_PERSISTENT(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Cpu, BUF_PERSISTENT)
 #define CREATE_GPU_BUF_PERSISTENT(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Gpu, BUF_PERSISTENT)
+
+#define RENAME_BUF(from, to, state)\
+  fg::dsl::RenameBuffer<\
+    fg::dsl::NameFrom<#from>,\
+    fg::dsl::NameTo<#to>,\
+    fg::dsl::BufferState<state>\
+  > NAME_WITH_LINE(renameBuf);
 
 #define IMPORT_BUF(name, import_fn)\
   fg::dsl::ImportBufferProducer<\

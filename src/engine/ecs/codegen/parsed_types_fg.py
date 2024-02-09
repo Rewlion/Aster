@@ -364,11 +364,23 @@ class RenameTextureAction(BuildAction):
     self.textureState = ""
     self.extractParams(field_cursor)
     context.markResourceAccess(self.toName)
-    
 
   
   def generate(self):
     return templates.generate_fg_rename_texture(self.fromName, self.toName, self.textureState)
+
+
+class RenameBufferAction(BuildAction):
+  def __init__(self, field_cursor, context):
+    self.fromName = ""
+    self.toName = ""
+    self.bufferState = ""
+    self.extractParams(field_cursor)
+    context.markResourceAccess(self.toName)
+
+  
+  def generate(self):
+    return templates.generate_fg_rename_buffer(self.fromName, self.toName, self.bufferState)
 
 
 class ReadBlobAction(BuildAction):
