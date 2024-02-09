@@ -72,6 +72,14 @@ namespace fg
     });
   }
 
+  auto Registry::renameBuffer(const char* from, const char* to, const gapi::BufferState state) -> BufferRequest
+  {
+    return renameResourceInternal(from, to,
+     [state](const virt_res_id_t virt_res_id, NodeInfo& node){
+       node.execState.bufferBeginStates.push_back({virt_res_id, state});
+     });
+  }
+
   auto Registry::createTexture(const char* name, const gapi::TextureAllocationDescription& desc,
                                const gapi::TextureState init_state, const bool persistent) -> TextureRequest
   {
@@ -150,6 +158,43 @@ namespace fg
     return vResId;
   }
 
+  auto Registry::renameResourceInternal(const char* from, const char* to,
+                                        ModifyCb&& cb) -> virt_res_id_t
+  {
+    const name_id_t nameIdFrom = m_ResourcesNames.storeString(from);
+    const name_id_t nameIdTo = m_ResourcesNames.storeString(to);
+
+    const virt_res_id_t vResIdFrom = to_virt_res_id(nameIdFrom);
+    const virt_res_id_t vResIdTo = to_virt_res_id(nameIdTo);
+    const res_id_t resId = to_res_id(vResIdFrom);
+
+    auto& vResFrom = m_VirtResources[vResIdFrom];
+
+    if (vResFrom.consumedBy != INVALID_NODE_ID)
+    {
+      logerror("FG: node `{}` tries to consume resource `{}` that was already consumed by node `{}`.",
+        m_NodesNames.getString(to_name_id(m_CurrentExecNodeId)), 
+        m_ResourcesNames.getString(to_name_id(vResIdFrom)),
+        m_NodesNames.getString(to_name_id(vResFrom.createdBy)));
+      return {INVALID_VIRT_RES_ID};
+    }
+    vResFrom.consumedBy = m_CurrentExecNodeId;
+
+    auto& vResTo = m_VirtResources[vResIdTo];
+    vResTo.clonnedVResId = vResIdFrom;
+    vResTo.createdBy = m_CurrentExecNodeId;
+    vResTo.modificationChain.insert(vResTo.modificationChain.begin(), m_CurrentExecNodeId);
+    vResTo.resourceId = m_VirtResources[vResIdFrom].resourceId;
+
+    auto& node = m_Nodes[m_CurrentExecNodeId];
+    node.modifies.push_back(vResIdTo);
+    node.creates.push_back(vResIdTo);
+
+    cb(vResIdTo, node);
+
+    return vResIdTo;
+  }
+
   auto Registry::readResourceInternal(const char* name, const bool optional, const Timeline timeline, ReadCb&& cb) -> virt_res_id_t
   {
     const name_id_t nameId = m_ResourcesNames.storeString(name);
@@ -198,37 +243,10 @@ namespace fg
 
   auto Registry::renameTexture(const char* from, const char* to, const gapi::TextureState state) -> TextureRequest
   {
-    const name_id_t nameIdFrom = m_ResourcesNames.storeString(from);
-    const name_id_t nameIdTo = m_ResourcesNames.storeString(to);
-
-    const virt_res_id_t vResIdFrom = to_virt_res_id(nameIdFrom);
-    const virt_res_id_t vResIdTo = to_virt_res_id(nameIdTo);
-    const res_id_t resId = to_res_id(vResIdFrom);
-
-    auto& vResFrom = m_VirtResources[vResIdFrom];
-
-    if (vResFrom.consumedBy != INVALID_NODE_ID)
-    {
-      logerror("FG: node `{}` tries to consume resource `{}` that was already consumed by node `{}`.",
-        m_NodesNames.getString(to_name_id(m_CurrentExecNodeId)), 
-        m_ResourcesNames.getString(to_name_id(vResIdFrom)),
-        m_NodesNames.getString(to_name_id(vResFrom.createdBy)));
-      return {INVALID_VIRT_RES_ID};
-    }
-    vResFrom.consumedBy = m_CurrentExecNodeId;
-
-    auto& vResTo = m_VirtResources[vResIdTo];
-    vResTo.clonnedVResId = vResIdFrom;
-    vResTo.createdBy = m_CurrentExecNodeId;
-    vResTo.modificationChain.insert(vResTo.modificationChain.begin(), m_CurrentExecNodeId);
-    vResTo.resourceId = m_VirtResources[vResIdFrom].resourceId;
-
-    auto& node = m_Nodes[m_CurrentExecNodeId];
-    node.modifies.push_back(vResIdTo);
-    node.creates.push_back(vResIdTo);
-    node.execState.textureBeginStates.push_back({vResIdTo, state});
-
-    return {vResIdTo};
+    return renameResourceInternal(from, to,
+      [state](const virt_res_id_t virt_res_id, NodeInfo& node){
+        node.execState.textureBeginStates.push_back({virt_res_id, state});
+      });
   }
 
   auto Registry::createSampler(const char* name, const gapi::SamplerAllocationDescription& alloc_desc) -> SamplerRequest

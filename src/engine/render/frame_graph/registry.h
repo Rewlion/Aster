@@ -91,6 +91,7 @@ namespace fg
       auto importBufferProducer(const char* name, BufferProduceFunction) -> BufferRequest;
       auto modifyBuffer(const char* name, const gapi::BufferState state) -> BufferRequest;
       auto readBuffer(const char* name, const gapi::BufferState state, const bool optional = false) -> BufferRequest;
+      auto renameBuffer(const char* from, const char* to, const gapi::BufferState state) -> BufferRequest;
 
       auto createTexture(const char* name, const gapi::TextureAllocationDescription&,const gapi::TextureState init_state, const bool persistent = false) -> TextureRequest;
       auto importTextureProducer(const char* name, TextureProduceFunction) -> TextureRequest;
@@ -119,6 +120,7 @@ namespace fg
       auto createResourceInternal(const char* name, Resource&&, CreateCb&&) -> virt_res_id_t;
       auto importResourceInternal(const char* name, Resource&&) -> virt_res_id_t;
       auto modifyResourceInternal(const char* name, ModifyCb&&) -> virt_res_id_t;
+      auto renameResourceInternal(const char* from, const char* to, ModifyCb&&) -> virt_res_id_t;
       auto readResourceInternal(const char* name, const bool optional, const Timeline, ReadCb&&) -> virt_res_id_t;
 
       void registerNode(const char* name, const char* file, BuildFunction build_cb);
