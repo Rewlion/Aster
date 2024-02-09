@@ -29,4 +29,6 @@ namespace gapi
   void present_backbuffer_and_finalize_frame();
   void wait_fence(Fence* fence);
   auto get_texture_extent(const TextureHandle) -> uint3;
+  void push_validation_context(string&&);
+  void pop_validation_context();
 }

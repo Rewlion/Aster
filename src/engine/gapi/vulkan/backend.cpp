@@ -23,7 +23,9 @@ namespace gapi::vulkan
     if (messageType == VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT &&
         messageSeverity > VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
     {
-      logerror("vulkan: {}", pCallbackData->pMessage);
+      Backend* backend = reinterpret_cast<Backend*>(pUserData);
+
+      logerror("vulkan: {}\n{}", pCallbackData->pMessage, backend->getDbgContext());
     }
 
     return VK_FALSE;
@@ -35,6 +37,7 @@ namespace gapi::vulkan
     ci.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
     ci.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation;
     ci.pfnUserCallback = VkDebugCallback;
+    ci.pUserData = this;
 
     auto res = m_Instance->createDebugUtilsMessengerEXTUnique(ci);
     VK_CHECK_RES(res);
@@ -259,5 +262,32 @@ namespace gapi::vulkan
       .capabilities = caps
     };
     return new Device(std::move(deviceCi), frameGc);
+  }
+
+  void Backend::pushDbgContext(string&& ctx)
+  {
+  #ifdef DEBUG
+    m_DebugContexts.push_back(std::move(ctx));
+  #endif
+  }
+
+  void Backend::popDbgContext()
+  {
+  #ifdef DEBUG
+    m_DebugContexts.pop_back();
+  #endif
+  }
+
+  string Backend::getDbgContext() const
+  {
+  #ifdef DEBUG
+    string ctx = "[debug context: ";
+    for (auto& c : m_DebugContexts)
+      ctx += c + " | ";
+
+    return ctx;
+  #else
+    return {};
+  #endif
   }
 }

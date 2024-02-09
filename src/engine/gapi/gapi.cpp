@@ -29,6 +29,8 @@ namespace gapi
   void                     (*gapi_present_backbuffer_and_finalize_frame)();
   void                     (*gapi_wait_fence)(Fence* fence);
   uint3                    (*gapi_get_texture_extent)(const TextureHandle);
+  void                     (*gapi_push_validation_context)(string&&);
+  void                     (*gapi_pop_validation_context)();
 
   void init()
   {
@@ -152,5 +154,15 @@ namespace gapi
   auto get_texture_extent(const TextureHandle h) -> uint3
   {
     return gapi_get_texture_extent(h);
+  }
+
+  void push_validation_context(string&& msg)
+  {
+    gapi_push_validation_context(std::move(msg));
+  }
+
+  void pop_validation_context()
+  {
+    gapi_pop_validation_context();
   }
 }

@@ -347,6 +347,7 @@ namespace fg
       {
         const char* nodeName = m_Registry.m_NodesNames.getString(to_name_id(nodeId));
         PROFILE_GAPI_TNAMED(nodeName, *encoder);
+        gapi::push_validation_context(fmt::format("(frame_graph node:{})", nodeName));
 
         auto& node = m_Registry.m_Nodes[nodeId];
 
@@ -409,6 +410,8 @@ namespace fg
 
         if (declaredRp)
           encoder->endRenderpass();
+
+        gapi::pop_validation_context();
       }
     }
 

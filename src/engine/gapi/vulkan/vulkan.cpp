@@ -34,6 +34,8 @@ namespace gapi
   extern void                  (*gapi_wait_fence)(Fence* fence);
   extern void                  (*gapi_present_backbuffer_and_finalize_frame)();
   extern uint3                 (*gapi_get_texture_extent)(const TextureHandle);
+  extern void                  (*gapi_push_validation_context)(string&&);
+  extern void                  (*gapi_pop_validation_context)();
 }
 
 namespace gapi::vulkan
@@ -269,6 +271,16 @@ namespace gapi::vulkan
     frameGc.add(std::move(promise->event));
   }
 
+  void push_validation_context(string&& msg)
+  {
+    backend.pushDbgContext(std::move(msg));
+  }
+
+  void pop_validation_context()
+  {
+    backend.popDbgContext();
+  }
+
   void init()
   {
     gapi_wait_gpu_idle = wait_gpu_idle;
@@ -292,6 +304,8 @@ namespace gapi::vulkan
     gapi_wait_fence = wait_fence;
     gapi_present_backbuffer_and_finalize_frame = present_backbuffer_and_finalize_frame;
     gapi_get_texture_extent = get_texture_extent;
+    gapi_push_validation_context = push_validation_context;
+    gapi_pop_validation_context = pop_validation_context;
 
     backend.init();
     device.reset(backend.createDevice(&frameGc));

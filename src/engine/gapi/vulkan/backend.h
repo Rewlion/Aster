@@ -5,6 +5,8 @@
 
 #include <engine/utils/bit_capacity.hpp>
 
+#include <EASTL/vector.h>
+
 using UniqueDynamicDbgUtilsMessenger = vk::UniqueHandle<vk::DebugUtilsMessengerEXT,vk::DispatchLoaderDynamic>;
 
 namespace gapi::vulkan
@@ -16,6 +18,10 @@ namespace gapi::vulkan
     public:
       void init();
       Device* createDevice(FrameGarbageCollector* frameGc);
+
+      void pushDbgContext(string&&);
+      void popDbgContext();
+      string getDbgContext() const;
 
     private:
       vk::UniqueInstance createInstance();
@@ -37,5 +43,9 @@ namespace gapi::vulkan
       vk::PhysicalDevice m_PhysicalDevice;
       vk::UniqueSurfaceKHR m_Surface;
       QueueIndices m_QueueIndices;
+
+    #ifdef DEBUG
+      eastl::vector<string> m_DebugContexts;
+    #endif
   };
 }
