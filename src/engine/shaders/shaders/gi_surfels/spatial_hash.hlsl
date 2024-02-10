@@ -11,7 +11,7 @@ SpatialInfo calcLinearInfo(float3 camera_to_wpos)
 {
   float3 cameraToBegin = -float3(CELLS_DIM.xxx)*0.5;
   int3 id = int3((camera_to_wpos - cameraToBegin) / CELL_SIZE);
-  SpatialInfo si = {id, CASCADE_ZERO, CELL_SIZE / CELLS_DIM};
+  SpatialInfo si = {id, CASCADE_ZERO, CELL_SIZE};
   return si;
 }
 
