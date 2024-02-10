@@ -113,6 +113,7 @@ static
 void gbuffer_resolve_exec(gapi::CmdEncoder& encoder,
                           const uint2& render_size)
 {
+  tfx::activate_scope("AtmosphereScope", encoder);
   tfx::activate_technique("ResolveGbuffer", encoder);
   encoder.updateResources();
 

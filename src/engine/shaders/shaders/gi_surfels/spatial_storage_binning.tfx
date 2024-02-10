@@ -1,0 +1,48 @@
+#include <frame.inc.tfx>
+
+scope GIBS_SpatialStorageBinning
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0-4);
+
+  #hlsl
+  #include "surfel.hlsl"
+  #end
+  RWStructuredBuffer<uint> surfelsLifeTime = extern(surfelsLifeTime);
+  StructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
+  RWStructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
+};
+
+technique GIBS_SpatialStorageBinning
+{
+  support scope FrameScope;
+  activate scope GIBS_SpatialStorageBinning;
+
+  #hlsl
+  #include "lifetime.hlsl"
+  #include "spatial_storage.hlsl"
+
+  [numthreads(64,1,1)]
+  void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
+  {
+    uint id = dispatch_thread_id.x;
+    if (id >= SURFEL_COUNT_TOTAL)
+      return;
+
+    uint lifetime = surfelsLifeTime[id];
+    if (!is_surfel_alive(lifetime))
+      return;
+
+    //surfelsLifeTime[id] = lifetime+1;
+
+    float3 worldPos = surfelsStorage[id].pos;
+    float3 cameraToWorldPos = worldPos - FrameScope.cameraPos;
+
+    SpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
+    st.insertSurfelInCell(id, cameraToWorldPos);
+  }
+  #end
+
+  compile(cs, cs_main);
+};

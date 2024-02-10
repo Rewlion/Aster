@@ -1,14 +1,29 @@
 #include <frame.inc.tfx>
 #include <depth.inc.tfx>
+#include <materials.inc.tfx>
 
 scope GIBS_AllocateSurfelsScope
 {
   reserve:
     descriptor_set(1);
-    register(texture, 0-1);
+    register(buffer, 0-7);
+    register(texture, 0-3);
 
   RWTexture2D<float4> dbgOutput = extern(dbgTex);
   Texture2D gbufferDepth = extern(gbuffer_depth);
+  Texture2D gbufferNormal = extern(gbuffer_normal);
+  
+  #hlsl
+  #include "meta.hlsl"
+  #include "surfel.hlsl"
+  #end
+  
+  Texture2D<uint> surfelsCoverage = extern(surfelsCoverage);
+  RWStructuredBuffer<uint> surfelsLifeTime = extern(surfelsLifeTime);
+  RWStructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
+  RWStructuredBuffer<uint> surfelsPool = extern(surfelsPool);
+  RWStructuredBuffer<uint> surfelsAllocLocks = extern(surfelsAllocLocks);
+  RWStructuredBuffer<SurfelsMeta> surfelsMeta = extern(surfelsMeta);
 };
 
 technique GIBS_AllocateSurfels
@@ -17,10 +32,51 @@ technique GIBS_AllocateSurfels
   activate scope GIBS_AllocateSurfelsScope;
 
   USE_DEPTH_UTILS();
+  USE_MATERIALS_NORMAL_UNPACK();
 
   #hlsl
   #include "spatial_hash.hlsl"
   
+  struct SpatialLock
+  {
+    bool tryLock(int3 spatial_id, int cascade)
+    {
+      uint baseAddr = cascade * CELLS_PER_CASCADE;
+      uint id = calcSpatial1DIndex(spatial_id);
+      uint addr = baseAddr + id;
+
+      uint isLocked;
+      InterlockedCompareExchange(locks[addr], 0, 1, isLocked);
+      
+      return isLocked == 0;
+    }
+
+    RWStructuredBuffer<uint> locks;
+  };
+
+  struct SurfelsPool
+  {
+    uint acquireFreeSurfelId()
+    {
+      uint id;
+      InterlockedAdd(meta[0].allocatedSurfelsCount, 1, id);
+      InterlockedMin(meta[0].allocatedSurfelsCount, SURFEL_COUNT_TOTAL);
+
+      if (id != SURFEL_COUNT_TOTAL)
+      {
+        uint poolId = id;
+        uint storageId = pool[poolId];
+
+        return storageId;
+      }
+      else
+        return NO_AVAILABLE_SURFEL;
+    }
+
+    RWStructuredBuffer<SurfelsMeta> meta;
+    RWStructuredBuffer<uint> pool;
+  };
+
   [numthreads(8,8,1)]
   void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
   {
@@ -35,6 +91,20 @@ technique GIBS_AllocateSurfels
     if (depth == 0)
       return;
 
+    ////// TMP TEST
+    #define TEST_COVERAGE(i,j)\
+      if (surfelsCoverage.Load(uint3(clamp(tc.xy + uint2(i,j), 0.xx, renderSize-1.xx), 0)) > 0) \
+        return;
+
+      TEST_COVERAGE(0,0);
+      TEST_COVERAGE(50,0);
+      TEST_COVERAGE(-50,0);
+      TEST_COVERAGE(0, 50);
+      TEST_COVERAGE(0, -50);
+    //////
+
+    float3 N = unpackMaterialNormal(tc);
+
     float3 leftRight = FrameScope.rtView_WS - FrameScope.ltView_WS;
     float3 topBot = FrameScope.lbView_WS - FrameScope.ltView_WS;
 
@@ -43,7 +113,27 @@ technique GIBS_AllocateSurfels
 
     float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
     float3 cameraToWorldPos = worldPos - FrameScope.cameraPos;
-    int4 spatialIndex = calcSpatialIndex(cameraToWorldPos, FrameScope.zNear_zFar.x);
+    
+    SpatialInfo spatialInfo = calcSpatialInfo(cameraToWorldPos, FrameScope.zNear_zFar.x);
+
+    SpatialLock spatialLocks = {surfelsAllocLocks};
+
+    [BRANCH]
+    if (spatialLocks.tryLock(spatialInfo.id, spatialInfo.cascade))
+    {
+      SurfelsPool pool = { surfelsMeta, surfelsPool};
+
+      uint surfelId = pool.acquireFreeSurfelId();
+      if (surfelId != NO_AVAILABLE_SURFEL)
+      {
+        float r = calcSurfelRadius(spatialInfo.cellSize);
+        SurfelData surfel;
+        surfel.init(worldPos, r, N);
+
+        surfelsStorage[surfelId] = surfel;
+        surfelsLifeTime[surfelId] = 0;
+      }
+    }
 
     float3 colors[1+6] = {
       float3(0.8,0.8,0.8),
@@ -55,12 +145,12 @@ technique GIBS_AllocateSurfels
       float3(0.1, 0.1, 0.4)
     };
 
-    int3 dId = (spatialIndex.xyz % 2);
+    int3 dId = (spatialInfo.id % 2);
     //float m = all(dId == int3(0,0,0)) || all(dId == int3(1,1,1)) ? 0.5 : 1.0;
     //float m = all(dId.xy == int2(0,0)) || all(dId.xy == int2(1,1)) ? 0.5 : 1.0;
     float m = all(dId == int3(1,1,1)) ||  all(dId == int3(0,0,1)) ||  all(dId == int3(0,1,0)) ||  all(dId == int3(1,0,0)) ? 1.0 : 0.5;
     //float m = dId.x == 0 ? 1.0 : 0.5;
-    dbgOutput[tc.xy] = float4(colors[spatialIndex.w % 7] * m, 1.0);
+    dbgOutput[tc.xy] = float4(colors[spatialInfo.cascade % 7] * m, 1.0);
   }
   #end
 

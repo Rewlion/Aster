@@ -9,7 +9,7 @@
 
 #define SURFEL_COUNT_TOTAL                (250 * 1024)
 #define SURFEL_COUNT_PER_CELL             10
-#define SURFEL_RADIUS                     0.3
+#define SURFEL_RADIUS                     0.7
 
 #define CASCADE_ZERO    0
 #define CASCADE_X       1
@@ -20,6 +20,11 @@
 #define CASCADE_MINUS_Z 6
 #define CASCADES_COUNT  CASCADE_MINUS_Z
 
-#define CELLS_COUNT int(CASCADES_COUNT * CELLS_DIM * CELLS_DIM * CELLS_DIM)
+#define CELLS_PER_CASCADE uint(CELLS_DIM * CELLS_DIM * CELLS_DIM)
+#define CELLS_COUNT uint(CASCADES_COUNT * CELLS_DIM * CELLS_DIM * CELLS_DIM)
+
+#define SPATIAL_STORAGE_CELL_PAYLOAD (1 + SURFEL_COUNT_PER_CELL) //[count,id,id,id,id...]
+
+#define NO_AVAILABLE_SURFEL uint(-1)
 
 #endif
