@@ -53,7 +53,8 @@ SpatialInfo calcNonLinearInfo(float3 camera_to_wpos, float far_plane)
   //z = znear * (zfar/znear)^(slice/nslices) from DOOM
   float zSlice = floor(log(dist/ nearPlane) / log(far_plane / nearPlane) * CELLS_DIM);  
 
-  float cellSize = nearPlane * pow(far_plane / nearPlane, zSlice/CELLS_DIM) / CELLS_DIM;
+  float halfPlaneSize = nearPlane * pow(far_plane / nearPlane, zSlice/CELLS_DIM);
+  float cellSize = halfPlaneSize * 2.0 / CELLS_DIM;
 
   SpatialInfo si = {int3(xy, zSlice), face, cellSize};
   return si;
