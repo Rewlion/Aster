@@ -7,7 +7,7 @@ scope GIBS_AllocateSurfelsScope
   reserve:
     descriptor_set(1);
     register(buffer, 0-7);
-    register(texture, 0-3);
+    register(texture, 0-4);
 
   RWTexture2D<float4> dbgOutput = extern(dbgTex);
   Texture2D gbufferDepth = extern(gbuffer_depth);
@@ -19,6 +19,7 @@ scope GIBS_AllocateSurfelsScope
   #end
   
   Texture2D<uint> surfelsCoverage = extern(surfelsCoverage);
+  Texture2D<uint> surfelsAllocPos = extern(surfelsAllocPos);
   RWStructuredBuffer<uint> surfelsLifeTime = extern(surfelsLifeTime);
   RWStructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
   RWStructuredBuffer<uint> surfelsPool = extern(surfelsPool);
@@ -92,15 +93,17 @@ technique GIBS_AllocateSurfels
       return;
 
     ////// TMP TEST
-    #define TEST_COVERAGE(i,j)\
-      if (surfelsCoverage.Load(uint3(clamp(tc.xy + uint2(i,j), 0.xx, renderSize-1.xx), 0)) > 0) \
-        return;
+    // #define TEST_COVERAGE(i,j)\
+    //   if (surfelsCoverage.Load(uint3(clamp(tc.xy + uint2(i,j), 0.xx, renderSize-1.xx), 0)) > 0) \
+    //     return;
 
-      TEST_COVERAGE(0,0);
-      TEST_COVERAGE(50,0);
-      TEST_COVERAGE(-50,0);
-      TEST_COVERAGE(0, 50);
-      TEST_COVERAGE(0, -50);
+    //   TEST_COVERAGE(0,0);
+    //   TEST_COVERAGE(50,0);
+    //   TEST_COVERAGE(-50,0);
+    //   TEST_COVERAGE(0, 50);
+    //   TEST_COVERAGE(0, -50);
+    if (surfelsAllocPos.Load(tc) == 0)
+      return;
     //////
 
     float3 N = unpackMaterialNormal(tc);

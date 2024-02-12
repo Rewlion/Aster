@@ -66,6 +66,33 @@ struct ROSpatialStorage
 
     return coverage;
   }
+
+  #define MAX_FLOAT 3.402823466e+38
+
+  float calcSDFForPos(float3 wpos, float3 camera_to_wpos, StructuredBuffer<SurfelData> surfels_storage)
+  {
+    SpatialInfo spatialInfo = calcSpatialInfo(camera_to_wpos, zFar);
+    uint baseAddr = getCellAddress(spatialInfo);
+    uint counter = baseAddr;
+    uint idBegin = baseAddr+1;
+    uint idsCount = surfelsSpatialStorage[counter];
+    uint idEnd = idBegin+idsCount;
+
+    uint coverage = 0;
+
+    float sdf = MAX_FLOAT;
+    for (uint i = idBegin; (i < idEnd) && (sdf > 0.0); ++i)
+    {
+      uint surfelId = surfelsSpatialStorage[i];
+      SurfelData surfel = surfels_storage[surfelId];
+
+      float3 dr = wpos - surfel.pos;
+      float dist = clamp(length(dr) - surfel.radius, 0.0, MAX_FLOAT);
+      sdf = min(sdf, dist);
+    }
+
+    return sdf;
+  }
 };
 
 #endif

@@ -5,7 +5,7 @@ scope GIBS_SurfelsCoverageScope
   reserve:
     descriptor_set(1);
     register(buffer, 0-1);
-    register(texture, 0-1);
+    register(texture, 0-2);
 
   #hlsl
   #include "surfel.hlsl"
@@ -13,6 +13,7 @@ scope GIBS_SurfelsCoverageScope
 
   Texture2D gbufferDepth = extern(gbuffer_depth);
   RWTexture2D<uint> surfelsCoverage = extern(surfelsCoverage);
+  RWTexture2D<float> surfelsSDF = extern(surfelsSDF);
   StructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
   StructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
 };
@@ -52,8 +53,10 @@ technique GIBS_SurfelsCoverage
 
     ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
     uint coverage = st.calcCoverageForPos(worldPos, cameraToWorldPos, surfelsStorage);
+    float sdf = st.calcSDFForPos(worldPos, cameraToWorldPos, surfelsStorage);
 
     surfelsCoverage[tc.xy] = coverage;
+    surfelsSDF[tc.xy] = sdf;
   }
   #end
 

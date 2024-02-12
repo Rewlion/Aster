@@ -1,0 +1,47 @@
+scope GIBS_FindSurfelsAllocPosScope
+{
+  reserve:
+    descriptor_set(1);
+    register(texture, 0-1);
+
+  Texture2D<float> surfelsSDF = extern(surfelsSDF);
+  RWTexture2D<uint> surfelsAllocPos = extern(surfelsAllocPos);
+};
+
+technique GIBS_FindSurfelsAllocPos
+{
+  activate scope GIBS_FindSurfelsAllocPosScope;
+
+  #hlsl
+  #define MAX_FLOAT 3.402823466e+38
+
+  [numthreads(8,8,1)]
+  void cs_main(uint3 tc : SV_DispatchThreadID)
+  {
+    uint2 renderSize;
+    surfelsSDF.GetDimensions(renderSize.x, renderSize.y);
+
+    if (any(tc.xy >= renderSize))
+      return;
+
+    float center = surfelsSDF.Load(tc).r;
+    
+    [BRANCH]
+    if (center == MAX_FLOAT)
+      surfelsAllocPos[tc.xy] = 1;
+    else
+    {
+      float left = tc.x >= 0 ? surfelsSDF.Load(tc + uint3(-1, 0, 0)).r : center;
+      float right = tc.x < renderSize.x  ? surfelsSDF.Load(tc + uint3(+1, 0, 0)).r : center;
+
+      float bot = tc.y >= 0 ? surfelsSDF.Load(tc + uint3(-1, 0, 0)).r : center;
+      float up = tc.y < renderSize.y ? surfelsSDF.Load(tc + uint3(+1, 0, 0)).r : center;
+
+      bool sdfExtremum = (left < center && right < center) || (bot < center && up < center);
+      surfelsAllocPos[tc.xy] = sdfExtremum ? 1 : 0;
+    }
+  }
+  #end
+
+  compile(cs, cs_main);
+};
