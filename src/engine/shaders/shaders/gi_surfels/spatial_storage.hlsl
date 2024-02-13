@@ -69,7 +69,7 @@ struct ROSpatialStorage
 
   #define MAX_FLOAT 3.402823466e+38
 
-  float calcSDFForPos(float3 wpos, float3 camera_to_wpos, StructuredBuffer<SurfelData> surfels_storage)
+  bool checkFreeSpaceForNewSurfel(float3 wpos, float3 camera_to_wpos, StructuredBuffer<SurfelData> surfels_storage)
   {
     SpatialInfo spatialInfo = calcSpatialInfo(camera_to_wpos, zFar);
     uint baseAddr = getCellAddress(spatialInfo);
@@ -77,8 +77,6 @@ struct ROSpatialStorage
     uint idBegin = baseAddr+1;
     uint idsCount = surfelsSpatialStorage[counter];
     uint idEnd = idBegin+idsCount;
-
-    uint coverage = 0;
 
     float sdf = MAX_FLOAT;
     for (uint i = idBegin; (i < idEnd) && (sdf > 0.0); ++i)
@@ -91,7 +89,9 @@ struct ROSpatialStorage
       sdf = min(sdf, dist);
     }
 
-    return sdf;
+    float newSurfelRadius = calcSurfelRadius(spatialInfo.cellSize);
+
+    return newSurfelRadius <= sdf;
   }
 };
 

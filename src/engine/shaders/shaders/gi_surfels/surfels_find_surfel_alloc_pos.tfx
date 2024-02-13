@@ -1,45 +1,59 @@
+#include <depth.inc.tfx>
+
 scope GIBS_FindSurfelsAllocPosScope
 {
   reserve:
     descriptor_set(1);
-    register(texture, 0-1);
+    register(buffer, 0-1);
+    register(texture, 0-2);
 
-  Texture2D<float> surfelsSDF = extern(surfelsSDF);
+  #hlsl
+  #include "surfel.hlsl"
+  #end
+
+  Texture2D gbufferDepth = extern(gbuffer_depth);
   RWTexture2D<uint> surfelsAllocPos = extern(surfelsAllocPos);
+  StructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
+  StructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
 };
 
 technique GIBS_FindSurfelsAllocPos
 {
+  support scope FrameScope;
   activate scope GIBS_FindSurfelsAllocPosScope;
 
+  USE_DEPTH_UTILS();
+
   #hlsl
-  #define MAX_FLOAT 3.402823466e+38
+  #include "spatial_storage.hlsl"
 
   [numthreads(8,8,1)]
-  void cs_main(uint3 tc : SV_DispatchThreadID)
+  void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
   {
     uint2 renderSize;
-    surfelsSDF.GetDimensions(renderSize.x, renderSize.y);
+    gbufferDepth.GetDimensions(renderSize.x, renderSize.y);
 
-    if (any(tc.xy >= renderSize))
+    if (any(dispatch_thread_id.xy >= renderSize))
       return;
 
-    float center = surfelsSDF.Load(tc).r;
-    
-    [BRANCH]
-    if (center == MAX_FLOAT)
-      surfelsAllocPos[tc.xy] = 1;
-    else
-    {
-      float left = tc.x >= 0 ? surfelsSDF.Load(tc + uint3(-1, 0, 0)).r : center;
-      float right = tc.x < renderSize.x  ? surfelsSDF.Load(tc + uint3(+1, 0, 0)).r : center;
+    uint3 tc = uint3(dispatch_thread_id.xy, 0);
+    float depth = gbufferDepth.Load(tc).r;
+    if (depth == 0)
+      return;
 
-      float bot = tc.y >= 0 ? surfelsSDF.Load(tc + uint3(-1, 0, 0)).r : center;
-      float up = tc.y < renderSize.y ? surfelsSDF.Load(tc + uint3(+1, 0, 0)).r : center;
+    float3 leftRight = FrameScope.rtView_WS - FrameScope.ltView_WS;
+    float3 topBot = FrameScope.lbView_WS - FrameScope.ltView_WS;
 
-      bool sdfExtremum = (left < center && right < center) || (bot < center && up < center);
-      surfelsAllocPos[tc.xy] = sdfExtremum ? 1 : 0;
-    }
+    float2 t = float2(tc.xy) / float2(renderSize - uint2(1, 1));
+    float3 farPlainPoint = FrameScope.ltView_WS + leftRight * t.x + topBot * t.y;
+
+    float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+    float3 cameraToWorldPos = worldPos - FrameScope.cameraPos;
+
+    ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
+    bool hasSpace = st.checkFreeSpaceForNewSurfel(worldPos, cameraToWorldPos, surfelsStorage);
+
+    surfelsAllocPos[tc.xy] = hasSpace ? 1 : 0;
   }
   #end
 
