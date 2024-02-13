@@ -1,0 +1,61 @@
+#include <screen_space.inc.tfx>
+#include <depth.inc.tfx>
+
+scope GIBS_DrawSurfelsScope
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0-1);
+    register(texture, 0);
+
+  #hlsl
+  #include "surfel.hlsl"
+  #end
+
+  Texture2D gbufferDepth = extern(gbuffer_depth);
+  StructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
+  StructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
+
+};
+
+technique GIBS_DrawSurfels
+{
+  support scope FrameScope;
+  activate scope GIBS_DrawSurfelsScope;
+
+  USE_SCREENSPACE_BASE();
+  USE_DEPTH_UTILS();
+
+  #hlsl
+
+  #include "spatial_storage.hlsl"
+
+  float4 ps_main(VsOutput input) : SV_Target0
+  {
+    uint3 tc = uint3(input.pos.xy, 0);
+    uint2 renderSize;
+    gbufferDepth.GetDimensions(renderSize.x, renderSize.y);
+    float depth = gbufferDepth.Load(tc).r;
+    
+    if (depth == 0)
+      return 0.0.xxxx;
+    
+    float3 leftRight = FrameScope.rtView_WS - FrameScope.ltView_WS;
+    float3 topBot = FrameScope.lbView_WS - FrameScope.ltView_WS;
+
+    float2 t = float2(tc.xy) / float2(renderSize - uint2(1, 1));
+    float3 farPlainPoint = FrameScope.ltView_WS + leftRight * t.x + topBot * t.y;
+
+    float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+    float3 cameraToWorldPos = worldPos - FrameScope.cameraPos;
+
+    ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
+    float4 color = st.drawSurfels(worldPos, cameraToWorldPos, surfelsStorage);
+
+    return color;
+  }
+  #end
+
+  compile(vs, vs_main);
+  compile(ps, ps_main);
+};

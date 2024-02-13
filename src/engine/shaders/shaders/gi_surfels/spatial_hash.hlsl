@@ -74,3 +74,10 @@ uint calcSpatial1DIndex(int3 spatial_id)
 {
   return spatial_id.x + spatial_id.y * CELLS_DIM + spatial_id.z * CELLS_DIM * CELLS_DIM;
 }
+
+uint calcSpatialHash(float3 pos, float cell_size)
+{
+  return uint(floor(pos.x / cell_size) * 73856093)
+       ^ uint(floor(pos.y / cell_size) * 19349663)
+       ^ uint(floor(pos.z / cell_size) * 83492791);
+}

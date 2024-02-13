@@ -15,6 +15,7 @@ shaders_list:t[] = [
   "shaders/font.tfx",
   "shaders/gbuffer_resolve.tfx",
   "shaders/gi_surfels/allocate_surfels.tfx",
+  "shaders/gi_surfels/draw_surfels.tfx",
   "shaders/gi_surfels/init_pool.tfx",
   "shaders/gi_surfels/spatial_storage_binning.tfx",
   "shaders/gi_surfels/surfels_find_surfel_alloc_pos.tfx",

@@ -25,6 +25,9 @@ ECS_COMP_GETTER(GIOnSurfels, state);
 NODE_BEGIN(gibs_resources)
   CREATE_TEX_2D             (gibs_dbg_alloc, TEX_SIZE_RELATIVE(), R32G32B32A32_S,
                              TEX_USAGE2(SRV, UAV), TEX_STATE(ShaderReadWrite))
+
+  CREATE_TEX_2D             (gibs_dbg_surfels, TEX_SIZE_RELATIVE(), R8G8B8A8_UNORM,
+                             TEX_USAGE2(SRV, RT), TEX_STATE(ShaderReadWrite))
   
   CREATE_GPU_BUF_PERSISTENT (gibs_surfels_lifetime, BUF_USAGE(UAV), BUF_STATE(UAV_RW),
                              BUF_SIZE(SURFEL_COUNT_TOTAL * sizeof(uint)))
@@ -57,6 +60,7 @@ NODE_EXEC()
 static
 void gibs_resources_init(gapi::CmdEncoder& encoder,
                          const gapi::TextureHandle gibs_dbg_alloc,
+                         const gapi::TextureHandle gibs_dbg_surfels,
                          const gapi::BufferHandler gibs_surfels_lifetime,
                          const gapi::BufferHandler gibs_surfels_storage,
                          const gapi::BufferHandler gibs_surfels_pool,
@@ -73,6 +77,8 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
   encoder.clearColorTexture(gibs_dbg_alloc,
     gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
 
+  encoder.clearColorTexture(gibs_dbg_surfels,
+    gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
 
   encoder.clearColorTexture(gibs_surfels_sdf,
     gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
@@ -141,6 +147,29 @@ void gibs_surfels_find_surfels_alloc_pos(gapi::CmdEncoder& encoder, const uint2 
   encoder.updateResources();
   const uint3 gc = tfx::calc_group_count("GIBS_FindSurfelsAllocPos", uint3(render_size, 1));
   encoder.dispatch(gc.x, gc.y, gc.z);
+}
+
+NODE_BEGIN(gibs_draw_surfels)
+  ORDER_ME_BEFORE(gibs_binning_sync)
+
+  BIND_TEX_RO_DEPTH_AS (late_opaque_depth, gbuffer_depth)
+  BIND_BUF_SRV_AS      (gibs_surfels_storage, surfelsStorage)
+  BIND_BUF_SRV_AS      (gibs_surfels_spatial_storage, surfelsSpatialStorage)
+
+  RP_BEGIN()
+    TARGET_LOAD_DONTCARE(gibs_dbg_surfels)
+  RP_END()
+
+  EXEC(gibs_draw_surfels)
+NODE_END()
+
+NODE_EXEC()
+static
+void gibs_draw_surfels(gapi::CmdEncoder& encoder)
+{
+  tfx::activate_technique("GIBS_DrawSurfels", encoder);
+  encoder.updateResources();
+  encoder.draw(4, 1, 0, 0);
 }
 
 NODE_BEGIN(gibs_binning_sync)
