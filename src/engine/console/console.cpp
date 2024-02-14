@@ -15,7 +15,7 @@ namespace console
 {
   constexpr size_t LOGS_LIMIT = 20;
   bool enabled = false;
-  bool firstShow = true;
+  bool forceWindowFocus = true;
 
   class Manager
   {
@@ -117,7 +117,7 @@ namespace console
   {
     enabled = e;
     if (e)
-      firstShow = true;
+      forceWindowFocus = true;
   }
 
   void imgui_console_wnd()
@@ -144,12 +144,15 @@ namespace console
     char buf[bufSize];
     std::memset(buf, 0, bufSize);
     if (ImGui::InputText("buf", buf, bufSize, ImGuiInputTextFlags_EnterReturnsTrue))
+    {
       manager.executeCommand(string_view{buf});
+      forceWindowFocus = true;
+    }
     
-    if (firstShow && (ImGui::IsItemHovered() || !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)))
+    if (forceWindowFocus && (ImGui::IsItemHovered() || !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)))
     {
       ImGui::SetKeyboardFocusHere(-1);
-      firstShow = false;
+      forceWindowFocus = false;
     }
 
     ImGui::End();
