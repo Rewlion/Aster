@@ -11,12 +11,14 @@
 #include <spdlog/fmt/fmt.h>
 
 #include <algorithm>
+#include <fstream>
 #include <ranges>
 
 namespace console
 {
   constexpr size_t LOGS_LIMIT = 20;
   constexpr size_t INPUT_HISTORY_LIMIT = 10;
+  constexpr const char* INPUT_HISTORY_FILE = ".console.txt";
 
   bool enabled = false;
   bool forceWindowFocus = true;
@@ -25,13 +27,48 @@ namespace console
   {
     public:
       InputHistory()
-        : m_Inputs(INPUT_HISTORY_LIMIT)
+        : m_Cursor(0)
+        , m_Inputs(INPUT_HISTORY_LIMIT)
       {
+        bool cropRequired = false;
+        m_Cursor = 0;
+
+        {
+          auto savedHistory = std::ifstream(INPUT_HISTORY_FILE);
+          if (savedHistory.is_open())
+          {
+            string cmd;
+            size_t n = 0;
+            while (std::getline(savedHistory,cmd))
+            {
+              if (cmd != "")
+              {
+                ++n;
+                m_Inputs.push_back(std::move(cmd));
+              }
+            }
+            resetLook();
+
+            cropRequired = n > INPUT_HISTORY_LIMIT;
+          }
+        }
+
+        if (cropRequired)
+          std::remove(INPUT_HISTORY_FILE);
+
+        m_SaveFile.open(INPUT_HISTORY_FILE, std::ios::app);
+
+        if (cropRequired)
+        {
+          for (const auto& cmd: m_Inputs)
+            saveCmd(cmd);
+        }
       }
 
       void add(string&& cmd)
       {
         m_Inputs.push_back(std::move(cmd));
+        saveCmd(cmd);
         resetLook();
       }
 
@@ -49,14 +86,25 @@ namespace console
         return m_Inputs[m_Cursor];
       }
 
+    private:
+      void saveCmd(string_view cmd)
+      {
+        if (m_SaveFile.is_open()) [[likely]]
+        {
+          m_SaveFile << cmd << '\n';
+          m_SaveFile.flush();
+        }
+      }
+
       void resetLook()
       {
         m_Cursor = m_Inputs.size();
       }
 
     private:
-      int m_Cursor = 0;
+      int m_Cursor;
       eastl::fixed_ring_buffer<string, INPUT_HISTORY_LIMIT> m_Inputs;
+      std::ofstream m_SaveFile;
   };
 
   class Manager
