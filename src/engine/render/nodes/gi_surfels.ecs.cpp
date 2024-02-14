@@ -136,7 +136,7 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
                          const gapi::TextureHandle gibs_surfels_allocation_pos)
 {
   encoder.fillBuffer(gibs_surfels_allocation_locks, 0, CELLS_COUNT * sizeof(uint), 0);
-  encoder.fillBuffer(gibs_surfels_spatial_storage, 0, CELLS_COUNT * (SURFEL_COUNT_PER_CELL+1) * sizeof(uint), 0);
+  encoder.fillBuffer(gibs_surfels_spatial_storage, 0, CELLS_COUNT * SPATIAL_STORAGE_CELL_PAYLOAD * sizeof(uint), 0);
   encoder.insertGlobalBufferBarrier(gapi::BufferState::BF_STATE_TRANSFER_DST, gapi::BufferState::BF_STATE_UAV_RW);
 
   encoder.clearColorTexture(gibs_dbg_alloc,

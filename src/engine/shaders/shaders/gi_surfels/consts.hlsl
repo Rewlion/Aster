@@ -8,7 +8,7 @@
 #define CELL_SIZE                         1.0
 
 #define SURFEL_COUNT_TOTAL                (250 * 1024)
-#define SURFEL_COUNT_PER_CELL             10
+#define SURFEL_COUNT_PER_CELL             30
 #define SURFEL_RADIUS                     0.4
 
 #define CASCADE_ZERO    0
@@ -18,7 +18,7 @@
 #define CASCADE_MINUS_Y 4
 #define CASCADE_Z       5
 #define CASCADE_MINUS_Z 6
-#define CASCADES_COUNT  CASCADE_MINUS_Z
+#define CASCADES_COUNT  (CASCADE_MINUS_Z+1)
 
 #define CELLS_PER_CASCADE uint(CELLS_DIM * CELLS_DIM * CELLS_DIM)
 #define CELLS_COUNT uint(CASCADES_COUNT * CELLS_DIM * CELLS_DIM * CELLS_DIM)
