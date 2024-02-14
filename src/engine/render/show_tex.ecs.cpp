@@ -17,30 +17,6 @@ namespace
   
   Params params;
 
-  void show_tex(eastl::span<string_view> args)
-  {
-    params = {};
-
-    if (args.size() == 1)
-    {
-      if (args[0] == "help")
-        console::clog("usage: <cmd> <fg_tex> | <cmd> <fg_tex> <relative_size> | <cmd> <fg_tex> <viewport_width> <viewport_height>");
-      else
-        params.texToShow = args[0];
-    }
-    else if (args.size() == 2)
-    {
-      params.texToShow = args[0];
-      params.relativeViewport = std::atof(args[1].data());
-    }
-    else if (args.size() == 3)
-    {
-      params.texToShow = args[0];
-      params.viewportSize = float2{std::atof(args[1].data()),
-                                   std::atof(args[2].data())};
-    }
-  }
-
   float2 get_viewport_size(const float2 render_size)
   {
     if (params.relativeViewport.has_value())
@@ -49,6 +25,30 @@ namespace
       return params.viewportSize.value();
 
     return render_size * 0.3f;
+  }
+}
+
+void show_tex(eastl::span<string_view> args)
+{
+  params = {};
+
+  if (args.size() == 1)
+  {
+    if (args[0] == "help")
+      console::clog("usage: <cmd> <fg_tex> | <cmd> <fg_tex> <relative_size> | <cmd> <fg_tex> <viewport_width> <viewport_height>");
+    else
+      params.texToShow = args[0];
+  }
+  else if (args.size() == 2)
+  {
+    params.texToShow = args[0];
+    params.relativeViewport = std::atof(args[1].data());
+  }
+  else if (args.size() == 3)
+  {
+    params.texToShow = args[0];
+    params.viewportSize = float2{std::atof(args[1].data()),
+                                 std::atof(args[2].data())};
   }
 }
 

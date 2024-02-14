@@ -1,6 +1,8 @@
+#include <engine/console/cmd.h>
 #include <engine/ecs/macros.h>
 #include <engine/ecs/type_meta.h>
 #include <engine/render/frame_graph/dsl.h>
+#include <engine/render/imgui/imgui.h>
 #include <engine/tfx/tfx.h>
 
 #include <engine/shaders/shaders/gi_surfels/consts.hlsl>
@@ -8,6 +10,41 @@
 #include <engine/shaders/shaders/gi_surfels/lifetime.hlsl>
 #include <engine/shaders/shaders/gi_surfels/meta.hlsl>
 
+static bool freeze_allocation = false;
+static bool show_dbg_wnd = false;
+static bool show_surfels = false;
+
+static
+void show_dbg_wnd_cb(eastl::span<string_view> args)
+{
+  show_dbg_wnd = !show_dbg_wnd;
+}
+
+static
+void imgui_dbg_wnd()
+{
+  if (!show_dbg_wnd)
+    return;
+
+  ImGui::Begin("gibs_dbg", nullptr, 0);
+  ImGui::Checkbox("freeze surfels", &freeze_allocation);
+  if (ImGui::Button("show surfels", ImVec2(100, 50)))
+  {
+    extern void show_tex(eastl::span<string_view> args);
+    show_surfels = !show_surfels;
+    if (show_surfels)
+    {
+      string_view texName = "gibs_dbg_surfels";
+      show_tex(eastl::span<string_view>(&texName, 1));
+    }
+    else
+      show_tex({});
+  }
+  ImGui::End();
+}
+
+CONSOLE_CMD("render.gibs", 0, 0, show_dbg_wnd_cb);
+IMGUI_REG_WND(imgui_dbg_wnd);
 
 class GIOnSurfels
 {
