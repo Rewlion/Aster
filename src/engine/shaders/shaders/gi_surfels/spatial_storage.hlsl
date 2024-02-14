@@ -206,6 +206,24 @@ struct ROSpatialStorage
 
     return float4(color,1);
   }
+
+  float4 drawCells(float3 wpos, float3 camera_to_wpos)
+  {
+    SpatialInfo spatialInfo = calcSpatialInfo(camera_to_wpos, zFar);
+    float3 colors[1+6] = {
+      float3(0.8,0.8,0.8),
+      float3(0.8, 0, 0),
+      float3(0.4, 0.1, 0.1),
+      float3(0, 0.8, 0),
+      float3(0.1, 0.4, 0.1),
+      float3(0, 0, 0.8),
+      float3(0.1, 0.1, 0.4)
+    };
+    int3 dId = (spatialInfo.id.xyz % 2);
+    float m = all(dId == int3(1,1,1)) ||  all(dId == int3(0,0,1)) ||  all(dId == int3(0,1,0)) ||  all(dId == int3(1,0,0)) ? 1.0 : 0.5;
+
+    return float4(colors[spatialInfo.cascade] * m,1);
+  }
 };
 
 #endif

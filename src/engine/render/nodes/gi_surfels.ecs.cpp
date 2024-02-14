@@ -16,6 +16,7 @@ static bool show_surfels = false;
 static bool show_surfels_sdf = false;
 static bool show_surfels_coverage = false;
 static bool show_cells_coverage = false;
+static bool show_cells = false;
 
 static
 void show_dbg_wnd_cb(eastl::span<string_view> args)
@@ -46,10 +47,10 @@ void imgui_dbg_wnd()
     showtex("gibs_dbg_surfels", show_surfels);
 
   {
-    const char* showSurfelsOptions[] = {"base", "sdf", "surfels_coverage", "cells_coverage"};
+    const char* showSurfelsOptions[] = {"base", "sdf", "surfels_coverage", "cells_coverage", "cells"};
     static const char* curOpt = showSurfelsOptions[0];
     bool blob = false;
-    bool* values[] = {&blob, &show_surfels_sdf, &show_surfels_coverage, &show_cells_coverage};
+    bool* values[] = {&blob, &show_surfels_sdf, &show_surfels_coverage, &show_cells_coverage, &show_cells};
     if (ImGui::BeginCombo("format", curOpt))
     {
       for (int i = 0; i < IM_ARRAYSIZE(showSurfelsOptions); ++i)
@@ -234,6 +235,7 @@ void gibs_draw_surfels(gapi::CmdEncoder& encoder)
   tfx::set_extern("showSurfelsCoverage", show_surfels_coverage ? (uint)1 : (uint)0);
   tfx::set_extern("showSurfelSDF", show_surfels_sdf ? (uint)1 : (uint)0);
   tfx::set_extern("showCellsCoverage", show_cells_coverage ? (uint)1 : (uint)0);
+  tfx::set_extern("showCells", show_cells ? (uint)1 : (uint)0);
   tfx::activate_technique("GIBS_DrawSurfels", encoder);
   encoder.updateResources();
   encoder.draw(4, 1, 0, 0);
