@@ -7,15 +7,57 @@
 
 #include <EASTL/bonus/fixed_ring_buffer.h>
 #include <EASTL/vector_map.h>
+#include <imgui/imgui_internal.h>
 #include <spdlog/fmt/fmt.h>
 
+#include <algorithm>
 #include <ranges>
 
 namespace console
 {
   constexpr size_t LOGS_LIMIT = 20;
+  constexpr size_t INPUT_HISTORY_LIMIT = 10;
+
   bool enabled = false;
   bool forceWindowFocus = true;
+
+  class InputHistory
+  {
+    public:
+      InputHistory()
+        : m_Inputs(INPUT_HISTORY_LIMIT)
+      {
+      }
+
+      void add(string&& cmd)
+      {
+        m_Inputs.push_back(std::move(cmd));
+        resetLook();
+      }
+
+      auto lookAt(int offset) -> string_view
+      {
+        const int len = m_Inputs.size();
+        m_Cursor += offset;
+        
+        if (m_Cursor < 0 || m_Cursor > len)
+        {
+          m_Cursor = std::clamp(m_Cursor + offset, 0, len);
+          return "";
+        }
+
+        return m_Inputs[m_Cursor];
+      }
+
+      void resetLook()
+      {
+        m_Cursor = m_Inputs.size();
+      }
+
+    private:
+      int m_Cursor = 0;
+      eastl::fixed_ring_buffer<string, INPUT_HISTORY_LIMIT> m_Inputs;
+  };
 
   class Manager
   {
@@ -31,6 +73,8 @@ namespace console
       void log(string&&);
       void logerror(string&&);
 
+      auto getHistoryInput(bool prev) -> string_view;
+
       struct Log
       {
         ImVec4 color;
@@ -42,6 +86,7 @@ namespace console
     private:
       eastl::vector_map<cmd_hash_t, CmdRegistration*> m_Cmds;
       LogsContainer m_Log;
+      InputHistory m_InputHistory;
   };
   Manager manager;
 
@@ -79,6 +124,8 @@ namespace console
     }
     else
       this->logerror(fmt::format("unknown command `{}`", strs[0]));
+
+    m_InputHistory.add(string{cmd});
   }
 
   void Manager::log(string&& msg)
@@ -91,6 +138,11 @@ namespace console
   {
     m_Log.push_back();
     m_Log.back() = m_Log.back() = {.color = ImVec4{1,0,0,1}, .text = std::move(msg)};
+  }
+
+  auto Manager::getHistoryInput(bool prev) -> string_view
+  {
+    return m_InputHistory.lookAt(prev ? -1 : +1);
   }
 
   void init()
@@ -143,6 +195,23 @@ namespace console
     constexpr size_t bufSize = 50;
     char buf[bufSize];
     std::memset(buf, 0, bufSize);
+
+    if (ImGui::IsKeyPressed(ImGuiKey_UpArrow) || ImGui::IsKeyPressed(ImGuiKey_DownArrow))
+    {
+      bool prev = ImGui::IsKeyPressed(ImGuiKey_UpArrow);
+      string_view history = manager.getHistoryInput(prev);
+      if (history != "")
+      {
+        std::strncpy(buf, history.data(), bufSize);
+
+        ImGuiWindow* window = ImGui::GetCurrentWindow();
+        const ImGuiID id = window->GetID("buf");
+
+        if (ImGuiInputTextState* state = ImGui::GetInputTextState(id))
+          state->ReloadUserBufAndMoveToEnd();
+      }
+    }
+
     if (ImGui::InputText("buf", buf, bufSize, ImGuiInputTextFlags_EnterReturnsTrue))
     {
       manager.executeCommand(string_view{buf});
