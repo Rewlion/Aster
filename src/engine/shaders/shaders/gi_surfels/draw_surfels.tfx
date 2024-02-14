@@ -5,7 +5,7 @@ scope GIBS_DrawSurfelsScope
 {
   reserve:
     descriptor_set(1);
-    register(buffer, 0-1);
+    register(buffer, 0-2);
     register(texture, 0);
 
   #hlsl
@@ -16,6 +16,9 @@ scope GIBS_DrawSurfelsScope
   StructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
   StructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
 
+  uint showSurfelsCoverage = extern(showSurfelsCoverage);
+  uint showSurfelSDF = extern(showSurfelSDF);
+  uint showCellsCoverage = extern(showCellsCoverage);
 };
 
 technique GIBS_DrawSurfels
@@ -50,7 +53,16 @@ technique GIBS_DrawSurfels
     float3 cameraToWorldPos = worldPos - FrameScope.cameraPos;
 
     ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
-    float4 color = st.drawSurfels(worldPos, cameraToWorldPos, surfelsStorage);
+    
+    float4 color;
+    if (GIBS_DrawSurfelsScope.showSurfelsCoverage)
+      color = st.drawSurfelsCoverage(worldPos, cameraToWorldPos, surfelsStorage);
+    else if (GIBS_DrawSurfelsScope.showSurfelSDF)
+      color = st.drawSurfelsSDF(worldPos, cameraToWorldPos, surfelsStorage);
+    else if (GIBS_DrawSurfelsScope.showCellsCoverage)
+      color = st.drawCellsCoverage(worldPos, cameraToWorldPos, surfelsStorage);
+    else
+      color = st.drawSurfels(worldPos, cameraToWorldPos, surfelsStorage);
 
     return color;
   }

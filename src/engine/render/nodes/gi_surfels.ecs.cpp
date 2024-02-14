@@ -13,6 +13,9 @@
 static bool freeze_allocation = false;
 static bool show_dbg_wnd = false;
 static bool show_surfels = false;
+static bool show_surfels_sdf = false;
+static bool show_surfels_coverage = false;
+static bool show_cells_coverage = false;
 
 static
 void show_dbg_wnd_cb(eastl::span<string_view> args)
@@ -26,20 +29,44 @@ void imgui_dbg_wnd()
   if (!show_dbg_wnd)
     return;
 
-  ImGui::Begin("gibs_dbg", nullptr, 0);
-  ImGui::Checkbox("freeze surfels", &freeze_allocation);
-  if (ImGui::Button("show surfels", ImVec2(100, 50)))
+  const auto showtex = [](string_view tex_name, bool& toggle)
   {
     extern void show_tex(eastl::span<string_view> args);
-    show_surfels = !show_surfels;
-    if (show_surfels)
-    {
-      string_view texName = "gibs_dbg_surfels";
-      show_tex(eastl::span<string_view>(&texName, 1));
-    }
+    toggle = !toggle;
+    if (toggle)
+      show_tex(eastl::span<string_view>(&tex_name, 1));
     else
       show_tex({});
+  };
+
+  ImGui::Begin("gibs_dbg", nullptr, 0);
+  ImGui::Checkbox("freeze surfels", &freeze_allocation);
+  
+  if (ImGui::Button("show surfels", ImVec2(200, 50)))
+    showtex("gibs_dbg_surfels", show_surfels);
+
+  {
+    const char* showSurfelsOptions[] = {"base", "sdf", "surfels_coverage", "cells_coverage"};
+    static const char* curOpt = showSurfelsOptions[0];
+    bool blob = false;
+    bool* values[] = {&blob, &show_surfels_sdf, &show_surfels_coverage, &show_cells_coverage};
+    if (ImGui::BeginCombo("format", curOpt))
+    {
+      for (int i = 0; i < IM_ARRAYSIZE(showSurfelsOptions); ++i)
+      {
+        bool isSelected = curOpt == showSurfelsOptions[i];
+        if (ImGui::Selectable(showSurfelsOptions[i], isSelected))
+        {
+          curOpt = showSurfelsOptions[i];
+          isSelected = true;
+        }
+
+        *values[i] = isSelected;
+      }
+      ImGui::EndCombo();
+    }
   }
+
   ImGui::End();
 }
 
@@ -204,6 +231,9 @@ NODE_EXEC()
 static
 void gibs_draw_surfels(gapi::CmdEncoder& encoder)
 {
+  tfx::set_extern("showSurfelsCoverage", show_surfels_coverage ? (uint)1 : (uint)0);
+  tfx::set_extern("showSurfelSDF", show_surfels_sdf ? (uint)1 : (uint)0);
+  tfx::set_extern("showCellsCoverage", show_cells_coverage ? (uint)1 : (uint)0);
   tfx::activate_technique("GIBS_DrawSurfels", encoder);
   encoder.updateResources();
   encoder.draw(4, 1, 0, 0);
@@ -236,6 +266,9 @@ NODE_EXEC()
 static
 void gibs_allocate_surfels(gapi::CmdEncoder& encoder, const uint2 render_size)
 {
+  if (freeze_allocation)
+    return;
+
   tfx::activate_technique("GIBS_AllocateSurfels", encoder);
   encoder.updateResources();
   

@@ -36,7 +36,8 @@ technique GIBS_SpatialStorageBinning
 
     //surfelsLifeTime[id] = lifetime+1;
 
-    float3 worldPos = surfelsStorage[id].pos;
+    SurfelData surfel = surfelsStorage[id];
+    float3 worldPos = surfel.pos;
     float3 cameraToWorldPos = worldPos - FrameScope.cameraPos;
 
     SpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};

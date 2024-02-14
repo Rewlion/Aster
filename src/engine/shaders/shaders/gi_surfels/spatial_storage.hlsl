@@ -133,6 +133,79 @@ struct ROSpatialStorage
 
     return float4(color, a);
   }
+
+  float4 drawSurfelsCoverage(float3 wpos, float3 camera_to_wpos, StructuredBuffer<SurfelData> surfels_storage)
+  {
+    SpatialInfo spatialInfo = calcSpatialInfo(camera_to_wpos, zFar);
+    uint baseAddr = getCellAddress(spatialInfo);
+    uint counter = baseAddr;
+    uint idBegin = baseAddr+1;
+    uint idsCount = surfelsSpatialStorage[counter];
+    uint idEnd = idBegin+idsCount;
+
+    uint N = 0;
+
+    for (uint i = idBegin; i < idEnd; ++i)
+    {
+      uint surfelId = surfelsSpatialStorage[i];
+      SurfelData surfel = surfels_storage[surfelId];
+
+      float3 dr = wpos - surfel.pos;
+      float dist = length(dr) - surfel.radius;
+      
+      if (dist <= 0)
+      {
+        ++N;
+      }
+    }
+
+    float t = N / (float)SURFEL_COUNT_PER_CELL;
+    float3 color = heatmapColorRamp(t);
+
+    return float4(color, N > 0 ? 1 : 0);
+  }
+
+  float4 drawSurfelsSDF(float3 wpos, float3 camera_to_wpos, StructuredBuffer<SurfelData> surfels_storage)
+  {
+    SpatialInfo spatialInfo = calcSpatialInfo(camera_to_wpos, zFar);
+    uint baseAddr = getCellAddress(spatialInfo);
+    uint counter = baseAddr;
+    uint idBegin = baseAddr+1;
+    uint idsCount = surfelsSpatialStorage[counter];
+    uint idEnd = idBegin+idsCount;
+
+    float sdf = MAX_FLOAT;
+    for (uint i = idBegin; (i < idEnd) && (sdf > 0.0); ++i)
+    {
+      uint surfelId = surfelsSpatialStorage[i];
+      SurfelData surfel = surfels_storage[surfelId];
+
+      float3 dr = wpos - surfel.pos;
+      float dist = clamp(length(dr) - surfel.radius, 0.0, MAX_FLOAT);
+      sdf = min(sdf, dist);
+    }
+
+    float sR = calcSurfelRadius(spatialInfo.cellSize);
+    float t = sdf / sR;
+
+    float newSurfelRadius = calcSurfelRadius(spatialInfo.cellSize);
+    float3 color = heatmapColorRamp(t);
+
+    return float4(color,1);
+  }
+
+  float4 drawCellsCoverage(float3 wpos, float3 camera_to_wpos, StructuredBuffer<SurfelData> surfels_storage)
+  {
+    SpatialInfo spatialInfo = calcSpatialInfo(camera_to_wpos, zFar);
+    uint baseAddr = getCellAddress(spatialInfo);
+    uint counter = baseAddr;
+    uint idsCount = surfelsSpatialStorage[counter];
+    
+    float t = (float)idsCount / (float)SURFEL_COUNT_PER_CELL;
+    float3 color = heatmapColorRamp(t);
+
+    return float4(color,1);
+  }
 };
 
 #endif

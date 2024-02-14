@@ -24,4 +24,14 @@ float3 rgbColorRamp(float t)
   );
 }
 
+float3 heatmapColorRamp(float t)
+{
+  return linearColorRamp(
+    float3(77, 31, 99) / 255.0,
+    float3(203, 67, 100) / 255.0,
+    float3(237, 165, 122) / 255.0,
+    t
+  );
+}
+
 #endif
