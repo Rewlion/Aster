@@ -4,13 +4,19 @@
 #include "spatial_hash.hlsl"
 #include "surfel.hlsl"
 #include "../color_ramp.hlsl"
+#include "../intersections.hlsl"
 
-uint getCellAddress(SpatialInfo si)
+uint getCellAddress(int3 id, int cascade)
 {
-  uint cascadeBegin = si.cascade * CELLS_PER_CASCADE * SPATIAL_STORAGE_CELL_PAYLOAD;
-  uint cellId = calcSpatial1DIndex(si.id);
+  uint cascadeBegin = cascade * CELLS_PER_CASCADE * SPATIAL_STORAGE_CELL_PAYLOAD;
+  uint cellId = calcSpatial1DIndex(id);
   uint cellBegin = cascadeBegin + cellId * SPATIAL_STORAGE_CELL_PAYLOAD;
   return cellBegin;
+}
+
+uint getCellAddress(SpatialInfo s)
+{
+  return getCellAddress(s.id, s.cascade);
 }
 
 struct SpatialStorage
@@ -19,22 +25,61 @@ struct SpatialStorage
   float zFar;
   //
 
-  void insertSurfelInCell(uint id, float3 camera_to_wpos)
+  void insertSurfelInCell(uint surfel_id, int3 cell_id, int cascade)
   {
-    SpatialInfo spatialInfo = calcSpatialInfo(camera_to_wpos, zFar);
-    uint baseAddr = getCellAddress(spatialInfo);
+    uint baseAddr = getCellAddress(cell_id, cascade);
     uint counter = baseAddr;
     uint idBegin = baseAddr+1;
     uint vacantIdPos;
     InterlockedAdd(surfelsSpatialStorage[counter], 1, vacantIdPos);
     if (vacantIdPos < SURFEL_COUNT_PER_CELL)
     {
-      surfelsSpatialStorage[idBegin+vacantIdPos] = id;
+      surfelsSpatialStorage[idBegin+vacantIdPos] = surfel_id;
     }
     else
     {
       uint prev;
       InterlockedMin(surfelsSpatialStorage[counter], SURFEL_COUNT_PER_CELL, prev);
+    }
+  }
+
+  
+
+  void insertSurfel(SurfelData surfel, uint surfel_id, float3 camera_wpos)
+  {
+    float3 cameraToWorldPos = surfel.pos - camera_wpos;
+
+    [BRANCH]
+    if (isLinearTransform(cameraToWorldPos))
+    {
+      float3 e = surfel.radius.xxx;
+      float3 cameraToMin = surfel.pos - e - camera_wpos;
+      float3 cameraToMax = surfel.pos + e - camera_wpos;
+
+      SpatialInfo minP = calcLinearInfo(cameraToMin);
+      SpatialInfo maxP = calcLinearInfo(cameraToMax);
+
+      int3 minId = clampSpatialId(minP.id);
+      int3 maxId = clampSpatialId(maxP.id);
+
+      int N = 0;
+
+      for (int x = minId.x; x <= maxId.x; ++x)
+        for (int y = minId.y; y <= maxId.y; ++y)
+          for (int z = minId.z; z <= maxId.z; ++z)
+          {
+            int3 cellId = int3(x,y,z);
+            LinearAABB aabb = calcLinearAABB(cellId, camera_wpos);
+
+            bool isSurfelInsideCell = test_aabb_sphere_intersection(aabb.minWS, aabb.maxWS, surfel.pos, surfel.radius);
+            if (isSurfelInsideCell)
+              insertSurfelInCell(surfel_id, cellId, CASCADE_ZERO);
+          }
+    }
+    else
+    {
+      SpatialInfo spatialInfo = calcNonLinearInfo(cameraToWorldPos, zFar);
+      insertSurfelInCell(surfel_id, spatialInfo.id, spatialInfo.cascade);
     }
   }
 };

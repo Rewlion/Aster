@@ -7,12 +7,39 @@ struct SpatialInfo
   float cellSize;
 };
 
+struct LinearAABB
+{
+  float3 minWS;
+  float3 maxWS;
+};
+
+float3 calcOffsetToMinLinearCorner()
+{
+  return -float3(CELLS_DIM.xxx)* 0.5 * CELL_SIZE;
+}
+
 SpatialInfo calcLinearInfo(float3 camera_to_wpos)
 {
-  float3 cameraToBegin = -float3(CELLS_DIM.xxx)*0.5;
+  float3 cameraToBegin = calcOffsetToMinLinearCorner();
   int3 id = int3((camera_to_wpos - cameraToBegin) / CELL_SIZE);
   SpatialInfo si = {id, CASCADE_ZERO, CELL_SIZE};
   return si;
+}
+
+LinearAABB calcLinearAABB(int3 cell_id, float3 camera_wpos)
+{
+  float3 cameraToBegin = calcOffsetToMinLinearCorner();
+  float3 linearGridMinCorner = camera_wpos + cameraToBegin;
+  float3 minAABB = linearGridMinCorner + cell_id * CELL_SIZE;
+  float3 maxAABB = minAABB + CELL_SIZE.xxx;
+
+  LinearAABB aabb = {minAABB, maxAABB};
+  return aabb;
+}
+
+int3 clampSpatialId(int3 id)
+{
+  return clamp(id, 0.xxx, CELLS_DIM.xxx);
 }
 
 //we have a perpsective transformation with 90* fov frustum for each principal axis
@@ -60,11 +87,15 @@ SpatialInfo calcNonLinearInfo(float3 camera_to_wpos, float far_plane)
   return si;
 }
 
+bool isLinearTransform(float3 camera_to_wpos)
+{
+  return all(abs(camera_to_wpos) < (CELLS_HALF_DIM + 0.5*CELL_SIZE));
+}
+
 SpatialInfo calcSpatialInfo(float3 camera_to_wpos, float far_plane)
 {
-  bool isLinearTransform = all(abs(camera_to_wpos) < (CELLS_HALF_DIM + 0.5*CELL_SIZE));
   [BRANCH]
-  if (isLinearTransform)
+  if (isLinearTransform(camera_to_wpos))
     return calcLinearInfo(camera_to_wpos);
   else
     return calcNonLinearInfo(camera_to_wpos, far_plane);
