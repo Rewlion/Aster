@@ -72,11 +72,17 @@ SpatialInfo calcNonLinearInfo(float3 camera_to_wpos, float far_plane)
     uv = camera_to_wpos.xy;
     face = camera_to_wpos.z > 0 ? CASCADE_Z : CASCADE_MINUS_Z;
   }
+
+  float nearPlane = float(CELLS_DIM * CELL_SIZE) * 0.5;
+
   uv = uv / dist; // project on the cube face
   uv = uv * 0.5 + 0.5;
+
+  dist = clamp(dist, nearPlane, far_plane);
+  uv = saturate(uv);
+
   float2 xy = uv * float2(CELLS_DIM, CELLS_DIM);
   
-  float nearPlane = CELLS_DIM * CELL_SIZE; //+0.5 cell size?
   //z = znear * (zfar/znear)^(slice/nslices) from DOOM
   float zSlice = floor(log(dist/ nearPlane) / log(far_plane / nearPlane) * CELLS_DIM);  
 
