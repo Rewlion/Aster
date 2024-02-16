@@ -6,9 +6,10 @@
 #include <engine/tfx/tfx.h>
 
 #include <engine/shaders/shaders/gi_surfels/consts.hlsl>
-#include <engine/shaders/shaders/gi_surfels/surfel.hlsl>
 #include <engine/shaders/shaders/gi_surfels/lifetime.hlsl>
 #include <engine/shaders/shaders/gi_surfels/meta.hlsl>
+#include <engine/shaders/shaders/gi_surfels/surfel.hlsl>
+#include <engine/shaders/shaders/intersection_structs.hlsl>
 
 static bool freeze_allocation = false;
 static bool show_dbg_wnd = false;
@@ -110,7 +111,9 @@ NODE_BEGIN(gibs_resources)
                               BUF_SIZE(CELLS_COUNT * SPATIAL_STORAGE_CELL_PAYLOAD * sizeof(uint)))
 
   CREATE_GPU_BUF_PERSISTENT (gibs_surfels_meta, BUF_USAGE(UAV), BUF_STATE(UAV_RW), BUF_SIZE(sizeof(SurfelsMeta)))
-
+  
+  CREATE_GPU_BUF_PERSISTENT (gibs_nonlinear_aabbs, BUF_USAGE(UAV), BUF_STATE(UAV_RW),
+                              BUF_SIZE(CELLS_PER_CASCADE * sizeof(AABB)))
 
   CREATE_TEX_2D             (gibs_surfels_sdf, TEX_SIZE_RELATIVE(), R32_FLOAT,
                              TEX_USAGE2(SRV, UAV), TEX_STATE(ShaderReadWrite))
@@ -132,6 +135,7 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
                          const gapi::BufferHandler gibs_surfels_allocation_locks,
                          const gapi::BufferHandler gibs_surfels_spatial_storage,
                          const gapi::BufferHandler gibs_surfels_meta,
+                         const gapi::BufferHandler gibs_nonlinear_aabbs,
                          const gapi::TextureHandle gibs_surfels_sdf,
                          const gapi::TextureHandle gibs_surfels_allocation_pos)
 {
@@ -169,15 +173,25 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
       const uint3 gc = tfx::calc_group_count("GIBS_InitSurfelsPool", uint3(SURFEL_COUNT_TOTAL,1,1));
       encoder.dispatch(gc.x, gc.y, gc.z);
     }
+    {
+      tfx::set_extern("gibsNonlinearAABBs", gibs_nonlinear_aabbs);
+      tfx::activate_technique("GIBS_PrepareNonLinearAABBs", encoder);
+      encoder.updateResources();
+
+      const uint3 gc = tfx::calc_group_count("GIBS_PrepareNonLinearAABBs", uint3(CELLS_DIM,CELLS_DIM,CELLS_DIM));
+      encoder.dispatch(gc.x, gc.y, gc.z);
+    }
 
     state.initialized = true;
   }
+
 }
 
 NODE_BEGIN(gibs_spatial_storage_binning)
   BIND_BUF_RW_UAV_AS   (gibs_surfels_lifetime, surfelsLifeTime)
   BIND_BUF_SRV_AS      (gibs_surfels_storage, surfelsStorage)
   BIND_BUF_RW_UAV_AS   (gibs_surfels_spatial_storage, surfelsSpatialStorage)
+  BIND_BUF_SRV_AS      (gibs_nonlinear_aabbs, gibsNonlinearAABBs)
 
   EXEC(gibs_spatial_storage_binning)  
 NODE_END()

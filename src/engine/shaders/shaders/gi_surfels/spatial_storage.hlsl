@@ -5,6 +5,7 @@
 #include "surfel.hlsl"
 #include "../color_ramp.hlsl"
 #include "../intersections.hlsl"
+#include "../intersection_structs.hlsl"
 
 uint getCellAddress(int3 id, int cascade)
 {
@@ -45,7 +46,7 @@ struct SpatialStorage
 
   
 
-  void insertSurfel(SurfelData surfel, uint surfel_id, float3 camera_wpos)
+  void insertSurfel(SurfelData surfel, uint surfel_id, float3 camera_wpos, StructuredBuffer<AABB> nonlinear_aabbs)
   {
     float3 cameraToWorldPos = surfel.pos - camera_wpos;
 
@@ -62,14 +63,12 @@ struct SpatialStorage
       int3 minId = clampSpatialId(minP.id);
       int3 maxId = clampSpatialId(maxP.id);
 
-      int N = 0;
-
       for (int x = minId.x; x <= maxId.x; ++x)
         for (int y = minId.y; y <= maxId.y; ++y)
           for (int z = minId.z; z <= maxId.z; ++z)
           {
             int3 cellId = int3(x,y,z);
-            LinearAABB aabb = calcLinearAABB(cellId, camera_wpos);
+            GridAABB aabb = calcLinearAABB(cellId, camera_wpos);
 
             bool isSurfelInsideCell = test_aabb_sphere_intersection(aabb.minWS, aabb.maxWS, surfel.pos, surfel.radius);
             if (isSurfelInsideCell)
@@ -78,8 +77,27 @@ struct SpatialStorage
     }
     else
     {
-      SpatialInfo spatialInfo = calcNonLinearInfo(cameraToWorldPos, zFar);
-      insertSurfelInCell(surfel_id, spatialInfo.id, spatialInfo.cascade);
+      PointInCascade surfelCenterInCascade = transformFromCameraWorldSpaceToCascadeSpace(cameraToWorldPos);
+      int3 cid = posInNonLinearCascadeToCellID(surfelCenterInCascade.pos, zFar);
+
+      float3 e = surfel.radius.xxx;
+      float3 minPos = surfelCenterInCascade.pos - e*2;
+      float3 maxPos = surfelCenterInCascade.pos + e*2;
+      
+      int3 minId = posInNonLinearCascadeToCellID(minPos, zFar);
+      int3 maxId = posInNonLinearCascadeToCellID(maxPos, zFar);
+
+      for (int x = minId.x; x <= maxId.x; ++x)
+        for (int y = minId.y; y <= maxId.y; ++y)
+          for (int z = minId.z; z <= maxId.z; ++z)
+          {
+            uint cellId = linearizeCellsID(uint3(x,y,z));
+            AABB aabb = nonlinear_aabbs[cellId];
+
+            bool isSurfelInsideCell = test_aabb_sphere_intersection(aabb.minp, aabb.maxp, surfelCenterInCascade.pos, surfel.radius);
+            if (isSurfelInsideCell)
+              insertSurfelInCell(surfel_id, int3(x,y,z), surfelCenterInCascade.cascade);
+          }
     }
   }
 };

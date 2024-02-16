@@ -1,0 +1,69 @@
+#include <frame.inc.tfx>
+
+scope GIBS_PrepareNonLinearAABBsScope
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0);
+
+  #hlsl
+  #include "../intersection_structs.hlsl"
+  #end
+
+  RWStructuredBuffer<AABB> aabbs = extern(gibsNonlinearAABBs);
+};
+
+technique GIBS_PrepareNonLinearAABBs
+{
+  support scope FrameScope;
+  activate scope GIBS_PrepareNonLinearAABBsScope;
+
+  #hlsl
+
+  #include "consts.hlsl"
+  #include "spatial_hash.hlsl"
+
+  [numthreads(4,4,4)]
+  void cs_main(uint3 id : SV_DispatchThreadID )
+  {
+    if (any(id >= CELLS_DIM))
+      return;
+
+    uint aabbId = linearizeCellsID(id);
+    
+    float2 leftBot = float2(id.xy) / (CELLS_DIM) * 2.0 - 1.0;
+    float2 rightTop = float2(id.xy + uint2(1,1)) / (CELLS_DIM) * 2.0 - 1.0;
+    float2 rightBot = float2(rightTop.x, leftBot.y);
+    float2 leftTop = float2(leftBot.x, rightTop.y);
+
+    float3 leftBotDir = float3(leftBot, 1);
+    float3 rightBotDir = float3(rightBot, 1);
+    float3 leftTopDir = float3(leftTop, 1);
+    float3 rightTopDir = float3(rightTop, 1);
+
+    float backPlaneDist = calcDepthFromSlice(id.z, FrameScope.zNear_zFar.x);
+    float fwdPlaneDist = calcDepthFromSlice(id.z+1, FrameScope.zNear_zFar.x);
+
+    float3 ab = leftBotDir  * backPlaneDist;
+    float3 bb = rightBotDir * backPlaneDist;
+    float3 cb = leftTopDir  * backPlaneDist;
+    float3 db = rightTopDir * backPlaneDist;
+
+    float3 af = leftBotDir  * fwdPlaneDist;
+    float3 bf = rightBotDir * fwdPlaneDist;
+    float3 cf = leftTopDir  * fwdPlaneDist;
+    float3 df = rightTopDir * fwdPlaneDist;
+
+    float3 maxPoint = max(max(max(ab, bb), max(cb,db)), max(max(af, bf), max(cf,df)));
+    float3 minPoint = min(min(min(ab, bb), min(cb,db)), min(min(af, bf), min(cf,df)));
+
+    AABB aabb = (AABB)0;
+    aabb.minp = minPoint;
+    aabb.maxp = maxPoint;
+
+    aabbs[aabbId] = aabb;
+  }
+  #end
+
+  compile(cs, cs_main);
+};

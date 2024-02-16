@@ -27,4 +27,9 @@
 
 #define NO_AVAILABLE_SURFEL uint(-1)
 
+uint linearizeCellsID(uint3 id)
+{
+  return id.z * CELLS_DIM * CELLS_DIM + id.y * CELLS_DIM + id.x;
+}
+
 #endif

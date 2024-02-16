@@ -1,5 +1,7 @@
 #include "consts.hlsl"
 
+#define NONLINEAR_NEAR_PLANE (float(CELLS_DIM * CELL_SIZE) * 0.5)
+
 struct SpatialInfo
 {
   int3 id;
@@ -7,7 +9,7 @@ struct SpatialInfo
   float cellSize;
 };
 
-struct LinearAABB
+struct GridAABB
 {
   float3 minWS;
   float3 maxWS;
@@ -26,14 +28,14 @@ SpatialInfo calcLinearInfo(float3 camera_to_wpos)
   return si;
 }
 
-LinearAABB calcLinearAABB(int3 cell_id, float3 camera_wpos)
+GridAABB calcLinearAABB(int3 cell_id, float3 camera_wpos)
 {
   float3 cameraToBegin = calcOffsetToMinLinearCorner();
   float3 linearGridMinCorner = camera_wpos + cameraToBegin;
   float3 minAABB = linearGridMinCorner + cell_id * CELL_SIZE;
   float3 maxAABB = minAABB + CELL_SIZE.xxx;
 
-  LinearAABB aabb = {minAABB, maxAABB};
+  GridAABB aabb = {minAABB, maxAABB};
   return aabb;
 }
 
@@ -42,9 +44,31 @@ int3 clampSpatialId(int3 id)
   return clamp(id, 0.xxx, CELLS_DIM.xxx);
 }
 
+float calcZSlice(float dist, float far_plane)
+{
+  //z = znear * (zfar/znear)^(slice/nslices) from DOOM
+  return floor(log(dist/ NONLINEAR_NEAR_PLANE) / log(far_plane / NONLINEAR_NEAR_PLANE) * CELLS_DIM);  
+}
+
+float calcDepthFromSlice(int slice, float far_plane)
+{
+  return NONLINEAR_NEAR_PLANE * pow(far_plane / NONLINEAR_NEAR_PLANE, (float)slice/CELLS_DIM);
+}
+
+struct PointInCascade
+{
+  float3 pos;
+  int cascade;
+};
+
 //we have a perpsective transformation with 90* fov frustum for each principal axis
 //it's basically a cube map sampling like
-SpatialInfo calcNonLinearInfo(float3 camera_to_wpos, float far_plane)
+//
+//transformation will rotate the basis, thus Z will be aligned with vector from camera to far cascade plane
+//and XY is a viewport of the cascade
+//
+//X,Y is expected to be inverted for some cases because we only care about hashing.
+PointInCascade transformFromCameraWorldSpaceToCascadeSpace(float3 camera_to_wpos)
 {
   float3 absDir = abs(camera_to_wpos);
   float dist = 0;
@@ -73,23 +97,36 @@ SpatialInfo calcNonLinearInfo(float3 camera_to_wpos, float far_plane)
     face = camera_to_wpos.z > 0 ? CASCADE_Z : CASCADE_MINUS_Z;
   }
 
-  float nearPlane = float(CELLS_DIM * CELL_SIZE) * 0.5;
+  PointInCascade p = {uv, dist, face};
+  return p;
+}
+
+int3 posInNonLinearCascadeToCellID(float3 pos_in_cascade_space, float far_plane)
+{
+  float2 uv = pos_in_cascade_space.xy;
+  float dist = pos_in_cascade_space.z;
 
   uv = uv / dist; // project on the cube face
   uv = uv * 0.5 + 0.5;
 
-  dist = clamp(dist, nearPlane, far_plane);
+  dist = clamp(dist, NONLINEAR_NEAR_PLANE, far_plane);
   uv = saturate(uv);
 
   float2 xy = uv * float2(CELLS_DIM, CELLS_DIM);
-  
-  //z = znear * (zfar/znear)^(slice/nslices) from DOOM
-  float zSlice = floor(log(dist/ nearPlane) / log(far_plane / nearPlane) * CELLS_DIM);  
+  float slice = calcZSlice(dist, far_plane);
 
-  float halfPlaneSize = nearPlane * pow(far_plane / nearPlane, zSlice/CELLS_DIM);
+  return int3(xy, slice);
+}
+
+SpatialInfo calcNonLinearInfo(float3 camera_to_wpos, float far_plane)
+{
+  PointInCascade pCascSpace = transformFromCameraWorldSpaceToCascadeSpace(camera_to_wpos);
+  int3 cellId = posInNonLinearCascadeToCellID(pCascSpace.pos, far_plane);
+
+  float halfPlaneSize = calcDepthFromSlice(cellId.z, far_plane);
   float cellSize = halfPlaneSize * 2.0 / CELLS_DIM;
 
-  SpatialInfo si = {int3(xy, zSlice), face, cellSize};
+  SpatialInfo si = {cellId, pCascSpace.cascade, cellSize};
   return si;
 }
 

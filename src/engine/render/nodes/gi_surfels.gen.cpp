@@ -118,6 +118,15 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
       gapi::BufferState::BF_STATE_UAV_RW,
       fg::PERSISTENT
     );
+    auto gibs_nonlinear_aabbs = reg.createBuffer(
+      "gibs_nonlinear_aabbs",
+      gapi::BufferAllocationDescription{
+        .size = uint(21 * 21 * 21) * sizeof(AABB),
+        .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
+      },
+      gapi::BufferState::BF_STATE_UAV_RW,
+      fg::PERSISTENT
+    );
 
     auto gibs_surfels_sdf = reg.createTexture("gibs_surfels_sdf",
       gapi::TextureAllocationDescription{
@@ -147,9 +156,9 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
     );
 
 
-    return [gibs_dbg_alloc,gibs_dbg_surfels,gibs_surfels_lifetime,gibs_surfels_storage,gibs_surfels_pool,gibs_surfels_allocation_locks,gibs_surfels_spatial_storage,gibs_surfels_meta,gibs_surfels_sdf,gibs_surfels_allocation_pos](gapi::CmdEncoder& encoder)
+    return [gibs_dbg_alloc,gibs_dbg_surfels,gibs_surfels_lifetime,gibs_surfels_storage,gibs_surfels_pool,gibs_surfels_allocation_locks,gibs_surfels_spatial_storage,gibs_surfels_meta,gibs_nonlinear_aabbs,gibs_surfels_sdf,gibs_surfels_allocation_pos](gapi::CmdEncoder& encoder)
     {
-      gibs_resources_init(encoder, gibs_dbg_alloc.get(), gibs_dbg_surfels.get(), gibs_surfels_lifetime.get(), gibs_surfels_storage.get(), gibs_surfels_pool.get(), gibs_surfels_allocation_locks.get(), gibs_surfels_spatial_storage.get(), gibs_surfels_meta.get(), gibs_surfels_sdf.get(), gibs_surfels_allocation_pos.get());
+      gibs_resources_init(encoder, gibs_dbg_alloc.get(), gibs_dbg_surfels.get(), gibs_surfels_lifetime.get(), gibs_surfels_storage.get(), gibs_surfels_pool.get(), gibs_surfels_allocation_locks.get(), gibs_surfels_spatial_storage.get(), gibs_surfels_meta.get(), gibs_nonlinear_aabbs.get(), gibs_surfels_sdf.get(), gibs_surfels_allocation_pos.get());
     };
   });
 }
@@ -173,12 +182,14 @@ void mk_fg_node_gibs_spatial_storage_binning(Event*, ComponentsAccessor&)
     auto surfelsLifeTime = reg.modifyBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_UAV_RW);
     auto surfelsStorage = reg.readBuffer("gibs_surfels_storage", gapi::BufferState::BF_STATE_SRV, false);
     auto surfelsSpatialStorage = reg.modifyBuffer("gibs_surfels_spatial_storage", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibsNonlinearAABBs = reg.readBuffer("gibs_nonlinear_aabbs", gapi::BufferState::BF_STATE_SRV, false);
 
-    return [surfelsLifeTime,surfelsStorage,surfelsSpatialStorage](gapi::CmdEncoder& encoder)
+    return [surfelsLifeTime,surfelsStorage,surfelsSpatialStorage,gibsNonlinearAABBs](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("surfelsLifeTime", surfelsLifeTime.get());
       tfx::set_extern("surfelsStorage", surfelsStorage.get());
       tfx::set_extern("surfelsSpatialStorage", surfelsSpatialStorage.get());
+      tfx::set_extern("gibsNonlinearAABBs", gibsNonlinearAABBs.get());
       gibs_spatial_storage_binning(encoder);
     };
   });
