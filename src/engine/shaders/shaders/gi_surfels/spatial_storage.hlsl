@@ -109,15 +109,21 @@ struct SpatialStorage
       SpatialInfo maxP = calcLinearInfo(cameraToMax);
 
       PointInCascade surfelCenterInCascade = (PointInCascade)0;
-      if      (minP.id.x < 0 || maxP.id.x >= CELLS_DIM)
+      if (minP.id.x < 0 || maxP.id.x >= CELLS_DIM)
+      {
         surfelCenterInCascade = transformFromCameraWorldSpaceToXCascadeSpace(cameraToWorldPos);
-      else if (minP.id.y < 0 || maxP.id.y >= CELLS_DIM)
-        surfelCenterInCascade = transformFromCameraWorldSpaceToYCascadeSpace(cameraToWorldPos);
-      else if (minP.id.z < 0 || maxP.id.z >= CELLS_DIM)
-        surfelCenterInCascade = transformFromCameraWorldSpaceToZCascadeSpace(cameraToWorldPos);
-
-      if (surfelCenterInCascade.cascade != CASCADE_ZERO)
         insertSurfelInNonLinearGrid(surfel, surfel_id, surfelCenterInCascade, nonlinear_aabbs);
+      }
+      if (minP.id.y < 0 || maxP.id.y >= CELLS_DIM)
+      {
+        surfelCenterInCascade = transformFromCameraWorldSpaceToYCascadeSpace(cameraToWorldPos);
+        insertSurfelInNonLinearGrid(surfel, surfel_id, surfelCenterInCascade, nonlinear_aabbs);
+      }
+      if (minP.id.z < 0 || maxP.id.z >= CELLS_DIM)
+      {
+        surfelCenterInCascade = transformFromCameraWorldSpaceToZCascadeSpace(cameraToWorldPos);
+        insertSurfelInNonLinearGrid(surfel, surfel_id, surfelCenterInCascade, nonlinear_aabbs);
+      }
     }
     else
     {
