@@ -44,7 +44,52 @@ struct SpatialStorage
     }
   }
 
-  
+  void insertSurfelInLinearGrid(SurfelData surfel, uint surfel_id, float3 camera_wpos)
+  {
+    float3 e = surfel.radius.xxx;
+    float3 cameraToMin = surfel.pos - e - camera_wpos;
+    float3 cameraToMax = surfel.pos + e - camera_wpos;
+
+    SpatialInfo minP = calcLinearInfo(cameraToMin);
+    SpatialInfo maxP = calcLinearInfo(cameraToMax);
+
+    int3 minId = clampSpatialId(minP.id);
+    int3 maxId = clampSpatialId(maxP.id);
+
+    for (int x = minId.x; x <= maxId.x; ++x)
+      for (int y = minId.y; y <= maxId.y; ++y)
+        for (int z = minId.z; z <= maxId.z; ++z)
+        {
+          int3 cellId = int3(x,y,z);
+          GridAABB aabb = calcLinearAABB(cellId, camera_wpos);
+
+          bool isSurfelInsideCell = test_aabb_sphere_intersection(aabb.minWS, aabb.maxWS, surfel.pos, surfel.radius);
+          if (isSurfelInsideCell)
+            insertSurfelInCell(surfel_id, cellId, CASCADE_ZERO);
+        }
+  }
+
+  void insertSurfelInNonLinearGrid(SurfelData surfel, uint surfel_id, PointInCascade surfel_center_in_cascade, StructuredBuffer<AABB> nonlinear_aabbs)
+  {
+    float3 e = surfel.radius.xxx;
+    float3 minPos = surfel_center_in_cascade.pos - e*2; //fixme: has to be e*1
+    float3 maxPos = surfel_center_in_cascade.pos + e*2;
+    
+    int3 minId = posInNonLinearCascadeToCellID(minPos, zFar);
+    int3 maxId = posInNonLinearCascadeToCellID(maxPos, zFar);
+
+    for (int x = minId.x; x <= maxId.x; ++x)
+      for (int y = minId.y; y <= maxId.y; ++y)
+        for (int z = minId.z; z <= maxId.z; ++z)
+        {
+          uint cellId = linearizeCellsID(uint3(x,y,z));
+          AABB aabb = nonlinear_aabbs[cellId];
+
+          bool isSurfelInsideCell = test_aabb_sphere_intersection(aabb.minp, aabb.maxp, surfel_center_in_cascade.pos, surfel.radius);
+          if (isSurfelInsideCell)
+            insertSurfelInCell(surfel_id, int3(x,y,z), surfel_center_in_cascade.cascade);
+        }
+  }
 
   void insertSurfel(SurfelData surfel, uint surfel_id, float3 camera_wpos, StructuredBuffer<AABB> nonlinear_aabbs)
   {
@@ -53,51 +98,40 @@ struct SpatialStorage
     [BRANCH]
     if (isLinearTransform(cameraToWorldPos))
     {
+      insertSurfelInLinearGrid(surfel, surfel_id, camera_wpos);
+
+      //intersections with nonlinear grid
       float3 e = surfel.radius.xxx;
-      float3 cameraToMin = surfel.pos - e - camera_wpos;
-      float3 cameraToMax = surfel.pos + e - camera_wpos;
+      float3 cameraToMin = cameraToWorldPos - e;
+      float3 cameraToMax = cameraToWorldPos + e;
 
       SpatialInfo minP = calcLinearInfo(cameraToMin);
       SpatialInfo maxP = calcLinearInfo(cameraToMax);
 
-      int3 minId = clampSpatialId(minP.id);
-      int3 maxId = clampSpatialId(maxP.id);
+      PointInCascade surfelCenterInCascade = (PointInCascade)0;
+      if      (minP.id.x < 0 || maxP.id.x >= CELLS_DIM)
+        surfelCenterInCascade = transformFromCameraWorldSpaceToXCascadeSpace(cameraToWorldPos);
+      else if (minP.id.y < 0 || maxP.id.y >= CELLS_DIM)
+        surfelCenterInCascade = transformFromCameraWorldSpaceToYCascadeSpace(cameraToWorldPos);
+      else if (minP.id.z < 0 || maxP.id.z >= CELLS_DIM)
+        surfelCenterInCascade = transformFromCameraWorldSpaceToZCascadeSpace(cameraToWorldPos);
 
-      for (int x = minId.x; x <= maxId.x; ++x)
-        for (int y = minId.y; y <= maxId.y; ++y)
-          for (int z = minId.z; z <= maxId.z; ++z)
-          {
-            int3 cellId = int3(x,y,z);
-            GridAABB aabb = calcLinearAABB(cellId, camera_wpos);
-
-            bool isSurfelInsideCell = test_aabb_sphere_intersection(aabb.minWS, aabb.maxWS, surfel.pos, surfel.radius);
-            if (isSurfelInsideCell)
-              insertSurfelInCell(surfel_id, cellId, CASCADE_ZERO);
-          }
+      if (surfelCenterInCascade.cascade != CASCADE_ZERO)
+        insertSurfelInNonLinearGrid(surfel, surfel_id, surfelCenterInCascade, nonlinear_aabbs);
     }
     else
     {
       PointInCascade surfelCenterInCascade = transformFromCameraWorldSpaceToCascadeSpace(cameraToWorldPos);
-      int3 cid = posInNonLinearCascadeToCellID(surfelCenterInCascade.pos, zFar);
-
-      float3 e = surfel.radius.xxx;
-      float3 minPos = surfelCenterInCascade.pos - e*2;
-      float3 maxPos = surfelCenterInCascade.pos + e*2;
+      insertSurfelInNonLinearGrid(surfel, surfel_id, surfelCenterInCascade, nonlinear_aabbs);
       
-      int3 minId = posInNonLinearCascadeToCellID(minPos, zFar);
-      int3 maxId = posInNonLinearCascadeToCellID(maxPos, zFar);
+      // //intersect with linear cascade
+      float3 e = surfel.radius.xxx;
+      float3 minPos = surfelCenterInCascade.pos - e*2; //fixme: has to be e*1
+      if (minPos.z <= NONLINEAR_NEAR_PLANE)
+      {
+        insertSurfelInLinearGrid(surfel, surfel_id, camera_wpos);
+      }
 
-      for (int x = minId.x; x <= maxId.x; ++x)
-        for (int y = minId.y; y <= maxId.y; ++y)
-          for (int z = minId.z; z <= maxId.z; ++z)
-          {
-            uint cellId = linearizeCellsID(uint3(x,y,z));
-            AABB aabb = nonlinear_aabbs[cellId];
-
-            bool isSurfelInsideCell = test_aabb_sphere_intersection(aabb.minp, aabb.maxp, surfelCenterInCascade.pos, surfel.radius);
-            if (isSurfelInsideCell)
-              insertSurfelInCell(surfel_id, int3(x,y,z), surfelCenterInCascade.cascade);
-          }
     }
   }
 };

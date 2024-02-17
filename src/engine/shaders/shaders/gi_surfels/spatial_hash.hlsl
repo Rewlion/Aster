@@ -55,12 +55,6 @@ float calcDepthFromSlice(int slice, float far_plane)
   return NONLINEAR_NEAR_PLANE * pow(far_plane / NONLINEAR_NEAR_PLANE, (float)slice/CELLS_DIM);
 }
 
-struct PointInCascade
-{
-  float3 pos;
-  int cascade;
-};
-
 //we have a perpsective transformation with 90* fov frustum for each principal axis
 //it's basically a cube map sampling like
 //
@@ -68,6 +62,43 @@ struct PointInCascade
 //and XY is a viewport of the cascade
 //
 //X,Y is expected to be inverted for some cases because we only care about hashing.
+
+struct PointInCascade
+{
+  float3 pos;
+  int cascade;
+};
+
+PointInCascade transformFromCameraWorldSpaceToXCascadeSpace(float3 camera_to_wpos)
+{
+  PointInCascade p = {
+    float3(camera_to_wpos.zy, abs(camera_to_wpos.x)),
+    camera_to_wpos.x > 0 ? CASCADE_X : CASCADE_MINUS_X
+  };
+
+  return p;
+}
+
+PointInCascade transformFromCameraWorldSpaceToYCascadeSpace(float3 camera_to_wpos)
+{
+  PointInCascade p = {
+    float3(camera_to_wpos.zx, abs(camera_to_wpos.y)),
+    camera_to_wpos.y > 0 ? CASCADE_Y : CASCADE_MINUS_Y
+  };
+
+  return p;
+}
+
+PointInCascade transformFromCameraWorldSpaceToZCascadeSpace(float3 camera_to_wpos)
+{
+  PointInCascade p = {
+    float3(camera_to_wpos.xy, abs(camera_to_wpos.z)),
+    camera_to_wpos.z > 0 ? CASCADE_Z : CASCADE_MINUS_Z
+  };
+
+  return p;
+}
+
 PointInCascade transformFromCameraWorldSpaceToCascadeSpace(float3 camera_to_wpos)
 {
   float3 absDir = abs(camera_to_wpos);
@@ -77,28 +108,13 @@ PointInCascade transformFromCameraWorldSpaceToCascadeSpace(float3 camera_to_wpos
 
   //X FACES
   if (absDir.x > absDir.y && absDir.x > absDir.z)
-  {
-    dist = abs(camera_to_wpos.x);
-    uv = camera_to_wpos.zy;
-    face = camera_to_wpos.x > 0 ? CASCADE_X : CASCADE_MINUS_X;
-  }
+    return transformFromCameraWorldSpaceToXCascadeSpace(camera_to_wpos);
   //Y FACES
   else if (absDir.y > absDir.z)
-  {
-    dist = abs(camera_to_wpos.y);
-    uv = camera_to_wpos.zx;
-    face = camera_to_wpos.y > 0 ? CASCADE_Y : CASCADE_MINUS_Y;
-  }
+    return transformFromCameraWorldSpaceToYCascadeSpace(camera_to_wpos);
   //Z FACES
   else
-  {
-    dist = abs(camera_to_wpos.z);
-    uv = camera_to_wpos.xy;
-    face = camera_to_wpos.z > 0 ? CASCADE_Z : CASCADE_MINUS_Z;
-  }
-
-  PointInCascade p = {uv, dist, face};
-  return p;
+    return transformFromCameraWorldSpaceToZCascadeSpace(camera_to_wpos);
 }
 
 int3 posInNonLinearCascadeToCellID(float3 pos_in_cascade_space, float far_plane)
