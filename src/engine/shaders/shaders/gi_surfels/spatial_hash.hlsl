@@ -23,7 +23,7 @@ float3 calcOffsetToMinLinearCorner()
 SpatialInfo calcLinearInfo(float3 camera_to_wpos)
 {
   float3 cameraToBegin = calcOffsetToMinLinearCorner();
-  int3 id = int3((camera_to_wpos - cameraToBegin) / CELL_SIZE);
+  int3 id = int3(floor((camera_to_wpos - cameraToBegin) / CELL_SIZE));
   SpatialInfo si = {id, CASCADE_ZERO, CELL_SIZE};
   return si;
 }
@@ -72,7 +72,7 @@ struct PointInCascade
 PointInCascade transformFromCameraWorldSpaceToXCascadeSpace(float3 camera_to_wpos)
 {
   PointInCascade p = {
-    float3(camera_to_wpos.zy, abs(camera_to_wpos.x)),
+    float3(camera_to_wpos.z, camera_to_wpos.y, abs(camera_to_wpos.x)),
     camera_to_wpos.x > 0 ? CASCADE_X : CASCADE_MINUS_X
   };
 
@@ -82,7 +82,7 @@ PointInCascade transformFromCameraWorldSpaceToXCascadeSpace(float3 camera_to_wpo
 PointInCascade transformFromCameraWorldSpaceToYCascadeSpace(float3 camera_to_wpos)
 {
   PointInCascade p = {
-    float3(camera_to_wpos.zx, abs(camera_to_wpos.y)),
+    float3(camera_to_wpos.z, camera_to_wpos.x, abs(camera_to_wpos.y)),
     camera_to_wpos.y > 0 ? CASCADE_Y : CASCADE_MINUS_Y
   };
 
@@ -92,7 +92,7 @@ PointInCascade transformFromCameraWorldSpaceToYCascadeSpace(float3 camera_to_wpo
 PointInCascade transformFromCameraWorldSpaceToZCascadeSpace(float3 camera_to_wpos)
 {
   PointInCascade p = {
-    float3(camera_to_wpos.xy, abs(camera_to_wpos.z)),
+    float3(camera_to_wpos.x, camera_to_wpos.y, abs(camera_to_wpos.z)),
     camera_to_wpos.z > 0 ? CASCADE_Z : CASCADE_MINUS_Z
   };
 
