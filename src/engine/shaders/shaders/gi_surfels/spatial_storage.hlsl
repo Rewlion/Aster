@@ -71,40 +71,12 @@ struct SpatialStorage
 
   void insertSurfelInNonLinearGrid(SurfelData surfel, uint surfel_id, PointInCascade surfel_center_in_cascade, StructuredBuffer<AABB> nonlinear_aabbs)
   {
-    float r = surfel.radius;
-    float3 a = surfel_center_in_cascade.pos + float3(-r,r,-r);
-    float3 b = surfel_center_in_cascade.pos + float3(r,r,-r);
-    float3 c = surfel_center_in_cascade.pos + float3(r,-r,-r);
-    float3 d = surfel_center_in_cascade.pos + float3(-r,-r,-r);
+    int2 minmaxX = calcNonlinearXYBounding(surfel.radius, surfel_center_in_cascade.pos.xz);
+    int2 minmaxY = calcNonlinearXYBounding(surfel.radius, surfel_center_in_cascade.pos.yz);
+    int2 minmaxZ = calcNonlinearZBounding(surfel.radius, surfel_center_in_cascade.pos.z, zFar);
 
-    float3 e = surfel_center_in_cascade.pos + float3(-r,r,r);
-    float3 f = surfel_center_in_cascade.pos + float3(r,r,r);
-    float3 g = surfel_center_in_cascade.pos + float3(r,-r,r);
-    float3 h = surfel_center_in_cascade.pos + float3(-r,-r,r);
-    
-    int3 minId =
-      min(
-        min(
-          min(posInNonLinearCascadeToCellID(a, zFar), posInNonLinearCascadeToCellID(b, zFar)),
-          min(posInNonLinearCascadeToCellID(c, zFar), posInNonLinearCascadeToCellID(d, zFar))
-          ),
-        min(
-          min(posInNonLinearCascadeToCellID(e, zFar), posInNonLinearCascadeToCellID(f, zFar)),
-          min(posInNonLinearCascadeToCellID(g, zFar), posInNonLinearCascadeToCellID(h, zFar))
-        )
-      );
-
-    int3 maxId =
-      max(
-        max(
-          max(posInNonLinearCascadeToCellID(a, zFar), posInNonLinearCascadeToCellID(b, zFar)),
-          max(posInNonLinearCascadeToCellID(c, zFar), posInNonLinearCascadeToCellID(d, zFar))
-          ),
-        max(
-          max(posInNonLinearCascadeToCellID(e, zFar), posInNonLinearCascadeToCellID(f, zFar)),
-          max(posInNonLinearCascadeToCellID(g, zFar), posInNonLinearCascadeToCellID(h, zFar))
-        )
-      );
+    int3 minId = int3(minmaxX[0], minmaxY[0], minmaxZ[0]);
+    int3 maxId = int3(minmaxX[1], minmaxY[1], minmaxZ[1]);
 
     for (int x = minId.x; x <= maxId.x; ++x)
       for (int y = minId.y; y <= maxId.y; ++y)

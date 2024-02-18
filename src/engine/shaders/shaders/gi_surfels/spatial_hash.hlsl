@@ -171,3 +171,28 @@ uint calcSpatialHash(float3 pos, float cell_size)
        ^ uint(floor(pos.y / cell_size) * 19349663)
        ^ uint(floor(pos.z / cell_size) * 83492791);
 }
+
+int2 calcNonlinearXYBounding(float surfel_radius, float2 surfel_center_in_cascade)
+{
+  float2 dirToCenter = normalize(surfel_center_in_cascade);
+  float2 rDir = float2(-dirToCenter.y, dirToCenter.x);
+
+  //overscales projection a bit since it's not a tangent but it's ok
+  //we are cheating with nonlinear cell intersection already via aabb
+  float2 a = surfel_center_in_cascade + rDir * surfel_radius;
+  float2 b = surfel_center_in_cascade - rDir * surfel_radius;
+
+  float2 projection = float2(a.x, b.x) / float2(a.y, b.y); // project on unit cube face
+  int2 ids = floor(saturate(projection*0.5 + 0.5) * CELLS_DIM);
+
+  int minId = min(ids.x, ids.y);
+  int maxId = max(ids.x, ids.y);
+
+  return int2(minId, maxId);
+}
+
+int2 calcNonlinearZBounding(float surfel_radius, float surfel_center_in_cascade, float far_plane)
+{
+  return int2( calcZSlice(surfel_center_in_cascade - surfel_radius, far_plane),
+               calcZSlice(surfel_center_in_cascade + surfel_radius, far_plane));
+}
