@@ -71,12 +71,40 @@ struct SpatialStorage
 
   void insertSurfelInNonLinearGrid(SurfelData surfel, uint surfel_id, PointInCascade surfel_center_in_cascade, StructuredBuffer<AABB> nonlinear_aabbs)
   {
-    float3 e = surfel.radius.xxx;
-    float3 minPos = surfel_center_in_cascade.pos - e*2; //fixme: has to be e*1
-    float3 maxPos = surfel_center_in_cascade.pos + e*2;
+    float r = surfel.radius;
+    float3 a = surfel_center_in_cascade.pos + float3(-r,r,-r);
+    float3 b = surfel_center_in_cascade.pos + float3(r,r,-r);
+    float3 c = surfel_center_in_cascade.pos + float3(r,-r,-r);
+    float3 d = surfel_center_in_cascade.pos + float3(-r,-r,-r);
+
+    float3 e = surfel_center_in_cascade.pos + float3(-r,r,r);
+    float3 f = surfel_center_in_cascade.pos + float3(r,r,r);
+    float3 g = surfel_center_in_cascade.pos + float3(r,-r,r);
+    float3 h = surfel_center_in_cascade.pos + float3(-r,-r,r);
     
-    int3 minId = posInNonLinearCascadeToCellID(minPos, zFar);
-    int3 maxId = posInNonLinearCascadeToCellID(maxPos, zFar);
+    int3 minId =
+      min(
+        min(
+          min(posInNonLinearCascadeToCellID(a, zFar), posInNonLinearCascadeToCellID(b, zFar)),
+          min(posInNonLinearCascadeToCellID(c, zFar), posInNonLinearCascadeToCellID(d, zFar))
+          ),
+        min(
+          min(posInNonLinearCascadeToCellID(e, zFar), posInNonLinearCascadeToCellID(f, zFar)),
+          min(posInNonLinearCascadeToCellID(g, zFar), posInNonLinearCascadeToCellID(h, zFar))
+        )
+      );
+
+    int3 maxId =
+      max(
+        max(
+          max(posInNonLinearCascadeToCellID(a, zFar), posInNonLinearCascadeToCellID(b, zFar)),
+          max(posInNonLinearCascadeToCellID(c, zFar), posInNonLinearCascadeToCellID(d, zFar))
+          ),
+        max(
+          max(posInNonLinearCascadeToCellID(e, zFar), posInNonLinearCascadeToCellID(f, zFar)),
+          max(posInNonLinearCascadeToCellID(g, zFar), posInNonLinearCascadeToCellID(h, zFar))
+        )
+      );
 
     for (int x = minId.x; x <= maxId.x; ++x)
       for (int y = minId.y; y <= maxId.y; ++y)
@@ -324,8 +352,9 @@ struct ROSpatialStorage
     };
     int3 dId = (spatialInfo.id.xyz % 2);
     float m = all(dId == int3(1,1,1)) ||  all(dId == int3(0,0,1)) ||  all(dId == int3(0,1,0)) ||  all(dId == int3(1,0,0)) ? 1.0 : 0.5;
-
+    //float m = any(spatialInfo.id <= CELLS_DIM/2) ? 0.5 : 1.0;
     return float4(colors[spatialInfo.cascade] * m,1);
+    //return float4(spatialInfo.id, 1.0);
   }
 };
 

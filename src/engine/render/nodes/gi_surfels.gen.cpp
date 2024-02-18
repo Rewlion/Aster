@@ -53,7 +53,7 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
 
     auto gibs_dbg_surfels = reg.createTexture("gibs_dbg_surfels",
       gapi::TextureAllocationDescription{
-        .format =          gapi::TextureFormat::R8G8B8A8_UNORM,
+        .format =          gapi::TextureFormat::R32G32B32A32_S,
         .extent =          uint3(__renderSize__, 1),
         .mipLevels =       1,
         .arrayLayers =     1,

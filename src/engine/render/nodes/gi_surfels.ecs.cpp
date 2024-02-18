@@ -92,7 +92,7 @@ NODE_BEGIN(gibs_resources)
   CREATE_TEX_2D             (gibs_dbg_alloc, TEX_SIZE_RELATIVE(), R32G32B32A32_S,
                              TEX_USAGE2(SRV, UAV), TEX_STATE(ShaderReadWrite))
 
-  CREATE_TEX_2D             (gibs_dbg_surfels, TEX_SIZE_RELATIVE(), R8G8B8A8_UNORM,
+  CREATE_TEX_2D             (gibs_dbg_surfels, TEX_SIZE_RELATIVE(), R32G32B32A32_S,
                              TEX_USAGE2(SRV, RT), TEX_STATE(ShaderReadWrite))
   
   CREATE_GPU_BUF_PERSISTENT (gibs_surfels_lifetime, BUF_USAGE(UAV), BUF_STATE(UAV_RW),
@@ -173,6 +173,9 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
       const uint3 gc = tfx::calc_group_count("GIBS_InitSurfelsPool", uint3(SURFEL_COUNT_TOTAL,1,1));
       encoder.dispatch(gc.x, gc.y, gc.z);
     }
+
+    state.initialized = true;
+  }
     {
       tfx::set_extern("gibsNonlinearAABBs", gibs_nonlinear_aabbs);
       tfx::activate_technique("GIBS_PrepareNonLinearAABBs", encoder);
@@ -181,9 +184,6 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
       const uint3 gc = tfx::calc_group_count("GIBS_PrepareNonLinearAABBs", uint3(CELLS_DIM,CELLS_DIM,CELLS_DIM));
       encoder.dispatch(gc.x, gc.y, gc.z);
     }
-
-    state.initialized = true;
-  }
 
 }
 
