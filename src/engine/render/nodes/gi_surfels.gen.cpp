@@ -103,7 +103,7 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
     auto gibs_surfels_spatial_storage = reg.createBuffer(
       "gibs_surfels_spatial_storage",
       gapi::BufferAllocationDescription{
-        .size = uint((6 + 1) * 21 * 21 * 21) * (1 + 30) * sizeof(uint),
+        .size = uint((6 + 1) * 21 * 21 * 21) * (1 + 127) * sizeof(uint),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
       gapi::BufferState::BF_STATE_UAV_RW,

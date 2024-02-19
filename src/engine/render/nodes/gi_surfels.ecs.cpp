@@ -19,6 +19,8 @@ static bool show_surfels_sdf = false;
 static bool show_surfels_coverage = false;
 static bool show_cells_coverage = false;
 static bool show_cells = false;
+static bool show_alloc_place = false;
+static bool force_reset = false;
 
 static
 void show_dbg_wnd_cb(eastl::span<string_view> args)
@@ -50,10 +52,10 @@ void imgui_dbg_wnd()
     showtex("gibs_dbg_surfels", show_surfels);
 
   {
-    const char* showSurfelsOptions[] = {"base", "sdf", "surfels_coverage", "cells_coverage", "cells"};
+    const char* showSurfelsOptions[] = {"base", "sdf", "surfels_coverage", "cells_coverage", "cells", "alloc place"};
     static const char* curOpt = showSurfelsOptions[0];
     bool blob = false;
-    bool* values[] = {&blob, &show_surfels_sdf, &show_surfels_coverage, &show_cells_coverage, &show_cells};
+    bool* values[] = {&blob, &show_surfels_sdf, &show_surfels_coverage, &show_cells_coverage, &show_cells, &show_alloc_place};
     if (ImGui::BeginCombo("format", curOpt))
     {
       for (int i = 0; i < IM_ARRAYSIZE(showSurfelsOptions); ++i)
@@ -70,6 +72,9 @@ void imgui_dbg_wnd()
       ImGui::EndCombo();
     }
   }
+
+  if (ImGui::Button("reset surfels", ImVec2(100, 25)))
+    force_reset = true;
 
   ImGui::End();
 }
@@ -158,7 +163,7 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
     gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
 
   GIOnSurfels& state = get_state();
-  if (!state.initialized)
+  if (!state.initialized || force_reset)
   {
     {
       encoder.fillBuffer(gibs_surfels_storage, 0, SURFEL_COUNT_TOTAL * sizeof(SurfelData), 0);
@@ -179,7 +184,7 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
     state.initialized = true;
   }
   
-  //if (!state.initialized)
+  //if (!state.initialized || force_reset)
   {
     tfx::set_extern("gibsNonlinearAABBs", gibs_nonlinear_aabbs);
     tfx::activate_technique("GIBS_PrepareNonLinearAABBs", encoder);
@@ -188,6 +193,9 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
     const uint3 gc = tfx::calc_group_count("GIBS_PrepareNonLinearAABBs", uint3(CELLS_DIM,CELLS_DIM,CELLS_DIM));
     encoder.dispatch(gc.x, gc.y, gc.z);
   }
+
+  state.initialized = true;
+  force_reset = false;
 }
 
 NODE_BEGIN(gibs_spatial_storage_binning)
@@ -253,6 +261,7 @@ void gibs_draw_surfels(gapi::CmdEncoder& encoder)
   tfx::set_extern("showSurfelSDF", show_surfels_sdf ? (uint)1 : (uint)0);
   tfx::set_extern("showCellsCoverage", show_cells_coverage ? (uint)1 : (uint)0);
   tfx::set_extern("showCells", show_cells ? (uint)1 : (uint)0);
+  tfx::set_extern("showAllocPlace", show_alloc_place ? (uint)1: (uint)0);
   tfx::activate_technique("GIBS_DrawSurfels", encoder);
   encoder.updateResources();
   encoder.draw(4, 1, 0, 0);

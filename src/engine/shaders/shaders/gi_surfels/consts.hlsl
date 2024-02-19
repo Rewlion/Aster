@@ -8,8 +8,8 @@
 #define CELL_SIZE                         1.0
 
 #define SURFEL_COUNT_TOTAL                (250 * 1024)
-#define SURFEL_COUNT_PER_CELL             30
-#define SURFEL_RADIUS                     0.4
+#define SURFEL_COUNT_PER_CELL             127
+#define SURFEL_RADIUS                     0.15
 
 #define CASCADE_ZERO    0
 #define CASCADE_X       1

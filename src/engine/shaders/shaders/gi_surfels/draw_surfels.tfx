@@ -20,6 +20,7 @@ scope GIBS_DrawSurfelsScope
   uint showSurfelSDF = extern(showSurfelSDF);
   uint showCellsCoverage = extern(showCellsCoverage);
   uint showCells = extern(showCells);
+  uint showAllocPlace = extern(showAllocPlace);
 };
 
 technique GIBS_DrawSurfels
@@ -60,6 +61,8 @@ technique GIBS_DrawSurfels
       color = st.drawSurfelsCoverage(worldPos, cameraToWorldPos, surfelsStorage);
     else if (GIBS_DrawSurfelsScope.showSurfelSDF)
       color = st.drawSurfelsSDF(worldPos, cameraToWorldPos, surfelsStorage);
+    else if (GIBS_DrawSurfelsScope.showAllocPlace)
+      color = st.checkFreeSpaceForNewSurfel(worldPos, cameraToWorldPos, surfelsStorage) ? float4(heatmapColorRamp(1.0), 1.0) : float4(heatmapColorRamp(0.0), 1.0);
     else if (GIBS_DrawSurfelsScope.showCellsCoverage)
       color = st.drawCellsCoverage(worldPos, cameraToWorldPos, surfelsStorage);
     else if (GIBS_DrawSurfelsScope.showCells)

@@ -199,6 +199,9 @@ struct ROSpatialStorage
     uint idsCount = surfelsSpatialStorage[counter];
     uint idEnd = idBegin+idsCount;
 
+    if (idsCount >= SURFEL_COUNT_PER_CELL)
+      return false;
+
     float sdf = MAX_FLOAT;
     for (uint i = idBegin; (i < idEnd) && (sdf > 0.0); ++i)
     {
