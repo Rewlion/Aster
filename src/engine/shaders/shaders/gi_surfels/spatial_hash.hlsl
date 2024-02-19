@@ -41,7 +41,7 @@ GridAABB calcLinearAABB(int3 cell_id, float3 camera_wpos)
 
 int3 clampSpatialId(int3 id)
 {
-  return clamp(id, 0.xxx, CELLS_DIM.xxx);
+  return clamp(id, 0.xxx, (CELLS_DIM - 1).xxx);
 }
 
 float calcZSlice(float dist, float far_plane)
@@ -82,7 +82,7 @@ PointInCascade transformFromCameraWorldSpaceToXCascadeSpace(float3 camera_to_wpo
 PointInCascade transformFromCameraWorldSpaceToYCascadeSpace(float3 camera_to_wpos)
 {
   PointInCascade p = {
-    float3(camera_to_wpos.z, camera_to_wpos.x, abs(camera_to_wpos.y)),
+    float3(-camera_to_wpos.x, camera_to_wpos.z, abs(camera_to_wpos.y)),
     camera_to_wpos.y > 0 ? CASCADE_Y : CASCADE_MINUS_Y
   };
 
@@ -183,7 +183,7 @@ int2 calcNonlinearXYBounding(float surfel_radius, float2 surfel_center_in_cascad
   float2 b = surfel_center_in_cascade - rDir * surfel_radius;
 
   float2 projection = float2(a.x, b.x) / float2(a.y, b.y); // project on unit cube face
-  int2 ids = floor(saturate(projection*0.5 + 0.5) * CELLS_DIM);
+  int2 ids = floor((projection*0.5 + 0.5) * CELLS_DIM);
 
   int minId = min(ids.x, ids.y);
   int maxId = max(ids.x, ids.y);
@@ -195,4 +195,48 @@ int2 calcNonlinearZBounding(float surfel_radius, float surfel_center_in_cascade,
 {
   return int2( calcZSlice(surfel_center_in_cascade - surfel_radius, far_plane),
                calcZSlice(surfel_center_in_cascade + surfel_radius, far_plane));
+}
+
+PointInCascade getLeftRightCascadePoint(PointInCascade surfelCenterInCascade, float3 camera_to_wpos)
+{
+  if (surfelCenterInCascade.cascade == CASCADE_X || surfelCenterInCascade.cascade == CASCADE_MINUS_X)
+    return transformFromCameraWorldSpaceToZCascadeSpace(camera_to_wpos);
+  else
+    return transformFromCameraWorldSpaceToXCascadeSpace(camera_to_wpos);
+
+  // int leftCascadeFor[CASCADES_COUNT] = {
+  //   CASCADE_ZERO,
+  //   CASCADE_MINUS_Z, CASCADE_MINUS_Z,//X, -X
+  //   CASCADE_MINUS_X, CASCADE_MINUS_X,//Y, -Y
+  //   CASCADE_MINUS_X, CASCADE_MINUS_X // Z, -Z
+  // };
+
+  // int rightCascadeFor[CASCADES_COUNT] = {
+  //   CASCADE_ZERO,
+  //   CASCADE_Z, CASCADE_Z,//X, -X
+  //   CASCADE_X, CASCADE_X,//Y, -Y
+  //   CASCADE_X, CASCADE_X // Z, -Z
+  // };
+}
+
+PointInCascade getTopBotCascadePoint(PointInCascade surfelCenterInCascade, float3 camera_to_wpos)
+{
+  if (surfelCenterInCascade.cascade == CASCADE_Y || surfelCenterInCascade.cascade == CASCADE_MINUS_Y)
+    return transformFromCameraWorldSpaceToZCascadeSpace(camera_to_wpos);
+  else
+    return transformFromCameraWorldSpaceToYCascadeSpace(camera_to_wpos);
+
+  // int topCascadeFor[CASCADES_COUNT] = {
+  //   CASCADE_ZERO,
+  //   CASCADE_Y, CASCADE_Y,//X, -X
+  //   CASCADE_Z, CASCADE_Z,//Y, -Y
+  //   CASCADE_Y, CASCADE_Y // Z, -Z
+  // };
+
+  // int botCascadeFor[CASCADES_COUNT] = {
+  //   CASCADE_ZERO,
+  //   CASCADE_MINUS_Y, CASCADE_MINUS_Y,//X 
+  //   CASCADE_MINUS_Z, CASCADE_MINUS_Z,//Y
+  //   CASCADE_MINUS_Y, CASCADE_MINUS_Y// Z 
+  // };
 }

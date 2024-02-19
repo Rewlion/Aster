@@ -69,18 +69,24 @@ struct SpatialStorage
         }
   }
 
-  void insertSurfelInNonLinearGrid(SurfelData surfel, uint surfel_id, PointInCascade surfel_center_in_cascade, StructuredBuffer<AABB> nonlinear_aabbs)
+  void calcMinMaxNonlinearCellIds(SurfelData surfel, PointInCascade surfel_center_in_cascade, out int3 min_id, out int3 max_id)
   {
     int2 minmaxX = calcNonlinearXYBounding(surfel.radius, surfel_center_in_cascade.pos.xz);
     int2 minmaxY = calcNonlinearXYBounding(surfel.radius, surfel_center_in_cascade.pos.yz);
     int2 minmaxZ = calcNonlinearZBounding(surfel.radius, surfel_center_in_cascade.pos.z, zFar);
 
-    int3 minId = int3(minmaxX[0], minmaxY[0], minmaxZ[0]);
-    int3 maxId = int3(minmaxX[1], minmaxY[1], minmaxZ[1]);
+    min_id = int3(minmaxX[0], minmaxY[0], minmaxZ[0]);
+    max_id = int3(minmaxX[1], minmaxY[1], minmaxZ[1]);
+  }
 
-    for (int x = minId.x; x <= maxId.x; ++x)
-      for (int y = minId.y; y <= maxId.y; ++y)
-        for (int z = minId.z; z <= maxId.z; ++z)
+  void insertSurfelInNonLinearGrid(int3 min_cell_id, int3 max_cell_id, SurfelData surfel, uint surfel_id, PointInCascade surfel_center_in_cascade, StructuredBuffer<AABB> nonlinear_aabbs)
+  {
+    min_cell_id = clampSpatialId(min_cell_id);
+    max_cell_id = clampSpatialId(max_cell_id);
+
+    for (int x = min_cell_id.x; x <= max_cell_id.x; ++x)
+      for (int y = min_cell_id.y; y <= max_cell_id.y; ++y)
+        for (int z = min_cell_id.z; z <= max_cell_id.z; ++z)
         {
           uint cellId = linearizeCellsID(uint3(x,y,z));
           AABB aabb = nonlinear_aabbs[cellId];
@@ -89,6 +95,13 @@ struct SpatialStorage
           if (isSurfelInsideCell)
             insertSurfelInCell(surfel_id, int3(x,y,z), surfel_center_in_cascade.cascade);
         }
+  }
+
+  void insertSurfelInNonLinearGrid(SurfelData surfel, uint surfel_id, PointInCascade surfel_center_in_cascade, StructuredBuffer<AABB> nonlinear_aabbs)
+  {
+    int3 minId, maxId;
+    calcMinMaxNonlinearCellIds(surfel, surfel_center_in_cascade, minId, maxId);
+    insertSurfelInNonLinearGrid(minId, maxId, surfel, surfel_id, surfel_center_in_cascade, nonlinear_aabbs);
   }
 
   void insertSurfel(SurfelData surfel, uint surfel_id, float3 camera_wpos, StructuredBuffer<AABB> nonlinear_aabbs)
@@ -111,28 +124,37 @@ struct SpatialStorage
       PointInCascade surfelCenterInCascade = (PointInCascade)0;
 
       if (minP.id.x < 0 || maxP.id.x >= CELLS_DIM)
+      {
         surfelCenterInCascade = transformFromCameraWorldSpaceToXCascadeSpace(cameraToWorldPos);
-      if (minP.id.y < 0 || maxP.id.y >= CELLS_DIM)
-        surfelCenterInCascade = transformFromCameraWorldSpaceToYCascadeSpace(cameraToWorldPos);
-      if (minP.id.z < 0 || maxP.id.z >= CELLS_DIM)
-        surfelCenterInCascade = transformFromCameraWorldSpaceToZCascadeSpace(cameraToWorldPos);
-
-      if (surfelCenterInCascade.cascade != CASCADE_ZERO)
         insertSurfelInNonLinearGrid(surfel, surfel_id, surfelCenterInCascade, nonlinear_aabbs);
+      }
+      if (minP.id.y < 0 || maxP.id.y >= CELLS_DIM)
+      {
+        surfelCenterInCascade = transformFromCameraWorldSpaceToYCascadeSpace(cameraToWorldPos);
+        insertSurfelInNonLinearGrid(surfel, surfel_id, surfelCenterInCascade, nonlinear_aabbs);
+      }
+      if (minP.id.z < 0 || maxP.id.z >= CELLS_DIM)
+      {
+        surfelCenterInCascade = transformFromCameraWorldSpaceToZCascadeSpace(cameraToWorldPos);
+        insertSurfelInNonLinearGrid(surfel, surfel_id, surfelCenterInCascade, nonlinear_aabbs);
+      }
     }
     else
     {
       PointInCascade surfelCenterInCascade = transformFromCameraWorldSpaceToCascadeSpace(cameraToWorldPos);
-      insertSurfelInNonLinearGrid(surfel, surfel_id, surfelCenterInCascade, nonlinear_aabbs);
-      
-      // //intersect with linear cascade
-      float3 e = surfel.radius.xxx;
-      float3 minPos = surfelCenterInCascade.pos - e*2; //fixme: has to be e*1
-      if (minPos.z <= NONLINEAR_NEAR_PLANE)
-      {
-        insertSurfelInLinearGrid(surfel, surfel_id, camera_wpos);
-      }
+      int3 minId, maxId;
+      calcMinMaxNonlinearCellIds(surfel, surfelCenterInCascade, minId, maxId);
+      insertSurfelInNonLinearGrid(minId, maxId, surfel, surfel_id, surfelCenterInCascade, nonlinear_aabbs);
 
+      //intersect with neighbor grids
+      if (minId.z < 0)
+        insertSurfelInLinearGrid(surfel, surfel_id, camera_wpos);
+
+      if (minId.x < 0 || maxId.x >= CELLS_DIM)
+        insertSurfelInNonLinearGrid(surfel, surfel_id, getLeftRightCascadePoint(surfelCenterInCascade, cameraToWorldPos), nonlinear_aabbs);
+
+      if (minId.y < 0 || maxId.y >= CELLS_DIM)
+        insertSurfelInNonLinearGrid(surfel, surfel_id, getTopBotCascadePoint(surfelCenterInCascade, cameraToWorldPos), nonlinear_aabbs);
     }
   }
 };
@@ -311,16 +333,17 @@ struct ROSpatialStorage
     float3 colors[1+6] = {
       float3(0.8,0.8,0.8),
       float3(0.8, 0, 0),
-      float3(0.4, 0.1, 0.1),
+      float3(0.2, 0.1, 0.1),
       float3(0, 0.8, 0),
-      float3(0.1, 0.4, 0.1),
+      float3(0.1, 0.2, 0.1),
       float3(0, 0, 0.8),
-      float3(0.1, 0.1, 0.4)
+      float3(0.1, 0.1, 0.2)
     };
     int3 dId = (spatialInfo.id.xyz % 2);
     float m = all(dId == int3(1,1,1)) ||  all(dId == int3(0,0,1)) ||  all(dId == int3(0,1,0)) ||  all(dId == int3(1,0,0)) ? 1.0 : 0.5;
+    float m2 = (float((spatialInfo.id.x+1)*10) / CELLS_DIM) * (float(spatialInfo.id.y+1) / (CELLS_DIM*2));
     //float m = any(spatialInfo.id <= CELLS_DIM/2) ? 0.5 : 1.0;
-    return float4(colors[spatialInfo.cascade] * m,1);
+    return float4(colors[spatialInfo.cascade] * m * m2,1);
     //return float4(spatialInfo.id, 1.0);
   }
 };
