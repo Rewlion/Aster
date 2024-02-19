@@ -245,6 +245,7 @@ NODE_BEGIN(gibs_draw_surfels)
   BIND_TEX_RO_DEPTH_AS (late_opaque_depth, gbuffer_depth)
   BIND_BUF_SRV_AS      (gibs_surfels_storage, surfelsStorage)
   BIND_BUF_SRV_AS      (gibs_surfels_spatial_storage, surfelsSpatialStorage)
+  BIND_BUF_SRV_AS      (gibs_surfels_meta, surfelsMeta)
 
   RP_BEGIN()
     TARGET_LOAD_DONTCARE(gibs_dbg_surfels)

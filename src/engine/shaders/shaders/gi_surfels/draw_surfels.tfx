@@ -5,16 +5,18 @@ scope GIBS_DrawSurfelsScope
 {
   reserve:
     descriptor_set(1);
-    register(buffer, 0-2);
+    register(buffer, 0-3);
     register(texture, 0);
 
   #hlsl
   #include "surfel.hlsl"
+  #include "meta.hlsl"
   #end
 
   Texture2D gbufferDepth = extern(gbuffer_depth);
   StructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
   StructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
+  StructuredBuffer<SurfelsMeta> surfelsMeta = extern(surfelsMeta);
 
   uint showSurfelsCoverage = extern(showSurfelsCoverage);
   uint showSurfelSDF = extern(showSurfelSDF);
@@ -40,6 +42,18 @@ technique GIBS_DrawSurfels
     uint3 tc = uint3(input.pos.xy, 0);
     uint2 renderSize;
     gbufferDepth.GetDimensions(renderSize.x, renderSize.y);
+
+    float2 uv = (input.pos.xy + 0.5.xx) / float2(renderSize);
+    if (uv.y > 0.95)
+    {
+      SurfelsMeta meta = surfelsMeta[0];
+      float sizeBorder = (float)meta.allocatedSurfelsCount / SURFEL_COUNT_TOTAL;
+      if (uv.x <= sizeBorder)
+        return float4(1.0, 0.0, 1.0, 1.0);
+      else
+        return float4(0.0, 0.0, 0.0, 1.0);
+    }
+
     float depth = gbufferDepth.Load(tc).r;
     
     if (depth == 0)
@@ -56,6 +70,7 @@ technique GIBS_DrawSurfels
 
     ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
     
+
     float4 color;
     if (GIBS_DrawSurfelsScope.showSurfelsCoverage)
       color = st.drawSurfelsCoverage(worldPos, cameraToWorldPos, surfelsStorage);
