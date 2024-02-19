@@ -343,3 +343,53 @@ EventSystemRegistration mk_fg_node_gibs_allocate_surfels_registration(
   },
   "mk_fg_node_gibs_allocate_surfels"
 );
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_gibs_transform_surfels(Event*, ComponentsAccessor&)
+{
+  fg::register_node("gibs_transform_surfels", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    reg.orderMeBefore("gibs_sync_out");
+    auto surfelsStorage = reg.modifyBuffer("gibs_surfels_storage_binned", gapi::BufferState::BF_STATE_UAV_RW);
+    auto surfelsLifeTime = reg.readBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_SRV, false);
+
+    return [surfelsStorage,surfelsLifeTime](gapi::CmdEncoder& encoder)
+    {
+      tfx::set_extern("surfelsStorage", surfelsStorage.get());
+      tfx::set_extern("surfelsLifeTime", surfelsLifeTime.get());
+      gibs_transform_surfels(encoder);
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_gibs_transform_surfels_registration(
+  mk_fg_node_gibs_transform_surfels,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_gibs_transform_surfels"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_gibs_sync_out(Event*, ComponentsAccessor&)
+{
+  fg::register_node("gibs_sync_out", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    reg.orderMeBefore("gbuffer_resolve");
+    return [](gapi::CmdEncoder&){};
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_gibs_sync_out_registration(
+  mk_fg_node_gibs_sync_out,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_gibs_sync_out"
+);

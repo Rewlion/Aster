@@ -134,13 +134,19 @@ int3 posInNonLinearCascadeToCellID(float3 pos_in_cascade_space, float far_plane)
   return int3(xy, slice);
 }
 
+float calcNonLinearCellSizeFromCascadeZ(float z)
+{
+  float halfPlaneSize = z;
+  return halfPlaneSize * 2.0 / CELLS_DIM;
+}
+
 SpatialInfo calcNonLinearInfo(float3 camera_to_wpos, float far_plane)
 {
   PointInCascade pCascSpace = transformFromCameraWorldSpaceToCascadeSpace(camera_to_wpos);
   int3 cellId = posInNonLinearCascadeToCellID(pCascSpace.pos, far_plane);
 
-  float halfPlaneSize = calcDepthFromSlice(cellId.z, far_plane);
-  float cellSize = halfPlaneSize * 2.0 / CELLS_DIM;
+  float cascadeZ = calcDepthFromSlice(cellId.z, far_plane);
+  float cellSize = calcNonLinearCellSizeFromCascadeZ(cascadeZ);
 
   SpatialInfo si = {cellId, pCascSpace.cascade, cellSize};
   return si;

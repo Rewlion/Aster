@@ -11,6 +11,7 @@
 #include <engine/shaders/shaders/gi_surfels/surfel.hlsl>
 #include <engine/shaders/shaders/intersection_structs.hlsl>
 
+static bool transform_surfels = true;
 static bool freeze_allocation = false;
 static bool show_dbg_wnd = false;
 static bool show_surfels = false;
@@ -42,8 +43,9 @@ void imgui_dbg_wnd()
   };
 
   ImGui::Begin("gibs_dbg", nullptr, 0);
-  ImGui::Checkbox("freeze surfels", &freeze_allocation);
-  
+  ImGui::Checkbox("freeze surfels allocation", &freeze_allocation);
+  ImGui::Checkbox("transform surfels", &transform_surfels);
+
   if (ImGui::Button("show surfels", ImVec2(200, 50)))
     showtex("gibs_dbg_surfels", show_surfels);
 
@@ -176,15 +178,16 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
 
     state.initialized = true;
   }
-    {
-      tfx::set_extern("gibsNonlinearAABBs", gibs_nonlinear_aabbs);
-      tfx::activate_technique("GIBS_PrepareNonLinearAABBs", encoder);
-      encoder.updateResources();
+  
+  //if (!state.initialized)
+  {
+    tfx::set_extern("gibsNonlinearAABBs", gibs_nonlinear_aabbs);
+    tfx::activate_technique("GIBS_PrepareNonLinearAABBs", encoder);
+    encoder.updateResources();
 
-      const uint3 gc = tfx::calc_group_count("GIBS_PrepareNonLinearAABBs", uint3(CELLS_DIM,CELLS_DIM,CELLS_DIM));
-      encoder.dispatch(gc.x, gc.y, gc.z);
-    }
-
+    const uint3 gc = tfx::calc_group_count("GIBS_PrepareNonLinearAABBs", uint3(CELLS_DIM,CELLS_DIM,CELLS_DIM));
+    encoder.dispatch(gc.x, gc.y, gc.z);
+  }
 }
 
 NODE_BEGIN(gibs_spatial_storage_binning)
@@ -291,5 +294,33 @@ void gibs_allocate_surfels(gapi::CmdEncoder& encoder, const uint2 render_size)
   const uint3 ds = tfx::calc_group_count("GIBS_AllocateSurfels", uint3(render_size, 1));
   encoder.dispatch(ds.x, ds.y, ds.z);
 }
+
+NODE_BEGIN(gibs_transform_surfels)
+  ORDER_ME_BEFORE(gibs_sync_out)
+  BIND_BUF_RW_UAV_AS(gibs_surfels_storage_binned, surfelsStorage)
+  BIND_BUF_SRV_AS   (gibs_surfels_lifetime, surfelsLifeTime)
+
+  EXEC(gibs_transform_surfels)
+NODE_END()
+
+NODE_EXEC()
+static
+void gibs_transform_surfels(gapi::CmdEncoder& encoder)
+{
+  if (!transform_surfels)
+    return;
+
+  tfx::activate_technique("GIBS_TransformSurfels", encoder);
+  encoder.updateResources();
+  
+  const uint3 ds = tfx::calc_group_count("GIBS_TransformSurfels", uint3(SURFEL_COUNT_TOTAL, 1, 1));
+  encoder.dispatch(ds.x, ds.y, ds.z);
+}
+
+NODE_BEGIN(gibs_sync_out)
+  NO_EXEC()
+
+  ORDER_ME_BEFORE(gbuffer_resolve)
+NODE_END()
 
 DECLARE_INITABLE_ECS_OBJECT_COMPONENT(GIOnSurfels);
