@@ -442,7 +442,7 @@ class ExecFunctionAction(ExecFnAction):
 
   def generate(self, exec_actions):
     execFn = self.context.getExecFunction(self.name)
-    captureList = self.context.getAdditionalCaptureList()
+    captureListForStrictOrder = self.context.getAdditionalCaptureList()
     argsList = []
     encoderName = ""
     for arg in execFn.get_arguments():
@@ -451,10 +451,11 @@ class ExecFunctionAction(ExecFnAction):
         encoderName = arg.spelling
         argsList.append(encoderName)
       else:
-        captureList.append(arg.spelling)
+        if arg.spelling not in captureListForStrictOrder:
+          captureListForStrictOrder.append(arg.spelling)
         isResRequest = argTypeName in ("fg::TextureRequest", "fg::BufferRequest")
         argsList.append(arg.spelling if isResRequest else f"{arg.spelling}.get()")
-    return templates.generate_fg_exec_fn_bridge(encoderName, captureList, argsList, self.name, exec_actions)
+    return templates.generate_fg_exec_fn_bridge(encoderName, captureListForStrictOrder, argsList, self.name, exec_actions)
 
 
 class NoExecFunctionAction(ExecFnAction):
