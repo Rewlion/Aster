@@ -36,7 +36,8 @@ technique GIBS_AllocateSurfels
 
   #hlsl
   #include "spatial_hash.hlsl"
-  
+  #include "surfel_pool.hlsl"
+
   struct SpatialLock
   {
     bool tryLock(int3 spatial_id, int cascade)
@@ -52,29 +53,6 @@ technique GIBS_AllocateSurfels
     }
 
     RWStructuredBuffer<uint> locks;
-  };
-
-  struct SurfelsPool
-  {
-    uint acquireFreeSurfelId()
-    {
-      uint id;
-      InterlockedAdd(meta[0].allocatedSurfelsCount, 1, id);
-      InterlockedMin(meta[0].allocatedSurfelsCount, SURFEL_COUNT_TOTAL);
-
-      if (id != SURFEL_COUNT_TOTAL)
-      {
-        uint poolId = id;
-        uint storageId = pool[poolId];
-
-        return storageId;
-      }
-      else
-        return NO_AVAILABLE_SURFEL;
-    }
-
-    RWStructuredBuffer<SurfelsMeta> meta;
-    RWStructuredBuffer<uint> pool;
   };
 
   [numthreads(8,8,1)]

@@ -4,16 +4,20 @@ scope GIBS_SpatialStorageBinning
 {
   reserve:
     descriptor_set(1);
-    register(buffer, 0-4);
+    register(buffer, 0-6);
 
   #hlsl
   #include "surfel.hlsl"
+  #include "meta.hlsl"
   #include "../intersection_structs.hlsl"
   #end
   RWStructuredBuffer<uint> surfelsLifeTime = extern(surfelsLifeTime);
   StructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
   RWStructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
   StructuredBuffer<AABB> nonlinearAABBs = extern(gibsNonlinearAABBs);
+
+  RWStructuredBuffer<uint> surfelsPool = extern(surfelsPool);
+  RWStructuredBuffer<SurfelsMeta> surfelsMeta = extern(surfelsMeta);
 };
 
 technique GIBS_SpatialStorageBinning
@@ -24,23 +28,30 @@ technique GIBS_SpatialStorageBinning
   #hlsl
   #include "lifetime.hlsl"
   #include "spatial_storage.hlsl"
+  #include "surfel_pool.hlsl"
 
   [numthreads(64,1,1)]
   void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
   {
-    uint id = dispatch_thread_id.x;
-    if (id >= SURFEL_COUNT_TOTAL)
+    uint surfelId = dispatch_thread_id.x;
+    if (surfelId >= SURFEL_COUNT_TOTAL)
       return;
 
-    uint lifetime = surfelsLifeTime[id];
-    if (!is_surfel_alive(lifetime))
+    uint lifetime = surfelsLifeTime[surfelId];
+    if (!isSurfelAlive(lifetime))
       return;
 
     //surfelsLifeTime[id] = lifetime+1;
 
-    SurfelData surfel = surfelsStorage[id];
+    SurfelData surfel = surfelsStorage[surfelId];
     SpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
-    st.insertSurfel(surfel, id, FrameScope.cameraPos, nonlinearAABBs);
+    bool surfelInserted = st.insertSurfel(surfel, surfelId, FrameScope.cameraPos, nonlinearAABBs);
+
+    if (!surfelInserted)
+    {
+      SurfelsPool pool = {surfelsMeta, surfelsPool};
+      freeSurfel(surfelId, surfelsLifeTime, pool);
+    }
   }
   #end
 
