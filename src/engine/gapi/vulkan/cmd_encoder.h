@@ -109,6 +109,8 @@ namespace gapi::vulkan
 
       void dispatch(const uint32_t group_count_x, const uint32_t group_count_y, const uint32_t group_count_z) override;
 
+      void dispatchIndirect(const BufferHandler, size_t offset) override;
+
       auto getRenderSize() const -> float2 override { return m_RenderSize; };
 
       void clearColorTexture(const TextureHandle, const TextureState current_state, const TextureState final_state,

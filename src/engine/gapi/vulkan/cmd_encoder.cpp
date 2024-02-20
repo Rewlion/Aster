@@ -595,6 +595,13 @@ namespace gapi::vulkan
     m_CmdBuf.dispatch(group_count_x, group_count_y, group_count_z);
   }
 
+  void CmdEncoder::dispatchIndirect(const BufferHandler buffer, size_t offset)
+  {
+    insureActiveCmd();
+    Buffer* b = m_Device.getAllocatedBuffer(buffer);
+    m_CmdBuf.dispatchIndirect(b->buffer, offset);
+  }
+
   void CmdEncoder::clearColorTexture(const TextureHandle tex, const TextureState current_state, const TextureState final_state,
                                      const ClearColorValue& color, const TextureSubresourceRange& range)
   {

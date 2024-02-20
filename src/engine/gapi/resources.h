@@ -466,6 +466,7 @@ namespace gapi
     BF_STATE_UAV_RW           = 1 << 4,
     BF_STATE_SRV              = 1 << 5,
     BF_STATE_HOST_READ        = 1 << 6,
+    BF_STATE_INDIRECTION_CMD  = 1 << 7,
     BF_STATE_LAST
   };
 

@@ -417,6 +417,7 @@ namespace gapi::vulkan
         }
         case BF_STATE_SRV:
         case BF_STATE_UAV_RW:
+        case BF_STATE_INDIRECTION_CMD:
         {
           flags |= vk::PipelineStageFlagBits::eAllGraphics | vk::PipelineStageFlagBits::eComputeShader;
           break;
@@ -469,6 +470,11 @@ namespace gapi::vulkan
         case BF_STATE_UAV_RW:
         {
           flags |= vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eShaderWrite;
+          break;
+        }
+        case BF_STATE_INDIRECTION_CMD:
+        {
+          flags |= vk::AccessFlagBits::eIndirectCommandRead;
           break;
         }
         default:

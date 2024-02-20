@@ -124,6 +124,9 @@ namespace gapi
       void dispatch(const uint32_t group_count_x, const uint32_t group_count_y, const uint32_t group_count_z) = 0;
 
       virtual
+      void dispatchIndirect(const BufferHandler, size_t offset = 0) = 0;
+
+      virtual
       auto getRenderSize() const -> float2 = 0;
 
       virtual
