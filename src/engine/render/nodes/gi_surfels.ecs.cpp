@@ -4,6 +4,7 @@
 #include <engine/render/frame_graph/dsl.h>
 #include <engine/render/imgui/imgui.h>
 #include <engine/tfx/tfx.h>
+#include <engine/time.h>
 
 #include <engine/shaders/shaders/gi_surfels/consts.hlsl>
 #include <engine/shaders/shaders/gi_surfels/lifetime.hlsl>
@@ -11,6 +12,9 @@
 #include <engine/shaders/shaders/gi_surfels/surfel.hlsl>
 #include <engine/shaders/shaders/intersection_structs.hlsl>
 
+constexpr uint64_t SLOW_ALLOC_PERIOD_MS = 150;
+static uint next_slow_alloc_time_ms = 0;
+static bool slow_allocation = false;
 static bool transform_surfels = true;
 static bool freeze_allocation = false;
 static bool show_dbg_wnd = false;
@@ -47,6 +51,7 @@ void imgui_dbg_wnd()
   ImGui::Begin("gibs_dbg", nullptr, 0);
   ImGui::Checkbox("freeze surfels allocation", &freeze_allocation);
   ImGui::Checkbox("transform surfels", &transform_surfels);
+  ImGui::Checkbox("slow surfels allocation", &slow_allocation);
 
   if (ImGui::Button("show surfels", ImVec2(200, 50)))
     showtex("gibs_dbg_surfels", show_surfels);
@@ -271,6 +276,7 @@ void gibs_draw_surfels(gapi::CmdEncoder& encoder)
 NODE_BEGIN(gibs_binning_sync)
   RENAME_BUF(gibs_surfels_storage, gibs_surfels_storage_binned, BUF_STATE(SRV))
   RENAME_BUF(gibs_surfels_spatial_storage, gibs_surfels_spatial_storage_binned, BUF_STATE(SRV))
+  RENAME_BUF(gibs_surfels_meta, gibs_surfels_meta_binned, BUF_STATE(SRV))
   NO_EXEC()
 NODE_END()
 
@@ -283,7 +289,7 @@ NODE_BEGIN(gibs_allocate_surfels)
   BIND_BUF_RW_UAV_AS   (gibs_surfels_storage_binned, surfelsStorage)
   BIND_BUF_RW_UAV_AS   (gibs_surfels_pool, surfelsPool)
   BIND_BUF_RW_UAV_AS   (gibs_surfels_allocation_locks, surfelsAllocLocks)
-  BIND_BUF_RW_UAV_AS   (gibs_surfels_meta, surfelsMeta)
+  BIND_BUF_RW_UAV_AS   (gibs_surfels_meta_binned, surfelsMeta)
   BIND_TEX_SRV_AS      (gibs_surfels_allocation_pos, surfelsAllocPos)
 
   ORDER_ME_BEFORE(gbuffer_resolve)
@@ -297,6 +303,15 @@ void gibs_allocate_surfels(gapi::CmdEncoder& encoder, const uint2 render_size)
 {
   if (freeze_allocation)
     return;
+
+  if (slow_allocation)
+  {
+    uint64_t curMs = Engine::Time::get_time_ms_since_start();
+    if (curMs >= next_slow_alloc_time_ms)
+      next_slow_alloc_time_ms = curMs + SLOW_ALLOC_PERIOD_MS;
+    else
+      return;
+  }
 
   tfx::activate_technique("GIBS_AllocateSurfels", encoder);
   encoder.updateResources();

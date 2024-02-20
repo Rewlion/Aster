@@ -287,6 +287,7 @@ void mk_fg_node_gibs_binning_sync(Event*, ComponentsAccessor&)
   { 
     auto gibs_surfels_storage_binned = reg.renameBuffer("gibs_surfels_storage", "gibs_surfels_storage_binned", gapi::BufferState::BF_STATE_SRV);
     auto gibs_surfels_spatial_storage_binned = reg.renameBuffer("gibs_surfels_spatial_storage", "gibs_surfels_spatial_storage_binned", gapi::BufferState::BF_STATE_SRV);
+    auto gibs_surfels_meta_binned = reg.renameBuffer("gibs_surfels_meta", "gibs_surfels_meta_binned", gapi::BufferState::BF_STATE_SRV);
     return [](gapi::CmdEncoder&){};
   });
 }
@@ -317,7 +318,7 @@ void mk_fg_node_gibs_allocate_surfels(Event*, ComponentsAccessor&)
     auto surfelsStorage = reg.modifyBuffer("gibs_surfels_storage_binned", gapi::BufferState::BF_STATE_UAV_RW);
     auto surfelsPool = reg.modifyBuffer("gibs_surfels_pool", gapi::BufferState::BF_STATE_UAV_RW);
     auto surfelsAllocLocks = reg.modifyBuffer("gibs_surfels_allocation_locks", gapi::BufferState::BF_STATE_UAV_RW);
-    auto surfelsMeta = reg.modifyBuffer("gibs_surfels_meta", gapi::BufferState::BF_STATE_UAV_RW);
+    auto surfelsMeta = reg.modifyBuffer("gibs_surfels_meta_binned", gapi::BufferState::BF_STATE_UAV_RW);
     auto surfelsAllocPos = reg.readTexture("gibs_surfels_allocation_pos", gapi::TextureState::ShaderRead, false);
     reg.orderMeBefore("gbuffer_resolve");
 
