@@ -482,6 +482,8 @@ namespace fg::dsl
 #define READ_TEX_TRANSFER_SRC(name) READ_TEX(name, TEX_STATE(TransferSrc))
 #define READ_BUF_SRV(name) READ_BUF(name, BUF_STATE(SRV))
 #define READ_BUF_SRV_AS(name, as) READ_BUF_AS(name, as, BUF_STATE(SRV))
+#define READ_BUF_INDIRECTION_CMD(name) READ_BUF(name, BUF_STATE(INDIRECTION_CMD))
+#define READ_BUF_INDIRECTION_CMD_AS(name, as) READ_BUF_AS(name, as, BUF_STATE(INDIRECTION_CMD))
 
 #define READ_OPTIONAL_TEX_SRV(name) READ_OPTIONAL_TEX(name, TEX_STATE(ShaderRead))
 #define READ_OPTIONAL_TEX_SRV_AS(name, as) READ_OPTIONAL_TEX_AS(name, as, TEX_STATE(ShaderRead))
@@ -493,14 +495,15 @@ namespace fg::dsl
 #define RENAME_TEX_RO_DEPTH(from, to) RENAME_TEX(from, to, TEX_STATE(DepthReadStencilRead))
 
 #define BIND_RES_AS(action, res_name, as_var_name)\
-  action(res_name, as_var_name)\
-  BIND_SHADER_VAR(as_var_name)
+  action(res_name, res_name)\
+  BIND_SHADER_VAR_AS(res_name, as_var_name)
 
 #define BIND_TEX_SRV_AS(res_name, as_var_name) BIND_RES_AS(READ_TEX_SRV_AS, res_name, as_var_name)
 #define BIND_TEX_RW_UAV_AS(res_name, as_var_name) BIND_RES_AS(MODIFY_TEX_UAV_AS, res_name, as_var_name)
 #define BIND_TEX_RO_DEPTH_AS(res_name, as_var_name) BIND_RES_AS(READ_TEX_DEPTH_AS, res_name, as_var_name)
 #define BIND_BUF_SRV_AS(res_name, as_var_name) BIND_RES_AS(READ_BUF_SRV_AS, res_name, as_var_name)
 #define BIND_BUF_RW_UAV_AS(res_name, as_var_name) BIND_RES_AS(MODIFY_BUF_UAV_AS, res_name, as_var_name)
+#define BIND_BUF_INDIRECTION_CMD_AS(res_name, as_var_name) BIND_RES_AS(READ_BUF_INDIRECTION_CMD_AS, res_name, as_var_name)
 
 #define BIND_OPTIONAL_TEX_SRV_AS(res_name, as_var_name) BIND_RES_AS(READ_OPTIONAL_TEX_SRV_AS, res_name, as_var_name)
 
