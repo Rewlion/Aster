@@ -130,6 +130,9 @@ namespace gapi::vulkan
 
     if (usage & BufferUsage::BF_BindUAV)
       bits |= vk::BufferUsageFlagBits::eStorageBuffer;
+    
+    if (usage & BufferUsage::BF_BindIndirect)
+      bits |= vk::BufferUsageFlagBits::eIndirectBuffer;
 
     return bits;
   }

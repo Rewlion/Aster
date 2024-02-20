@@ -302,13 +302,14 @@ namespace gapi
 
   enum BufferUsage
   {
-    BF_CpuVisible   = 1,
-    BF_GpuVisible   = 1 << 2,
+    BF_CpuVisible    = 1,
+    BF_GpuVisible    = 1 << 2,
 
-    BF_BindVertex   = 1 << 3,
-    BF_BindIndex    = 1 << 4,
-    BF_BindConstant = 1 << 5,
-    BF_BindUAV      = 1 << 6
+    BF_BindVertex    = 1 << 3,
+    BF_BindIndex     = 1 << 4,
+    BF_BindConstant  = 1 << 5,
+    BF_BindUAV       = 1 << 6,
+    BF_BindIndirect  = 1 << 7
   };
 
   constexpr
