@@ -252,16 +252,18 @@ void mk_fg_node_gibs_draw_surfels(Event*, ComponentsAccessor&)
     auto gbuffer_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
     auto surfelsStorage = reg.readBuffer("gibs_surfels_storage", gapi::BufferState::BF_STATE_SRV, false);
     auto surfelsSpatialStorage = reg.readBuffer("gibs_surfels_spatial_storage", gapi::BufferState::BF_STATE_SRV, false);
+    auto surfelsMeta = reg.readBuffer("gibs_surfels_meta", gapi::BufferState::BF_STATE_SRV, false);
     reg.requestRenderPass()
       .addTarget("gibs_dbg_surfels", gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
     ;
 
 
-    return [gbuffer_depth,surfelsStorage,surfelsSpatialStorage](gapi::CmdEncoder& encoder)
+    return [gbuffer_depth,surfelsStorage,surfelsSpatialStorage,surfelsMeta](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
       tfx::set_extern("surfelsStorage", surfelsStorage.get());
       tfx::set_extern("surfelsSpatialStorage", surfelsSpatialStorage.get());
+      tfx::set_extern("surfelsMeta", surfelsMeta.get());
       gibs_draw_surfels(encoder);
     };
   });
