@@ -131,7 +131,7 @@ int3 posInNonLinearCascadeToCellID(float3 pos_in_cascade_space, float far_plane)
   float2 xy = uv * float2(CELLS_DIM, CELLS_DIM);
   float slice = calcZSlice(dist, far_plane);
 
-  return int3(xy, slice);
+  return clampSpatialId(int3(xy, slice));
 }
 
 float calcNonLinearCellSizeFromCascadeZ(float z)
