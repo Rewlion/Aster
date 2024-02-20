@@ -44,7 +44,16 @@ struct SpatialStorage
     }
   }
 
-  void insertSurfelInLinearGrid(SurfelData surfel, uint surfel_id, float3 camera_wpos)
+  void insertSurfelCenterInLinearGrid(SurfelData surfel, uint surfel_id, float3 camera_wpos, out int3 center_cell_id)
+  {
+    float3 cameraToWpos = surfel.pos - camera_wpos;
+    SpatialInfo spatialInfo = calcLinearInfo(cameraToWpos);
+    center_cell_id = spatialInfo.id;
+
+    insertSurfelInCell(surfel_id, spatialInfo.id, CASCADE_ZERO);
+  }
+
+  void insertSurfelInLinearGridNeighbors(SurfelData surfel, uint surfel_id, float3 camera_wpos, int3 center_cell_id)
   {
     float3 e = surfel.radius.xxx;
     float3 cameraToMin = surfel.pos - e - camera_wpos;
@@ -61,12 +70,22 @@ struct SpatialStorage
         for (int z = minId.z; z <= maxId.z; ++z)
         {
           int3 cellId = int3(x,y,z);
+          if (all(cellId == center_cell_id))
+            continue;
+
           GridAABB aabb = calcLinearAABB(cellId, camera_wpos);
 
           bool isSurfelInsideCell = test_aabb_sphere_intersection(aabb.minWS, aabb.maxWS, surfel.pos, surfel.radius);
           if (isSurfelInsideCell)
             insertSurfelInCell(surfel_id, cellId, CASCADE_ZERO);
         }
+  }
+
+  void insertSurfelInLinearGrid(SurfelData surfel, uint surfel_id, float3 camera_wpos)
+  {
+    int3 centerCellId;
+    insertSurfelCenterInLinearGrid(surfel, surfel_id, camera_wpos, centerCellId);
+    insertSurfelInLinearGridNeighbors(surfel, surfel_id, camera_wpos, centerCellId);
   }
 
   void calcMinMaxNonlinearCellIds(SurfelData surfel, PointInCascade surfel_center_in_cascade, out int3 min_id, out int3 max_id)
@@ -79,7 +98,8 @@ struct SpatialStorage
     max_id = int3(minmaxX[1], minmaxY[1], minmaxZ[1]);
   }
 
-  void insertSurfelInNonLinearGrid(int3 min_cell_id, int3 max_cell_id, SurfelData surfel, uint surfel_id, PointInCascade surfel_center_in_cascade, StructuredBuffer<AABB> nonlinear_aabbs)
+  void insertSurfelInNonLinearGridNeighbors(int3 center_cell_id, int3 min_cell_id, int3 max_cell_id, SurfelData surfel,
+                                            uint surfel_id, PointInCascade surfel_center_in_cascade, StructuredBuffer<AABB> nonlinear_aabbs)
   {
     min_cell_id = clampSpatialId(min_cell_id);
     max_cell_id = clampSpatialId(max_cell_id);
@@ -89,6 +109,9 @@ struct SpatialStorage
         for (int z = min_cell_id.z; z <= max_cell_id.z; ++z)
         {
           uint cellId = linearizeCellsID(uint3(x,y,z));
+          if (all(cellId == center_cell_id))
+            continue;
+
           AABB aabb = nonlinear_aabbs[cellId];
 
           bool isSurfelInsideCell = test_aabb_sphere_intersection(aabb.minp, aabb.maxp, surfel_center_in_cascade.pos, surfel.radius);
@@ -97,11 +120,20 @@ struct SpatialStorage
         }
   }
 
+  void insertSurfelCenterInNonLinearGrid(PointInCascade surfel_center_in_cascade, uint surfel_id, out int3 center_cell_id)
+  {
+    center_cell_id = posInNonLinearCascadeToCellID(surfel_center_in_cascade.pos, zFar);
+    insertSurfelInCell(surfel_id, center_cell_id, surfel_center_in_cascade.cascade);
+  }
+
   void insertSurfelInNonLinearGrid(SurfelData surfel, uint surfel_id, PointInCascade surfel_center_in_cascade, StructuredBuffer<AABB> nonlinear_aabbs)
   {
+    int3 centerCellId;
+    insertSurfelCenterInNonLinearGrid(surfel_center_in_cascade, surfel_id, centerCellId);
+
     int3 minId, maxId;
     calcMinMaxNonlinearCellIds(surfel, surfel_center_in_cascade, minId, maxId);
-    insertSurfelInNonLinearGrid(minId, maxId, surfel, surfel_id, surfel_center_in_cascade, nonlinear_aabbs);
+    insertSurfelInNonLinearGridNeighbors(centerCellId, minId, maxId, surfel, surfel_id, surfel_center_in_cascade, nonlinear_aabbs);
   }
 
   void insertSurfel(SurfelData surfel, uint surfel_id, float3 camera_wpos, StructuredBuffer<AABB> nonlinear_aabbs)
@@ -142,9 +174,13 @@ struct SpatialStorage
     else
     {
       PointInCascade surfelCenterInCascade = transformFromCameraWorldSpaceToCascadeSpace(cameraToWorldPos);
+
+      int3 centerCellId;
+      insertSurfelCenterInNonLinearGrid(surfelCenterInCascade, surfel_id, centerCellId);
+
       int3 minId, maxId;
       calcMinMaxNonlinearCellIds(surfel, surfelCenterInCascade, minId, maxId);
-      insertSurfelInNonLinearGrid(minId, maxId, surfel, surfel_id, surfelCenterInCascade, nonlinear_aabbs);
+      insertSurfelInNonLinearGridNeighbors(centerCellId, minId, maxId, surfel, surfel_id, surfelCenterInCascade, nonlinear_aabbs);
 
       //intersect with neighbor grids
       if (minId.z < 0)
