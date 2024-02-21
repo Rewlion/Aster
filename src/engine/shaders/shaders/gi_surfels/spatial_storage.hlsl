@@ -1,6 +1,7 @@
 #ifndef SPATIAL_STORAGE_HLSL
 #define SPATIAL_STORAGE_HLSL
 
+#include "lifetime.hlsl"
 #include "spatial_hash.hlsl"
 #include "surfel.hlsl"
 #include "../color_ramp.hlsl"
@@ -236,7 +237,7 @@ struct ROSpatialStorage
 
   #define MAX_FLOAT 3.402823466e+38
 
-  bool checkFreeSpaceForNewSurfel(float3 wpos, float3 camera_to_wpos, StructuredBuffer<SurfelData> surfels_storage)
+  bool checkFreeSpaceForNewSurfel(float3 wpos, float3 camera_to_wpos, StructuredBuffer<SurfelData> surfels_storage, RWStructuredBuffer<uint> surfels_lifetime)
   {
     SpatialInfo spatialInfo = calcSpatialInfo(camera_to_wpos, zFar);
     uint baseAddr = getCellAddress(spatialInfo);
@@ -248,18 +249,44 @@ struct ROSpatialStorage
     if (idsCount >= SURFEL_COUNT_PER_CELL)
       return false;
 
+    float prevOverlapScore = 0.0;
+    uint overlapSurfelId;
+    uint overlapsCount = 0;
+    Lifetime overlappingSurfelLifetime;
+
     float sdf = MAX_FLOAT;
-    for (uint i = idBegin; (i < idEnd) && (sdf > 0.0); ++i)
+    for (uint i = idBegin; (i < idEnd) && (overlapsCount < 2); ++i)
     {
       uint surfelId = surfelsSpatialStorage[i];
       SurfelData surfel = surfels_storage[surfelId];
 
       float3 dr = wpos - surfel.pos;
-      float dist = clamp(length(dr) - surfel.radius, 0.0, MAX_FLOAT);
+      float dl = length(dr);
+      float dist = dl - surfel.radius;
       sdf = min(sdf, dist);
+
+      float overlapScore = 1.0 - dl / surfel.radius;
+      if (dist < 0 && overlapScore > prevOverlapScore)
+      {
+        Lifetime lifetime = {surfels_lifetime[surfelId]};
+        if (!lifetime.isPendingRecycle())
+        {
+          prevOverlapScore = overlapScore;
+          overlappingSurfelLifetime = lifetime;
+          overlapSurfelId = surfelId;
+          ++overlapsCount;
+        }
+      }
     }
 
     float newSurfelRadius = calcSurfelRadius(spatialInfo.cellSize);
+
+    if (overlapsCount > 1 && prevOverlapScore > 0.5)
+    {
+      overlappingSurfelLifetime.markPendingRecycle();
+      surfels_lifetime[overlapSurfelId] = overlappingSurfelLifetime.data;
+    }
+
 
     return newSurfelRadius <= sdf;
   }

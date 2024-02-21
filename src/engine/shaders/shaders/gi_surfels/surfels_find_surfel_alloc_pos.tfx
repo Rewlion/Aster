@@ -4,8 +4,8 @@ scope GIBS_FindSurfelsAllocPosScope
 {
   reserve:
     descriptor_set(1);
-    register(buffer, 0-1);
-    register(texture, 0-2);
+    register(buffer, 0-2);
+    register(texture, 0-3);
 
   #hlsl
   #include "surfel.hlsl"
@@ -15,6 +15,7 @@ scope GIBS_FindSurfelsAllocPosScope
   RWTexture2D<uint> surfelsAllocPos = extern(surfelsAllocPos);
   StructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
   StructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
+  RWStructuredBuffer<uint> surfelsLifeTime = extern(surfelsLifeTime);
 };
 
 technique GIBS_FindSurfelsAllocPos
@@ -51,7 +52,7 @@ technique GIBS_FindSurfelsAllocPos
     float3 cameraToWorldPos = worldPos - FrameScope.cameraPos;
 
     ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
-    bool hasSpace = st.checkFreeSpaceForNewSurfel(worldPos, cameraToWorldPos, surfelsStorage);
+    bool hasSpace = st.checkFreeSpaceForNewSurfel(worldPos, cameraToWorldPos, surfelsStorage, surfelsLifeTime);
 
     surfelsAllocPos[tc.xy] = hasSpace ? 1 : 0;
   }

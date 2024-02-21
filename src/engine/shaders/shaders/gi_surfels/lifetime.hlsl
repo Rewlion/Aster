@@ -32,7 +32,7 @@ struct Lifetime
 
   bool isAlive()
   {
-    return getState() != SURFEL_STATE_UNUSED;
+    return getState() == SURFEL_STATE_ALLOCATED;
   }
 
   bool isPendingRecycle()

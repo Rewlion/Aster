@@ -23,7 +23,6 @@ static bool show_surfels_sdf = false;
 static bool show_surfels_coverage = false;
 static bool show_cells_coverage = false;
 static bool show_cells = false;
-static bool show_alloc_place = false;
 static bool force_reset = false;
 
 static
@@ -57,10 +56,10 @@ void imgui_dbg_wnd()
     showtex("gibs_dbg_surfels", show_surfels);
 
   {
-    const char* showSurfelsOptions[] = {"base", "sdf", "surfels_coverage", "cells_coverage", "cells", "alloc place"};
+    const char* showSurfelsOptions[] = {"base", "sdf", "surfels_coverage", "cells_coverage", "cells"};
     static const char* curOpt = showSurfelsOptions[0];
     bool blob = false;
-    bool* values[] = {&blob, &show_surfels_sdf, &show_surfels_coverage, &show_cells_coverage, &show_cells, &show_alloc_place};
+    bool* values[] = {&blob, &show_surfels_sdf, &show_surfels_coverage, &show_cells_coverage, &show_cells};
     if (ImGui::BeginCombo("format", curOpt))
     {
       for (int i = 0; i < IM_ARRAYSIZE(showSurfelsOptions); ++i)
@@ -253,6 +252,7 @@ NODE_BEGIN(gibs_surfels_find_surfels_alloc_pos)
   BIND_BUF_SRV_AS      (gibs_surfels_storage, surfelsStorage)
   BIND_BUF_SRV_AS      (gibs_surfels_spatial_storage, surfelsSpatialStorage)
   BIND_TEX_RW_UAV_AS   (gibs_surfels_allocation_pos, surfelsAllocPos)
+  BIND_BUF_RW_UAV_AS   (gibs_surfels_lifetime, surfelsLifeTime)
 
   EXEC(gibs_surfels_find_surfels_alloc_pos)
 NODE_END()
@@ -290,7 +290,6 @@ void gibs_draw_surfels(gapi::CmdEncoder& encoder)
   tfx::set_extern("showSurfelSDF", show_surfels_sdf ? (uint)1 : (uint)0);
   tfx::set_extern("showCellsCoverage", show_cells_coverage ? (uint)1 : (uint)0);
   tfx::set_extern("showCells", show_cells ? (uint)1 : (uint)0);
-  tfx::set_extern("showAllocPlace", show_alloc_place ? (uint)1: (uint)0);
   tfx::activate_technique("GIBS_DrawSurfels", encoder);
   encoder.updateResources();
   encoder.draw(4, 1, 0, 0);

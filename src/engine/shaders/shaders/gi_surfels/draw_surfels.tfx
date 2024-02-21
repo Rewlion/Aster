@@ -69,15 +69,12 @@ technique GIBS_DrawSurfels
     float3 cameraToWorldPos = worldPos - FrameScope.cameraPos;
 
     ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
-    
 
     float4 color;
     if (GIBS_DrawSurfelsScope.showSurfelsCoverage)
       color = st.drawSurfelsCoverage(worldPos, cameraToWorldPos, surfelsStorage);
     else if (GIBS_DrawSurfelsScope.showSurfelSDF)
       color = st.drawSurfelsSDF(worldPos, cameraToWorldPos, surfelsStorage);
-    else if (GIBS_DrawSurfelsScope.showAllocPlace)
-      color = st.checkFreeSpaceForNewSurfel(worldPos, cameraToWorldPos, surfelsStorage) ? float4(heatmapColorRamp(1.0), 1.0) : float4(heatmapColorRamp(0.0), 1.0);
     else if (GIBS_DrawSurfelsScope.showCellsCoverage)
       color = st.drawCellsCoverage(worldPos, cameraToWorldPos, surfelsStorage);
     else if (GIBS_DrawSurfelsScope.showCells)

@@ -254,14 +254,16 @@ void mk_fg_node_gibs_surfels_find_surfels_alloc_pos(Event*, ComponentsAccessor&)
     auto gibs_surfels_storage = reg.readBuffer("gibs_surfels_storage", gapi::BufferState::BF_STATE_SRV, false);
     auto gibs_surfels_spatial_storage = reg.readBuffer("gibs_surfels_spatial_storage", gapi::BufferState::BF_STATE_SRV, false);
     auto gibs_surfels_allocation_pos = reg.modifyTexture("gibs_surfels_allocation_pos", gapi::TextureState::ShaderReadWrite);
+    auto gibs_surfels_lifetime = reg.modifyBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_UAV_RW);
 
-    return [late_opaque_depth,gibs_surfels_sdf,gibs_surfels_storage,gibs_surfels_spatial_storage,gibs_surfels_allocation_pos,render_size](gapi::CmdEncoder& encoder)
+    return [late_opaque_depth,gibs_surfels_sdf,gibs_surfels_storage,gibs_surfels_spatial_storage,gibs_surfels_allocation_pos,gibs_surfels_lifetime,render_size](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("gbuffer_depth", late_opaque_depth.get());
       tfx::set_extern("surfelsSDF", gibs_surfels_sdf.get());
       tfx::set_extern("surfelsStorage", gibs_surfels_storage.get());
       tfx::set_extern("surfelsSpatialStorage", gibs_surfels_spatial_storage.get());
       tfx::set_extern("surfelsAllocPos", gibs_surfels_allocation_pos.get());
+      tfx::set_extern("surfelsLifeTime", gibs_surfels_lifetime.get());
       gibs_surfels_find_surfels_alloc_pos(encoder, render_size.get());
     };
   });
