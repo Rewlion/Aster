@@ -47,8 +47,8 @@ technique GIBS_SpatialStorageBinning
 
     if (!surfelInserted)
     {
-      SurfelsPool pool = {surfelsMeta, surfelsPool};
-      freeSurfel(surfelId, surfelsLifeTime, pool);
+      lifetime.markPendingRecycle();
+      surfelsLifeTime[surfelId] = lifetime.data;
     }
   }
   #end

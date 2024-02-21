@@ -1,0 +1,44 @@
+scope GIBS_SurfelsRecycleScope
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0-2);
+
+  #hlsl
+  #include "meta.hlsl"
+  #end
+
+  RWStructuredBuffer<uint> surfelsLifeTime = extern(surfelsLifeTime);
+  RWStructuredBuffer<uint> surfelsPool = extern(surfelsPool);
+  RWStructuredBuffer<SurfelsMeta> surfelsMeta = extern(surfelsMeta);
+};
+
+technique GIBS_SurfelsRecycle
+{
+  activate scope GIBS_SurfelsRecycleScope;
+
+  #hlsl
+  #include "surfel_pool.hlsl"
+  #include "lifetime.hlsl"
+
+  [numthreads(64,1,1)]
+  void cs_main(uint3 id : SV_DispatchThreadID)
+  {
+    uint surfelId = id.x;
+    if (surfelId >= SURFEL_COUNT_TOTAL)
+      return;
+
+    Lifetime lifetime = {surfelsLifeTime[surfelId]};
+    if (!lifetime.isPendingRecycle())
+      return;
+
+    SurfelsPool pool = {surfelsMeta, surfelsPool};
+    freeSurfel(surfelId, surfelsLifeTime, pool);
+
+    lifetime.markUnused();
+    surfelsLifeTime[surfelId] = lifetime.data;
+  }
+  #end
+
+  compile(cs, cs_main);
+};

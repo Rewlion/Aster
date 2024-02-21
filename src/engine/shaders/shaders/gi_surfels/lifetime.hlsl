@@ -35,6 +35,11 @@ struct Lifetime
     return getState() != SURFEL_STATE_UNUSED;
   }
 
+  bool isPendingRecycle()
+  {
+    return getState() == SURFEL_STATE_PENDING_RECYCLE;
+  }
+
   void markUnused()
   {
     data = 0;
