@@ -281,14 +281,14 @@ struct ROSpatialStorage
 
     float newSurfelRadius = calcSurfelRadius(spatialInfo.cellSize);
 
-    if (overlapsCount > 1 && prevOverlapScore > 0.5)
+    if (overlapsCount > 1 && prevOverlapScore > 0.9)
     {
       overlappingSurfelLifetime.markPendingRecycle();
       surfels_lifetime[overlapSurfelId] = overlappingSurfelLifetime.data;
     }
 
 
-    return newSurfelRadius <= sdf;
+    return newSurfelRadius*1.9 <= sdf;
   }
 
   float4 drawSurfels(float3 wpos, float3 camera_to_wpos, StructuredBuffer<SurfelData> surfels_storage)
@@ -355,7 +355,7 @@ struct ROSpatialStorage
       }
     }
 
-    float t = N / (float)SURFEL_COUNT_PER_CELL;
+    float t = N / 10.0;
     float3 color = heatmapColorRamp(t);
 
     return float4(color, N > 0 ? 1 : 0);

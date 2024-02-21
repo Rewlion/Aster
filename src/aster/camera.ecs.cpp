@@ -43,7 +43,7 @@ static void camera_movement(
   const float3 right = math::get_right(math::radians(camera_rotations.x));
 
   const float dt = Engine::Time::get_dt();
-  const float v = 10.0f;
+  const float v = 50.0f;
 
   pos += (dr.x * right + dr.y * up +  dr.z * forward) * dt * v;
 }
