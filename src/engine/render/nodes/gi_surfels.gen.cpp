@@ -179,21 +179,21 @@ void mk_fg_node_gibs_spatial_storage_binning(Event*, ComponentsAccessor&)
 {
   fg::register_node("gibs_spatial_storage_binning", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto surfelsLifeTime = reg.modifyBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_UAV_RW);
-    auto surfelsStorage = reg.readBuffer("gibs_surfels_storage", gapi::BufferState::BF_STATE_SRV, false);
-    auto surfelsSpatialStorage = reg.modifyBuffer("gibs_surfels_spatial_storage", gapi::BufferState::BF_STATE_UAV_RW);
-    auto gibsNonlinearAABBs = reg.readBuffer("gibs_nonlinear_aabbs", gapi::BufferState::BF_STATE_SRV, false);
-    auto surfelsPool = reg.modifyBuffer("gibs_surfels_pool", gapi::BufferState::BF_STATE_UAV_RW);
-    auto surfelsMeta = reg.modifyBuffer("gibs_surfels_meta", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_surfels_lifetime = reg.modifyBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_surfels_storage = reg.readBuffer("gibs_surfels_storage", gapi::BufferState::BF_STATE_SRV, false);
+    auto gibs_surfels_spatial_storage = reg.modifyBuffer("gibs_surfels_spatial_storage", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_nonlinear_aabbs = reg.readBuffer("gibs_nonlinear_aabbs", gapi::BufferState::BF_STATE_SRV, false);
+    auto gibs_surfels_pool = reg.modifyBuffer("gibs_surfels_pool", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_surfels_meta = reg.modifyBuffer("gibs_surfels_meta", gapi::BufferState::BF_STATE_UAV_RW);
 
-    return [surfelsLifeTime,surfelsStorage,surfelsSpatialStorage,gibsNonlinearAABBs,surfelsPool,surfelsMeta](gapi::CmdEncoder& encoder)
+    return [gibs_surfels_lifetime,gibs_surfels_storage,gibs_surfels_spatial_storage,gibs_nonlinear_aabbs,gibs_surfels_pool,gibs_surfels_meta](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("surfelsLifeTime", surfelsLifeTime.get());
-      tfx::set_extern("surfelsStorage", surfelsStorage.get());
-      tfx::set_extern("surfelsSpatialStorage", surfelsSpatialStorage.get());
-      tfx::set_extern("gibsNonlinearAABBs", gibsNonlinearAABBs.get());
-      tfx::set_extern("surfelsPool", surfelsPool.get());
-      tfx::set_extern("surfelsMeta", surfelsMeta.get());
+      tfx::set_extern("surfelsLifeTime", gibs_surfels_lifetime.get());
+      tfx::set_extern("surfelsStorage", gibs_surfels_storage.get());
+      tfx::set_extern("surfelsSpatialStorage", gibs_surfels_spatial_storage.get());
+      tfx::set_extern("gibsNonlinearAABBs", gibs_nonlinear_aabbs.get());
+      tfx::set_extern("surfelsPool", gibs_surfels_pool.get());
+      tfx::set_extern("surfelsMeta", gibs_surfels_meta.get());
       gibs_spatial_storage_binning(encoder);
     };
   });
@@ -218,19 +218,19 @@ void mk_fg_node_gibs_surfels_find_surfels_alloc_pos(Event*, ComponentsAccessor&)
     const uint2 __renderSize__ = reg.getRenderSize();
 
     fg::dsl::AccessDecorator render_size{__renderSize__};
-    auto gbuffer_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
-    auto surfelsSDF = reg.modifyTexture("gibs_surfels_sdf", gapi::TextureState::ShaderReadWrite);
-    auto surfelsStorage = reg.readBuffer("gibs_surfels_storage", gapi::BufferState::BF_STATE_SRV, false);
-    auto surfelsSpatialStorage = reg.readBuffer("gibs_surfels_spatial_storage", gapi::BufferState::BF_STATE_SRV, false);
-    auto surfelsAllocPos = reg.modifyTexture("gibs_surfels_allocation_pos", gapi::TextureState::ShaderReadWrite);
+    auto late_opaque_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
+    auto gibs_surfels_sdf = reg.modifyTexture("gibs_surfels_sdf", gapi::TextureState::ShaderReadWrite);
+    auto gibs_surfels_storage = reg.readBuffer("gibs_surfels_storage", gapi::BufferState::BF_STATE_SRV, false);
+    auto gibs_surfels_spatial_storage = reg.readBuffer("gibs_surfels_spatial_storage", gapi::BufferState::BF_STATE_SRV, false);
+    auto gibs_surfels_allocation_pos = reg.modifyTexture("gibs_surfels_allocation_pos", gapi::TextureState::ShaderReadWrite);
 
-    return [gbuffer_depth,surfelsSDF,surfelsStorage,surfelsSpatialStorage,surfelsAllocPos,render_size](gapi::CmdEncoder& encoder)
+    return [late_opaque_depth,gibs_surfels_sdf,gibs_surfels_storage,gibs_surfels_spatial_storage,gibs_surfels_allocation_pos,render_size](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
-      tfx::set_extern("surfelsSDF", surfelsSDF.get());
-      tfx::set_extern("surfelsStorage", surfelsStorage.get());
-      tfx::set_extern("surfelsSpatialStorage", surfelsSpatialStorage.get());
-      tfx::set_extern("surfelsAllocPos", surfelsAllocPos.get());
+      tfx::set_extern("gbuffer_depth", late_opaque_depth.get());
+      tfx::set_extern("surfelsSDF", gibs_surfels_sdf.get());
+      tfx::set_extern("surfelsStorage", gibs_surfels_storage.get());
+      tfx::set_extern("surfelsSpatialStorage", gibs_surfels_spatial_storage.get());
+      tfx::set_extern("surfelsAllocPos", gibs_surfels_allocation_pos.get());
       gibs_surfels_find_surfels_alloc_pos(encoder, render_size.get());
     };
   });
@@ -253,21 +253,21 @@ void mk_fg_node_gibs_draw_surfels(Event*, ComponentsAccessor&)
   fg::register_node("gibs_draw_surfels", FG_FILE_DECL, [](fg::Registry& reg)
   { 
     reg.orderMeBefore("gibs_binning_sync");
-    auto gbuffer_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
-    auto surfelsStorage = reg.readBuffer("gibs_surfels_storage", gapi::BufferState::BF_STATE_SRV, false);
-    auto surfelsSpatialStorage = reg.readBuffer("gibs_surfels_spatial_storage", gapi::BufferState::BF_STATE_SRV, false);
-    auto surfelsMeta = reg.readBuffer("gibs_surfels_meta", gapi::BufferState::BF_STATE_SRV, false);
+    auto late_opaque_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
+    auto gibs_surfels_storage = reg.readBuffer("gibs_surfels_storage", gapi::BufferState::BF_STATE_SRV, false);
+    auto gibs_surfels_spatial_storage = reg.readBuffer("gibs_surfels_spatial_storage", gapi::BufferState::BF_STATE_SRV, false);
+    auto gibs_surfels_meta = reg.readBuffer("gibs_surfels_meta", gapi::BufferState::BF_STATE_SRV, false);
     reg.requestRenderPass()
       .addTarget("gibs_dbg_surfels", gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
     ;
 
 
-    return [gbuffer_depth,surfelsStorage,surfelsSpatialStorage,surfelsMeta](gapi::CmdEncoder& encoder)
+    return [late_opaque_depth,gibs_surfels_storage,gibs_surfels_spatial_storage,gibs_surfels_meta](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
-      tfx::set_extern("surfelsStorage", surfelsStorage.get());
-      tfx::set_extern("surfelsSpatialStorage", surfelsSpatialStorage.get());
-      tfx::set_extern("surfelsMeta", surfelsMeta.get());
+      tfx::set_extern("gbuffer_depth", late_opaque_depth.get());
+      tfx::set_extern("surfelsStorage", gibs_surfels_storage.get());
+      tfx::set_extern("surfelsSpatialStorage", gibs_surfels_spatial_storage.get());
+      tfx::set_extern("surfelsMeta", gibs_surfels_meta.get());
       gibs_draw_surfels(encoder);
     };
   });
@@ -316,28 +316,28 @@ void mk_fg_node_gibs_allocate_surfels(Event*, ComponentsAccessor&)
     const uint2 __renderSize__ = reg.getRenderSize();
 
     fg::dsl::AccessDecorator render_size{__renderSize__};
-    auto dbgTex = reg.modifyTexture("gibs_dbg_alloc", gapi::TextureState::ShaderReadWrite);
-    auto gbuffer_normal = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
-    auto gbuffer_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
-    auto surfelsLifeTime = reg.modifyBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_UAV_RW);
-    auto surfelsStorage = reg.modifyBuffer("gibs_surfels_storage_binned", gapi::BufferState::BF_STATE_UAV_RW);
-    auto surfelsPool = reg.modifyBuffer("gibs_surfels_pool_binned", gapi::BufferState::BF_STATE_UAV_RW);
-    auto surfelsAllocLocks = reg.modifyBuffer("gibs_surfels_allocation_locks", gapi::BufferState::BF_STATE_UAV_RW);
-    auto surfelsMeta = reg.modifyBuffer("gibs_surfels_meta_binned", gapi::BufferState::BF_STATE_UAV_RW);
-    auto surfelsAllocPos = reg.readTexture("gibs_surfels_allocation_pos", gapi::TextureState::ShaderRead, false);
+    auto gibs_dbg_alloc = reg.modifyTexture("gibs_dbg_alloc", gapi::TextureState::ShaderReadWrite);
+    auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
+    auto late_opaque_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
+    auto gibs_surfels_lifetime = reg.modifyBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_surfels_storage_binned = reg.modifyBuffer("gibs_surfels_storage_binned", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_surfels_pool_binned = reg.modifyBuffer("gibs_surfels_pool_binned", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_surfels_allocation_locks = reg.modifyBuffer("gibs_surfels_allocation_locks", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_surfels_meta_binned = reg.modifyBuffer("gibs_surfels_meta_binned", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_surfels_allocation_pos = reg.readTexture("gibs_surfels_allocation_pos", gapi::TextureState::ShaderRead, false);
     reg.orderMeBefore("gbuffer_resolve");
 
-    return [dbgTex,gbuffer_normal,gbuffer_depth,surfelsLifeTime,surfelsStorage,surfelsPool,surfelsAllocLocks,surfelsMeta,surfelsAllocPos,render_size](gapi::CmdEncoder& encoder)
+    return [gibs_dbg_alloc,gbuf1,late_opaque_depth,gibs_surfels_lifetime,gibs_surfels_storage_binned,gibs_surfels_pool_binned,gibs_surfels_allocation_locks,gibs_surfels_meta_binned,gibs_surfels_allocation_pos,render_size](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("dbgTex", dbgTex.get());
-      tfx::set_extern("gbuffer_normal", gbuffer_normal.get());
-      tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
-      tfx::set_extern("surfelsLifeTime", surfelsLifeTime.get());
-      tfx::set_extern("surfelsStorage", surfelsStorage.get());
-      tfx::set_extern("surfelsPool", surfelsPool.get());
-      tfx::set_extern("surfelsAllocLocks", surfelsAllocLocks.get());
-      tfx::set_extern("surfelsMeta", surfelsMeta.get());
-      tfx::set_extern("surfelsAllocPos", surfelsAllocPos.get());
+      tfx::set_extern("dbgTex", gibs_dbg_alloc.get());
+      tfx::set_extern("gbuffer_normal", gbuf1.get());
+      tfx::set_extern("gbuffer_depth", late_opaque_depth.get());
+      tfx::set_extern("surfelsLifeTime", gibs_surfels_lifetime.get());
+      tfx::set_extern("surfelsStorage", gibs_surfels_storage_binned.get());
+      tfx::set_extern("surfelsPool", gibs_surfels_pool_binned.get());
+      tfx::set_extern("surfelsAllocLocks", gibs_surfels_allocation_locks.get());
+      tfx::set_extern("surfelsMeta", gibs_surfels_meta_binned.get());
+      tfx::set_extern("surfelsAllocPos", gibs_surfels_allocation_pos.get());
       gibs_allocate_surfels(encoder, render_size.get());
     };
   });
@@ -360,13 +360,13 @@ void mk_fg_node_gibs_transform_surfels(Event*, ComponentsAccessor&)
   fg::register_node("gibs_transform_surfels", FG_FILE_DECL, [](fg::Registry& reg)
   { 
     reg.orderMeBefore("gibs_sync_out");
-    auto surfelsStorage = reg.modifyBuffer("gibs_surfels_storage_binned", gapi::BufferState::BF_STATE_UAV_RW);
-    auto surfelsLifeTime = reg.readBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_SRV, false);
+    auto gibs_surfels_storage_binned = reg.modifyBuffer("gibs_surfels_storage_binned", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_surfels_lifetime = reg.readBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_SRV, false);
 
-    return [surfelsStorage,surfelsLifeTime](gapi::CmdEncoder& encoder)
+    return [gibs_surfels_storage_binned,gibs_surfels_lifetime](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("surfelsStorage", surfelsStorage.get());
-      tfx::set_extern("surfelsLifeTime", surfelsLifeTime.get());
+      tfx::set_extern("surfelsStorage", gibs_surfels_storage_binned.get());
+      tfx::set_extern("surfelsLifeTime", gibs_surfels_lifetime.get());
       gibs_transform_surfels(encoder);
     };
   });

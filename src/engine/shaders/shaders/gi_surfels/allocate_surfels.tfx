@@ -35,6 +35,7 @@ technique GIBS_AllocateSurfels
   USE_MATERIALS_NORMAL_UNPACK();
 
   #hlsl
+  #include "lifetime.hlsl"
   #include "spatial_hash.hlsl"
   #include "surfel_pool.hlsl"
 
@@ -100,7 +101,10 @@ technique GIBS_AllocateSurfels
         surfel.init(worldPos, r, N);
 
         surfelsStorage[surfelId] = surfel;
-        surfelsLifeTime[surfelId] = 0;
+        
+        Lifetime lifetime = {0};
+        lifetime.markAllocated();
+        surfelsLifeTime[surfelId] = lifetime.data;
       }
     }
 

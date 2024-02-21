@@ -37,11 +37,9 @@ technique GIBS_SpatialStorageBinning
     if (surfelId >= SURFEL_COUNT_TOTAL)
       return;
 
-    uint lifetime = surfelsLifeTime[surfelId];
-    if (!isSurfelAlive(lifetime))
+    Lifetime lifetime = {surfelsLifeTime[surfelId]};
+    if (!lifetime.isAlive())
       return;
-
-    //surfelsLifeTime[id] = lifetime+1;
 
     SurfelData surfel = surfelsStorage[surfelId];
     SpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
