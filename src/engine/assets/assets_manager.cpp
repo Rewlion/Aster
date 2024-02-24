@@ -102,6 +102,33 @@ namespace Engine
       });
   }
 
+  auto AssetsManager::uploadStaticMeshToGpu(const UnpackedStaticMesh& unpacked_mesh,
+                                            gapi::CmdEncoder& encoder) -> StaticMesh
+  {
+    StaticMesh mesh;
+
+    for (const CpuSubmesh& sm : unpacked_mesh.cpuSubmeshes)
+    {
+      const auto& [vertices, indices] = sm;
+
+      gapi::BufferAllocationDescription vbAlloc;
+      const size_t verticesSize = vertices.size() * sizeof(vertices[0]);
+      const size_t indicesSize = indices.size() * sizeof(indices[0]);
+
+      GpuSubmesh gpuSubmesh;
+      gpuSubmesh.vertexBuffer = gapi::allocate_buffer(verticesSize, gapi::BF_GpuVisible | gapi::BF_BindVertex);
+      gpuSubmesh.indexBuffer  = gapi::allocate_buffer(indicesSize,  gapi::BF_GpuVisible | gapi::BF_BindIndex);
+
+      encoder.writeBuffer(gpuSubmesh.vertexBuffer, vertices.data(), 0, verticesSize);
+      encoder.writeBuffer(gpuSubmesh.indexBuffer, indices.data(), 0, indicesSize);
+      gpuSubmesh.indexCount = indices.size();
+
+      mesh.gpuSubmeshes.push(std::move(gpuSubmesh));
+    }
+
+    return mesh;
+  }
+
   void AssetsManager::loadStaticMesh(const ed::Scope& asset, gapi::CmdEncoder& encoder)
   {
     const string_view file = asset.getVariable<string_view>("bin");
@@ -110,10 +137,12 @@ namespace Engine
     loginfo("asset manager: loading static_mesh: {} as {}", file, name);
     const string_hash nameHash = str_hash(name);
 
-    StaticMesh staticMeshAsset = loadGltf(file, encoder);
+    UnpackedStaticMesh unpackedMesh = loadGltf(file, encoder);
+    StaticMesh mesh = uploadStaticMeshToGpu(unpackedMesh, encoder);
+
     m_StaticMeshes.insert({
       nameHash,
-      std::move(staticMeshAsset)
+      std::move(mesh)
     });
   }
 

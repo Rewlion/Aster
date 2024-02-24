@@ -136,18 +136,13 @@ namespace
     int i;
   };
 
-  struct MeshVertex
+  auto gather_vertices(const tinygltf::Model& model,
+                       const tinygltf::Mesh& mesh)
+   -> std::tuple<eastl::vector<StaticMeshVertex>,
+                 eastl::vector<gapi::index_type>>
   {
-    float3 pos       = {0,0,0};
-    float3 normal    = {0,0,0};
-    float2 uv        = {0,0};
-  };
-
-  std::tuple<std::vector<MeshVertex>, std::vector<gapi::index_type>>
-    gather_vertices(const tinygltf::Model& model, const tinygltf::Mesh& mesh)
-  {
-    std::vector<MeshVertex> vertices;
-    std::vector<gapi::index_type> indices;
+    eastl::vector<StaticMeshVertex> vertices;
+    eastl::vector<gapi::index_type> indices;
 
     size_t verticesCount = 0;
     for (tinygltf::Primitive primitive : mesh.primitives)
@@ -171,7 +166,7 @@ namespace
 
       for (int i = 0; i < posAccessor.getCount(); ++i)
       {
-        MeshVertex vertex;
+        StaticMeshVertex vertex;
         vertex.pos = posAccessor++;
         vertex.normal = normalAccessor++;
         vertex.uv = uvAccessor++;
@@ -189,33 +184,31 @@ namespace
 
 namespace Engine
 {
-  static StaticMesh process_model(const tinygltf::Model& model, gapi::CmdEncoder& encoder)
+  static
+  auto process_model(const tinygltf::Model& model,
+                     gapi::CmdEncoder& encoder)
+    -> UnpackedStaticMesh
   {
-    StaticMesh asset;
+    UnpackedStaticMesh asset;
 
     for (tinygltf::Mesh mesh : model.meshes)
     {
       auto [vertices, indices] = gather_vertices(model, mesh);
 
-      gapi::BufferAllocationDescription vbAlloc;
-      const size_t verticesSize = vertices.size() * sizeof(vertices[0]);
-      const size_t indicesSize = indices.size() * sizeof(indices[0]);
+      CpuSubmesh cpuSubmesh {
+        .vertices = std::move(vertices),
+        .indices = std::move(indices)
+      };
 
-      Submesh submesh;
-      submesh.vertexBuffer = gapi::allocate_buffer(verticesSize, gapi::BF_GpuVisible | gapi::BF_BindVertex);
-      submesh.indexBuffer  = gapi::allocate_buffer(indicesSize,  gapi::BF_GpuVisible | gapi::BF_BindIndex);
-
-      encoder.writeBuffer(submesh.vertexBuffer, vertices.data(), 0, verticesSize);
-      encoder.writeBuffer(submesh.indexBuffer, indices.data(), 0, indicesSize);
-      submesh.indexCount = indices.size();
-
-      asset.submeshes.push(std::move(submesh));
+      asset.cpuSubmeshes.push(std::move(cpuSubmesh));
     }
 
     return asset;
   }
 
-  StaticMesh AssetsManager::loadGltf(const string_view file, gapi::CmdEncoder& encoder)
+  auto AssetsManager::loadGltf(const string_view file,
+                               gapi::CmdEncoder& encoder)
+    -> UnpackedStaticMesh
   {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
@@ -233,7 +226,6 @@ namespace Engine
     if (!ret)
       ASSERT(!"asset manager: failed to load asset");
 
-    StaticMesh asset = process_model(model, encoder);
-    return asset;
+    return process_model(model, encoder);
   }
 }

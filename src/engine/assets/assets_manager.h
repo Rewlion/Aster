@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vertex.h"
+
 #include <engine/gapi/gapi.h>
 #include <engine/tfx/tfx.h>
 
@@ -19,7 +21,13 @@ namespace gapi
 
 namespace Engine
 {
-  struct Submesh
+  struct CpuSubmesh
+  {
+    eastl::vector<StaticMeshVertex> vertices;
+    eastl::vector<gapi::index_type> indices;
+  };
+
+  struct GpuSubmesh
   {
     gapi::BufferHandler       vertexBuffer;
     gapi::BufferHandler       indexBuffer;
@@ -28,9 +36,14 @@ namespace Engine
 
   constexpr size_t MAX_SUBMESH_COUNT = 32;
 
+  struct UnpackedStaticMesh
+  {
+    Utils::FixedStack<CpuSubmesh, MAX_SUBMESH_COUNT> cpuSubmeshes;
+  };
+
   struct StaticMesh
   {
-    Utils::FixedStack<Submesh, MAX_SUBMESH_COUNT> submeshes;
+    Utils::FixedStack<GpuSubmesh, MAX_SUBMESH_COUNT> gpuSubmeshes;
   };
 
   struct ModelAsset
@@ -58,7 +71,8 @@ namespace Engine
 
     private:
       void loadAssetsFromFs();
-      StaticMesh loadGltf(const string_view file, gapi::CmdEncoder& encoder);
+      auto uploadStaticMeshToGpu(const UnpackedStaticMesh&, gapi::CmdEncoder&) -> StaticMesh;
+      UnpackedStaticMesh loadGltf(const string_view file, gapi::CmdEncoder& encoder);
       TextureAsset loadTexture(const string_view file, gapi::CmdEncoder& encoder, const gapi::TextureFormat);
       TextureAsset loadCubeMapTexture(const string_view file, gapi::CmdEncoder& encoder, const gapi::TextureFormat);
       void loadTextureAsset(const ed::Scope& asset, gapi::CmdEncoder& encoder);

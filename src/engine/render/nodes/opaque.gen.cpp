@@ -156,32 +156,32 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
     );
 
     fg::dsl::AccessDecorator render_size{__renderSize__};
-    auto gbuffer_albedo = reg.readTexture("gbuf0", gapi::TextureState::ShaderRead, false);
-    auto gbuffer_normal = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
-    auto gbuffer_metal_roughness = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead, false);
-    auto prevPostProcessInput = reg.readTexture("post_process_input", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+    auto gbuf0 = reg.readTexture("gbuf0", gapi::TextureState::ShaderRead, false);
+    auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
+    auto gbuf2 = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead, false);
+    auto post_process_input = reg.readTexture("post_process_input", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
     auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead, false);
-    auto clustersLightBuffer = reg.readBuffer("clustered_lights", gapi::BufferState::BF_STATE_SRV, false);
-    auto clustersInfoBuffer = reg.readBuffer("clusters_info", gapi::BufferState::BF_STATE_SRV, false);
-    auto clustersIndirectionBuffer = reg.readBuffer("clusters_indirecion", gapi::BufferState::BF_STATE_SRV, false);
+    auto clustered_lights = reg.readBuffer("clustered_lights", gapi::BufferState::BF_STATE_SRV, false);
+    auto clusters_info = reg.readBuffer("clusters_info", gapi::BufferState::BF_STATE_SRV, false);
+    auto clusters_indirecion = reg.readBuffer("clusters_indirecion", gapi::BufferState::BF_STATE_SRV, false);
     auto gbuffer_depth = reg.renameTexture("late_opaque_depth", "gbuffer_depth", gapi::TextureState::DepthReadStencilRead);
-    auto atmParamsBuffer = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_SRV, false);
-    auto specularLight = reg.readTexture("specular_light", gapi::TextureState::ShaderRead, false);
+    auto sph_buf = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_SRV, false);
+    auto specular_light = reg.readTexture("specular_light", gapi::TextureState::ShaderRead, false);
 
-    return [resolve_target,gbuffer_albedo,gbuffer_normal,gbuffer_metal_roughness,prevPostProcessInput,motionBuf,clustersLightBuffer,clustersInfoBuffer,clustersIndirectionBuffer,gbuffer_depth,atmParamsBuffer,specularLight,render_size](gapi::CmdEncoder& encoder)
+    return [resolve_target,gbuf0,gbuf1,gbuf2,post_process_input,motionBuf,clustered_lights,clusters_info,clusters_indirecion,gbuffer_depth,sph_buf,specular_light,render_size](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("resolveTarget", resolve_target.get());
-      tfx::set_extern("gbuffer_albedo", gbuffer_albedo.get());
-      tfx::set_extern("gbuffer_normal", gbuffer_normal.get());
-      tfx::set_extern("gbuffer_metal_roughness", gbuffer_metal_roughness.get());
-      tfx::set_extern("prevPostProcessInput", prevPostProcessInput.get());
+      tfx::set_extern("gbuffer_albedo", gbuf0.get());
+      tfx::set_extern("gbuffer_normal", gbuf1.get());
+      tfx::set_extern("gbuffer_metal_roughness", gbuf2.get());
+      tfx::set_extern("prevPostProcessInput", post_process_input.get());
       tfx::set_extern("motionBuf", motionBuf.get());
-      tfx::set_extern("clustersLightBuffer", clustersLightBuffer.get());
-      tfx::set_extern("clustersInfoBuffer", clustersInfoBuffer.get());
-      tfx::set_extern("clustersIndirectionBuffer", clustersIndirectionBuffer.get());
+      tfx::set_extern("clustersLightBuffer", clustered_lights.get());
+      tfx::set_extern("clustersInfoBuffer", clusters_info.get());
+      tfx::set_extern("clustersIndirectionBuffer", clusters_indirecion.get());
       tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
-      tfx::set_extern("atmParamsBuffer", atmParamsBuffer.get());
-      tfx::set_extern("specularLight", specularLight.get());
+      tfx::set_extern("atmParamsBuffer", sph_buf.get());
+      tfx::set_extern("specularLight", specular_light.get());
       gbuffer_resolve_exec(encoder, render_size.get());
     };
   });
