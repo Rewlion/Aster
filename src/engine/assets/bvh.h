@@ -38,7 +38,7 @@ namespace Engine
       void buildNodes();
       void updateNodeAABB(BVHNode& node);
       void subdivideNode(const size_t node_id);
-      auto findSubdivisionPlane(const BVHNode& node) const -> eastl::tuple<float, float, uint>;
+      auto findSubdivisionPlane(const BVHNode& node) const -> eastl::tuple<uint, float, float>;
       void addNode(const uint tri_begin, const uint tri_count);
     private:
       float3 minAABB, maxAABB;

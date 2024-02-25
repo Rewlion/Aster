@@ -104,11 +104,15 @@ namespace Engine
     float4 min = float4(std::numeric_limits<float>::max());
     float4 max = float4(std::numeric_limits<float>::min());
 
-    uint lastVertexId = node.triBegin + node.triCount * 3;
-    for (uint i = node.triBegin * 3;  i < lastVertexId; ++i)
+    const uint triEnd = node.triBegin + node.triCount;
+    for (uint iTri = node.triBegin;  iTri < triEnd; ++iTri)
     {
-      min = glm::min(min, m_VerticesPos[i]);
-      max = glm::max(max,  m_VerticesPos[i]);
+      const uint triID = m_TriIds[iTri];
+      for (int i = 0; i < 3; ++i)
+      {
+        min = glm::min(min, m_VerticesPos[triID*3 + i]);
+        max = glm::max(max,  m_VerticesPos[triID*3 + i]);
+      }
     }
 
     node.minAABB = min;
@@ -134,20 +138,22 @@ namespace Engine
       if (centroid[bestAxis] < bestSplitPos)
         ++i;
       else
-        std::swap(m_TriIds[i], m_TriIds[--j]);
+        std::swap(m_TriIds[i], m_TriIds[j--]);
     }
 
     const uint leftTriCount = i - node.triBegin;
+    const uint leftTriBegin = node.triBegin;
     const uint rightTriCount = node.triCount - leftTriCount;
+    const uint rightTriBegin = leftTriBegin + leftTriCount;
 
     if (leftTriCount == 0 || leftTriCount == node.triCount)
       return;
 
-
     const uint leftChildId = m_Nodes.size();
-    addNode(i, leftTriCount);
-    addNode(j, rightTriCount);
+    addNode(leftTriBegin, leftTriCount);
+    addNode(rightTriBegin, rightTriCount);
 
+    node.triBegin = 0;
     node.triCount = 0;
     node.leftChild = leftChildId;
 
@@ -156,7 +162,7 @@ namespace Engine
   }
 
   auto BVH::findSubdivisionPlane(const BVHNode& node) const
-    -> eastl::tuple<float, float, uint>
+    -> eastl::tuple<uint, float, float>
   {
     constexpr uint BINS_COUNT = 8;
     SahBin bins[BINS_COUNT];
@@ -184,7 +190,8 @@ namespace Engine
         const uint triID = m_TriIds[iTri];
 
         const float centroid = m_TriangleCentroids[triID][axis];
-        const uint iBin = std::max(BINS_COUNT-1, (uint)((centroid - binMin) / (binMax - binMin)) );
+        const uint iBin = std::min(BINS_COUNT-1, 
+                                  (uint)(BINS_COUNT * (centroid - binMin) / (binMax - binMin)));
 
         const float4& v0 = m_VerticesPos[triID*3 + 0];
         const float4& v1 = m_VerticesPos[triID*3 + 1];
