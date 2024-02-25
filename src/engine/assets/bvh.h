@@ -36,13 +36,12 @@ namespace Engine
       void buildNodes();
       void updateNodeAABB(BVHNode& node);
       void subdivideNode(const size_t node_id);
-      auto findSubdivisionPlane(const BVHNode& node) const -> eastl::tuple<float, float3, uint>;
-      auto calcSAH(const BVHNode&, const float3 axis_pos, const uint axis) const -> float;
+      auto findSubdivisionPlane(const BVHNode& node) const -> eastl::tuple<float, float, uint>;
       void addNode(const uint tri_begin, const uint tri_count);
     private:
       float3 minAABB, maxAABB;
 
-      eastl::vector<float4> m_TrianglesPos;
+      eastl::vector<float4> m_VerticesPos;
       eastl::vector<float3> m_TriangleCentroids;
       eastl::vector<TriangleVertexPayload> m_VerticesPayload;
       

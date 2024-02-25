@@ -23,6 +23,13 @@ namespace Engine
       count += 1;
     }
 
+    void grow(const SahBin& b)
+    {
+      min = glm::min(min, b.min);
+      max = glm::max(max, b.max);
+      count += b.count;
+    }
+
     float area() const
     {
       return calc_bin_area(min, max);
@@ -39,7 +46,7 @@ namespace Engine
   {
     const size_t triCount = mesh.indices.size() / 3;
 
-    m_TrianglesPos.reserve(triCount);
+    m_VerticesPos.reserve(triCount*3);
     m_TriangleCentroids.reserve(triCount);
     m_VerticesPayload.reserve(triCount*3);
 
@@ -55,7 +62,7 @@ namespace Engine
       {
         const StaticMeshVertex& v = mesh.vertices[is[i]];
         
-        m_TrianglesPos.push_back(float4(v.pos, 0.0));
+        m_VerticesPos.push_back(float4(v.pos, 0.0));
 
         m_VerticesPayload.push_back(TriangleVertexPayload{
           .uv = v.uv,
@@ -81,6 +88,15 @@ namespace Engine
 
     for (uint i = 0; i < triCount; ++i)
       m_TriIds.push_back(i);
+
+    BVHNode& root = *reinterpret_cast<BVHNode*>(m_Nodes.push_back_uninitialized());
+    root.minAABB = float4(minAABB, 0.0f);
+    root.maxAABB = float4(maxAABB, 0.0f);
+    root.triBegin = 0;
+    root.triCount = triCount;
+    root.leftChild = 0;
+
+    subdivideNode(0);
   }
 
   void BVH::updateNodeAABB(BVHNode& node)
@@ -89,10 +105,10 @@ namespace Engine
     float4 max = float4(std::numeric_limits<float>::min());
 
     uint lastVertexId = node.triBegin + node.triCount * 3;
-    for (uint i = node.triBegin;  i < lastVertexId; ++i)
+    for (uint i = node.triBegin * 3;  i < lastVertexId; ++i)
     {
-      min = glm::min(min, m_TrianglesPos[i]);
-      max = glm::max(max,  m_TrianglesPos[i]);
+      min = glm::min(min, m_VerticesPos[i]);
+      max = glm::max(max,  m_VerticesPos[i]);
     }
 
     node.minAABB = min;
@@ -104,7 +120,7 @@ namespace Engine
     BVHNode& node = m_Nodes[node_id];
 
     const float baseScore = calc_bin_area(node.minAABB, node.maxAABB) * node.triCount;
-    const auto [bestScore, bestSplitPos, bestAxis] = findSubdivisionPlane(node);
+    const auto [bestAxis, bestSplitPos, bestScore] = findSubdivisionPlane(node);
 
     if (bestScore >= baseScore)
       return;
@@ -115,7 +131,7 @@ namespace Engine
     {
       uint triID = m_TriIds[i];
       float3 centroid = m_TriangleCentroids[triID];
-      if (centroid[bestAxis] < bestSplitPos[bestAxis])
+      if (centroid[bestAxis] < bestSplitPos)
         ++i;
       else
         std::swap(m_TriIds[i], m_TriIds[--j]);
@@ -140,51 +156,71 @@ namespace Engine
   }
 
   auto BVH::findSubdivisionPlane(const BVHNode& node) const
-    -> eastl::tuple<float, float3, uint>
+    -> eastl::tuple<float, float, uint>
   {
+    constexpr uint BINS_COUNT = 8;
+    SahBin bins[BINS_COUNT];
+
     uint bestAxis = 0;
-    float3 bestSplitPos;
+    float bestSplitPos = 0.0f;
     float bestScore = std::numeric_limits<float>::max();
 
     for (uint axis = 0; axis < 3; ++axis)
     {
-      uint triEnd = node.triBegin + node.triCount;
+      float binMin = std::numeric_limits<float>::max();
+      float binMax = std::numeric_limits<float>::min();
+
+      const uint triEnd = node.triBegin + node.triCount;
       for (uint iTri = node.triBegin; iTri < triEnd; ++iTri)
       {
-        uint triID = m_TriIds[iTri];
-        float3 centroid = m_TriangleCentroids[triID];
-        float score = calcSAH(node, centroid, axis);
+        const uint triID = m_TriIds[iTri];
 
-        if (score < bestScore)
+        binMin = glm::min(binMin, m_TriangleCentroids[triID][axis]);
+        binMax = glm::max(binMax, m_TriangleCentroids[triID][axis]);
+      }
+
+      for (uint iTri = node.triBegin; iTri < triEnd; ++iTri)
+      {
+        const uint triID = m_TriIds[iTri];
+
+        const float centroid = m_TriangleCentroids[triID][axis];
+        const uint iBin = std::max(BINS_COUNT-1, (uint)((centroid - binMin) / (binMax - binMin)) );
+
+        const float4& v0 = m_VerticesPos[triID*3 + 0];
+        const float4& v1 = m_VerticesPos[triID*3 + 1];
+        const float4& v2 = m_VerticesPos[triID*3 + 2];
+
+        bins[iBin].grow(v0,v1,v2);
+      }
+
+      float leftAreas[BINS_COUNT-1], rightAreas[BINS_COUNT-1];
+      uint leftTriCounts[BINS_COUNT-1], rightTriCounts[BINS_COUNT-1];
+      SahBin leftBin, rightBin;
+
+      for (uint i = 0; i < BINS_COUNT - 1; ++i)
+      {
+        const uint j = BINS_COUNT-1-i;
+        leftBin.grow(bins[i]);
+        rightBin.grow(bins[j]);
+
+        leftAreas[i] = leftBin.area();
+        leftTriCounts[i] = leftBin.count;
+        rightAreas[i] = rightBin.area();
+        rightTriCounts[i] = rightBin.count;
+      }
+
+      for (uint iLeft = 0; iLeft < BINS_COUNT-1; ++iLeft)
+      {
+        const float planeScore = leftAreas[iLeft] * leftTriCounts[iLeft] + rightAreas[iLeft] * rightTriCounts[iLeft];
+        if (planeScore < bestScore)
         {
+          bestScore = planeScore;
           bestAxis = axis;
-          bestScore = score;
-          bestSplitPos = centroid;
+          bestSplitPos = binMin + (binMax - binMin) / (float)BINS_COUNT * (float)(iLeft+1);
         }
       }
     }
-
-    return {bestScore, bestSplitPos, bestAxis};
-  }
-
-  auto BVH::calcSAH(const BVHNode& node, const float3 axis_pos, const uint axis) const -> float
-  {
-    SahBin left, right;
-
-    uint triEnd = node.triBegin + node.triCount;
-    for (uint iTri = node.triBegin; iTri < triEnd; ++iTri)
-    {
-      float3 centroid = m_TriangleCentroids[iTri];
-      const float4& v0 = m_TrianglesPos[iTri + 0];
-      const float4& v1 = m_TrianglesPos[iTri + 1];
-      const float4& v2 = m_TrianglesPos[iTri + 2];
-
-      SahBin& bin = centroid[axis] < axis_pos[axis] ? left : right;
-      bin.grow(v0,v1,v2);
-    }
-
-    float score = left.count * left.area() + right.count + right.area();
-    return score > 0 ? score :  std::numeric_limits<float>::max();
+    return {bestAxis, bestSplitPos, bestScore};
   }
 
   void BVH::addNode(const uint tri_begin, const uint tri_count)
