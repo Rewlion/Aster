@@ -30,6 +30,8 @@ namespace Engine
       BVH() = default;
       BVH(BVH&&) = default;
       BVH(const Engine::CpuSubmesh& mesh);
+
+      BVH& operator=(BVH&&) = default;
   
     private:
       void unpackTriangles(const Engine::CpuSubmesh& mesh);

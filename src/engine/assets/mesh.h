@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vertex.h"
+#include "bvh.h"
 
 #include <engine/gapi/resources.h>
 
@@ -22,14 +23,18 @@ namespace Engine
   };
 
   constexpr size_t MAX_SUBMESH_COUNT = 32;
+  
+  template<class T>
+  using SubmeshStack = Utils::FixedStack<T, MAX_SUBMESH_COUNT>;
 
   struct UnpackedStaticMesh
   {
-    Utils::FixedStack<CpuSubmesh, MAX_SUBMESH_COUNT> cpuSubmeshes;
+    SubmeshStack<CpuSubmesh> cpuSubmeshes;
   };
 
   struct StaticMesh
   {
-    Utils::FixedStack<GpuSubmesh, MAX_SUBMESH_COUNT> gpuSubmeshes;
+    SubmeshStack<GpuSubmesh> gpuSubmeshes;
+    SubmeshStack<BVH> submeshesBVH;
   };
 }

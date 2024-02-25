@@ -103,9 +103,9 @@ namespace Engine
   }
 
   auto AssetsManager::uploadStaticMeshToGpu(const UnpackedStaticMesh& unpacked_mesh,
-                                            gapi::CmdEncoder& encoder) -> StaticMesh
+                                            gapi::CmdEncoder& encoder) -> SubmeshStack<GpuSubmesh>
   {
-    StaticMesh mesh;
+    SubmeshStack<GpuSubmesh> submeshes;
 
     for (const CpuSubmesh& sm : unpacked_mesh.cpuSubmeshes)
     {
@@ -123,10 +123,19 @@ namespace Engine
       encoder.writeBuffer(gpuSubmesh.indexBuffer, indices.data(), 0, indicesSize);
       gpuSubmesh.indexCount = indices.size();
 
-      mesh.gpuSubmeshes.push(std::move(gpuSubmesh));
+      submeshes.push(std::move(gpuSubmesh));
     }
 
-    return mesh;
+    return submeshes;
+  }
+
+  auto AssetsManager::createBVHForSubmeshes(const UnpackedStaticMesh& unpacked_mesh) -> SubmeshStack<BVH>
+  {
+    SubmeshStack<BVH> bvhs;
+    for (const CpuSubmesh& sm : unpacked_mesh.cpuSubmeshes)
+      bvhs.push(BVH{sm});
+    
+    return bvhs;
   }
 
   void AssetsManager::loadStaticMesh(const ed::Scope& asset, gapi::CmdEncoder& encoder)
@@ -138,11 +147,15 @@ namespace Engine
     const string_hash nameHash = str_hash(name);
 
     UnpackedStaticMesh unpackedMesh = loadGltf(file, encoder);
-    StaticMesh mesh = uploadStaticMeshToGpu(unpackedMesh, encoder);
+    SubmeshStack<GpuSubmesh> gpuSubmeshes = uploadStaticMeshToGpu(unpackedMesh, encoder);
+    SubmeshStack<BVH> submeshesBVH = createBVHForSubmeshes(unpackedMesh);
 
     m_StaticMeshes.insert({
       nameHash,
-      std::move(mesh)
+      StaticMesh{
+        .gpuSubmeshes = std::move(gpuSubmeshes),
+        .submeshesBVH = std::move(submeshesBVH)
+      }
     });
   }
 
