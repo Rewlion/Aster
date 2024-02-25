@@ -53,12 +53,12 @@ namespace Engine
     minAABB = float3(std::numeric_limits<float>::max());
     maxAABB = float3(std::numeric_limits<float>::min());
 
-    for (int i = 0; i < triCount; ++i)
+    for (int iTri = 0; iTri < triCount; ++iTri)
     {
-      const gapi::index_type* is = mesh.indices.data() + i*3;
+      const gapi::index_type* is = mesh.indices.data() + iTri*3;
 
       float3 centroid = float3(0,0,0);
-      for (int j = 0; j < 3; ++j)
+      for (int i = 0; i < 3; ++i)
       {
         const StaticMeshVertex& v = mesh.vertices[is[i]];
         
@@ -70,7 +70,7 @@ namespace Engine
         });
 
         minAABB = glm::min(minAABB, v.pos);
-        maxAABB = glm::min(maxAABB, v.pos);
+        maxAABB = glm::max(maxAABB, v.pos);
 
         centroid += v.pos;
       }
