@@ -129,11 +129,11 @@ namespace Engine
     return submeshes;
   }
 
-  auto AssetsManager::createBVHForSubmeshes(const UnpackedStaticMesh& unpacked_mesh) -> SubmeshStack<BVH>
+  auto AssetsManager::createBVHForSubmeshes(const UnpackedStaticMesh& unpacked_mesh) -> SubmeshStack<TriangleBVH>
   {
-    SubmeshStack<BVH> bvhs;
+    SubmeshStack<TriangleBVH> bvhs;
     for (const CpuSubmesh& sm : unpacked_mesh.cpuSubmeshes)
-      bvhs.push(BVH{sm});
+      bvhs.push(TriangleBVH{sm});
     
     return bvhs;
   }
@@ -148,7 +148,7 @@ namespace Engine
 
     UnpackedStaticMesh unpackedMesh = loadGltf(file, encoder);
     SubmeshStack<GpuSubmesh> gpuSubmeshes = uploadStaticMeshToGpu(unpackedMesh, encoder);
-    SubmeshStack<BVH> submeshesBVH = createBVHForSubmeshes(unpackedMesh);
+    SubmeshStack<TriangleBVH> submeshesBVH = createBVHForSubmeshes(unpackedMesh);
 
     m_StaticMeshes.insert({
       nameHash,

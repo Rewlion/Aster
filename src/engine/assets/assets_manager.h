@@ -49,7 +49,7 @@ namespace Engine
     private:
       void loadAssetsFromFs();
       auto uploadStaticMeshToGpu(const UnpackedStaticMesh&, gapi::CmdEncoder&) -> SubmeshStack<GpuSubmesh>;
-      auto createBVHForSubmeshes(const UnpackedStaticMesh&) -> SubmeshStack<BVH>;
+      auto createBVHForSubmeshes(const UnpackedStaticMesh&) -> SubmeshStack<TriangleBVH>;
       UnpackedStaticMesh loadGltf(const string_view file, gapi::CmdEncoder& encoder);
       TextureAsset loadTexture(const string_view file, gapi::CmdEncoder& encoder, const gapi::TextureFormat);
       TextureAsset loadCubeMapTexture(const string_view file, gapi::CmdEncoder& encoder, const gapi::TextureFormat);

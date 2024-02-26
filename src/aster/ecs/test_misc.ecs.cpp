@@ -510,7 +510,7 @@ void spawn_bvh_test(eastl::span<string_view>)
     ecs::EntityComponents init;
     init["test_static_mesh_pos"] = spawnPos;
     init["test_static_mesh_model"] = string{"damaged_helmet"}; //FIXME: template extend doesn't overwrite the default value, wtf?
-    //init["test_static_mesh_rot"] = float3{45.0, 180.0, 0.0};
+    init["test_static_mesh_rot"] = float3{45.0, 180.0, 0.0};
 
     ecs::get_registry().createEntity("BVH_Helmet", std::move(init));
     return;

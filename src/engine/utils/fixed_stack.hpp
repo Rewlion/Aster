@@ -173,8 +173,7 @@ namespace Utils
       {
         if (m_Size > 0)
         {
-          getLast().~T();
-          std::memset(&getLast(), 0, sizeof(T));
+          getLast() = T{};
 
           --m_Size;
           return true;
