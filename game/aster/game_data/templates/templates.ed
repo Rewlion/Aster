@@ -69,3 +69,9 @@ template @("name: MovingPointLight; extends: PointLight")
   center_pos:f3 = 0, 0, 0
   moving_point_light_tag:b = yes
 }
+
+template @("name: BVH_Helmet; extends: TestStaticMesh")
+{
+  test_static_mesh_model:t = "damaged_helmet"
+  bvh_test_flag:b = yes
+}

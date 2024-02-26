@@ -4,6 +4,8 @@
 
 #include <optional>
 
+#include <EASTL/tuple.h>
+
 namespace Utils
 {
   struct Basis
@@ -35,6 +37,16 @@ namespace Utils
     float3 min,max;
   };
 
+  struct Ray
+  {
+    float3 pos;
+    float3 dir;
+  };
+
+  struct Triangle
+  {
+    float3 a,b,c;
+  };
   struct Frustum
   {
     enum PlaneType{LEFT,RIGHT,BOT,TOP,NEAR,FAR, LAST_PLANE};
@@ -66,8 +78,12 @@ namespace Utils
   auto test_intersection(const Sphere&, const Sphere&) -> bool;
   auto test_intersection(const Frustum&, const Sphere&) -> bool;
   auto test_intersection(const AABB&, const Sphere&) -> bool;
+  auto test_intersection(const AABB&, const Ray&) -> bool;
 
   auto calc_intersect_point(const Plane& p1, const Plane& p2, const Plane& p3) -> std::optional<float3>;
+  auto calc_intersection_t(const AABB&, const Ray&) -> float;
+  auto calc_intersection_t(const Triangle&, const Ray&) -> eastl::tuple<float, float2>;
 
   auto calc_closest_point(const AABB&, const Sphere&) -> float3;
+
 }

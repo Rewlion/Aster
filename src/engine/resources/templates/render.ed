@@ -59,3 +59,11 @@ template @("name: PointLight") {
   point_light_attenuation_radius:f = 1
   point_light_color:f3 = 1, 1, 1
 }
+
+template @("name: TestStaticMesh")
+{
+  test_static_mesh_model:t = "cube_rough"
+  test_static_mesh_pos:f3 = 0,0,0
+  test_static_mesh_rot:f3 = 0,0,0
+  test_static_mesh_scale:f3 = 1,1,1
+}

@@ -1,3 +1,4 @@
+#include <engine/assets/assets_manager.h>
 #include <engine/console/cmd.h>
 #include <engine/console/console.h>
 #include <engine/ecs/ecs.h>
@@ -12,6 +13,9 @@
 #include <engine/types.h>
 #include <engine/utils/collision.h>
 #include <engine/work_cycle/camera.h>
+
+#include <glm/gtx/transform.hpp>
+
 // ECS_SYSTEM()
 // static void camera_rotation(
 //   const float2& camera_rotations
@@ -336,6 +340,33 @@ void tick_collision_tests(Engine::OnGameTick&, const bool collision_test_tag, co
       Engine::dbg::draw_line_sphere(sp, float3{1.0f, 0.0f, 1.0}, 1.0f);
     Engine::dbg::draw_line(sp.center, closestPoint, float3{1.0f, 1.0f, 0.0f}, 0.0f);
   }
+
+  //triangle-ray
+  {
+    const float3 triCenter = center + float3{0.0, 4.0, 0.0};
+    const float3 v0 = triCenter + float3{2.0, 0.7, 6.0};
+    const float3 v1 = triCenter - float3{3.4, 2.0, 0.5};
+    const float3 v2 = triCenter;
+
+    const float3 centroid = (v0+v1+v2) / 3.0f;
+
+    const float3 rayPos = triCenter - float3{0.0,2.0,1.0};
+    const float time = Engine::Time::get_sec_since_start();
+    const float3 rayEnd = glm::mix(centroid, v0, 1.3f*std::abs(sin(time*0.5)));
+    const float3 rayDir = glm::normalize(rayEnd - rayPos);
+
+    const auto [t, _] = Utils::calc_intersection_t(Utils::Triangle{v0,v1,v2}, Utils::Ray{rayPos, rayDir});
+    Engine::dbg::draw_poly(v0,v1,v2, float4{1.0, 1.0, 1.0, 0.5}, 0.0f);
+    if (t > 0)
+    {
+      const float3 intersectPoint = rayPos + rayDir * t;
+      Utils::Sphere sp{intersectPoint, 0.1};
+      Engine::dbg::draw_line_sphere(sp, float3{1.0f, 0.0f, 1.0f}, 0.0f);
+      Engine::dbg::draw_line(rayPos, rayPos + rayDir * t, float3{1.0f, 0.0f, 0.0f}, 0.0f);
+    }
+    else
+      Engine::dbg::draw_line(rayPos, rayPos + rayDir * 0.1f, float3{0.0f, 0.0f, 1.0f}, 0.0f);
+  }
 }
 
 static
@@ -470,6 +501,68 @@ void spawn_moving_point_light_at_camera(eastl::span<string_view>)
   });
 }
 
+static
+void spawn_bvh_test(eastl::span<string_view>)
+{
+  query_camera([](const float3& pos, const float2& rotation, const float3& forward)
+  {
+    const float3 spawnPos = pos + forward * 5.0f;
+    ecs::EntityComponents init;
+    init["test_static_mesh_pos"] = spawnPos;
+    init["test_static_mesh_model"] = string{"damaged_helmet"}; //FIXME: template extend doesn't overwrite the default value, wtf?
+    //init["test_static_mesh_rot"] = float3{45.0, 180.0, 0.0};
+
+    ecs::get_registry().createEntity("BVH_Helmet", std::move(init));
+    return;
+  });
+}
+
+ECS_SYSTEM()
+void render_bvh_test(
+  const string& test_static_mesh_model,
+  const float3& test_static_mesh_pos,
+  const float3& test_static_mesh_rot,
+  const float3& test_static_mesh_scale,
+  const bool bvh_test_flag)
+{
+  const mat4 rotTm = glm::rotate(test_static_mesh_rot.z, float3{0.0, 0.0, 1.0}) *
+                     glm::rotate(test_static_mesh_rot.y, float3{0.0, 1.0, 0.0}) *
+                     glm::rotate(test_static_mesh_rot.x, float3{1.0, 0.0, 0.0});
+  const mat4 scaleTm = glm::scale(test_static_mesh_scale);
+  const mat4 trTm = glm::translate(test_static_mesh_pos);
+
+  const float4x4 modelTm = trTm * scaleTm * rotTm;
+  const float4x4 invModelTm = glm::inverse(modelTm);
+
+  const Engine::ModelAsset* asset = Engine::assets_manager.getModel(test_static_mesh_model);
+  const Engine::BVH& bvh = asset->mesh->submeshesBVH.get(0);
+
+  const float3 rayPos = test_static_mesh_pos - float3{0.0f, 1.0f, 2.0f};
+  const float time = Engine::Time::get_sec_since_start();
+  const float3 rayDir = glm::normalize( float3{0.0f, 0.0f, 1.0f} + float3{0.0f, 1.0f, 0.0f} * std::abs(sin(time)) );
+
+  const float3 rayPos_os = invModelTm * float4{rayPos, 1.0};
+  const float3 rayDir_os = glm::normalize(invModelTm * float4{rayDir, 0.0});
+
+  const Utils::Ray ray_os{rayPos_os, rayDir_os};
+
+  const Engine::TraceResult res = bvh.traceRay(ray_os);
+
+  if (res.t >= 0)
+  {
+    const float3 rayEnd = modelTm * (float4{rayPos_os + rayDir_os * res.t, 1.0f});
+    Engine::dbg::draw_line(rayPos, rayEnd, float3{1.0f, 0.0f, 0.0f}, 0.0f);
+
+    Utils::Sphere sp{rayEnd, 0.05};
+    Engine::dbg::draw_line_sphere(sp, float3{1.0,0.0,1.0}, 1.0f);
+  }
+  else
+  {
+    Engine::dbg::draw_line(rayPos, rayPos + rayDir*2.0f, float3{1.0f, 1.0f, 0.0f}, 1.0f);
+  }
+
+}
+
 
 CONSOLE_CMD("draw_line", 0, 0, draw_line_at_camera_pos);
 CONSOLE_CMD("draw_line_plane", 0, 0, draw_line_plane_at_camera_pos);
@@ -485,3 +578,4 @@ CONSOLE_CMD("recreate", 0, 0, recreate_src);
 CONSOLE_CMD("add", 0, 0, add_subt);
 CONSOLE_CMD("del", 0, 0, remove_subt);
 CONSOLE_CMD("pawn", 0, 0, create_pawn);
+CONSOLE_CMD("bvh_test", 0, 0, spawn_bvh_test);

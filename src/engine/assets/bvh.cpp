@@ -1,6 +1,8 @@
 #include "bvh.h"
 #include "mesh.h"
 
+#include <engine/utils/collision.h>
+
 #include <limits>
 
 namespace Engine
@@ -162,9 +164,9 @@ namespace Engine
   }
 
   auto BVH::findSubdivisionPlane(const BVHNode& node) const
-    -> eastl::tuple<uint, float, float>
+    -> SubdivisionResult
   {
-    constexpr uint BINS_COUNT = 8;
+    constexpr uint BINS_COUNT = 32;
     SahBin bins[BINS_COUNT];
 
     uint bestAxis = 0;
@@ -204,9 +206,9 @@ namespace Engine
       uint leftTriCounts[BINS_COUNT-1], rightTriCounts[BINS_COUNT-1];
       SahBin leftBin, rightBin;
 
-      for (uint i = 0; i < BINS_COUNT - 1; ++i)
+      for (uint i = 0; i < BINS_COUNT-1; ++i)
       {
-        const uint j = BINS_COUNT-1-i;
+        const uint j = (BINS_COUNT-1)-i;
         leftBin.grow(bins[i]);
         rightBin.grow(bins[j]);
 
@@ -216,18 +218,20 @@ namespace Engine
         rightTriCounts[i] = rightBin.count;
       }
 
-      for (uint iLeft = 0; iLeft < BINS_COUNT-1; ++iLeft)
+      for (uint iPlane = 0; iPlane < BINS_COUNT-1; ++iPlane)
       {
-        const float planeScore = leftAreas[iLeft] * leftTriCounts[iLeft] + rightAreas[iLeft] * rightTriCounts[iLeft];
+        const uint iLeft = iPlane;
+        const uint iRight = (BINS_COUNT-1)-1-iLeft;
+        const float planeScore = leftAreas[iLeft] * leftTriCounts[iLeft] + rightAreas[iRight] * rightTriCounts[iRight];
         if (planeScore < bestScore)
         {
           bestScore = planeScore;
           bestAxis = axis;
-          bestSplitPos = binMin + (binMax - binMin) / (float)BINS_COUNT * (float)(iLeft+1);
+          bestSplitPos = binMin + (binMax - binMin) / (float)BINS_COUNT * (float)(iPlane+1);
         }
       }
     }
-    return {bestAxis, bestSplitPos, bestScore};
+    return {.axis = bestAxis, .pos = bestSplitPos, .score = bestScore};
   }
 
   void BVH::addNode(const uint tri_begin, const uint tri_count)
@@ -237,5 +241,72 @@ namespace Engine
     node.triCount = tri_count;
     node.leftChild = 0;
     updateNodeAABB(node);
+  }
+
+  auto BVH::traceRay(const Utils::Ray& ray) const -> TraceResult
+  {
+    TraceResult res{
+      .t = -1.0f,
+      .uv = {0.0f, 0.0f}
+    };
+
+    if (!Utils::test_intersection(Utils::AABB{minAABB, maxAABB}, ray))
+      return res;
+
+    uint nodeIds[64];
+    uint topId = 0;
+    nodeIds[0] = 0;
+
+    while (topId != -1)
+    {
+      const uint nodeId = nodeIds[topId--];
+      const BVHNode& node = m_Nodes[nodeId];
+
+      if (node.triCount == 0)
+      {
+        uint il = node.leftChild;
+        uint ir = node.leftChild+1;
+
+        const BVHNode& leftChild  = m_Nodes[il];
+        const BVHNode& rightChild = m_Nodes[ir];
+
+        float tl  = Utils::calc_intersection_t(Utils::AABB{leftChild.minAABB, leftChild.maxAABB}, ray);
+        float tr = Utils::calc_intersection_t(Utils::AABB{rightChild.minAABB, rightChild.maxAABB}, ray);
+
+        if (tr >= 0 && tr < tl)
+        {
+         std::swap(il,ir);
+         std::swap(tl,tr);
+        }
+
+        if (tr >= 0)
+          nodeIds[++topId] = ir;
+
+        if (tl >= 0)
+          nodeIds[++topId] = il;
+        
+        continue;
+      }
+
+      uint triEnd = node.triBegin + node.triCount;
+      for (uint iTri = node.triBegin; iTri < triEnd; ++iTri)
+      {
+        const uint triID = m_TriIds[iTri];
+        const float3& v0 = m_VerticesPos[triID*3 + 0];
+        const float3& v1 = m_VerticesPos[triID*3 + 1];
+        const float3& v2 = m_VerticesPos[triID*3 + 2];
+
+        const auto [t, uv] = Utils::calc_intersection_t(Utils::Triangle{v0,v1,v2}, ray);
+        if (t >= 0)
+        {
+          res.t = t;
+          res.uv = uv;
+          
+          return res;
+        }
+      }
+    }
+
+    return res;
   }
 }

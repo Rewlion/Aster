@@ -147,6 +147,11 @@ namespace Utils
     return glm::dot(dl, dl) <= (s.r * s.r);
   }
 
+  auto test_intersection(const AABB& aabb, const Ray& ray) -> bool
+  {
+    return calc_intersection_t(aabb, ray) >= 0;
+  }
+
   auto calc_intersect_point(const Plane& p1, const Plane& p2, const Plane& p3) -> std::optional<float3>
   {
     const float3 c1{p1.N.x, p2.N.x, p3.N.x};
@@ -166,6 +171,57 @@ namespace Utils
     const float d3 = -glm::dot(c2,v);
 
     return float3{d1, d2, d3} / dMain;
+  }
+
+  auto calc_intersection_t(const AABB& aabb, const Ray& ray) -> float
+  {
+    const float t1 = (aabb.min.x - ray.pos.x) / ray.dir.x;
+    const float t2 = (aabb.max.x - ray.pos.x) / ray.dir.x;
+    const float t3 = (aabb.min.y - ray.pos.y) / ray.dir.y;
+    const float t4 = (aabb.max.y - ray.pos.y) / ray.dir.y;
+    const float t5 = (aabb.min.z - ray.pos.z) / ray.dir.z;
+    const float t6 = (aabb.max.z - ray.pos.z) / ray.dir.z;
+
+    const float tMin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
+    const float tMax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
+
+    if (tMax < 0)
+      return -1;
+
+    if (tMin > tMax)
+      return -1;
+
+    return tMin < 0.0f ? tMax : tMin;
+  }
+
+  auto calc_intersection_t(const Triangle& tri, const Ray& ray) -> eastl::tuple<float, float2>
+  {
+    const float3 ab = tri.b - tri.a;
+    const float3 ac = tri.c - tri.a;
+    const float3 bc = tri.c - tri.b;
+    const float3 N = glm::cross(ab,ac);
+
+    float t = dot(tri.a - ray.pos, N) / dot(ray.dir, N);
+
+    if (t < 0)
+      return {-1.0f, {0.0f, 0.0f}};
+
+    const float3 p = ray.pos + t * ray.dir;
+    const float3 bp = p - tri.b;
+    const float3 cp = p - tri.c;
+
+    const float S = glm::length(N) / 2;
+    const float S1 = glm::length( glm::cross(ab, bp) ) / 2;
+    const float S2 = glm::length( glm::cross(bc, cp) ) / 2;
+    const float S3 = glm::length( glm::cross(ac, cp) ) / 2;
+
+    const float k = (S1 + S2 + S3) / S;
+    const float eps = 0.1e-5;
+
+    t = std::abs(1.0f - k) <= eps ? t : -1.0f;
+    const float2 uv{S2,S1};
+
+    return {t, uv};
   }
 
   auto calc_closest_point(const AABB& b, const Sphere& s) -> float3

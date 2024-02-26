@@ -1,9 +1,15 @@
 #pragma once
 
 #include <engine/types.h>
+#include <engine/utils/collision.h>
 
 #include <EASTL/vector.h>
 #include <EASTL/tuple.h>
+
+namespace Utils
+{
+  struct Ray;
+}
 
 namespace Engine
 {
@@ -24,6 +30,12 @@ namespace Engine
     uint leftChild;
   };
 
+  struct TraceResult
+  {
+    float t;
+    float2 uv;
+  };
+
   class BVH
   {
     public:
@@ -32,13 +44,21 @@ namespace Engine
       BVH(const Engine::CpuSubmesh& mesh);
 
       BVH& operator=(BVH&&) = default;
-  
+
+      auto getMinMaxAABB() const -> eastl::tuple<float3, float3>
+      {
+        return {minAABB, maxAABB};
+      }
+
+      auto traceRay(const Utils::Ray&) const -> TraceResult;
+
     private:
       void unpackTriangles(const Engine::CpuSubmesh& mesh);
       void buildNodes();
       void updateNodeAABB(BVHNode& node);
       void subdivideNode(const size_t node_id);
-      auto findSubdivisionPlane(const BVHNode& node) const -> eastl::tuple<uint, float, float>;
+      struct SubdivisionResult { uint axis; float pos; float score; };
+      auto findSubdivisionPlane(const BVHNode& node) const -> SubdivisionResult;
       void addNode(const uint tri_begin, const uint tri_count);
     private:
       float3 minAABB, maxAABB;

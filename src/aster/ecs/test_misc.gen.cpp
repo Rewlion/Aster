@@ -292,3 +292,27 @@ static SystemRegistration move_point_light_registration(
   },
   "move_point_light"
 );
+
+
+static void render_bvh_test_internal(ComponentsAccessor& accessor)
+{
+  const string& test_static_mesh_model = accessor.get<string>(compile_ecs_name_hash("test_static_mesh_model"));
+  const float3& test_static_mesh_pos = accessor.get<float3>(compile_ecs_name_hash("test_static_mesh_pos"));
+  const float3& test_static_mesh_rot = accessor.get<float3>(compile_ecs_name_hash("test_static_mesh_rot"));
+  const float3& test_static_mesh_scale = accessor.get<float3>(compile_ecs_name_hash("test_static_mesh_scale"));
+  bool bvh_test_flag = accessor.get<bool>(compile_ecs_name_hash("bvh_test_flag"));
+  render_bvh_test(test_static_mesh_model,test_static_mesh_pos,test_static_mesh_rot,test_static_mesh_scale,bvh_test_flag);
+}
+
+
+static SystemRegistration render_bvh_test_registration(
+  render_bvh_test_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("test_static_mesh_model", string),
+    DESCRIBE_QUERY_COMPONENT("test_static_mesh_pos", float3),
+    DESCRIBE_QUERY_COMPONENT("test_static_mesh_rot", float3),
+    DESCRIBE_QUERY_COMPONENT("test_static_mesh_scale", float3),
+    DESCRIBE_QUERY_COMPONENT("bvh_test_flag", bool)
+  },
+  "render_bvh_test"
+);
