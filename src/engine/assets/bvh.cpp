@@ -14,34 +14,34 @@ namespace Engine
     return e.x * e.y + e.y * e.z + e.z * e.x;
   }
 
-  struct SahBin
+  void SahBin::grow(const float4& v0, const float4& v1, const float4& v2)
   {
-    float4 min = float4(0,0,0,0), max = float4(0,0,0,0);
-    uint count = 0;
+    min = glm::min(glm::min(min, v0), glm::min(v1, v2));
+    max = glm::max(glm::max(max, v0), glm::max(v1, v2));
+    count += 1;
+  }
 
-    void grow(const float4& v0, const float4& v1, const float4& v2)
-    {
-      min = glm::min(glm::min(min, v0), glm::min(v1, v2));
-      max = glm::max(glm::max(max, v0), glm::max(v1, v2));
-      count += 1;
-    }
+  void SahBin::grow(const SahBin& b)
+  {
+    min = glm::min(min, b.min);
+    max = glm::max(max, b.max);
+    count += b.count;
+  }
 
-    void grow(const SahBin& b)
-    {
-      min = glm::min(min, b.min);
-      max = glm::max(max, b.max);
-      count += b.count;
-    }
+  void SahBin::grow(const float4& min, const float4& max)
+  {
+    this->min = glm::min(this->min, min);
+    this->max = glm::max(this->max, max);
+    count += 1;
+  }
 
-    float area() const
-    {
-      return calc_bin_area(min, max);
-    }
-  };
+  float SahBin::area() const
+  {
+    return calc_bin_area(min, max);
+  }
 
   void BVH::buildNodes()
   {
-    ASSERT(m_MinAABB != m_MaxAABB);
     ASSERT(!m_PrimitiveCentroids.empty());
 
     const size_t primitiveCount = m_PrimitiveCentroids.size();
@@ -51,13 +51,7 @@ namespace Engine
     for (uint i = 0; i < primitiveCount; ++i)
       m_PrimitiveIds.push_back(i);
 
-    BVHNode& root = *reinterpret_cast<BVHNode*>(m_Nodes.push_back_uninitialized());
-    root.minAABB = float4(m_MinAABB, 0.0f);
-    root.maxAABB = float4(m_MaxAABB, 0.0f);
-    root.primitiveBegin = 0;
-    root.primitiveCount = primitiveCount;
-    root.leftChild = 0;
-
+    addNode(0, primitiveCount);
     subdivideNode(0);
   }
 
@@ -196,14 +190,16 @@ namespace Engine
     updateNodeAABB(node);
   }
 
-  auto BVH::traceRay(const Utils::Ray& ray) const -> TraceResult
+  auto trace_ray_over_bvh(const Utils::Ray& ray,
+                          const eastl::span<const BVHNode> nodes,
+                          const eastl::span<const uint> primitive_ids,
+                          const fu2::function<
+                            TraceResult(const Utils::Ray&, const uint primitive_id) const>
+                              primitive_intersection_cb) -> TraceResult
   {
-    TraceResult res{
-      .t = -1.0f,
-      .uv = {0.0f, 0.0f}
-    };
+    TraceResult res;
 
-    if (!Utils::test_intersection(Utils::AABB{m_MinAABB, m_MaxAABB}, ray))
+    if (!Utils::test_intersection(Utils::AABB{nodes[0].minAABB, nodes[0].maxAABB}, ray))
       return res;
 
     uint nodeIds[64];
@@ -213,15 +209,15 @@ namespace Engine
     while (topId != -1)
     {
       const uint nodeId = nodeIds[topId--];
-      const BVHNode& node = m_Nodes[nodeId];
+      const BVHNode& node = nodes[nodeId];
 
       if (node.primitiveCount == 0)
       {
         uint il = node.leftChild;
         uint ir = node.leftChild+1;
 
-        const BVHNode& leftChild  = m_Nodes[il];
-        const BVHNode& rightChild = m_Nodes[ir];
+        const BVHNode& leftChild  = nodes[il];
+        const BVHNode& rightChild = nodes[ir];
 
         float tl  = Utils::calc_intersection_t(Utils::AABB{leftChild.minAABB, leftChild.maxAABB}, ray);
         float tr = Utils::calc_intersection_t(Utils::AABB{rightChild.minAABB, rightChild.maxAABB}, ray);
@@ -244,18 +240,27 @@ namespace Engine
       uint primitiveEnd = node.primitiveBegin + node.primitiveCount;
       for (uint iPrimitive = node.primitiveBegin; iPrimitive < primitiveEnd; ++iPrimitive)
       {
-        const uint primitiveID = m_PrimitiveIds[iPrimitive];
-        const auto [t, uv] = intersectRayWithPrimitive(ray, primitiveID);
+        const uint primitiveID = primitive_ids[iPrimitive];
+        const TraceResult tres = primitive_intersection_cb(ray,primitiveID);
 
-        if (t >= 0)
+        if (tres.t >= 0)
         {
-          res.t = t;
-          res.uv = uv;
-          
+          res = tres;
           return res;
         }
       }
     }
+
+    return res;
+  }
+
+  auto BVH::traceRay(const Utils::Ray& ray) const -> TraceResult
+  {
+    TraceResult res = trace_ray_over_bvh(ray, m_Nodes, m_PrimitiveIds,
+      [this](const Utils::Ray& ray, const uint primitive_id) {
+        return this->intersectRayWithPrimitive(ray, primitive_id);
+      }
+    );
 
     return res;
   }
@@ -266,17 +271,26 @@ namespace Engine
     buildNodes();
   }
   
-  auto TriangleBVH::intersectRayWithPrimitive(const Utils::Ray& ray, const uint primitive_id) const -> TraceResult
+  static
+  auto intersect_ray_with_triangle_primitive(const Utils::Ray& ray,
+                                             const uint primitive_id,
+                                             const eastl::span<const float4> vertices_pos) -> TraceResult
   {
-    const float3& v0 = m_VerticesPos[primitive_id*3 + 0];
-    const float3& v1 = m_VerticesPos[primitive_id*3 + 1];
-    const float3& v2 = m_VerticesPos[primitive_id*3 + 2];
+    const float3& v0 = vertices_pos[primitive_id*3 + 0];
+    const float3& v1 = vertices_pos[primitive_id*3 + 1];
+    const float3& v2 = vertices_pos[primitive_id*3 + 2];
 
     const auto [t, uv] = Utils::calc_intersection_t(Utils::Triangle{v0,v1,v2}, ray);
     return TraceResult{
+      .primitiveId = primitive_id,
       .t = t,
       .uv = uv
     };
+  }
+
+  auto TriangleBVH::intersectRayWithPrimitive(const Utils::Ray& ray, const uint primitive_id) const -> TraceResult
+  {
+    return intersect_ray_with_triangle_primitive(ray, primitive_id, m_VerticesPos);
   }
 
   auto TriangleBVH::calcPrimitiveMinMax(const uint primitive_id) -> eastl::tuple<float3, float3>
@@ -301,9 +315,6 @@ namespace Engine
     m_PrimitiveCentroids.reserve(triCount);
     m_VerticesPayload.reserve(triCount*3);
 
-    m_MinAABB = float3(std::numeric_limits<float>::max());
-    m_MaxAABB = float3(std::numeric_limits<float>::min());
-
     for (int iTri = 0; iTri < triCount; ++iTri)
     {
       const gapi::index_type* is = mesh.indices.data() + iTri*3;
@@ -320,9 +331,6 @@ namespace Engine
           .normal = v.normal
         });
 
-        m_MinAABB = glm::min(m_MinAABB, v.pos);
-        m_MaxAABB = glm::max(m_MaxAABB, v.pos);
-
         centroid += v.pos;
       }
       centroid /= 3.0f;
@@ -338,5 +346,12 @@ namespace Engine
     const float4& v2 = m_VerticesPos[primitive_id*3 + 2];
 
     bin.grow(v0,v1,v2);
+  }
+
+  auto TriangleBVHView::traceRay(const Utils::Ray& ray) const -> TraceResult
+  {
+    return trace_ray_over_bvh(ray, nodes, primitiveIds, [this](const Utils::Ray& ray, const uint primitive_id){
+      return intersect_ray_with_triangle_primitive(ray, primitive_id, this->verticesPos);
+    });
   }
 }

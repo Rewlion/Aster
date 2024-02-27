@@ -34,6 +34,7 @@ namespace Engine
 
   struct StaticMesh
   {
+    string name;
     SubmeshStack<GpuSubmesh> gpuSubmeshes;
     SubmeshStack<TriangleBVH> submeshesBVH;
   };

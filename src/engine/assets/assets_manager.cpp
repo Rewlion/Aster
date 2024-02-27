@@ -153,6 +153,7 @@ namespace Engine
     m_StaticMeshes.insert({
       nameHash,
       StaticMesh{
+        .name = string{name},
         .gpuSubmeshes = std::move(gpuSubmeshes),
         .submeshesBVH = std::move(submeshesBVH)
       }

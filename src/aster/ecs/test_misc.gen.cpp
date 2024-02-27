@@ -316,3 +316,21 @@ static SystemRegistration render_bvh_test_registration(
   },
   "render_bvh_test"
 );
+
+
+static void render_tlas_test_internal(ComponentsAccessor& accessor)
+{
+  const float3& tlas_test_center = accessor.get<float3>(compile_ecs_name_hash("tlas_test_center"));
+  const float3& tlas_test_forward = accessor.get<float3>(compile_ecs_name_hash("tlas_test_forward"));
+  render_tlas_test(tlas_test_center,tlas_test_forward);
+}
+
+
+static SystemRegistration render_tlas_test_registration(
+  render_tlas_test_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("tlas_test_center", float3),
+    DESCRIBE_QUERY_COMPONENT("tlas_test_forward", float3)
+  },
+  "render_tlas_test"
+);

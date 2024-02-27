@@ -1,8 +1,13 @@
 #pragma once
 
+#include "blas.h"
+#include "object.h"
+#include "tlas.h"
+
 #include <engine/types.h>
 
 #include <EASTL/vector.h>
+#include <EASTL/vector_map.h>
 
 namespace ed
 {
@@ -14,20 +19,20 @@ namespace Engine
   class Scene
   {
     public:
-      struct Object
-      {
-        float3 pos = float3(0,0,0);
-        float3 scale = float3(1, 1, 1);
-        float3 rot = float3(0, 0, 0);
-        string model;
-      };
-
-    public:
       void loadScene(const ed::Scope& sceneBlk);
-      eastl::vector<Object> queueObjects() const;
+      eastl::vector<SceneObject> queueObjects() const;
+
+      auto getTLAS() const -> const TLAS& { return m_TLAS; }
 
     private:
-      eastl::vector<Object> m_SceneObjects;
+      void rebuildBLAS();
+      void rebuildTLAS();
+
+    private:
+      eastl::vector<SceneObject> m_SceneObjects;
+      eastl::vector_map<string, uint> m_MeshToGeometryId;
+      BLAS m_BLAS;
+      TLAS m_TLAS{m_BLAS};
   };
 
   extern Scene scene;

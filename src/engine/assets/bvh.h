@@ -3,8 +3,10 @@
 #include <engine/types.h>
 #include <engine/utils/collision.h>
 
-#include <EASTL/vector.h>
+#include <EASTL/span.h>
 #include <EASTL/tuple.h>
+#include <EASTL/vector.h>
+#include <function2/function2.hpp>
 
 namespace Utils
 {
@@ -32,11 +34,23 @@ namespace Engine
 
   struct TraceResult
   {
-    float t;
-    float2 uv;
+    uint primitiveId         = 0;
+    float t                  = - 1.0f;
+    float2 uv                = float2{0.0f, 0.0f};
+    float4x4 objectToWorldTm = float4x4{1.0f};
+    float4x4 worldToObjectTm = float4x4{1.0f};
   };
 
-  struct SahBin;
+  struct SahBin
+  {
+    float4 min = float4(0,0,0,0), max = float4(0,0,0,0);
+    uint count = 0;
+
+    void grow(const float4& v0, const float4& v1, const float4& v2);
+    void grow(const SahBin& b);
+    void grow(const float4& min, const float4& max);
+    float area() const;
+  };
 
   class BVH
   {
@@ -46,12 +60,16 @@ namespace Engine
       BVH(BVH&&) = default;
       BVH& operator=(BVH&&) = default;
 
+      auto traceRay(const Utils::Ray&) const -> TraceResult;
+
       auto getMinMaxAABB() const -> eastl::tuple<float3, float3>
       {
-        return {m_MinAABB, m_MaxAABB};
+        return !m_Nodes.empty() ?
+          eastl::tuple<float3, float3>{m_Nodes[0].minAABB, m_Nodes[0].maxAABB} :
+          eastl::tuple<float3, float3>{float3{0.0f}, float3{0.0f}};
       }
-
-      auto traceRay(const Utils::Ray&) const -> TraceResult;
+      auto getPrimitiveIds() const -> const eastl::vector<uint>& { return m_PrimitiveIds; }
+      auto getNodes() const -> const eastl::vector<BVHNode>&     { return m_Nodes; }
 
     protected:
       virtual
@@ -73,8 +91,6 @@ namespace Engine
       void addNode(const uint primitive_begin, const uint primitive_count);
 
     protected:
-      float3 m_MinAABB, m_MaxAABB;
-
       eastl::vector<float3> m_PrimitiveCentroids;
       eastl::vector<BVHNode> m_Nodes;
       eastl::vector<uint> m_PrimitiveIds;
@@ -88,6 +104,9 @@ namespace Engine
       TriangleBVH(const Engine::CpuSubmesh& mesh);
       TriangleBVH& operator=(TriangleBVH&&) = default;
 
+      auto getVerticesPos() const -> const eastl::vector<float4>& { return m_VerticesPos; }
+      auto getVerticesPayload() const -> const eastl::vector<TriangleVertexPayload>& { return m_VerticesPayload; }
+
     private:
       void unpackTriangles(const Engine::CpuSubmesh& mesh);
 
@@ -99,5 +118,15 @@ namespace Engine
     private:
       eastl::vector<float4> m_VerticesPos;
       eastl::vector<TriangleVertexPayload> m_VerticesPayload;
+  };
+
+  struct TriangleBVHView
+  {
+    const eastl::span<const BVHNode> nodes;
+    const eastl::span<const uint> primitiveIds;
+    const eastl::span<const float4> verticesPos;
+    const eastl::span<const TriangleVertexPayload> verticesPayload;
+
+    auto traceRay(const Utils::Ray&) const -> TraceResult;
   };
 }

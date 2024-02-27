@@ -43,6 +43,14 @@ namespace Utils
     float3 dir;
   };
 
+  inline
+  auto operator*(const float4x4& tm, const Ray& ray) -> Ray
+  {
+    const float3 pos = tm * float4(ray.pos, 1.0f);
+    const float3 dir = tm * float4(ray.dir, 0.0f);
+    return Ray{pos,dir};
+  }
+
   struct Triangle
   {
     float3 a,b,c;
