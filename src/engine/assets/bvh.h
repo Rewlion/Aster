@@ -8,6 +8,8 @@
 #include <EASTL/vector.h>
 #include <function2/function2.hpp>
 
+#include <limits>
+
 namespace Utils
 {
   struct Ray;
@@ -30,12 +32,12 @@ namespace Engine
     uint primitiveBegin;
     uint primitiveCount;
     uint leftChild;
-  };
+  };  
 
   struct TraceResult
   {
     uint primitiveId         = 0;
-    float t                  = - 1.0f;
+    float t                  = TRACE_MISS;
     float2 uv                = float2{0.0f, 0.0f};
     float4x4 objectToWorldTm = float4x4{1.0f};
     float4x4 worldToObjectTm = float4x4{1.0f};
@@ -43,7 +45,7 @@ namespace Engine
 
   struct SahBin
   {
-    float4 min = float4(0,0,0,0), max = float4(0,0,0,0);
+    float4 min = float4{std::numeric_limits<float>::max()}, max = float4{std::numeric_limits<float>::lowest()};
     uint count = 0;
 
     void grow(const float4& v0, const float4& v1, const float4& v2);

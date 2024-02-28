@@ -186,10 +186,10 @@ namespace Utils
     const float tMax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
 
     if (tMax < 0)
-      return -1;
+      return TRACE_MISS;
 
     if (tMin > tMax)
-      return -1;
+      return TRACE_MISS;
 
     return tMin < 0.0f ? tMax : tMin;
   }
@@ -204,7 +204,7 @@ namespace Utils
     float t = dot(tri.a - ray.pos, N) / dot(ray.dir, N);
 
     if (t < 0)
-      return {-1.0f, {0.0f, 0.0f}};
+      return {TRACE_MISS, {0.0f, 0.0f}};
 
     const float3 p = ray.pos + t * ray.dir;
     const float3 bp = p - tri.b;
@@ -218,7 +218,7 @@ namespace Utils
     const float k = (S1 + S2 + S3) / S;
     const float eps = 0.1e-5;
 
-    t = std::abs(1.0f - k) <= eps ? t : -1.0f;
+    t = std::abs(1.0f - k) <= eps ? t : TRACE_MISS;
     const float2 uv{S2,S1};
 
     return {t, uv};

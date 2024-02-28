@@ -92,17 +92,15 @@ namespace Engine
 
       for (const TriangleBVH& bvh : asset->mesh->submeshesBVH)
       {
-        auto [min,max] = bvh.getMinMaxAABB();
-
-        min = objectToWorldTm * float4(min, 1.0f);
-        max = objectToWorldTm * float4(max, 1.0f);
+        const auto [min,max] = bvh.getMinMaxAABB();
+        const auto [min_ws, max_ws] = objectToWorldTm * Utils::AABB{min,max};
 
         instances.push_back(TLAS::Instance{
-          .aabbMin_ws = float4(min, 0.0f),
-          .aabbMax_ws = float4(max, 0.0f),
+          .aabbMin_ws = float4(min_ws, 0.0f),
+          .aabbMax_ws = float4(max_ws, 0.0f),
           .objectToWorldTm = objectToWorldTm,
           .worldToObjectTm = worldToObjectTm,
-          .geometryId = ++geometryID
+          .geometryId = geometryID
         });
       }
     }

@@ -6,6 +6,8 @@
 
 #include <EASTL/tuple.h>
 
+constexpr float TRACE_MISS = std::numeric_limits<float>::max();
+
 namespace Utils
 {
   struct Basis
@@ -37,6 +39,31 @@ namespace Utils
     float3 min,max;
   };
 
+  inline
+  auto operator*(const float4x4& tm, const AABB& aabb) -> AABB
+  {
+    const float3 ex = tm * float4{aabb.max - aabb.min, 0.0f};
+    const float3 right = float3{ex.x, 0, 0};
+    const float3 fwd = float3{0,0,ex.z};
+    const float3 up = float3{0, ex.y, 0};
+    const float3 p = tm * float4{aabb.min, 1.0f};
+
+    const float3 
+      a = p,
+      b = p + right,
+      c = p + fwd,
+      d = p + right + fwd,
+      e = p + up,
+      f = p + up + right,
+      g = p + up + fwd,
+      h = p + up + right + fwd;
+
+    const float3 min = glm::min(glm::min(glm::min(a,b), glm::min(c,d)) , glm::min(glm::min(e,f), glm::min(g,h)));
+    const float3 max = glm::max(glm::max(glm::max(a,b), glm::max(c,d)) , glm::max(glm::max(e,f), glm::max(g,h)));
+    
+    return {min,max};
+  }
+
   struct Ray
   {
     float3 pos;
@@ -47,7 +74,7 @@ namespace Utils
   auto operator*(const float4x4& tm, const Ray& ray) -> Ray
   {
     const float3 pos = tm * float4(ray.pos, 1.0f);
-    const float3 dir = tm * float4(ray.dir, 0.0f);
+    const float3 dir = glm::normalize(tm * float4(ray.dir, 0.0f));
     return Ray{pos,dir};
   }
 

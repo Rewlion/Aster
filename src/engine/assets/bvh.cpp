@@ -58,7 +58,7 @@ namespace Engine
   void BVH::updateNodeAABB(BVHNode& node)
   {
     float4 min = float4(std::numeric_limits<float>::max());
-    float4 max = float4(std::numeric_limits<float>::min());
+    float4 max = float4(std::numeric_limits<float>::lowest());
 
     const uint primitiveEnd = node.primitiveBegin + node.primitiveCount;
     for (uint iPrimitive = node.primitiveBegin;  iPrimitive < primitiveEnd; ++iPrimitive)
@@ -68,6 +68,9 @@ namespace Engine
       min = glm::min(min, float4{pMin, 0.0f});
       max = glm::max(max, float4{pMax, 0.0f});
     }
+
+    min.w = 0.0f;
+    max.w = 0.0f;
 
     node.minAABB = min;
     node.maxAABB = max;
@@ -118,7 +121,6 @@ namespace Engine
   auto BVH::findSubdivisionPlane(const BVHNode& node) const
     -> SubdivisionResult
   {
-    SahBin bins[BINS_COUNT];
 
     uint bestAxis = 0;
     float bestSplitPos = 0.0f;
@@ -126,8 +128,10 @@ namespace Engine
 
     for (uint axis = 0; axis < 3; ++axis)
     {
+      SahBin bins[BINS_COUNT];
+      
       float binMin = std::numeric_limits<float>::max();
-      float binMax = std::numeric_limits<float>::min();
+      float binMax = std::numeric_limits<float>::lowest();
 
       const uint primitiveEnd = node.primitiveBegin + node.primitiveCount;
       for (uint iPrimitive = node.primitiveBegin; iPrimitive < primitiveEnd; ++iPrimitive)
@@ -198,6 +202,7 @@ namespace Engine
                               primitive_intersection_cb) -> TraceResult
   {
     TraceResult res;
+    res.t = std::numeric_limits<float>::max();
 
     if (!Utils::test_intersection(Utils::AABB{nodes[0].minAABB, nodes[0].maxAABB}, ray))
       return res;
@@ -219,19 +224,19 @@ namespace Engine
         const BVHNode& leftChild  = nodes[il];
         const BVHNode& rightChild = nodes[ir];
 
-        float tl  = Utils::calc_intersection_t(Utils::AABB{leftChild.minAABB, leftChild.maxAABB}, ray);
+        float tl = Utils::calc_intersection_t(Utils::AABB{leftChild.minAABB, leftChild.maxAABB}, ray);
         float tr = Utils::calc_intersection_t(Utils::AABB{rightChild.minAABB, rightChild.maxAABB}, ray);
 
-        if (tr >= 0 && tr < tl)
+        if (tr < tl)
         {
          std::swap(il,ir);
          std::swap(tl,tr);
         }
 
-        if (tr >= 0)
+        if (tr != TRACE_MISS)
           nodeIds[++topId] = ir;
 
-        if (tl >= 0)
+        if (tl != TRACE_MISS)
           nodeIds[++topId] = il;
         
         continue;
@@ -243,11 +248,8 @@ namespace Engine
         const uint primitiveID = primitive_ids[iPrimitive];
         const TraceResult tres = primitive_intersection_cb(ray,primitiveID);
 
-        if (tres.t >= 0)
-        {
+        if (tres.t < res.t)
           res = tres;
-          return res;
-        }
       }
     }
 
@@ -296,7 +298,7 @@ namespace Engine
   auto TriangleBVH::calcPrimitiveMinMax(const uint primitive_id) -> eastl::tuple<float3, float3>
   {
     float3 min = float3(std::numeric_limits<float>::max());
-    float3 max = float3(std::numeric_limits<float>::min());
+    float3 max = float3(std::numeric_limits<float>::lowest());
 
     for (int i = 0; i < 3; ++i)
     {

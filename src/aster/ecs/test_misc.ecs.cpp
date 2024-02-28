@@ -549,7 +549,7 @@ void render_bvh_test(
 
   const Engine::TraceResult res = bvh.traceRay(ray_os);
 
-  if (res.t >= 0)
+  if (res.t != TRACE_MISS)
   {
     const float3 rayEnd = modelTm * (float4{rayPos_os + rayDir_os * res.t, 1.0f});
     Engine::dbg::draw_line(rayPos, rayEnd, float3{1.0f, 0.0f, 0.0f}, 0.0f);
@@ -587,26 +587,35 @@ void render_tlas_test(
   const Engine::TLAS& tlas = Engine::scene.getTLAS();
   const float3 rayPos = tlas_test_center;
   const float time = Engine::Time::get_sec_since_start();
-  const float3 rayEnd = rayPos + tlas_test_forward * 2.0f + float3{0.0f, 3.0f, 0.0f} * sin(time); 
+  const float3 rayEnd = rayPos + tlas_test_forward * 2.0f + float3{0.0f, 3.0f, 0.0f} * sin(time*0.7f); 
   const float3 rayDir = glm::normalize(rayEnd-rayPos);
 
   const Utils::Ray ray_ws{rayPos, rayDir};
   
   Engine::TraceResult tres = tlas.traceRay(ray_ws);
-  if (tres.t >= 0.0f)
+  if (tres.t != TRACE_MISS)
   {
-    const Utils::Ray ray_os = tres.worldToObjectTm * ray_ws;
-    const float3 rayIntersectionPoint_os = ray_os.pos + ray_os.dir * tres.t;
-    const float3 rayIntersectionPoint_ws = tres.objectToWorldTm * float4{rayIntersectionPoint_os, 1.0};
-
-    Engine::dbg::draw_line(rayPos, rayIntersectionPoint_ws, float3{1.0, 0.0f, 1.0f}, 0.5f);
-    Utils::Sphere sp{rayIntersectionPoint_ws, 0.05};
+    const float3 intersectPoint = rayPos + rayDir * tres.t;
+    Engine::dbg::draw_line(rayPos, rayPos + rayDir * tres.t, float3{1.0, 0.0f, 1.0f}, 0.5f);
+    Utils::Sphere sp{intersectPoint, 0.05};
     Engine::dbg::draw_line_sphere(sp, float3{0.0,1.0,1.0}, 1.0f);
   }
   else
   {
     Engine::dbg::draw_line(rayPos, rayEnd, float3{0.0, 1.0f, 0.0f}, 0.5f);
   }
+
+  //tlas.dbgDrawNodes(false);
+  //tlas.dbgDrawInstances();
+}
+
+static
+void cpos_cmd(eastl::span<string_view>)
+{
+  query_camera([](const float3& pos, const float2& rotation, const float3& forward)
+  {
+    console::clog(fmt::format("{},{},{}", pos.x, pos.y, pos.z));
+  });
 }
 
 CONSOLE_CMD("draw_line", 0, 0, draw_line_at_camera_pos);
@@ -625,3 +634,4 @@ CONSOLE_CMD("del", 0, 0, remove_subt);
 CONSOLE_CMD("pawn", 0, 0, create_pawn);
 CONSOLE_CMD("bvh_test", 0, 0, spawn_bvh_test);
 CONSOLE_CMD("tlas_test", 0,0, spawn_tlas_test);
+CONSOLE_CMD("cpos", 0,0, cpos_cmd);

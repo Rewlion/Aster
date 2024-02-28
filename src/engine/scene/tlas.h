@@ -25,6 +25,9 @@ namespace Engine
       TLAS(const BLAS& blas);
       void rebuild(eastl::vector<Instance>&&);
 
+      void dbgDrawInstances() const;
+      void dbgDrawNodes(const bool leafs_only) const;
+
     protected:
       auto calcPrimitiveMinMax(const uint primitive_id) -> eastl::tuple<float3, float3> override;
       auto intersectRayWithPrimitive(const Utils::Ray&, const uint primitive_id) const -> TraceResult override;

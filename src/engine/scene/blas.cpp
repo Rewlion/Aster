@@ -55,12 +55,11 @@ namespace Engine
       {
         m_Nodes.push_back(node);
         m_Nodes.back().primitiveBegin += meta.primitiveBegin;
-        m_Nodes.back().leftChild += meta.nodeBegin;
       }
       for (const uint primitiveID : primitiveIds)
         m_PrimitiveIds.push_back(meta.primitiveBegin + primitiveID);
-      eastl::copy(verticesPos.begin(), verticesPos.end(), m_VerticesPos.end());
-      eastl::copy(verticesPayload.begin(), verticesPayload.end(), m_VerticesPayload.end());
+      eastl::copy(verticesPos.begin(), verticesPos.end(), eastl::back_inserter(m_VerticesPos));
+      eastl::copy(verticesPayload.begin(), verticesPayload.end(),  eastl::back_inserter(m_VerticesPayload));
     }
   }
 
