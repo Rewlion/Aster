@@ -37,7 +37,7 @@ technique DebugClusters
     float2 tileIDf = (float2)input.pos.xy / FrameScope.viewPortSize * float2(CLUSTERS_DIM_X, CLUSTERS_DIM_Y);
     
     float border = 0.01;
-    if (any((fmod(tileIDf, 1.0) <= border) || (fmod(tileIDf, 1.0) >= (100.0 - border))))
+    if (any((fmod(tileIDf, 1.0) <= border)) || any((fmod(tileIDf, 1.0) >= (100.0 - border))))
       return float4(0.0, 0.0, 1.0, 0.8);
 
     uint2 tileID = (uint2)tileIDf;

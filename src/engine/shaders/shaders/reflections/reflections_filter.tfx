@@ -69,7 +69,7 @@ technique ReflectionsFilter
       for (int j = -range; j <= range; ++j)
       {
         int2 q = p + int2(i,j);
-        if (any(q < 0 || q > renderSize))
+        if (any(q < 0) || any(q > renderSize))
           continue;
 
         float3 Iq = blurInput.Load(uint3(q,0)).rgb;

@@ -96,7 +96,7 @@ technique Decal
 
     float3 worldPos = calcWorldPos(FrameScope.cameraPos, viewPlaneVec, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
     float3 modelPos = mul(DecalScope.invModelTm, float4(worldPos, 1.0)).xyz;
-    if (any(modelPos > 0.5 || modelPos < -0.5))
+    if (any(modelPos > 0.5) || any(modelPos < -0.5))
       discard;
 
     float2 uv = (modelPos.xy + 0.5);

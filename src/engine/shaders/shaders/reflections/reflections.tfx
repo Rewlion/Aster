@@ -184,9 +184,15 @@ technique SpecularReflection {
     float depthThickness = max(abs(rayDir.z / maxDeltaPixels) * 10, 0.00005);
 
     float3 invRayDir = rcp(rayDir);
-    float2 cellBorderStep = rayDir.xy <= 0 ? 0 : 1;
+    float2 cellBorderStep = float2(
+      rayDir.x <= 0 ? 0 : 1,
+      rayDir.y <= 0 ? 0 : 1
+    );
     float2 cellUvOffset = 0.005 / cellsCount;
-    cellUvOffset = rayDir.xy < 0 ? -cellUvOffset : cellUvOffset;
+    cellUvOffset = float2(
+      rayDir.x < 0 ? -cellUvOffset.x : cellUvOffset.x,
+      rayDir.y < 0 ? -cellUvOffset.y : cellUvOffset.y
+    );
     
     float3 rayOrigin = initRaySample(beginSS.xyz, rayDir, invRayDir, cellBorderStep, cellUvOffset, cellsCount);
     float3 raySample = rayOrigin;

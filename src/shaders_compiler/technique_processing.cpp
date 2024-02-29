@@ -47,7 +47,7 @@ namespace ShadersSystem
       std::vector<LPCWSTR> args;
       args.push_back(L"-spirv");
       args.push_back(L"-HV");
-      args.push_back(L"2018");
+      args.push_back(L"2021");
       args.push_back(L"-fspv-target-env=vulkan1.1");
       args.push_back(L"-E");
       args.push_back(entry.c_str());
