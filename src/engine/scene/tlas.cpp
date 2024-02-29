@@ -3,7 +3,7 @@
 #include "blas.h"
 
 #include <engine/render/debug/render.h>
-
+#include <engine/gapi/cmd_encoder.h>
 
 namespace Engine
 {
@@ -12,12 +12,12 @@ namespace Engine
   {
   }
 
-  void TLAS::rebuild(eastl::vector<Instance>&& instances)
+  void TLAS::rebuild(eastl::vector<TLASInstance>&& instances)
   {
     m_Instances = std::move(instances);
     m_PrimitiveCentroids.reserve(m_Instances.size());
 
-    for (const Instance& instance: m_Instances)
+    for (const TLASInstance& instance: m_Instances)
     {
       const float3 centroid = (instance.aabbMin_ws + instance.aabbMin_ws) * 0.5f;
       m_PrimitiveCentroids.push_back(centroid);
@@ -35,7 +35,7 @@ namespace Engine
   {
     TraceResult res;
 
-    const Instance& instance = m_Instances[primitive_id]; 
+    const TLASInstance& instance = m_Instances[primitive_id]; 
     if (!Utils::test_intersection(Utils::AABB{instance.aabbMin_ws, instance.aabbMax_ws}, ray))
       return res;
 
@@ -115,4 +115,31 @@ namespace Engine
       }
     }
   }
+
+  auto TLAS::buildGpuResources(gapi::CmdEncoder& encoder) const -> GpuResources
+  {
+    if (m_Nodes.empty())
+      return {};
+
+    const size_t instancesSize =    m_Instances.size()    * sizeof(m_Instances[0]);
+    const size_t bvhNodesSize =     m_Nodes.size()        * sizeof(m_Nodes[0]);
+    const size_t primitiveIdsSize = m_PrimitiveIds.size() * sizeof(m_PrimitiveIds[0]);
+
+    gapi::BufferHandler gpuInstances = gapi::allocate_buffer(instancesSize, gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible);
+    gapi::BufferHandler gpuBvhNodes = gapi::allocate_buffer(bvhNodesSize, gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible);
+    gapi::BufferHandler gpuPrimitiveIds = gapi::allocate_buffer(primitiveIdsSize, gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible);
+
+    encoder.writeBuffer(gpuInstances,    m_Instances.data(), 0,    instancesSize);
+    encoder.writeBuffer(gpuBvhNodes,     m_Nodes.data(), 0,        bvhNodesSize);
+    encoder.writeBuffer(gpuPrimitiveIds, m_PrimitiveIds.data(), 0, primitiveIdsSize);
+
+    encoder.insertGlobalBufferBarrier(gapi::BufferState::BF_STATE_TRANSFER_DST, gapi::BufferState::BF_STATE_SRV);
+
+    return GpuResources {
+      .instances = gpuInstances,
+      .bvhNodes = gpuBvhNodes,
+      .primitiveIds = gpuPrimitiveIds,
+    };
+  }
+
 }

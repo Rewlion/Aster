@@ -1,9 +1,12 @@
 #pragma once
 
 #include <engine/assets/bvh.h>
+#include <engine/gapi/resource_wrappers.h>
 #include <engine/types.h>
 
 #include <EASTL/vector.h>
+
+#include <engine/shaders/shaders/raytracing/tlas.hlsl>
 
 namespace Engine
 {
@@ -12,18 +15,17 @@ namespace Engine
   class TLAS : public BVH
   {
     public:
-      struct Instance
+      struct GpuResources
       {
-        float4 aabbMin_ws;
-        float4 aabbMax_ws;
-        float4x4 objectToWorldTm;
-        float4x4 worldToObjectTm;
-        uint geometryId;
+        gapi::BufferWrapper instances;
+        gapi::BufferWrapper bvhNodes;
+        gapi::BufferWrapper primitiveIds;
       };
 
     public:
       TLAS(const BLAS& blas);
-      void rebuild(eastl::vector<Instance>&&);
+      void rebuild(eastl::vector<TLASInstance>&&);
+      auto buildGpuResources(gapi::CmdEncoder&) const -> GpuResources;
 
       void dbgDrawInstances() const;
       void dbgDrawNodes(const bool leafs_only) const;
@@ -34,7 +36,7 @@ namespace Engine
       void growSahBinWithPrimitive(SahBin& bin, const uint primitive_id) const override;
 
     private:
-      eastl::vector<Instance> m_Instances;
+      eastl::vector<TLASInstance> m_Instances;
       const BLAS& m_BLAS;
   };
 }

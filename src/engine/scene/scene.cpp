@@ -4,6 +4,7 @@
 
 #include <engine/assets/assets_manager.h>
 #include <engine/data/ed.h>
+#include <engine/gapi/cmd_encoder.h>
 #include <engine/math.h>
 
 #include <EASTL/vector_map.h>
@@ -41,6 +42,7 @@ namespace Engine
 
     rebuildBLAS();
     rebuildTLAS();
+    rebuildRTAS();
   }
 
   eastl::vector<SceneObject> Scene::queueObjects() const
@@ -80,7 +82,7 @@ namespace Engine
   
   void Scene::rebuildTLAS()
   {
-    eastl::vector<TLAS::Instance> instances;
+    eastl::vector<TLASInstance> instances;
 
     for (const SceneObject& obj: m_SceneObjects)
     {
@@ -95,7 +97,7 @@ namespace Engine
         const auto [min,max] = bvh.getMinMaxAABB();
         const auto [min_ws, max_ws] = objectToWorldTm * Utils::AABB{min,max};
 
-        instances.push_back(TLAS::Instance{
+        instances.push_back(TLASInstance{
           .aabbMin_ws = float4(min_ws, 0.0f),
           .aabbMax_ws = float4(max_ws, 0.0f),
           .objectToWorldTm = objectToWorldTm,
@@ -106,5 +108,17 @@ namespace Engine
     }
 
     m_TLAS.rebuild(std::move(instances));
+  }
+
+  void Scene::rebuildRTAS()
+  {
+    std::unique_ptr<gapi::CmdEncoder> encoder{gapi::allocate_cmd_encoder()};
+
+    m_GpuRTAS = {
+      .tlas = m_TLAS.buildGpuResources(*encoder),
+      .blas = m_BLAS.buildGpuResources(*encoder)
+    };
+
+    encoder->flush();
   }
 }

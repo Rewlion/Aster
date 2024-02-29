@@ -1,0 +1,90 @@
+#include <frame.inc.tfx>
+
+scope RT_TEST_SCOPE
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0-9);
+    register(texture, 0);
+
+  RWTexture2D<float4> dbgOutput = extern(dbgOutput);
+
+  #hlsl
+  #include "../raytracing/acceleration_structure.hlsl"
+  #end
+  StructuredBuffer<TLASInstance>          RT_tlasInstances       = extern (RT_tlasInstances);
+  StructuredBuffer<BVHNode>               RT_tlasBvhNodes        = extern (RT_tlasBvhNodes);
+  StructuredBuffer<uint>                  RT_tlasPrimitiveIds    = extern (RT_tlasPrimitiveIds);
+  StructuredBuffer<GeometryMeta>          RT_blasGeometryMeta    = extern (RT_blasGeometryMeta);
+  StructuredBuffer<BVHNode>               RT_blasBvhNodes        = extern (RT_blasBvhNodes);
+  StructuredBuffer<uint>                  RT_blasPrimitiveIds    = extern (RT_blasPrimitiveIds);
+  StructuredBuffer<float4>                RT_blasVertices        = extern (RT_blasVertices);
+  StructuredBuffer<TriangleVertexPayload> RT_blasVerticesPayload = extern (RT_blasVerticesPayload);
+
+  uint2 renderSize = extern(renderSize);
+};
+
+technique RT_TEST
+{
+  support scope FrameScope;
+  activate scope RT_TEST_SCOPE;
+
+  #hlsl
+  [numthreads(8,8,1)]
+  void cs_main(uint3 dispatch_thread_id: SV_DispatchThreadID)
+  {
+    uint2 renderSize = RT_TEST_SCOPE.renderSize;
+
+    if (any(dispatch_thread_id.xy >= renderSize))
+      return;
+
+    uint3 tc = dispatch_thread_id;
+
+    float3 leftRight = FrameScope.rtView_WS - FrameScope.ltView_WS;
+    float3 topBot = FrameScope.lbView_WS - FrameScope.ltView_WS;
+
+    float2 t = float2(tc.xy) / float2(renderSize - uint2(1, 1));
+    float3 farPlainPoint = FrameScope.ltView_WS + leftRight * t.x + topBot * t.y;
+    float3 viewDir = normalize(farPlainPoint);
+
+    float3 rayDir = viewDir;
+    float3 rayPos = FrameScope.cameraPos;
+
+    RTAccelerationStructure rtAS;
+    rtAS.init(
+      RT_tlasInstances,
+      RT_tlasBvhNodes,
+      RT_tlasPrimitiveIds,
+      RT_blasGeometryMeta,
+      RT_blasBvhNodes,
+      RT_blasPrimitiveIds,
+      RT_blasVertices,
+      RT_blasVerticesPayload
+    );
+
+
+    TraceResult res = rtAS.traceRay(rayPos, rayDir);
+
+    float4 colors [8] = {
+      float4(0,0,1,1),
+      float4(1,0,0,1),
+      float4(1,0,1,1),
+      float4(0,1,0,1),
+      float4(0,1,1,1),
+      float4(1,1,1,1),
+      float4(1,1,0,1),
+      float4(0.5,1,0.5,1)
+    };
+
+    float4 c = colors[res.instanceID % 8];
+    float m = res.primitiveID % 2 ? 1.0 : 0.6;
+    float tclr = res.t / 1000.0;
+
+    float4 resColor = res.t != TRACE_MISS ? tclr * m * c : 0.0.xxxx;
+
+    dbgOutput[tc.xy] = resColor;
+  }
+  #end
+
+  compile(cs,cs_main);
+};

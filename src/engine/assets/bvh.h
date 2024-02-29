@@ -10,6 +10,8 @@
 
 #include <limits>
 
+#include <engine/shaders/shaders/raytracing/bvh.hlsl>
+
 namespace Utils
 {
   struct Ray;
@@ -18,21 +20,6 @@ namespace Utils
 namespace Engine
 {
   struct CpuSubmesh;
-
-  struct TriangleVertexPayload
-  {
-    float2 uv;
-    float2 normal;
-  };
-  
-  struct BVHNode
-  {
-    float4 minAABB;
-    float4 maxAABB;
-    uint primitiveBegin;
-    uint primitiveCount;
-    uint leftChild;
-  };  
 
   struct TraceResult
   {

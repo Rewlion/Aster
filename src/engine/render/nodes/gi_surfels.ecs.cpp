@@ -3,6 +3,7 @@
 #include <engine/ecs/type_meta.h>
 #include <engine/render/frame_graph/dsl.h>
 #include <engine/render/imgui/imgui.h>
+#include <engine/scene/scene.h>
 #include <engine/tfx/tfx.h>
 #include <engine/time.h>
 
@@ -100,6 +101,9 @@ class GIOnSurfels
 ECS_COMP_GETTER(GIOnSurfels, state);
 
 NODE_BEGIN(gibs_resources)
+  CREATE_TEX_2D             (gibs_dbg_rt, TEX_SIZE_RELATIVE(), R32G32B32A32_S,
+                             TEX_USAGE2(SRV, UAV), TEX_STATE(ShaderReadWrite))
+
   CREATE_TEX_2D             (gibs_dbg_alloc, TEX_SIZE_RELATIVE(), R32G32B32A32_S,
                              TEX_USAGE2(SRV, UAV), TEX_STATE(ShaderReadWrite))
 
@@ -138,6 +142,7 @@ NODE_END()
 NODE_EXEC()
 static
 void gibs_resources_init(gapi::CmdEncoder& encoder,
+                         const gapi::TextureHandle gibs_dbg_rt,
                          const gapi::TextureHandle gibs_dbg_alloc,
                          const gapi::TextureHandle gibs_dbg_surfels,
                          const gapi::BufferHandler gibs_surfels_lifetime,
@@ -153,6 +158,9 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
   encoder.fillBuffer(gibs_surfels_allocation_locks, 0, CELLS_COUNT * sizeof(uint), 0);
   encoder.fillBuffer(gibs_surfels_spatial_storage, 0, CELLS_COUNT * SPATIAL_STORAGE_CELL_PAYLOAD * sizeof(uint), 0);
   encoder.insertGlobalBufferBarrier(gapi::BufferState::BF_STATE_TRANSFER_DST, gapi::BufferState::BF_STATE_UAV_RW);
+
+  encoder.clearColorTexture(gibs_dbg_rt,
+    gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
 
   encoder.clearColorTexture(gibs_dbg_alloc,
     gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
@@ -363,6 +371,39 @@ void gibs_transform_surfels(gapi::CmdEncoder& encoder)
   
   const uint3 ds = tfx::calc_group_count("GIBS_TransformSurfels", uint3(SURFEL_COUNT_TOTAL, 1, 1));
   encoder.dispatch(ds.x, ds.y, ds.z);
+}
+
+NODE_BEGIN(gibs_test_rt)
+  ORDER_ME_BEFORE(gibs_sync_out)
+
+  READ_RENDER_SIZE_AS (render_size)
+  BIND_TEX_RW_UAV_AS  (gibs_dbg_rt, dbgOutput)
+  
+  EXEC(gibs_test_rt)
+NODE_END()
+
+NODE_EXEC()
+static
+void gibs_test_rt(gapi::CmdEncoder& encoder, const uint2& render_size)
+{
+  const Engine::Scene::GpuRTAccelerationStructure& rtas = Engine::scene.getRTAS();
+
+  tfx::set_extern("RT_tlasInstances",       (gapi::BufferHandler)rtas.tlas.instances);
+  tfx::set_extern("RT_tlasBvhNodes",        (gapi::BufferHandler)rtas.tlas.bvhNodes);
+  tfx::set_extern("RT_tlasPrimitiveIds",    (gapi::BufferHandler)rtas.tlas.primitiveIds);
+  tfx::set_extern("RT_blasGeometryMeta",    (gapi::BufferHandler)rtas.blas.geometryMeta);
+  tfx::set_extern("RT_blasBvhNodes",        (gapi::BufferHandler)rtas.blas.bvhNodes);
+  tfx::set_extern("RT_blasPrimitiveIds",    (gapi::BufferHandler)rtas.blas.primitiveIds);
+  tfx::set_extern("RT_blasVertices",        (gapi::BufferHandler)rtas.blas.vertices);
+  tfx::set_extern("RT_blasVerticesPayload", (gapi::BufferHandler)rtas.blas.verticesPayload);
+
+  tfx::set_extern("renderSize", render_size);
+
+  tfx::activate_technique("RT_TEST", encoder);
+  encoder.updateResources();
+
+  const uint3 gc = tfx::calc_group_count("RT_TEST", uint3{render_size, 1});
+  encoder.dispatch(gc.x, gc.y, gc.z);
 }
 
 NODE_BEGIN(gibs_sync_out)

@@ -149,7 +149,7 @@ namespace Utils
 
   auto test_intersection(const AABB& aabb, const Ray& ray) -> bool
   {
-    return calc_intersection_t(aabb, ray) >= 0;
+    return calc_intersection_t(aabb, ray) != TRACE_MISS;
   }
 
   auto calc_intersect_point(const Plane& p1, const Plane& p2, const Plane& p3) -> std::optional<float3>

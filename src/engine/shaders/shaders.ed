@@ -22,6 +22,9 @@ shaders_list:t[] = [
   "shaders/gi_surfels/surfels_find_surfel_alloc_pos.tfx",
   "shaders/gi_surfels/surfels_recycle.tfx",
   "shaders/gi_surfels/transform_surfels.tfx",
+
+  "shaders/gi_surfels/surfels_rt_test.tfx",
+
   "shaders/gui.tfx",
   "shaders/hi_z.tfx",
   "shaders/imgui.tfx",

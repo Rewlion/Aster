@@ -1,10 +1,13 @@
 #pragma once
 
 #include <engine/assets/bvh.h>
+#include <engine/gapi/resource_wrappers.h>
 #include <engine/types.h>
 
 #include <EASTL/vector.h>
 #include <EASTL/span.h>
+
+#include <engine/shaders/shaders/raytracing/blas.hlsl>
 
 namespace Engine
 {
@@ -16,18 +19,19 @@ namespace Engine
         const TriangleBVH& bvh;
       };
 
+      struct GpuResources
+      {
+        gapi::BufferWrapper geometryMeta;
+        gapi::BufferWrapper bvhNodes;
+        gapi::BufferWrapper primitiveIds;
+        gapi::BufferWrapper vertices;
+        gapi::BufferWrapper verticesPayload;
+      };
+
     public:
       void resetGeometry(const eastl::span<const GeometryDesc>);
       auto traceRay(const Utils::Ray&, const uint geometry_id) const -> TraceResult;
-
-    private:
-      struct GeometryMeta
-      {
-        float3 minAABB, maxAABB;
-        uint primitiveBegin;
-        uint nodeBegin;
-        uint verticesBegin;
-      };
+      auto buildGpuResources(gapi::CmdEncoder&) const -> GpuResources;
 
     private:
       eastl::vector<GeometryMeta> m_GeometryMeta;

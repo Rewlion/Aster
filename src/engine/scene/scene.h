@@ -19,20 +19,29 @@ namespace Engine
   class Scene
   {
     public:
+      struct GpuRTAccelerationStructure
+      {
+        TLAS::GpuResources tlas;
+        BLAS::GpuResources blas;
+      };
+    public:
       void loadScene(const ed::Scope& sceneBlk);
       eastl::vector<SceneObject> queueObjects() const;
 
       auto getTLAS() const -> const TLAS& { return m_TLAS; }
+      auto getRTAS() const -> const GpuRTAccelerationStructure& { return m_GpuRTAS; }
 
     private:
       void rebuildBLAS();
       void rebuildTLAS();
+      void rebuildRTAS();
 
     private:
       eastl::vector<SceneObject> m_SceneObjects;
       eastl::vector_map<string, uint> m_MeshToGeometryId;
       BLAS m_BLAS;
       TLAS m_TLAS{m_BLAS};
+      GpuRTAccelerationStructure m_GpuRTAS;
   };
 
   extern Scene scene;
