@@ -233,10 +233,10 @@ namespace Engine
          std::swap(tl,tr);
         }
 
-        if (tr != TRACE_MISS)
+        if (tr != TRACE_MISS && tr <= res.t)
           nodeIds[++topId] = ir;
 
-        if (tl != TRACE_MISS)
+        if (tl != TRACE_MISS && tl <= res.t)
           nodeIds[++topId] = il;
         
         continue;

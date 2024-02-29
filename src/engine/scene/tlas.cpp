@@ -83,11 +83,11 @@ namespace Engine
     depths.push_back(0);
 
     float4 clrs [5] = {
-      float4{1,0,0,0.3f},
-      float4{0,1,0,0.3f},
-      float4{0,0,1,0.3f},
-      float4{1,0,1,0.3f},
-      float4{1,1,0,0.3f},
+      float4{1,0,0,0.1f},
+      float4{0,1,0,0.1f},
+      float4{0,0,1,0.1f},
+      float4{1,0,1,0.1f},
+      float4{1,1,0,0.1f},
     };
 
     while(!nodes.empty())

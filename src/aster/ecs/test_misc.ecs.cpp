@@ -605,7 +605,7 @@ void render_tlas_test(
     Engine::dbg::draw_line(rayPos, rayEnd, float3{0.0, 1.0f, 0.0f}, 0.5f);
   }
 
-  //tlas.dbgDrawNodes(false);
+  tlas.dbgDrawNodes(false);
   //tlas.dbgDrawInstances();
 }
 
