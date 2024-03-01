@@ -10,7 +10,8 @@ scope RT_TEST_SCOPE
   RWTexture2D<float4> dbgOutput = extern(dbgOutput);
 
   #hlsl
-  #include "../raytracing/acceleration_structure.hlsl"
+  #include <raytracing/acceleration_structure.hlsl>
+  
   #end
   StructuredBuffer<TLASInstance>          RT_tlasInstances       = extern (RT_tlasInstances);
   StructuredBuffer<BVHNode>               RT_tlasBvhNodes        = extern (RT_tlasBvhNodes);

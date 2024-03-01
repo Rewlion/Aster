@@ -26,6 +26,7 @@ namespace ShadersSystem
                                     const string& target, const gapi::ShaderStage stage,
                                     const string& shaderName,
                                     const string& entryName, const string& currentDir,
+                                    const eastl::span<const wstring> include_dirs,
                                     const bool debug)
     {
       ComPtr<IDxcUtils> pUtils;
@@ -58,6 +59,12 @@ namespace ShadersSystem
       args.push_back(L"-Zi");
       args.push_back(debug ? L"-O0" : L"-O3");
       args.push_back(debug ? L"-Od" : L"");
+
+      for (const wstring& includeDir : include_dirs)
+      {
+        args.push_back(L"-I");
+        args.push_back(includeDir.c_str());
+      }
 
       DxcBuffer dxcSrc;
       dxcSrc.Ptr = pSource->GetBufferPointer();
@@ -342,7 +349,7 @@ namespace ShadersSystem
           {
             const string currentDir = fs::path(m_Compiler.getCurrentFileName()).parent_path().string();
             const bool debug = m_Compiler.getFlags() & COMPILE_DEBUG;
-            ShaderBlob blob = compile_shader_stage(m_Hlsl, targetProfile, stage, shaderName, compileExp.entry, currentDir, debug);
+            ShaderBlob blob = compile_shader_stage(m_Hlsl, targetProfile, stage, shaderName, compileExp.entry, currentDir, m_Compiler.getWIncludeDirs(), debug);
             m_Shaders.push_back(std::move(blob));
           }
           catch (std::exception&)

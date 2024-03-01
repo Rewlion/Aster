@@ -7,7 +7,7 @@ scope GIBS_PrepareNonLinearAABBsScope
     register(buffer, 0);
 
   #hlsl
-  #include "../intersection_structs.hlsl"
+  #include <intersection_structs.hlsl>
   #end
 
   RWStructuredBuffer<AABB> aabbs = extern(gibsNonlinearAABBs);

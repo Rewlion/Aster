@@ -19,8 +19,8 @@ struct TriangleVertexPayload
 
 #ifdef __preshader__ /////////////// [HLSL]  //////////////////////
 
-#include "../math.hlsl"
-#include "../intersections.hlsl"
+#include <math.hlsl>
+#include <intersections.hlsl>
 
 struct TraceResult
 {

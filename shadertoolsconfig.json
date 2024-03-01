@@ -1,5 +1,0 @@
-{
-  "hlsl.preprocessorDefinitions": {
-    "__preshader__": 1,
-  }
-}

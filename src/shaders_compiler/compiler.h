@@ -57,8 +57,12 @@ namespace ShadersSystem
       auto resolveLocalInclude(const string_view file) -> std::optional<string>;
       auto resolveSystemInclude(const string_view file) -> std::optional<string>;
       auto openIncludeFile(const string_view file, const bool is_local) -> FILE*;
+
+      auto getWIncludeDirs() const -> eastl::span<const wstring> { return m_WIncludeDirs; }
+
     private:
       eastl::span<const string> m_IncludeDirs;
+      eastl::vector<wstring> m_WIncludeDirs;
 
       struct FileContext
       {

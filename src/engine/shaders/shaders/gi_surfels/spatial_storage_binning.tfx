@@ -9,7 +9,7 @@ scope GIBS_SpatialStorageBinning
   #hlsl
   #include "surfel.hlsl"
   #include "meta.hlsl"
-  #include "../intersection_structs.hlsl"
+  #include <intersection_structs.hlsl>
   #end
   RWStructuredBuffer<uint> surfelsLifeTime = extern(surfelsLifeTime);
   StructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);

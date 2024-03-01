@@ -4,9 +4,10 @@
 #include "lifetime.hlsl"
 #include "spatial_hash.hlsl"
 #include "surfel.hlsl"
-#include "../color_ramp.hlsl"
-#include "../intersections.hlsl"
-#include "../intersection_structs.hlsl"
+
+#include <color_ramp.hlsl>
+#include <intersections.hlsl>
+#include <intersection_structs.hlsl>
 
 uint getCellAddress(int3 id, int cascade)
 {

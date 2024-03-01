@@ -1,0 +1,11 @@
+{
+  "root": true,
+
+  "hlsl.preprocessorDefinitions": {
+    "__preshader__": 1
+  },
+  
+  "hlsl.additionalIncludeDirectories": [
+    "shaders"
+  ]
+}

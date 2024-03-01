@@ -15,6 +15,9 @@ namespace ShadersSystem
   Compiler::Compiler(eastl::span<const string> include_dirs)
     : m_IncludeDirs(include_dirs)
   {
+    m_WIncludeDirs.reserve(m_IncludeDirs.size());
+    for (const string& incDir: include_dirs)
+      m_WIncludeDirs.push_back(wstring{incDir.begin(), incDir.end()});
   }
 
   string Compiler::getScopeHlsl(const string& scope) const

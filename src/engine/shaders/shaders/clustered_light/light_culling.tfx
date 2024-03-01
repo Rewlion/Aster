@@ -22,7 +22,7 @@ technique ClusterLightCulling
   activate scope ClusterLightCullingScope;
 
   #hlsl
-  #include "../intersections.hlsl"
+  #include <intersections.hlsl>
 
   #define THREAD_BATCH_SIZE 16
   #define TOTAL_BATCH_SIZE (THREADS_NUM * THREAD_BATCH_SIZE)
