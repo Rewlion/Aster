@@ -3,7 +3,21 @@ scope FrameScope {
     descriptor_set(0);
     register(sampler, 0-3);
     register(texture, 0);
-    register(buffer, 0);
+    register(buffer, 0-9);
+
+  //////////////////// [ RAYTRACING ] /////////////////////////////
+  #hlsl
+  #include <raytracing/acceleration_structure.hlsl>
+  #end
+  StructuredBuffer<TLASInstance>          RT_tlasInstances       = extern (RT_tlasInstances);
+  StructuredBuffer<BVHNode>               RT_tlasBvhNodes        = extern (RT_tlasBvhNodes);
+  StructuredBuffer<uint>                  RT_tlasPrimitiveIds    = extern (RT_tlasPrimitiveIds);
+  StructuredBuffer<GeometryMeta>          RT_blasGeometryMeta    = extern (RT_blasGeometryMeta);
+  StructuredBuffer<BVHNode>               RT_blasBvhNodes        = extern (RT_blasBvhNodes);
+  StructuredBuffer<uint>                  RT_blasPrimitiveIds    = extern (RT_blasPrimitiveIds);
+  StructuredBuffer<float4>                RT_blasVertices        = extern (RT_blasVertices);
+  StructuredBuffer<TriangleVertexPayload> RT_blasVerticesPayload = extern (RT_blasVerticesPayload);
+  ///////////////
 
   sampler modelSampler = extern(model_sampler);
   sampler pointClampSampler = extern(point_clamp_sampler);

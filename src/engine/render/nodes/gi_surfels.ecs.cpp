@@ -3,7 +3,6 @@
 #include <engine/ecs/type_meta.h>
 #include <engine/render/frame_graph/dsl.h>
 #include <engine/render/imgui/imgui.h>
-#include <engine/scene/scene.h>
 #include <engine/tfx/tfx.h>
 #include <engine/time.h>
 
@@ -386,17 +385,6 @@ NODE_EXEC()
 static
 void gibs_test_rt(gapi::CmdEncoder& encoder, const uint2& render_size)
 {
-  const Engine::Scene::GpuRTAccelerationStructure& rtas = Engine::scene.getRTAS();
-
-  tfx::set_extern("RT_tlasInstances",       (gapi::BufferHandler)rtas.tlas.instances);
-  tfx::set_extern("RT_tlasBvhNodes",        (gapi::BufferHandler)rtas.tlas.bvhNodes);
-  tfx::set_extern("RT_tlasPrimitiveIds",    (gapi::BufferHandler)rtas.tlas.primitiveIds);
-  tfx::set_extern("RT_blasGeometryMeta",    (gapi::BufferHandler)rtas.blas.geometryMeta);
-  tfx::set_extern("RT_blasBvhNodes",        (gapi::BufferHandler)rtas.blas.bvhNodes);
-  tfx::set_extern("RT_blasPrimitiveIds",    (gapi::BufferHandler)rtas.blas.primitiveIds);
-  tfx::set_extern("RT_blasVertices",        (gapi::BufferHandler)rtas.blas.vertices);
-  tfx::set_extern("RT_blasVerticesPayload", (gapi::BufferHandler)rtas.blas.verticesPayload);
-
   tfx::set_extern("renderSize", render_size);
 
   tfx::activate_technique("RT_TEST", encoder);

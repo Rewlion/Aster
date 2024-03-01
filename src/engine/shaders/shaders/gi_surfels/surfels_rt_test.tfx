@@ -4,24 +4,10 @@ scope RT_TEST_SCOPE
 {
   reserve:
     descriptor_set(1);
-    register(buffer, 0-9);
+    register(buffer, 0);
     register(texture, 0);
 
   RWTexture2D<float4> dbgOutput = extern(dbgOutput);
-
-  #hlsl
-  #include <raytracing/acceleration_structure.hlsl>
-  
-  #end
-  StructuredBuffer<TLASInstance>          RT_tlasInstances       = extern (RT_tlasInstances);
-  StructuredBuffer<BVHNode>               RT_tlasBvhNodes        = extern (RT_tlasBvhNodes);
-  StructuredBuffer<uint>                  RT_tlasPrimitiveIds    = extern (RT_tlasPrimitiveIds);
-  StructuredBuffer<GeometryMeta>          RT_blasGeometryMeta    = extern (RT_blasGeometryMeta);
-  StructuredBuffer<BVHNode>               RT_blasBvhNodes        = extern (RT_blasBvhNodes);
-  StructuredBuffer<uint>                  RT_blasPrimitiveIds    = extern (RT_blasPrimitiveIds);
-  StructuredBuffer<float4>                RT_blasVertices        = extern (RT_blasVertices);
-  StructuredBuffer<TriangleVertexPayload> RT_blasVerticesPayload = extern (RT_blasVerticesPayload);
-
   uint2 renderSize = extern(renderSize);
 };
 

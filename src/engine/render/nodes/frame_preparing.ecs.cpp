@@ -5,6 +5,7 @@
 #include <engine/render/ecs_utils.h>
 #include <engine/render/frame_graph/dsl.h>
 #include <engine/render/imgui/imgui_render.h>
+#include <engine/scene/scene.h>
 #include <engine/tfx/tfx.h>
 #include <engine/time.h>
 #include <engine/window.h>
@@ -120,6 +121,16 @@ void frame_preparing_exec(gapi::CmdEncoder& encoder,
     math::get_far_plane_points_world_space(camera_data.proj, viewRot);
   const math::FarPlanePoints fpViewVS =
     math::get_far_plane_points_view_space(camera_data.proj);
+
+  const Engine::Scene::GpuRTAccelerationStructure& rtas = Engine::scene.getRTAS();
+  tfx::set_extern("RT_tlasInstances",       (gapi::BufferHandler)rtas.tlas.instances);
+  tfx::set_extern("RT_tlasBvhNodes",        (gapi::BufferHandler)rtas.tlas.bvhNodes);
+  tfx::set_extern("RT_tlasPrimitiveIds",    (gapi::BufferHandler)rtas.tlas.primitiveIds);
+  tfx::set_extern("RT_blasGeometryMeta",    (gapi::BufferHandler)rtas.blas.geometryMeta);
+  tfx::set_extern("RT_blasBvhNodes",        (gapi::BufferHandler)rtas.blas.bvhNodes);
+  tfx::set_extern("RT_blasPrimitiveIds",    (gapi::BufferHandler)rtas.blas.primitiveIds);
+  tfx::set_extern("RT_blasVertices",        (gapi::BufferHandler)rtas.blas.vertices);
+  tfx::set_extern("RT_blasVerticesPayload", (gapi::BufferHandler)rtas.blas.verticesPayload);
 
   tfx::set_extern("cameraPrevJitter", prevCameraJitter);
   tfx::set_extern("cameraJitter", cameraJitter);
