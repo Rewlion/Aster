@@ -460,7 +460,7 @@ namespace ShadersSystem
         string hlsl;
         const auto getStorageType = [](const ResourceElemStorageType& t) {
           ASSERT(!std::get_if<std::monostate>(&t));
-          if (auto structName = std::get_if<const char*>(&t))
+          if (auto structName = std::get_if<string_view>(&t))
           {
             return fmt::format("<{}>", *structName);
           }
@@ -472,7 +472,7 @@ namespace ShadersSystem
           }
         };
 
-        for (const char* hlslCode : m_Scope.declaredHlslResources)
+        for (string_view hlslCode : m_Scope.declaredHlslResources)
           hlsl += hlslCode;
 
         for (auto& [_, var]: m_Scope.declaredResources)

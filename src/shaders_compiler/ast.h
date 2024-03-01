@@ -922,9 +922,9 @@ namespace ShadersSystem
         delete assignExps;
         assignExps = nullptr;
       }
-      if (auto structName = std::get_if<const char*>(&elemStorageType))
+      if (string_view* structName = std::get_if<string_view>(&elemStorageType))
       {
-        delete *structName;
+        delete structName->data();
         elemStorageType = std::monostate{};
       }
     }

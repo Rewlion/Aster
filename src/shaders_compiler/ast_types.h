@@ -12,7 +12,7 @@
 
 namespace ShadersSystem
 {
-  using ResourceElemStorageType = std::variant<std::monostate, gapi::AttributeType, const char*>;
+  using ResourceElemStorageType = std::variant<std::monostate, gapi::AttributeType, string_view>;
 
   enum class ResourceType: uint8_t
   {

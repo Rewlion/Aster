@@ -80,7 +80,7 @@ namespace ShadersSystem
     std::optional<RegistersReserve> bufferRegisters;
 
     CbufferVars cbufferVariables;
-    eastl::vector<const char*> declaredHlslResources;
+    eastl::vector<string_view> declaredHlslResources;
     eastl::vector_map<string_hash, ResourceDeclaration> declaredResources;
 
     string hlslResourceDeclaration;
@@ -99,7 +99,7 @@ namespace ShadersSystem
         cbufferVariables == rvl.cbufferVariables &&
         declaredHlslResources == rvl.declaredHlslResources &&
         declaredResources == rvl.declaredResources &&
-        hlslResourceDeclaration == rvl.hlslResourceDeclaration;
+        hlslResourceDeclaration == rvl.hlslResourceDeclaration && 
         is_same_byte_code(byteCode, rvl.byteCode);
     }
   };
