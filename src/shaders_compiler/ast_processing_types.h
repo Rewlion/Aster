@@ -43,8 +43,8 @@ namespace ShadersSystem
 
   struct ResourceDeclaration
   {
-    ResourceType type;
-    ResourceElemStorageType elemStorageType;
+    FullResourceType fullType;
+    uint elementsCount;
     string name;
     uint8_t dset = 0;
     uint8_t binding = 0;

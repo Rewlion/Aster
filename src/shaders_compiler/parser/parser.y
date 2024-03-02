@@ -50,6 +50,8 @@
   DescriptorSetReserveExp* dsetExp;
 
   ResourceDeclaration* resourceDeclaration;
+  ResourceDeclarationExp* resourceDeclExp;
+  FullResourceType* fullResourceType;
   ResourceType resourceType;
   ResourceAssignExp* resourceAssignExp;
 
@@ -88,6 +90,8 @@
 %token TFX_TOKEN_RIGHT_PARENTHESIS ")"
 %token TFX_TOKEN_LEFT_BRACKET "{"
 %token TFX_TOKEN_RIGHT_BRACKET "}"
+%token TFX_TOKEN_LEFT_SQUARE_BRACKET "["
+%token TFX_TOKEN_RIGHT_SQUARE_BRACKET "]"
 %token TFX_TOKEN_LESS_SIGN "<"
 %token TFX_TOKEN_GREATER_SIGN ">"
 %token TFX_TOKEN_COMMA ","
@@ -233,11 +237,13 @@
 %type <techniqueExp>         TECHNIQUE_EXP_LIST
 %type <scopeExp>             SCOPE_EXP
 %type <scopeExp>             SCOPE_EXP_LIST
+%type <resourceDeclExp>      RESOURCE_DECLARATION
 %type <resReserveExp>        RESOURCE_RESERVE_EXP
 %type <resReserveExp>        RESOURCE_RESERVE_EXP_LIST
 %type <ival>                 INT_VALUE
 %type <bval>                 BOOL_VALUE
 %type <f4val>                FLOAT4_VALUE
+%type <fullResourceType>     FULL_RESOURCE_TYPE
 %type <resourceType>         RESOURCE_TYPE
 %type <resourceType>         RESOURCE_TYPE_WITH_STORAGE
 %type <resourceAssignExp>    ASSIGN_EXP
@@ -776,17 +782,11 @@ SCOPE_EXP
   : "reserve" ":" RESOURCE_RESERVE_EXP_LIST[exps] {
     $$ = new ShadersResourcesReserveExp($exps);
   }
-  | RESOURCE_TYPE_WITH_STORAGE[type] "<" ATTRIBUTE_TYPE[elemStorageType] ">" TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
-    $$ = new ResourceDeclarationExp($type, $elemStorageType, $name, $exps);
-  }
-  | RESOURCE_TYPE_WITH_STORAGE[type] "<" TFX_TOKEN_NAME_VAL[structName] ">" TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
-    $$ = new ResourceDeclarationExp($type, $structName, $name, $exps);
+  | RESOURCE_DECLARATION[decl] ";" {
+    $$ = $decl;
   }
   | TFX_TOKEN_HLSL_CODE[code] {
     $$ = new HlslResourceDeclarationExp($code);
-  }
-  | RESOURCE_TYPE[type] TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
-    $$ = new ResourceDeclarationExp($type, gapi::AttributeType::None, $name, $exps);
   }
   | ATTRIBUTE_TYPE[type] TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] ";" {
     $$ = new CbufferVarDeclarationExp($type, $name, $exps);
@@ -833,6 +833,40 @@ ASSIGN_EXP
   }
   | "channel" "(" TFX_TOKEN_NAME_VAL[name] ")" {
     $$ = new AccessResource(ResourceAccessType::Channel, $name);
+  }
+  ;
+
+RESOURCE_DECLARATION
+  : FULL_RESOURCE_TYPE[type] TFX_TOKEN_NAME_VAL[name] "=" ASSIGN_EXP[exps] {
+    $$ = new ResourceDeclarationExp($type, 1, $name, $exps);
+  }
+  | FULL_RESOURCE_TYPE[type] TFX_TOKEN_NAME_VAL[name] "[" INT_VALUE[v] "]" "=" ASSIGN_EXP[exps] {
+    $$ = new ResourceDeclarationExp($type, $v, $name, $exps);
+  }
+  | FULL_RESOURCE_TYPE[type] TFX_TOKEN_NAME_VAL[name] "[" "]" "=" ASSIGN_EXP[exps] {
+    $$ = new ResourceDeclarationExp($type, 0, $name, $exps);
+  }
+  ;
+
+FULL_RESOURCE_TYPE
+  : RESOURCE_TYPE_WITH_STORAGE[type] "<" ATTRIBUTE_TYPE[elemStorageType] ">" {
+    $$ = new FullResourceType {
+      .type = $type,
+      .storage = $elemStorageType
+    };
+  }
+  | RESOURCE_TYPE_WITH_STORAGE[type] "<" TFX_TOKEN_NAME_VAL[structName] ">" {
+    $$ = new FullResourceType {
+      .type = $type,
+      .storage = string{$structName}
+    };
+    delete $structName;
+  }
+  | RESOURCE_TYPE[type] {
+    $$ = new FullResourceType {
+      .type = $type,
+      .storage = gapi::AttributeType::None
+    };
   }
   ;
 

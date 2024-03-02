@@ -10,10 +10,9 @@ namespace ShadersSystem
 
   bool ResourceDeclaration::operator==(const ResourceDeclaration& rvl) const
   {
-    return type == rvl.type &&
+    return fullType == rvl.fullType &&
            name == rvl.name &&
            binding == rvl.binding &&
-           elemStorageType == rvl.elemStorageType &&
            ((assignExp == rvl.assignExp) || (assignExp && rvl.assignExp && *assignExp == *rvl.assignExp));
   }
 

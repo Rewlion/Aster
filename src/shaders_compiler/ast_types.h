@@ -12,7 +12,7 @@
 
 namespace ShadersSystem
 {
-  using ResourceElemStorageType = std::variant<std::monostate, gapi::AttributeType, string_view>;
+  using ResourceElemStorageType = std::variant<std::monostate, gapi::AttributeType, string>;
 
   enum class ResourceType: uint8_t
   {
@@ -29,6 +29,14 @@ namespace ShadersSystem
     RWTexture3D,
     CbufferVar,
     Sampler
+  };
+
+  struct FullResourceType
+  {
+    ResourceType type;
+    ResourceElemStorageType storage;
+
+    auto operator==(const FullResourceType& r) const -> bool { return (type == r.type) && (storage == r.storage);}
   };
 
   inline

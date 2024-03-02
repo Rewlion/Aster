@@ -896,36 +896,29 @@ namespace ShadersSystem
 
   struct ResourceDeclarationExp: public ScopeExp
   {
-    ResourceType resourceType;
-    ResourceElemStorageType elemStorageType;
-    const char* name;
+    FullResourceType fullType;
+    int elementsCount;
+    string name;
     const ResourceAssignExp* assignExps;
-    ResourceDeclarationExp(const ResourceType resType, const ResourceElemStorageType& elStorageType,
+    ResourceDeclarationExp(FullResourceType* full_type,
+                           const uint elements_count,
                            const char* name,
                            const ResourceAssignExp* assignExps)
       : ScopeExp(ScopeExp::Type::ResourceDeclaration)
-      , resourceType(resType)
-      , elemStorageType(elStorageType)
+      , fullType(std::move(*full_type))
+      , elementsCount(elements_count)
       , name(name)
       , assignExps(assignExps)
     {
+      delete full_type;
+      delete name;
     }
     virtual ~ResourceDeclarationExp()
     {
-      if (name)
-      {
-        delete name;
-        name = nullptr;
-      }
       if (assignExps)
       {
         delete assignExps;
         assignExps = nullptr;
-      }
-      if (string_view* structName = std::get_if<string_view>(&elemStorageType))
-      {
-        delete structName->data();
-        elemStorageType = std::monostate{};
       }
     }
   };

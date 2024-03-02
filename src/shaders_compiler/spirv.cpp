@@ -119,10 +119,10 @@ namespace spirv
         {
           DescriptorSetBinding& binding = accessDsetBinding(decl.dset, decl.binding, decl.name, scope->name);
           binding.vk.binding = decl.binding;
-          binding.vk.descriptorCount = 1;
-          binding.vk.descriptorType = get_descriptor_type(decl.type);
+          binding.vk.descriptorCount = decl.elementsCount;
+          binding.vk.descriptorType = get_descriptor_type(decl.fullType.type);
           binding.vk.stageFlags = gapi::vulkan::get_shader_stage(stages);
-          binding.resourceType = decl.type;
+          binding.resourceType = decl.fullType.type;
         }
       }
 

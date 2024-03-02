@@ -318,7 +318,10 @@ namespace ShadersSystem
               return {major, minor};
             }
             else
+            {
               throwErr("invalid format. Valid example: {vs_6_1 or vs}");
+              return {};
+            }
           };
 
           auto [stageStr, gapiStage] = getShaderStage();

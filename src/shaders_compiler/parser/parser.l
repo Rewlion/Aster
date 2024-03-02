@@ -142,6 +142,14 @@
   return TFX_TOKEN_RIGHT_BRACKET;
 }
 
+\[ {
+  return TFX_TOKEN_LEFT_SQUARE_BRACKET;
+}
+
+\] {
+  return TFX_TOKEN_RIGHT_SQUARE_BRACKET;
+}
+
 \< {
   return TFX_TOKEN_LESS_SIGN;
 }

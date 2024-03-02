@@ -145,13 +145,20 @@ namespace ShadersSystem
       void addResourceDeclaration(const ResourceDeclarationExp& resourceDeclaration)
       {
         const string_hash resNameHash = str_hash(resourceDeclaration.name);
+        
         if (m_Scope.declaredResources.find(resNameHash) != m_Scope.declaredResources.end())
           throw std::runtime_error(
             fmt::format("error: failed to declare a resource `{}`: it's already declared",
                         resourceDeclaration.name)
           );
 
-        switch (resourceDeclaration.resourceType)
+        if (resourceDeclaration.elementsCount < 0)
+          throw std::runtime_error(
+            fmt::format("error: failed to declare a resource `{}`: array size must be >= 0",
+                        resourceDeclaration.name)
+        );
+
+        switch (resourceDeclaration.fullType.type)
         {
           case ResourceType::Sampler:
           case ResourceType::Buffer:
@@ -167,8 +174,8 @@ namespace ShadersSystem
             m_Scope.declaredResources.insert({
               resNameHash,
               ResourceDeclaration{
-                .type = resourceDeclaration.resourceType,
-                .elemStorageType = resourceDeclaration.elemStorageType,
+                .fullType = resourceDeclaration.fullType,
+                .elementsCount = (uint)resourceDeclaration.elementsCount,
                 .name = resourceDeclaration.name,
                 .dset = 0,
                 .binding = 0,
@@ -248,12 +255,15 @@ namespace ShadersSystem
           if (!hasBuffers)
             throw std::runtime_error("error: scope declared cbuffer variables but there are no buffer registers reserved");
           
-          m_Scope.cbuffer = currentBufferReg++;
+          m_Scope.cbuffer = currentBufferReg++;                                                                                                                                                            
           string name = m_Scope.name + "_cbuffer";
           m_Scope.declaredResources.insert({
             str_hash(name.c_str()),
             ResourceDeclaration{
-              .type = ResourceType::Cbuffer,
+              .fullType = FullResourceType{
+                .type = ResourceType::Cbuffer,
+              },
+              .elementsCount = 1,
               .name = name,
               .dset =  m_Scope.descriptorSet,
               .binding = m_Scope.cbuffer
@@ -261,10 +271,26 @@ namespace ShadersSystem
           });
         }
 
+        bool hasVariableSizeReg = false;
         for (auto&[_, resource]: m_Scope.declaredResources)
         {
           resource.dset = m_Scope.descriptorSet;
-          switch (resource.type)
+          if (resource.elementsCount == 0)
+          {
+            if (hasVariableSizeReg)
+            {
+              throw std::runtime_error(fmt::format(
+                "failed to declare a variable sized array resource '{}': register is already in use in the scope.",
+                resource.name
+              ));
+            }
+
+            resource.binding = VARIABLE_SIZE_ARRAY_REGISTER;
+            hasVariableSizeReg = true;
+            continue;
+          }
+
+          switch (resource.fullType.type)
           {
             case ResourceType::Cbuffer: break;
 
@@ -316,7 +342,6 @@ namespace ShadersSystem
               resource.binding = currentTexReg++;
               break;
             }
-
             default:
             {
               ASSERT(!"unsupported");
@@ -460,7 +485,7 @@ namespace ShadersSystem
         string hlsl;
         const auto getStorageType = [](const ResourceElemStorageType& t) {
           ASSERT(!std::get_if<std::monostate>(&t));
-          if (auto structName = std::get_if<string_view>(&t))
+          if (auto structName = std::get_if<string>(&t))
           {
             return fmt::format("<{}>", *structName);
           }
@@ -477,14 +502,14 @@ namespace ShadersSystem
 
         for (auto& [_, var]: m_Scope.declaredResources)
         {
-          if (var.type == ResourceType::Cbuffer)
+          if (var.fullType.type == ResourceType::Cbuffer)
             continue;
 
           hlsl += fmt::format("{}{} {}: register({}{}, space{});\n",
-            to_hlsl_type(var.type), 
-            getStorageType(var.elemStorageType),
+            to_hlsl_type(var.fullType.type), 
+            getStorageType(var.fullType.storage),
             var.name,
-            to_hlsl_register(var.type),
+            to_hlsl_register(var.fullType.type),
             var.binding, var.dset);
         }
 
@@ -505,7 +530,7 @@ namespace ShadersSystem
         for (const auto& [_, res]: m_Scope.declaredResources)
         {
           ByteCodes var;
-          switch (res.type)
+          switch (res.fullType.type)
           {
             case ResourceType::Cbuffer:
             {
@@ -569,7 +594,7 @@ namespace ShadersSystem
 
         ShByteCode b = ShBindResource::build(
           assignNode->accessType,
-          res.type,
+          res.fullType.type,
           assignNode->resourceName,
           res.dset,
           res.binding
