@@ -24,11 +24,22 @@ struct BLAS
     const float3 v1 = blasVertices[primitive_id*3 + 1].xyz;
     const float3 v2 = blasVertices[primitive_id*3 + 2].xyz;
 
+    const TriangleVertexPayload vp0 = blasVerticesPayload[primitive_id*3 + 0];
+    const TriangleVertexPayload vp1 = blasVerticesPayload[primitive_id*3 + 1];
+    const TriangleVertexPayload vp2 = blasVerticesPayload[primitive_id*3 + 2];
+
     TriangleIntersection intTriRes = calc_triangle_ray_intersection(v0,v1,v2,ray_pos,ray_dir);
     TraceResult res;
     res.t = intTriRes.t;
-    res.uv = intTriRes.uvw.xy;
+    res.uvw = intTriRes.uvw;
     res.primitiveID = primitive_id;
+
+    if (intTriRes.t != TRACE_MISS)
+    {
+      res.payload[0] = vp0;
+      res.payload[1] = vp1;
+      res.payload[2] = vp2;
+    }
 
     return res;
   }

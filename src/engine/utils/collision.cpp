@@ -210,16 +210,16 @@ namespace Utils
     const float3 bp = p - tri.b;
     const float3 cp = p - tri.c;
 
-    const float S = glm::length(N) / 2;
-    const float S1 = glm::length( glm::cross(ab, bp) ) / 2;
-    const float S2 = glm::length( glm::cross(bc, cp) ) / 2;
-    const float S3 = glm::length( glm::cross(ac, cp) ) / 2;
+    const float S = glm::length(N);
+    const float S1 = glm::length( glm::cross(ab, bp) );
+    const float S2 = glm::length( glm::cross(bc, cp) );
+    const float S3 = glm::length( glm::cross(ac, cp) );
 
     const float k = (S1 + S2 + S3) / S;
     const float eps = 0.1e-5;
 
     t = std::abs(1.0f - k) <= eps ? t : TRACE_MISS;
-    const float2 uv{S2,S1};
+    const float2 uv = float2{S2,S1} / S;
 
     return {t, uv};
   }

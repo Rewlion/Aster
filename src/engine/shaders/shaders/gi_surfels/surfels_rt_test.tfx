@@ -58,9 +58,11 @@ technique RT_TEST
     {
       uint bindlessPackId = tlasInstanceToBindlessPackId[res.instanceID] * BINDLESS_MATERIAL_TEX_COUNT;
       uint albedoId = bindlessPackId + BINDLESS_MATERIAL_ALBEDO_TEX;
-      //Texture2D albedo = bindlessModelTextures[5];
       Texture2D albedo = bindlessModelTextures[NonUniformResourceIndex(albedoId)];
-      dbgOutput[tc.xy] = albedo.SampleLevel(modelSampler, res.uv, 0);
+
+      float2 uv = res.payload[0].uv * res.uvw[0] + res.payload[1].uv * res.uvw[1] + res.payload[2].uv * res.uvw[2];
+
+      dbgOutput[tc.xy] = albedo.SampleLevel(modelSampler, uv, 0);
     }
 
     return;

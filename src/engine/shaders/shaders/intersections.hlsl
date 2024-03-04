@@ -63,16 +63,16 @@ TriangleIntersection calc_triangle_ray_intersection(float3 a, float3 b, float3 c
   const float3 bp = p - b;
   const float3 cp = p - c;
 
-  const float S = length(N) / 2;
-  const float S1 = length( cross(ab, bp) ) / 2;
-  const float S2 = length( cross(bc, cp) ) / 2;
-  const float S3 = length( cross(ac, cp) ) / 2;
+  const float S = length(N);
+  const float S1 = length( cross(ab, bp) );
+  const float S2 = length( cross(bc, cp) );
+  const float S3 = length( cross(ac, cp) );
 
   const float k = (S1 + S2 + S3) / S;
   const float eps = 0.1e-5;
 
   res.t = abs(1.0f - k) <= eps ? t : TRACE_MISS;
-  res.uvw = float3(S2,S1,S3);
+  res.uvw = float3(S2,S3,S1) / S;
   
   return res;
 }

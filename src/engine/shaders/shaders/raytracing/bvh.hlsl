@@ -14,7 +14,9 @@ struct BVHNode
 struct TriangleVertexPayload
 {
   float2 uv;
-  float2 normal;
+  float2 _p;
+  float3 normal;
+  float _p2;
 };
 
 #ifdef __preshader__ /////////////// [HLSL]  //////////////////////
@@ -27,9 +29,11 @@ struct TraceResult
   uint primitiveID;
   uint instanceID;
   float t;
-  float2 uv;
+  float3 uvw;
   float4x4 objectToWorldTm;
   float4x4 worldToObjectTm;
+
+  TriangleVertexPayload payload[3];
 };
 
 
