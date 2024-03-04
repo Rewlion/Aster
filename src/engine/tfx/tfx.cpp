@@ -6,6 +6,8 @@
 #include <engine/gapi/utils.h>
 #include <engine/log.h>
 #include <engine/utils/fs.h>
+
+#include <shaders_compiler/ast_types.h>
 #include <shaders_compiler/bin.h>
 #include <shaders_compiler/serialization.h>
 
@@ -18,6 +20,20 @@ namespace tfx
 {
   namespace
   {
+    inline
+    auto get_param_bind_type(const Param& p) -> ShadersSystem::ResourceBindType
+    {
+      return p >> match {
+        [](gapi::TextureHandle)  { return ShadersSystem::ResourceBindType::Texture; },
+        [](Texture)              { return ShadersSystem::ResourceBindType::Texture; },
+        [](TextureArray)         { return ShadersSystem::ResourceBindType::Texture; },
+        [](gapi::BufferHandler)  { return ShadersSystem::ResourceBindType::Buffer; },
+        [](gapi::SamplerHandler) { return ShadersSystem::ResourceBindType::Sampler; },
+        [](auto)                 { return ShadersSystem::ResourceBindType::None;}
+      };
+    }
+
+
     struct Scope
     {
       string name;
@@ -100,73 +116,26 @@ namespace tfx
 
         void processByteCode(const ShadersSystem::ShBindResource& bc)
         {
-          const auto unwrapGapiHandle = [](const auto& p) -> Param
-          {
-            if (const Texture* tex = std::get_if<Texture>(&p))
-              return {tex->h};
-
-            return p;
-          };
-
-          const auto isValidType = [unwrapGapiHandle](const auto& wrapped_res, const ShadersSystem::ResourceType type) {
-            const auto res = unwrapGapiHandle(wrapped_res);
-            #define VERIFY_CASE(handleType, resourceType) std::holds_alternative<gapi::handleType>(res) && (type == ShadersSystem::ResourceType::resourceType)
-
-            return  VERIFY_CASE(TextureHandle, Texture2D)          ||
-                    VERIFY_CASE(TextureHandle, Texture3D)          ||
-                    VERIFY_CASE(TextureHandle, TextureCube)        ||
-                    VERIFY_CASE(TextureHandle, RWTexture2D)        ||
-                    VERIFY_CASE(TextureHandle, RWTexture3D)        ||
-                    VERIFY_CASE(BufferHandler, Buffer)             ||
-                    VERIFY_CASE(BufferHandler, StructuredBuffer)   ||
-                    VERIFY_CASE(BufferHandler, RWStructuredBuffer) ||
-                    VERIFY_CASE(BufferHandler, RWBuffer)           ||
-                    VERIFY_CASE(SamplerHandler, Sampler);
-
-            #undef VERIFY_CASE
-          };
-
           const auto& [resource, resourceExist] = getParam(bc.accessType, bc.resourceName);
-          const auto resourceValid = resourceExist && isValidType(resource, bc.type);
 
-          switch (bc.type)
+          const ShadersSystem::ResourceBindType resBindType = ShadersSystem::to_resource_bind_type(bc.type);
+          const auto isResourceValid = resourceExist && (get_param_bind_type(resource) == resBindType);
+
+          switch (resBindType)
           {
-            case ShadersSystem::ResourceType::Sampler:
+            case ShadersSystem::ResourceBindType::Sampler:
             {
-              const auto h = resourceValid ? std::get<gapi::SamplerHandler>(resource) : gapi::SamplerHandler::Invalid;
-              m_CmdEncoder->bindSampler((gapi::SamplerHandler)h, bc.dset, bc.binding);
+              bindSampler(bc, isResourceValid, resource);
               break;
             }
-            case ShadersSystem::ResourceType::Buffer:
-            case ShadersSystem::ResourceType::StructuredBuffer:
-            case ShadersSystem::ResourceType::RWStructuredBuffer:
-            case ShadersSystem::ResourceType::RWBuffer:
+            case ShadersSystem::ResourceBindType::Buffer:
             {
-              const auto h = resourceValid ? std::get<gapi::BufferHandler>(resource) : gapi::BufferHandler::Invalid;
-              m_CmdEncoder->bindBuffer(h, bc.dset, bc.binding);
+              bindBuffer(bc, isResourceValid, resource);
               break;
             }
-            case ShadersSystem::ResourceType::Texture2D:
-            case ShadersSystem::ResourceType::Texture3D:
-            case ShadersSystem::ResourceType::TextureCube:
-            case ShadersSystem::ResourceType::RWTexture2D:
-            case ShadersSystem::ResourceType::RWTexture3D:
+            case ShadersSystem::ResourceBindType::Texture:
             {
-              gapi::TextureHandle h = gapi::TextureHandle::Invalid;
-              size_t mip = 0;
-
-              if (resourceValid)
-              {
-                if (const Texture* tex = std::get_if<Texture>(&resource))
-                {
-                  h = tex->h;
-                  mip = tex->mip;
-                }
-                else
-                  h = std::get<gapi::TextureHandle>(resource);
-              }
-
-              m_CmdEncoder->bindTexture(h, bc.dset, bc.binding, mip);
+              bindTexture(bc, isResourceValid, resource);
               break;
             }
             default:
@@ -174,6 +143,48 @@ namespace tfx
               ASSERT_FMT(false, "unsupported byte code `{}`", (int)bc.type);
               break;
             }
+          }
+        }
+
+        void bindSampler(const ShadersSystem::ShBindResource& bc, const bool is_res_valid, const Param& param)
+        {
+          const auto h = is_res_valid ? std::get<gapi::SamplerHandler>(param) : gapi::SamplerHandler::Invalid;
+          m_CmdEncoder->bindSampler((gapi::SamplerHandler)h, bc.dset, bc.binding, 0);
+        }
+
+        void bindBuffer(const ShadersSystem::ShBindResource& bc, const bool is_res_valid, const Param& param)
+        {
+          const auto h = is_res_valid ? std::get<gapi::BufferHandler>(param) : gapi::BufferHandler::Invalid;
+          m_CmdEncoder->bindBuffer(h, bc.dset, bc.binding, 0);
+        }
+
+        void bindTexture(const ShadersSystem::ShBindResource& bc, const bool is_res_valid, const Param& param)
+        {
+          if (is_res_valid) [[likely]]
+          {
+            param >> match {
+              [&](const Texture& tex) {
+                m_CmdEncoder->bindTexture(tex.h, bc.dset, bc.binding, 0, tex.mip);
+              },
+              [&](const gapi::TextureHandle& h) {
+                m_CmdEncoder->bindTexture(h, bc.dset, bc.binding, 0, 0);
+              },
+              [&](const TextureArray& tex_array) {
+                const size_t lastTex = tex_array.size();
+                for (size_t i = 0; i < lastTex; ++i)
+                {
+                  const Texture& tex = tex_array[i];
+                  m_CmdEncoder->bindTexture(tex.h, bc.dset, bc.binding, i, tex.mip);
+                }
+              },
+              [](const auto) {
+                ASSERT(!"invalid tfx param");
+              },
+            };
+          }
+          else
+          {
+            m_CmdEncoder->bindTexture(gapi::TextureHandle::Invalid, bc.dset, bc.binding, 0, 0);
           }
         }
 

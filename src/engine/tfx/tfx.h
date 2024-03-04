@@ -2,6 +2,8 @@
 
 #include <engine/gapi/resources.h>
 
+#include <engine/utils/pattern_matching.hpp>
+
 namespace gapi
 {
   class CmdEncoder;
@@ -11,16 +13,18 @@ namespace tfx
 {
   struct Texture
   {
-    gapi::TextureHandle h;
+    gapi::TextureHandle h = gapi::TextureHandle::Invalid;
     size_t mip = 0;
   };
+
+  using TextureArray = eastl::vector<Texture>;
 
   typedef std::variant<
       uint,uint2,uint3,uint4,
       int,int2,int3,int4,
       float,float2,float3,float4,
       float4x4,
-      gapi::TextureHandle, Texture,
+      gapi::TextureHandle, Texture, TextureArray,
       gapi::BufferHandler,
       gapi::SamplerHandler> Param;
 
