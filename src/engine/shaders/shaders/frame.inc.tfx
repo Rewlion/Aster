@@ -3,7 +3,7 @@ scope FrameScope {
     descriptor_set(0);
     register(sampler, 0-3);
     register(texture, 0);
-    register(buffer, 0-9);
+    register(buffer, 0-10);
 
   //////////////////// [ RAYTRACING ] /////////////////////////////
   #hlsl
@@ -18,6 +18,8 @@ scope FrameScope {
   StructuredBuffer<float4>                RT_blasVertices        = extern (RT_blasVertices);
   StructuredBuffer<TriangleVertexPayload> RT_blasVerticesPayload = extern (RT_blasVerticesPayload);
   ///////////////
+  Texture2D<float4> bindlessModelTextures[] = extern(bindlessModelTextures);
+  StructuredBuffer<uint> tlasInstanceToBindlessPackId = extern(tlasInstanceToBindlessPackId);
 
   sampler modelSampler = extern(model_sampler);
   sampler pointClampSampler = extern(point_clamp_sampler);

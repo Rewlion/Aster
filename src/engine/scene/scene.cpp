@@ -10,6 +10,8 @@
 #include <EASTL/vector_map.h>
 #include <EASTL/vector_set.h>
 
+#include <engine/shaders/shaders/bindless_material_ids.hlsl>
+
 namespace Engine
 {
   Scene scene;
@@ -40,6 +42,7 @@ namespace Engine
       }
     }
 
+    rebuildBindlessMaterialParams();
     rebuildBLAS();
     rebuildTLAS();
     rebuildRTAS();
@@ -48,6 +51,58 @@ namespace Engine
   eastl::vector<SceneObject> Scene::queueObjects() const
   {
     return m_SceneObjects;
+  }
+
+  void Scene::rebuildBindlessMaterialParams()
+  {
+    m_ModelToBindlessParams.clear();
+    m_BindlessMaterialTextures.clear();
+    uint iBindlessPack = 0;
+
+    eastl::vector_set<string> modelNames;
+    for (const SceneObject& obj: m_SceneObjects)
+      modelNames.insert(obj.model);
+
+    for (const string& modelName: modelNames)
+    {
+      ModelAsset* asset = assets_manager.getModel(modelName);
+      if (m_ModelToBindlessParams.find(asset->mesh->name) != m_ModelToBindlessParams.end())
+        continue;
+
+      m_ModelToBindlessParams.insert(eastl::make_pair(modelName, iBindlessPack++));
+
+      for (const tfx::Material& mat: asset->materials)
+      {
+        tfx::Texture* paramsPack[BINDLESS_MATERIAL_TEX_COUNT];
+        for (uint i = 0; i < BINDLESS_MATERIAL_TEX_COUNT; ++i)
+        {
+          paramsPack[i] = reinterpret_cast<tfx::Texture*>(m_BindlessMaterialTextures.push_back_uninitialized());
+          *paramsPack[i] = tfx::Texture{};
+        }
+
+        for (const tfx::ParamDescription& param: mat.params)
+        {
+          int bindlessId = -1;
+          if (param.name == "albedo")
+            bindlessId = BINDLESS_MATERIAL_ALBEDO_TEX;
+          else if (param.name == "normal")
+            bindlessId = BINDLESS_MATERIAL_NORMAL_TEX;
+          else if (param.name == "metal_roughness")
+            bindlessId = BINDLESS_MATERIAL_METAL_ROUGHNESS_TEX;
+
+          if (bindlessId >= 0)
+          {
+            const gapi::TextureHandle handle = param.value >> match{
+              [](const gapi::TextureHandle h) { return h; },
+              [](const tfx::Texture tex) { return tex.h; },
+              [](auto) { return gapi::TextureHandle::Invalid; }
+            };
+
+            *paramsPack[bindlessId] = tfx::Texture {.h = handle, .mip = 0};
+          }
+        }
+      }
+    }
   }
 
   void Scene::rebuildBLAS()
@@ -79,15 +134,17 @@ namespace Engine
 
     m_BLAS.resetGeometry(geometryDesc);
   }
-  
+
   void Scene::rebuildTLAS()
   {
     eastl::vector<TLASInstance> instances;
+    eastl::vector<uint> instanceToBindlessPackId;
 
     for (const SceneObject& obj: m_SceneObjects)
     {
       ModelAsset* asset = assets_manager.getModel(obj.model);
-      uint geometryID = m_MeshToGeometryId[asset->mesh->name];
+      const uint geometryID = m_MeshToGeometryId[asset->mesh->name];
+      const uint bindlessPackId = m_ModelToBindlessParams[obj.model];
 
       const float4x4 objectToWorldTm = calc_object_to_world_tm(obj);
       const float4x4 worldToObjectTm = glm::inverse(objectToWorldTm);
@@ -104,10 +161,12 @@ namespace Engine
           .worldToObjectTm = worldToObjectTm,
           .geometryId = geometryID
         });
+
+        instanceToBindlessPackId.push_back(bindlessPackId);
       }
     }
 
-    m_TLAS.rebuild(std::move(instances));
+    m_TLAS.rebuild(std::move(instances), std::move(instanceToBindlessPackId));
   }
 
   void Scene::rebuildRTAS()

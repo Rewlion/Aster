@@ -20,11 +20,19 @@ namespace Engine
         gapi::BufferWrapper instances;
         gapi::BufferWrapper bvhNodes;
         gapi::BufferWrapper primitiveIds;
+        gapi::BufferWrapper instanceToBindlessPackId;
+      };
+
+      struct MaterialTextures
+      {
+        gapi::TextureHandle albedo;
+        gapi::TextureHandle normalMap;
+        gapi::TextureHandle metalRoughness;
       };
 
     public:
       TLAS(const BLAS& blas);
-      void rebuild(eastl::vector<TLASInstance>&&);
+      void rebuild(eastl::vector<TLASInstance>&&, eastl::vector<uint> instance_to_bindless_pack_Id);
       auto buildGpuResources(gapi::CmdEncoder&) const -> GpuResources;
 
       void dbgDrawInstances() const;
@@ -37,6 +45,7 @@ namespace Engine
 
     private:
       eastl::vector<TLASInstance> m_Instances;
+      eastl::vector<uint> m_InstanceToBindlessPackId;
       const BLAS& m_BLAS;
   };
 }

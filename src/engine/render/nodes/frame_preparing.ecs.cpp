@@ -132,6 +132,10 @@ void frame_preparing_exec(gapi::CmdEncoder& encoder,
   tfx::set_extern("RT_blasVertices",        (gapi::BufferHandler)rtas.blas.vertices);
   tfx::set_extern("RT_blasVerticesPayload", (gapi::BufferHandler)rtas.blas.verticesPayload);
 
+  const tfx::TextureArray& bindlessModelTextures = Engine::scene.getBindlessMaterialTextures();
+  tfx::set_extern("bindlessModelTextures", bindlessModelTextures);
+  tfx::set_extern("tlasInstanceToBindlessPackId", rtas.tlas.instanceToBindlessPackId);
+
   tfx::set_extern("cameraPrevJitter", prevCameraJitter);
   tfx::set_extern("cameraJitter", cameraJitter);
   tfx::set_extern("prev_view_proj", prevViewProjTm);

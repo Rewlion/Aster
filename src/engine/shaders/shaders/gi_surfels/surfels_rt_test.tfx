@@ -17,6 +17,8 @@ technique RT_TEST
   activate scope RT_TEST_SCOPE;
 
   #hlsl
+  #include <bindless_material_ids.hlsl>
+
   [numthreads(8,8,1)]
   void cs_main(uint3 dispatch_thread_id: SV_DispatchThreadID)
   {
@@ -51,6 +53,17 @@ technique RT_TEST
 
 
     TraceResult res = rtAS.traceRay(rayPos, rayDir);
+
+    if (res.t != TRACE_MISS)
+    {
+      uint bindlessPackId = tlasInstanceToBindlessPackId[res.instanceID] * BINDLESS_MATERIAL_TEX_COUNT;
+      uint albedoId = bindlessPackId + BINDLESS_MATERIAL_ALBEDO_TEX;
+      //Texture2D albedo = bindlessModelTextures[5];
+      Texture2D albedo = bindlessModelTextures[NonUniformResourceIndex(albedoId)];
+      dbgOutput[tc.xy] = albedo.SampleLevel(modelSampler, res.uv, 0);
+    }
+
+    return;
 
     float4 colors [8] = {
       float4(0,0,1,1),

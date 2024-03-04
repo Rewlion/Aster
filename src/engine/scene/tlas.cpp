@@ -12,9 +12,11 @@ namespace Engine
   {
   }
 
-  void TLAS::rebuild(eastl::vector<TLASInstance>&& instances)
+  void TLAS::rebuild(eastl::vector<TLASInstance>&& instances,
+                     eastl::vector<uint> instance_to_bindless_pack_Id)
   {
     m_Instances = std::move(instances);
+    m_InstanceToBindlessPackId = std::move(instance_to_bindless_pack_Id);
     m_PrimitiveCentroids.reserve(m_Instances.size());
 
     for (const TLASInstance& instance: m_Instances)
@@ -121,17 +123,20 @@ namespace Engine
     if (m_Nodes.empty())
       return {};
 
-    const size_t instancesSize =    m_Instances.size()    * sizeof(m_Instances[0]);
-    const size_t bvhNodesSize =     m_Nodes.size()        * sizeof(m_Nodes[0]);
-    const size_t primitiveIdsSize = m_PrimitiveIds.size() * sizeof(m_PrimitiveIds[0]);
+    const size_t instancesSize =      m_Instances.size()    * sizeof(m_Instances[0]);
+    const size_t bvhNodesSize =       m_Nodes.size()        * sizeof(m_Nodes[0]);
+    const size_t primitiveIdsSize =   m_PrimitiveIds.size() * sizeof(m_PrimitiveIds[0]);
+    const size_t instToBindlessSize = m_InstanceToBindlessPackId.size() * sizeof(m_InstanceToBindlessPackId[0]);
 
     gapi::BufferHandler gpuInstances = gapi::allocate_buffer(instancesSize, gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible);
     gapi::BufferHandler gpuBvhNodes = gapi::allocate_buffer(bvhNodesSize, gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible);
     gapi::BufferHandler gpuPrimitiveIds = gapi::allocate_buffer(primitiveIdsSize, gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible);
+    gapi::BufferHandler gpuInstToBindlessPackId = gapi::allocate_buffer(instToBindlessSize, gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible);
 
     encoder.writeBuffer(gpuInstances,    m_Instances.data(), 0,    instancesSize);
     encoder.writeBuffer(gpuBvhNodes,     m_Nodes.data(), 0,        bvhNodesSize);
     encoder.writeBuffer(gpuPrimitiveIds, m_PrimitiveIds.data(), 0, primitiveIdsSize);
+    encoder.writeBuffer(gpuInstToBindlessPackId, m_InstanceToBindlessPackId.data(), 0, instToBindlessSize);
 
     encoder.insertGlobalBufferBarrier(gapi::BufferState::BF_STATE_TRANSFER_DST, gapi::BufferState::BF_STATE_SRV);
 
@@ -139,6 +144,7 @@ namespace Engine
       .instances = gpuInstances,
       .bvhNodes = gpuBvhNodes,
       .primitiveIds = gpuPrimitiveIds,
+      .instanceToBindlessPackId = gpuInstToBindlessPackId
     };
   }
 
