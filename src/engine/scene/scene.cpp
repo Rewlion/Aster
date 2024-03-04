@@ -73,34 +73,29 @@ namespace Engine
 
       for (const tfx::Material& mat: asset->materials)
       {
-        tfx::Texture* paramsPack[BINDLESS_MATERIAL_TEX_COUNT];
-        for (uint i = 0; i < BINDLESS_MATERIAL_TEX_COUNT; ++i)
-        {
-          paramsPack[i] = reinterpret_cast<tfx::Texture*>(m_BindlessMaterialTextures.push_back_uninitialized());
-          *paramsPack[i] = tfx::Texture{};
-        }
-
-        for (const tfx::ParamDescription& param: mat.params)
-        {
-          int bindlessId = -1;
-          if (param.name == "albedo")
-            bindlessId = BINDLESS_MATERIAL_ALBEDO_TEX;
-          else if (param.name == "normal")
-            bindlessId = BINDLESS_MATERIAL_NORMAL_TEX;
-          else if (param.name == "metal_roughness")
-            bindlessId = BINDLESS_MATERIAL_METAL_ROUGHNESS_TEX;
-
-          if (bindlessId >= 0)
-          {
-            const gapi::TextureHandle handle = param.value >> match{
+        const auto unwrapTexHandle = [](const tfx::ParamDescription& param) {
+          return param.value >> match{
               [](const gapi::TextureHandle h) { return h; },
               [](const tfx::Texture tex) { return tex.h; },
               [](auto) { return gapi::TextureHandle::Invalid; }
             };
+        };
 
-            *paramsPack[bindlessId] = tfx::Texture {.h = handle, .mip = 0};
-          }
+        gapi::TextureHandle texs[BINDLESS_MATERIAL_TEX_COUNT];
+        std::memset(texs, (int)gapi::TextureHandle::Invalid, BINDLESS_MATERIAL_TEX_COUNT * sizeof(texs[0]));
+
+        for (const tfx::ParamDescription& param: mat.params)
+        {
+          if (param.name == "albedo")
+            texs[BINDLESS_MATERIAL_ALBEDO_TEX] = unwrapTexHandle(param);
+          else if (param.name == "normal")
+            texs[BINDLESS_MATERIAL_NORMAL_TEX] = unwrapTexHandle(param);
+          else if (param.name == "metal_roughness")
+            texs[BINDLESS_MATERIAL_METAL_ROUGHNESS_TEX] = unwrapTexHandle(param);
         }
+
+        for (size_t i = 0; i < BINDLESS_MATERIAL_TEX_COUNT; ++i)
+          m_BindlessMaterialTextures.push_back(tfx::Texture{.h = texs[i], .mip = 0});
       }
     }
   }
