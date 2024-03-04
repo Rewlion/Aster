@@ -10,6 +10,8 @@
 namespace gapi
 {
   constexpr size_t MAX_RENDER_TARGETS = 8;
+  constexpr size_t MAX_VARIABLE_ARRAY_SIZE = 1024;
+  constexpr size_t MAX_DESCRIPTOR_SET = 8;
 
   using ResourceHandler = uint64_t;
   constexpr ResourceHandler INVALID_RESOURCE_HANDLER = -1;

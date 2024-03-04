@@ -66,13 +66,13 @@ namespace gapi
       void bindConstBuffer(const BufferHandler buffer, const size_t set, const size_t binding) = 0;
 
       virtual
-      void bindTexture(const TextureHandle texture, const size_t set, const size_t binding, const size_t mip = 0) = 0;
+      void bindTexture(const TextureHandle texture, const size_t set, const size_t binding, const size_t dst_array_element = 0, const size_t mip = 0) = 0;
 
       virtual
-      void bindSampler(const SamplerHandler sampler, const size_t set, const size_t binding) = 0;
+      void bindSampler(const SamplerHandler sampler, const size_t set, const size_t binding, const size_t dst_array_element = 0) = 0;
 
       virtual
-      void bindBuffer(const BufferHandler buffer, const size_t set, const size_t binding) = 0;
+      void bindBuffer(const BufferHandler buffer, const size_t set, const size_t binding, const size_t dst_array_element = 0) = 0;
 
       virtual
       void flush(Fence* signalFence = nullptr) = 0;

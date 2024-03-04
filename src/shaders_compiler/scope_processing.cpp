@@ -88,6 +88,12 @@ namespace ShadersSystem
             case ResourceReserveExp::Type::DescriptorSet:
             {
               const DescriptorSetReserveExp* e = reinterpret_cast<const DescriptorSetReserveExp*>(exp);
+
+              if (e->dset >= gapi::MAX_DESCRIPTOR_SET)
+                throw std::runtime_error(
+                  fmt::format("required descriptor set `{}` exceeds maximum allowed `{}`", e->dset, gapi::MAX_DESCRIPTOR_SET)
+                );
+
               m_Scope.descriptorSet = e->dset;
               break;
             }
@@ -497,6 +503,14 @@ namespace ShadersSystem
           }
         };
 
+        const auto getArrayLen = [](const uint len) -> string {
+          if (len == 0)
+            return "[]";
+          if (len == 1)
+            return "";
+          return fmt::format("[{}]", len);
+        };
+
         for (string_view hlslCode : m_Scope.declaredHlslResources)
           hlsl += hlslCode;
 
@@ -505,10 +519,11 @@ namespace ShadersSystem
           if (var.fullType.type == ResourceType::Cbuffer)
             continue;
 
-          hlsl += fmt::format("{}{} {}: register({}{}, space{});\n",
+          hlsl += fmt::format("{}{} {}{}: register({}{}, space{});\n",
             to_hlsl_type(var.fullType.type), 
             getStorageType(var.fullType.storage),
             var.name,
+            getArrayLen(var.elementsCount),
             to_hlsl_register(var.fullType.type),
             var.binding, var.dset);
         }

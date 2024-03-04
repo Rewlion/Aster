@@ -199,10 +199,11 @@ namespace gapi::vulkan
       queueCreateInfos.push_back(queueCreateInfo);
     }
 
-    std::array<const char*, 3> deviceExtensions = {
+    std::array<const char*, 4> deviceExtensions = {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME,
       "VK_KHR_timeline_semaphore",
-      VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME
+      VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME,
+      VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
     };
 
     loginfo("vulkan: enabled device extensions:");
@@ -216,12 +217,20 @@ namespace gapi::vulkan
     features.fragmentStoresAndAtomics = true;
     features.independentBlend = true;
 
+    loginfo("vulkan: supported bindless resources");
+    vk::PhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures;
+    descriptorIndexingFeatures.runtimeDescriptorArray = true;
+    descriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing = true;
+    descriptorIndexingFeatures.descriptorBindingPartiallyBound = true;
+    descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = true;
+
     const auto deviceCreateInfo = vk::DeviceCreateInfo()
         .setQueueCreateInfoCount(queueCreateInfos.size())
         .setPQueueCreateInfos(queueCreateInfos.data())
         .setPpEnabledExtensionNames(deviceExtensions.data())
         .setEnabledExtensionCount(deviceExtensions.size())
-        .setPEnabledFeatures(&features);
+        .setPEnabledFeatures(&features)
+        .setPNext(&descriptorIndexingFeatures);
 
     auto device =  m_PhysicalDevice.createDeviceUnique(deviceCreateInfo);
     VK_CHECK_RES(device);

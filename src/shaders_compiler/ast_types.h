@@ -31,6 +31,42 @@ namespace ShadersSystem
     Sampler
   };
 
+  enum class ResourceBindType : uint8_t
+  {
+    None = 0,
+    Texture = 1,
+    Buffer = 2,
+    Sampler = 3,
+  };
+
+  inline
+  auto to_resource_bind_type(const ResourceType t) -> ResourceBindType
+  {
+    switch (t)
+    {
+      case ResourceType::Texture2D :
+      case ResourceType::Texture3D :
+      case ResourceType::TextureCube :
+      case ResourceType::RWTexture2D :
+      case ResourceType::RWTexture3D :
+       return ResourceBindType::Texture;
+
+      case ResourceType::Cbuffer :
+      case ResourceType::Buffer :
+      case ResourceType::StructuredBuffer :
+      case ResourceType::RWStructuredBuffer :
+      case ResourceType::RWBuffer :
+        return ResourceBindType::Buffer;
+
+      case ResourceType::Sampler:
+        return ResourceBindType::Sampler;
+
+      //internal usage
+      default:
+        return ResourceBindType::None;
+    }
+  }
+
   struct FullResourceType
   {
     ResourceType type;

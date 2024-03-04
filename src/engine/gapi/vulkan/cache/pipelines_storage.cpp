@@ -5,7 +5,6 @@
 #include <engine/gapi/resources.h>
 #include <engine/gapi/vulkan/device.h>
 #include <engine/gapi/vulkan/gapi_to_vk.h>
-#include <engine/gapi/vulkan/traits.h>
 
 #include <boost/functional/hash.hpp>
 

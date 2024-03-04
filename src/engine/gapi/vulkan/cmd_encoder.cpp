@@ -331,26 +331,26 @@ namespace gapi::vulkan
 
   void CmdEncoder::bindConstBuffer(const BufferHandler h, const size_t set, const size_t binding)
   {
-    m_DsetManager.setUniformBuffer(h, set, binding);
+    m_DsetManager.setUniformBuffer(h, set, binding, 0);
   }
 
-  void CmdEncoder::bindTexture(const TextureHandle texture, const size_t set, const size_t binding, const size_t mip)
+  void CmdEncoder::bindTexture(const TextureHandle texture, const size_t set, const size_t binding, const size_t dst_array_element, const size_t mip)
   {
-    m_DsetManager.setImage(texture, set, binding, mip);
+    m_DsetManager.setImage(texture, set, binding, dst_array_element, mip);
   }
 
-  void CmdEncoder::bindSampler(const SamplerHandler h, const size_t set, const size_t binding)
+  void CmdEncoder::bindSampler(const SamplerHandler h, const size_t set, const size_t binding, const size_t dst_array_element)
   {
     if (h != SamplerHandler::Invalid)
     {
       vk::Sampler sampler = m_Device.getSampler(h);
-      m_DsetManager.setSampler(sampler, set, binding);
+      m_DsetManager.setSampler(sampler, set, binding, dst_array_element);
     }
   }
 
-  void CmdEncoder::bindBuffer(const BufferHandler h, const size_t set, const size_t binding)
+  void CmdEncoder::bindBuffer(const BufferHandler h, const size_t set, const size_t binding, const size_t dst_array_element)
   {
-    m_DsetManager.setUniformBuffer(h, set, binding);
+    m_DsetManager.setUniformBuffer(h, set, binding, dst_array_element);
   }
 
   void CmdEncoder::transitTextureState(const TextureHandle texture,

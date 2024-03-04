@@ -51,23 +51,55 @@ namespace gapi::vulkan
 
   PipelineLayoutHandler ShadersStorage::addPipelineLayout(const eastl::vector<spirv::v2::DescriptorSet>& dsets)
   {
+    Utils::BitCapacity<gapi::MAX_DESCRIPTOR_SET> variableSizeDsets;
+
     eastl::vector<vk::UniqueDescriptorSetLayout> dsetLayoutsUnique;
     eastl::vector<vk::DescriptorSetLayout> dsetLayouts;
     dsetLayoutsUnique.reserve(dsets.size());
     dsetLayouts.reserve(dsets.size());
 
-    for (const auto& dset: dsets)
+    eastl::vector<vk::DescriptorBindingFlags> bindingFlags;
+    eastl::vector<vk::DescriptorSetLayoutBinding> bindings;
+    const size_t maxDset = dsets.size();
+    for (size_t iDset = 0; iDset < maxDset; ++iDset)
     {
-      eastl::vector<vk::DescriptorSetLayoutBinding> bindings;
+      const auto& dset = dsets[iDset];
+      bindings.clear();
+      bindingFlags.clear();
+
       bindings.reserve(dset.size());
-      for (auto& b: dset)
-        bindings.push_back(b.vk);
+      bindingFlags.reserve(dset.size());
+      for (const spirv::v2::DescriptorSetBinding& bindingInfo: dset)
+      {
+        auto& b = *reinterpret_cast<vk::DescriptorSetLayoutBinding*>(bindings.push_back_uninitialized());
+        b = bindingInfo.vk;
+
+        if (b.descriptorCount == 0)
+        {
+          variableSizeDsets.set(iDset);
+
+          b.descriptorCount = gapi::MAX_VARIABLE_ARRAY_SIZE;
+          bindingFlags.push_back(
+            vk::DescriptorBindingFlagBits::ePartiallyBound |
+            vk::DescriptorBindingFlagBits::eVariableDescriptorCount
+          );
+        }
+        else
+          bindingFlags.push_back(vk::DescriptorBindingFlagBits{});
+      }
+
+      vk::DescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsExtCi;
+      bindingFlagsExtCi.bindingCount = bindingFlags.size();
+      bindingFlagsExtCi.pBindingFlags = bindingFlags.data();
 
       vk::DescriptorSetLayoutCreateInfo ci;
       ci.bindingCount = dset.size();
       ci.pBindings = bindings.data();
+      ci.pNext = &bindingFlagsExtCi;
+
       auto l = m_Device->m_Device->createDescriptorSetLayoutUnique(ci);
       VK_CHECK_RES(l);
+
       dsetLayouts.push_back(l.value.get());
       dsetLayoutsUnique.push_back(std::move(l.value));
     }
@@ -86,6 +118,7 @@ namespace gapi::vulkan
         .pipelineLayout = std::move(layout.value),
         .descriptorSetLayouts = std::move(dsetLayoutsUnique),
         .dsets = std::move(dsets),
+        .variableSizeDsets = variableSizeDsets
       }
     });
 

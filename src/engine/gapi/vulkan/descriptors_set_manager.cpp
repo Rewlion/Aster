@@ -5,8 +5,13 @@
 #include "pipeline_layout.h"
 #include "result.h"
 
-#include <engine/log.h>
 #include <engine/gapi/vulkan/device.h>
+#include <engine/log.h>
+#include <engine/utils/pattern_matching.hpp>
+
+#include <shaders_compiler/limits.h>
+
+#include <ranges>
 
 namespace gapi::vulkan
 {
@@ -42,14 +47,23 @@ namespace gapi::vulkan
     m_Pools.push_back(std::move(dsPoolUnique.value));
   }
 
-  auto DescriptorsSetManager::PoolManager::acquireSet(const vk::DescriptorSetLayout layout) -> vk::DescriptorSet
+  auto DescriptorsSetManager::PoolManager::acquireSet(const vk::DescriptorSetLayout layout,
+                                                      const bool has_variable_sized_binding) -> vk::DescriptorSet
   {
-    const auto allocSet = [](auto& device, auto pool, auto& layout)
+    const auto allocSet = [has_variable_sized_binding](auto& device, auto pool, auto& layout)
     {
+      const uint maxVariableSizedBinding = gapi::MAX_VARIABLE_ARRAY_SIZE-1;
+      vk::DescriptorSetVariableDescriptorCountAllocateInfo vdcAllocInfo;
+      vdcAllocInfo.descriptorSetCount = 1;
+      vdcAllocInfo.pDescriptorCounts = &maxVariableSizedBinding;
+
       vk::DescriptorSetAllocateInfo dsAi;
       dsAi.descriptorPool = pool;
       dsAi.descriptorSetCount = 1;
       dsAi.pSetLayouts = &layout;
+
+      if (has_variable_sized_binding)
+        dsAi.pNext = &vdcAllocInfo;
 
       return device.allocateDescriptorSets(dsAi);
     };
@@ -63,6 +77,76 @@ namespace gapi::vulkan
     }
 
     return res.value[0];
+  }
+
+  void DescriptorsSetManager::VariableSizeBinding::setSampler(
+                                                    const vk::Sampler sampler,
+                                                    const size_t set,
+                                                    const size_t binding,
+                                                    const size_t dst_array_element)
+  {
+    switchMode(Mode::Sampler);
+    fitWriteInfos(binding);
+
+    m_DstElemsWriteInfos[dst_array_element] = SamplerWriteInfo{
+      .sampler = sampler,
+      .set = set,
+      .binding = binding,
+      .dstArrayElement = dst_array_element,
+    };
+
+  }
+
+  void DescriptorsSetManager::VariableSizeBinding::setUniformBuffer(
+                                                    const BufferHandler buffer,
+                                                    const size_t set,
+                                                    const size_t binding,
+                                                    const size_t dst_array_element)
+  {
+    switchMode(Mode::Buffer);
+    fitWriteInfos(binding);
+
+    m_DstElemsWriteInfos[dst_array_element] = UniformBufferWriteInfo{
+      .buffer = buffer,
+      .set = set,
+      .binding = binding,
+      .dstArrayElement = dst_array_element,
+    };
+  }
+
+  void DescriptorsSetManager::VariableSizeBinding::setTexture(
+                                                     const TextureHandle tex,
+                                                     const size_t set,
+                                                     const size_t binding,
+                                                     const size_t dst_array_element,
+                                                     const size_t mip)
+  {
+    switchMode(Mode::Texture);
+    fitWriteInfos(dst_array_element);
+
+    m_DstElemsWriteInfos[dst_array_element] = TextureWriteInfo{
+      .texture = tex,
+      .set = set,
+      .binding = binding,
+      .dstArrayElement = dst_array_element,
+      .mip = mip
+    };
+  }
+
+  void DescriptorsSetManager::VariableSizeBinding::switchMode(const Mode mode)
+  {
+    if (m_Mode != mode)
+    {
+      m_DstElemsWriteInfos.clear();
+      m_Mode = mode;
+      m_ElemsRangeEnd = 0;
+    }
+  }
+
+  void DescriptorsSetManager::VariableSizeBinding::fitWriteInfos(const size_t dst_array_element)
+  {
+    m_DstElemsWriteInfos.resize(dst_array_element+1);
+    m_ElemsRangeEnd = std::max(dst_array_element+1, m_ElemsRangeEnd);
   }
 
   DescriptorsSetManager::SetManager::SetManager(Device& device,
@@ -111,6 +195,7 @@ namespace gapi::vulkan
 
   void DescriptorsSetManager::SetManager::setPipelineLayout(const vk::DescriptorSetLayout layout,
                                                             const spirv::v2::DescriptorSet* bindings,
+                                                            const bool has_variable_sized_binding,
                                                             const bool acc_toggled)
   {
     m_Layout = layout;
@@ -124,43 +209,68 @@ namespace gapi::vulkan
     m_Dirty |= !isCompatible(bindings);
 
     m_Bindings = bindings;
+    m_HasVariableSizedBinding = has_variable_sized_binding;
   }
 
   void DescriptorsSetManager::SetManager::setTexture(const TextureHandle tex,
                                                      const size_t binding,
+                                                     const size_t dst_array_element,
                                                      const size_t mip)
   {
-    fitWriteInfos(binding);
-    m_WriteInfos[binding] = TextureWriteInfo{
-      .texture = tex,
-      .set = m_SetId,
-      .binding = binding,
-      .mip = mip
-    };
+    if (binding != VARIABLE_SIZE_ARRAY_REGISTER) [[likely]]
+    {
+      fitWriteInfos(binding);
+      m_WriteInfos[binding] = TextureWriteInfo{
+        .texture = tex,
+        .set = m_SetId,
+        .binding = binding,
+        .dstArrayElement = dst_array_element,
+        .mip = mip
+      };
+    }
+    else
+      m_VariableSizeBinding.setTexture(tex, m_SetId, binding, dst_array_element, mip);
+
     m_Dirty = true;
   }
 
   void DescriptorsSetManager::SetManager::setSampler(const vk::Sampler sampler,
-                                                     const size_t binding)
+                                                     const size_t binding,
+                                                     const size_t dst_array_element)
   {
-    fitWriteInfos(binding);
-    m_WriteInfos[binding] = SamplerWriteInfo{
-      .sampler = sampler,
-      .set = m_SetId,
-      .binding = binding
-    };
+    if (binding != VARIABLE_SIZE_ARRAY_REGISTER) [[likely]]
+    {
+      fitWriteInfos(binding);
+      m_WriteInfos[binding] = SamplerWriteInfo{
+        .sampler = sampler,
+        .set = m_SetId,
+        .binding = binding,
+        .dstArrayElement = dst_array_element,
+      };
+    }
+    else
+      m_VariableSizeBinding.setSampler(sampler, m_SetId, binding, dst_array_element);
+
     m_Dirty = true;
   }
 
   void DescriptorsSetManager::SetManager::setUniformBuffer(const BufferHandler buffer,
-                                                           const size_t binding)
+                                                           const size_t binding,
+                                                           const size_t dst_array_element)
   {
-    fitWriteInfos(binding);
-    m_WriteInfos[binding] = UniformBufferWriteInfo{
-      .buffer = buffer,
-      .set = m_SetId,
-      .binding = binding
-    };
+    if (binding != VARIABLE_SIZE_ARRAY_REGISTER) [[likely]]
+    {
+      fitWriteInfos(binding);
+      m_WriteInfos[binding] = UniformBufferWriteInfo{
+        .buffer = buffer,
+        .set = m_SetId,
+        .binding = binding,
+        .dstArrayElement = dst_array_element,
+      };
+    }
+    else
+      m_VariableSizeBinding.setUniformBuffer(buffer, m_SetId, binding, dst_array_element);
+    
     m_Dirty = true;
   }
 
@@ -176,7 +286,8 @@ namespace gapi::vulkan
                                                        const size_t binding,
                                                        const size_t mip) const -> vk::ImageView
   {
-    const ShadersSystem::ResourceType expectedResourceType = (*m_Bindings)[binding].resourceType;
+    const size_t bindingId = getBindingId(binding);
+    const ShadersSystem::ResourceType expectedResourceType = (*m_Bindings)[bindingId].resourceType;
     if (handle != TextureHandle::Invalid)
     {
       const vk::ImageViewType viewType = m_Device.getImageViewType(handle);
@@ -208,16 +319,22 @@ namespace gapi::vulkan
 
     if (m_Dirty)
     {
+      const auto allWriteInfos = {
+        eastl::span<const WriteInfo>(m_WriteInfos),
+        m_VariableSizeBinding.getWriteInfos()
+      };
+      const auto allWriteInfosView = std::ranges::join_view(allWriteInfos);
+
       size_t imgCount = 0;
       size_t bufCount = 0;
-      for (const auto& wr: m_WriteInfos)
+      for (const auto& wrInfo: allWriteInfosView)
       {
-        std::visit(overload{
+        wrInfo >> match {
           [&](const SamplerWriteInfo& info){imgCount++;},
           [&](const TextureWriteInfo& info){imgCount++;},
           [&](const UniformBufferWriteInfo& info){bufCount++;},
           [&](const NullInfo&){}
-        }, wr);
+        };
       }
 
       eastl::vector<vk::WriteDescriptorSet> writes;
@@ -228,9 +345,10 @@ namespace gapi::vulkan
       imgInfos.resize(imgCount);
       bufInfos.resize(bufCount);
 
-      m_CurrentVkSet = m_PoolManager.acquireSet(m_Layout);
+      m_CurrentVkSet = m_PoolManager.acquireSet(m_Layout, m_HasVariableSizedBinding);
 
       const auto addWriteInfo = [&writes, this](const size_t binding,
+                                                const size_t dst_array_element,
                                                 const vk::DescriptorType type,
                                                 const vk::DescriptorBufferInfo* buf_info,
                                                 const vk::DescriptorImageInfo* img_info)
@@ -238,7 +356,7 @@ namespace gapi::vulkan
         auto& write = writes.push_back();
         write.dstSet = m_CurrentVkSet;
         write.dstBinding = binding;
-        write.dstArrayElement = 0;
+        write.dstArrayElement = dst_array_element;
         write.descriptorCount = 1;
         write.descriptorType = type;
         write.pBufferInfo = buf_info;
@@ -246,18 +364,19 @@ namespace gapi::vulkan
       };
 
       size_t iImg = 0, iBuf = 0;
-      for (const auto& wrInfo: m_WriteInfos)
+      for (const auto& wrInfo: allWriteInfosView)
       {
-        std::visit(overload{
+        wrInfo >> match {
           [&](const SamplerWriteInfo& info){
             auto type = vk::DescriptorType::eSampler;
             if (validateBindingType(info.binding, type))
             {
               imgInfos[iImg].sampler = info.sampler;
-              addWriteInfo(info.binding, type, nullptr, &imgInfos[iImg]);
+              addWriteInfo(info.binding, info.dstArrayElement, type, nullptr, &imgInfos[iImg]);
               ++iImg;
             }
           },
+
           [&](const TextureWriteInfo& info){
             auto addWrite = [&](const vk::DescriptorType type, vk::ImageLayout layout)
             {
@@ -265,7 +384,7 @@ namespace gapi::vulkan
               {
                 imgInfos[iImg].imageView = getImageView(info.texture, info.binding, info.mip);
                 imgInfos[iImg].imageLayout = layout;
-                addWriteInfo(info.binding, type, nullptr, &imgInfos[iImg]);
+                addWriteInfo(info.binding, info.dstArrayElement, type, nullptr, &imgInfos[iImg]);
                 ++iImg;
                 return true;
               }
@@ -278,6 +397,7 @@ namespace gapi::vulkan
               if (!addWrite(vk::DescriptorType::eSampledImage, vk::ImageLayout::eShaderReadOnlyOptimal))
                 addWrite(vk::DescriptorType::eStorageImage, vk::ImageLayout::eGeneral);
           },
+
           [&](const UniformBufferWriteInfo& info){
             auto addWrite = [&](const vk::DescriptorType type)
             {
@@ -287,7 +407,7 @@ namespace gapi::vulkan
                 bufInfos[iBuf].buffer = buf;
                 bufInfos[iBuf].offset = offset;
                 bufInfos[iBuf].range = VK_WHOLE_SIZE;
-                addWriteInfo(info.binding, type, &bufInfos[iBuf], nullptr);
+                addWriteInfo(info.binding, info.dstArrayElement, type, &bufInfos[iBuf], nullptr);
                 ++iBuf;
                 return true;
               }
@@ -298,8 +418,9 @@ namespace gapi::vulkan
               //if (!addWrite(vk::DescriptorType::eUniformTexelBuffer)) //requires buffer view  T___T
                 addWrite(vk::DescriptorType::eStorageBuffer);
           },
+
           [&](const NullInfo&) {}
-        }, wrInfo);
+        };
       }
 
       device.updateDescriptorSets(writes.size(), writes.data(), 0, nullptr);
@@ -332,22 +453,22 @@ namespace gapi::vulkan
   {
   }
 
-  void DescriptorsSetManager::setImage(TextureHandle tex, const size_t set, const size_t binding, const size_t mip)
+  void DescriptorsSetManager::setImage(TextureHandle tex, const size_t set, const size_t binding, const size_t dst_array_element, const size_t mip)
   {
     fitSetManagers(set);
-    m_SetManagers[set].setTexture(tex, binding, mip);
+    m_SetManagers[set].setTexture(tex, binding, dst_array_element, mip);
   }
 
-  void DescriptorsSetManager::setSampler(const vk::Sampler sampler, const size_t set, const size_t binding)
+  void DescriptorsSetManager::setSampler(const vk::Sampler sampler, const size_t set, const size_t binding, const size_t dst_array_element)
   {
     fitSetManagers(set);
-    m_SetManagers[set].setSampler(sampler, binding);
+    m_SetManagers[set].setSampler(sampler, binding, dst_array_element);
   }
 
-  void DescriptorsSetManager::setUniformBuffer(const BufferHandler buffer, const size_t set, const size_t binding)
+  void DescriptorsSetManager::setUniformBuffer(const BufferHandler buffer, const size_t set, const size_t binding, const size_t dst_array_element)
   {
     fitSetManagers(set);
-    m_SetManagers[set].setUniformBuffer(buffer, binding);
+    m_SetManagers[set].setUniformBuffer(buffer, binding, dst_array_element);
   }
 
   void DescriptorsSetManager::updateDescriptorSets(vk::CommandBuffer& cmdBuf)
@@ -384,7 +505,7 @@ namespace gapi::vulkan
     bool accumulatedToggling = false;
     for (size_t i = 0; i < activeSetsCount; ++i)
     {
-      m_SetManagers[i].setPipelineLayout(layout->descriptorSetLayouts[i].get(), &layout->dsets[i], accumulatedToggling);
+      m_SetManagers[i].setPipelineLayout(layout->descriptorSetLayouts[i].get(), &layout->dsets[i], layout->variableSizeDsets.isSet(i), accumulatedToggling);
       accumulatedToggling |= m_SetManagers[i].isToggled();
     }
 

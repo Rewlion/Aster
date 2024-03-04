@@ -68,11 +68,11 @@ namespace gapi::vulkan
 
       void bindConstBuffer(const BufferHandler buffer, const size_t set, const size_t binding) override;
 
-      void bindTexture(const TextureHandle texture, const size_t set, const size_t binding, const size_t mip) override;
+      void bindTexture(const TextureHandle texture, const size_t set, const size_t binding, const size_t dst_array_element, const size_t mip) override;
 
-      void bindSampler(const SamplerHandler sampler, const size_t set, const size_t binding) override;
+      void bindSampler(const SamplerHandler sampler, const size_t set, const size_t binding, const size_t dst_array_element) override;
 
-      void bindBuffer(const BufferHandler buffer, const size_t set, const size_t binding) override;
+      void bindBuffer(const BufferHandler buffer, const size_t set, const size_t binding, const size_t dst_array_element) override;
 
       void transitTextureState(const TextureHandle texture,
                                const TextureState oldState, const TextureState newState,
