@@ -22,6 +22,27 @@ scene
 
   object
   {
+    pos:f3 = 194.0 , 600.0 , 0.0
+    scale:f3 = 1.5, 0.5, 7
+    model:t = "cube_green"
+  }
+
+  object
+  {
+    pos:f3 = 194.0 , 610.0 , 0.0
+    scale:f3 = 1.5, 3.0, 7
+    model:t = "cube_red"
+  }
+
+  object
+  {
+    pos:f3 = 192.0 , 613.0 , 0.0
+    scale:f3 = 2.0, 0.5, 7
+    model:t = "cube_red"
+  }
+
+  object
+  {
     pos:f3 = 200.0 , 600.0 , 15.0
     scale:f3 = 15.0, 15.0, 0.5
     model:t = "cube_white"

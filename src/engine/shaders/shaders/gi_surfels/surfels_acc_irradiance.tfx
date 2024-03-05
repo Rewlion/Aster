@@ -7,7 +7,7 @@ scope GIBS_AccSurfelsIrradianceScope
 {
   reserve:
     descriptor_set(1);
-    register(buffer, 0);
+    register(buffer, 0-1);
     register(texture, 0);
   
   #hlsl
@@ -16,6 +16,7 @@ scope GIBS_AccSurfelsIrradianceScope
 
   Texture2D skyLUT = extern(skyLUT);
   RWStructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
+  StructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
 };
 
 technique GIBS_AccSurfelsIrradiance
@@ -31,7 +32,46 @@ technique GIBS_AccSurfelsIrradiance
 
   #hlsl
   #include "consts.hlsl"
+  #include "spatial_storage.hlsl"
+  #include "bindless_material_ids.hlsl"
 
+  #include <math.hlsl>
+
+  struct FindNeighborSurfelIrradiance
+  {
+    float3 rayDir;
+    float3 intersectPoint;
+    float3 surfelIrradiance;
+    bool found;
+
+    void init(float3 ray_dir, float3 intersect_point)
+    {
+      rayDir = ray_dir;
+      intersectPoint = intersect_point;
+      surfelIrradiance = float3(0,0,0);
+      found = false;
+    }
+
+    void onSurfel(uint surfel_id)
+    {
+      SurfelData surfel = surfelsStorage[surfel_id];
+      
+      float3 dr = (surfel.pos - intersectPoint);
+      float dlSq = dot(dr,dr);
+      bool isOutsideSurfel = dlSq > (surfel.radius*surfel.radius);
+
+      if (dot(surfel.normal, -rayDir) <= 0 || isOutsideSurfel)
+        return;
+
+      surfelIrradiance = surfel.irradiance;
+      found = true;
+    }
+
+    bool finish()
+    {
+      return found;
+    }
+  };
 
   [numthreads(64,1,1)]
   void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
@@ -57,6 +97,31 @@ technique GIBS_AccSurfelsIrradiance
     float3 L = float3(0,0,0);
     if (tRes.t == TRACE_MISS)
       L = sampleSkyLUT(rayDir);
+    else
+    {
+      float3 intersectPoint = rayPos + rayDir * tRes.t;
+      FindNeighborSurfelIrradiance cb;
+      cb.init(surfel.normal,intersectPoint);
+      
+      ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
+      float3 cameraToWorldPos = intersectPoint - FrameScope.cameraPos;
+      st.forEachSurfelInCell(intersectPoint, cameraToWorldPos, cb);
+
+      if (cb.found)
+      {
+        uint bindlessPackId = tlasInstanceToBindlessPackId[tRes.instanceID] * BINDLESS_MATERIAL_TEX_COUNT;
+        uint albedoId = bindlessPackId + BINDLESS_MATERIAL_ALBEDO_TEX;
+        uint metalRoughnessId = bindlessPackId + BINDLESS_MATERIAL_METAL_ROUGHNESS_TEX;
+        Texture2D albedoTex = bindlessModelTextures[NonUniformResourceIndex(albedoId)];
+        Texture2D metalRoughnessTex = bindlessModelTextures[NonUniformResourceIndex(metalRoughnessId)];
+
+        float2 uv = tRes.payload[0].uv * tRes.uvw[0] + tRes.payload[1].uv * tRes.uvw[1] + tRes.payload[2].uv * tRes.uvw[2];
+        float3 albedo = albedoTex.SampleLevel(modelSampler, uv, 0).rgb;
+        float metalness = metalRoughnessTex.SampleLevel(modelSampler, uv, 0).r;
+
+        L = cb.surfelIrradiance * albedo * (1-metalness);
+      }
+    }
     
     uint n = surfel.irradianceHistory;
     float3 irradiance = lerp(surfel.irradiance, L, 1.0 / (n+1));

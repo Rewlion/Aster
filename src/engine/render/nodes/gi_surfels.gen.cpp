@@ -437,11 +437,13 @@ void mk_fg_node_gibs_surfels_irradiance(Event*, ComponentsAccessor&)
   { 
     reg.orderMeBefore("gibs_sync_out");
     auto gibs_surfels_storage_binned = reg.modifyBuffer("gibs_surfels_storage_binned", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_surfels_spatial_storage_binned = reg.readBuffer("gibs_surfels_spatial_storage_binned", gapi::BufferState::BF_STATE_SRV, false);
     auto atm_sky_lut = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
 
-    return [gibs_surfels_storage_binned,atm_sky_lut](gapi::CmdEncoder& encoder)
+    return [gibs_surfels_storage_binned,gibs_surfels_spatial_storage_binned,atm_sky_lut](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("surfelsStorage", gibs_surfels_storage_binned.get());
+      tfx::set_extern("surfelsSpatialStorage", gibs_surfels_spatial_storage_binned.get());
       tfx::set_extern("skyLUT", atm_sky_lut.get());
       gibs_surfels_irradiance(encoder);
     };

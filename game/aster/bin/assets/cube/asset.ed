@@ -61,3 +61,17 @@ model_asset
     metal:f = 0.1
   }
 }
+
+
+model_asset
+{
+  name:t = "cube_red"
+  mesh:t = "cube"
+
+  material @("TestStaticMesh")
+  {
+    "albedo":t = "color.red" @("texture")
+    roughness:f = 0.6
+    metal:f = 0.1
+  }
+}

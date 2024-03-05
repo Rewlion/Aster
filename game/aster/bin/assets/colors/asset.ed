@@ -9,3 +9,9 @@ texture
   bin:t = "bin/assets/colors/green.ktx"
   name:t = "color.green"
 }
+
+texture
+{
+  bin:t = "bin/assets/colors/red.ktx"
+  name:t = "color.red"
+}
