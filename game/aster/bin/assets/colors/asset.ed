@@ -1,0 +1,11 @@
+texture
+{
+  bin:t = "bin/assets/colors/white.ktx"
+  name:t = "color.white"
+}
+
+texture
+{
+  bin:t = "bin/assets/colors/green.ktx"
+  name:t = "color.green"
+}

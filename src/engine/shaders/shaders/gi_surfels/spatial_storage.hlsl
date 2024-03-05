@@ -423,6 +423,23 @@ struct ROSpatialStorage
     return float4(colors[spatialInfo.cascade] * m * m2,1);
     //return float4(spatialInfo.id, 1.0);
   }
+
+  template<typename Cb>
+  void forEachSurfelInCell(float3 wpos, float3 camera_to_wpos, inout Cb cb)
+  {
+    SpatialInfo spatialInfo = calcSpatialInfo(camera_to_wpos, zFar);
+    uint baseAddr = getCellAddress(spatialInfo);
+    uint counter = baseAddr;
+    uint idBegin = baseAddr+1;
+    uint idsCount = surfelsSpatialStorage[counter];
+    uint idEnd = idBegin+idsCount;
+
+    for (uint i = idBegin; (i < idEnd) && !cb.finish(); ++i)
+    {
+      uint surfelId = surfelsSpatialStorage[i];
+      cb.onSurfel(surfelId);
+    }
+  }
 };
 
 #endif

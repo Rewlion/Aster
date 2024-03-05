@@ -23,6 +23,7 @@ scope GIBS_DrawSurfelsScope
   uint showCellsCoverage = extern(showCellsCoverage);
   uint showCells = extern(showCells);
   uint showAllocPlace = extern(showAllocPlace);
+  uint showIrradiance = extern(showSurfelsIrradiance);
 };
 
 technique GIBS_DrawSurfels
@@ -35,7 +36,58 @@ technique GIBS_DrawSurfels
 
   #hlsl
 
+  float3 jodieReinhardTonemap(float3 c)
+  {
+    // From: https://www.shadertoy.com/view/tdSXzD
+    float l = dot(c, float3(0.2126, 0.7152, 0.0722));
+    float3 tc = c / (c + 1.0);
+    return lerp(c / (l + 1.0), tc, tc);
+  }
+
+  float3 tonemap(float3 L)
+  {
+    float exposure = exp2(4.0);
+    
+    L *= 20.0;
+    L = pow(L, float3(1.3, 1.3, 1.3));
+    L = jodieReinhardTonemap(L);
+    float g = 1.0/2.2;
+    L = pow(L, float3(g,g,g));
+
+    return L;
+  }
+
   #include "spatial_storage.hlsl"
+
+  struct IrradianceCollector
+  {
+    bool found;
+    float3 irradiance;
+    float3 wpos;
+
+    void init(float3 world_pos)
+    {
+      wpos = world_pos;
+      found = false;
+      irradiance = float3(0,0,0);
+    }
+
+    void onSurfel(uint surfel_id)
+    {
+      SurfelData surfel = surfelsStorage[surfel_id];
+      float dl = length(surfel.pos - wpos);
+      if (dl - surfel.radius <= 0)
+      {
+        irradiance = surfel.irradiance;
+        found = true;
+      }
+    }
+
+    bool finish()
+    {
+      return found;
+    }
+  };
 
   float4 ps_main(VsOutput input) : SV_Target0
   {
@@ -79,6 +131,12 @@ technique GIBS_DrawSurfels
       color = st.drawCellsCoverage(worldPos, cameraToWorldPos, surfelsStorage);
     else if (GIBS_DrawSurfelsScope.showCells)
       color = st.drawCells(worldPos, cameraToWorldPos);
+    else if (GIBS_DrawSurfelsScope.showIrradiance)
+    {
+      IrradianceCollector ic; ic.init(worldPos);
+      st.forEachSurfelInCell(worldPos, cameraToWorldPos, ic);
+      color = float4(tonemap(ic.irradiance), 1.0);
+    }
     else
       color = st.drawSurfels(worldPos, cameraToWorldPos, surfelsStorage);
 

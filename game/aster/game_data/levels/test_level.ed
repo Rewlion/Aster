@@ -2,6 +2,49 @@ input.initial_action_set:t = "FlyingCamera"
 
 scene
 {
+  //////////////////////////
+  // GI_TEST
+  /////////////////////////
+
+  object
+  {
+    pos:f3 = 200.0 , 599.0 , 0.0
+    scale:f3 = 15.0, 0.5, 15.0
+    model:t = "cube_white"
+  }
+
+  object
+  {
+    pos:f3 = 190.0 , 600.0 , 0.0
+    scale:f3 = 0.5, 15.0, 15
+    model:t = "cube_white"
+  }
+
+  object
+  {
+    pos:f3 = 200.0 , 600.0 , 15.0
+    scale:f3 = 15.0, 15.0, 0.5
+    model:t = "cube_white"
+  }
+
+  object
+  {
+    pos:f3 = 200.0 , 600.0 , -15.0
+    scale:f3 = 15.0, 15.0, 0.5
+    model:t = "cube_white"
+  }
+
+  object
+  {
+    pos:f3 = 200.0 , 603.0 , 0.0
+    pos:f3 = 200.0 , 606.0 , 0.0
+    scale:f3 = 15.0, 0.5, 15.0
+    model:t = "cube_white"
+  }
+
+  /////////////////////////
+
+
   ///////
   object
   {
@@ -119,7 +162,7 @@ entity @("template3")
 
 entity @("camera")
 {
-  pos:f3 = 0.0, 600.0, 0.0
+  pos:f3 = 192.299 , 609.8611 , -12.935
   camera_fov:f = 60.0
   camera_zNear:f = 0.1
   camera_zFar:f = 3000.0

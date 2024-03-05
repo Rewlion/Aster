@@ -53,6 +53,26 @@ scope FrameScope {
   float2 viewPortSize = extern(viewport_size);
 };
 
+technique_macro USE_RT {
+  #hlsl
+  RTAccelerationStructure initRTAS()
+  {
+    RTAccelerationStructure rtas;
+    rtas.init(
+      RT_tlasInstances,
+      RT_tlasBvhNodes,
+      RT_tlasPrimitiveIds,
+      RT_blasGeometryMeta,
+      RT_blasBvhNodes,
+      RT_blasPrimitiveIds,
+      RT_blasVertices,
+      RT_blasVerticesPayload
+    );
+    return rtas;
+  }
+  #end
+};
+
 technique_macro USE_FRAME_HELPERS {
   #hlsl
     float2 get_screen_space_coords(float2 viewport_coords)

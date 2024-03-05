@@ -1,3 +1,22 @@
+technique_macro USE_SKY_LUT_SAMPLING {
+  #hlsl
+  float3 sampleSkyLUT(float3 view_dir)
+  {
+    float2 altitudeAzimuth = decartianToAltitudeAzimuth(view_dir);
+    float altitude = altitudeAzimuth.x;
+    float azimuth = altitudeAzimuth.y;
+
+    float v = altitude >= 0.0 ? 0.5 + 0.5 * sqrt(altitude / (PI/2.0))
+                              : 0.5 - 0.5 * sqrt(abs(altitude) / (PI/2.0));
+  
+    float u = azimuth / (2.0 * PI);
+    float2 uv = float2(u,v);
+
+    return skyLUT.SampleLevel(linearClampSampler, uv, 0).rgb;
+  }
+  #end
+};
+
 technique_macro USE_SKY_LUT {
   #hlsl
   float3 sampleSkyLUT(float3 view_dir)

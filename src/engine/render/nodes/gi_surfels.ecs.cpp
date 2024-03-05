@@ -23,6 +23,7 @@ static bool show_surfels_sdf = false;
 static bool show_surfels_coverage = false;
 static bool show_cells_coverage = false;
 static bool show_cells = false;
+static bool show_surfels_irradiance = false;
 static bool force_reset = false;
 
 static
@@ -56,10 +57,10 @@ void imgui_dbg_wnd()
     showtex("gibs_dbg_surfels", show_surfels);
 
   {
-    const char* showSurfelsOptions[] = {"base", "sdf", "surfels_coverage", "cells_coverage", "cells"};
+    const char* showSurfelsOptions[] = {"base", "sdf", "surfels_coverage", "cells_coverage", "cells", "irradiance"};
     static const char* curOpt = showSurfelsOptions[0];
     bool blob = false;
-    bool* values[] = {&blob, &show_surfels_sdf, &show_surfels_coverage, &show_cells_coverage, &show_cells};
+    bool* values[] = {&blob, &show_surfels_sdf, &show_surfels_coverage, &show_cells_coverage, &show_cells, &show_surfels_irradiance};
     if (ImGui::BeginCombo("format", curOpt))
     {
       for (int i = 0; i < IM_ARRAYSIZE(showSurfelsOptions); ++i)
@@ -297,6 +298,7 @@ void gibs_draw_surfels(gapi::CmdEncoder& encoder)
   tfx::set_extern("showSurfelSDF", show_surfels_sdf ? (uint)1 : (uint)0);
   tfx::set_extern("showCellsCoverage", show_cells_coverage ? (uint)1 : (uint)0);
   tfx::set_extern("showCells", show_cells ? (uint)1 : (uint)0);
+  tfx::set_extern("showSurfelsIrradiance", show_surfels_irradiance ? (uint)1:(uint)0);
   tfx::activate_technique("GIBS_DrawSurfels", encoder);
   encoder.updateResources();
   encoder.draw(4, 1, 0, 0);
@@ -369,6 +371,25 @@ void gibs_transform_surfels(gapi::CmdEncoder& encoder)
   encoder.updateResources();
   
   const uint3 ds = tfx::calc_group_count("GIBS_TransformSurfels", uint3(SURFEL_COUNT_TOTAL, 1, 1));
+  encoder.dispatch(ds.x, ds.y, ds.z);
+}
+
+NODE_BEGIN(gibs_surfels_irradiance)
+  ORDER_ME_BEFORE(gibs_sync_out)
+  BIND_BUF_RW_UAV_AS(gibs_surfels_storage_binned, surfelsStorage)
+  BIND_TEX_SRV_AS(atm_sky_lut, skyLUT)
+
+  EXEC(gibs_surfels_irradiance)
+NODE_END()
+
+NODE_EXEC()
+static
+void gibs_surfels_irradiance(gapi::CmdEncoder& encoder)
+{
+  tfx::activate_technique("GIBS_AccSurfelsIrradiance", encoder);
+  encoder.updateResources();
+  
+  const uint3 ds = tfx::calc_group_count("GIBS_AccSurfelsIrradiance", uint3(SURFEL_COUNT_TOTAL, 1, 1));
   encoder.dispatch(ds.x, ds.y, ds.z);
 }
 

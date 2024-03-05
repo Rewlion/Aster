@@ -13,13 +13,17 @@ struct SurfelData
   float3 pos;
   float radius;
   float3 normal;
-  float _pad;
+  float _p;
+  float3 irradiance;
+  uint irradianceHistory;
   
   void init(float3 _pos, float _radius, float3 _normal)
   {
     pos = _pos;
     radius = _radius;
-    normal = _normal;    
+    normal = _normal;
+    irradiance = float3(0,0,0);
+    irradianceHistory = 0;
   }
 };
 

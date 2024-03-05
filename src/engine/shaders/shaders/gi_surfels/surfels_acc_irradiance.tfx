@@ -1,0 +1,70 @@
+#include <frame.inc.tfx>
+#include <atmosphere/sky.inc.tfx>
+#include <math.inc.tfx>
+#include <noise.inc.tfx>
+
+scope GIBS_AccSurfelsIrradianceScope
+{
+  reserve:
+    descriptor_set(1);
+    register(buffer, 0);
+    register(texture, 0);
+  
+  #hlsl
+  #include "surfel.hlsl"
+  #end
+
+  Texture2D skyLUT = extern(skyLUT);
+  RWStructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
+};
+
+technique GIBS_AccSurfelsIrradiance
+{
+  support scope FrameScope;
+  activate scope GIBS_AccSurfelsIrradianceScope;
+
+  USE_RT();
+  USE_MATH();
+
+  USE_SKY_LUT_SAMPLING();
+  USE_NOISE();
+
+  #hlsl
+  #include "consts.hlsl"
+
+
+  [numthreads(64,1,1)]
+  void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
+  {
+    uint surfelID = dispatch_thread_id.x;
+    if (surfelID >= SURFEL_COUNT_TOTAL)
+      return;
+
+    RTAccelerationStructure rtas = initRTAS();
+
+    SurfelData surfel = surfelsStorage[surfelID];
+    
+    float3 random = random_pcg3d(uint3(surfelID,0, FrameScope.iFrame));
+    float dirPhi_ls = 2.0 * PI * random.x;
+    float dirTheta_ls = PI * random.y;
+    float3 dir_ls = sphericalToDecartian(dirTheta_ls, dirPhi_ls);
+
+    float3 rayDir = mul(dir_ls, tsToWs(surfel.normal));
+    float3 rayPos = surfel.pos + surfel.normal * 0.1;
+
+    TraceResult tRes = rtas.traceRay(rayPos, rayDir);
+    
+    float3 L = float3(0,0,0);
+    if (tRes.t == TRACE_MISS)
+      L = sampleSkyLUT(rayDir);
+    
+    uint n = surfel.irradianceHistory;
+    float3 irradiance = lerp(surfel.irradiance, L, 1.0 / (n+1));
+
+    surfelsStorage[surfelID].irradiance = irradiance;
+    surfelsStorage[surfelID].irradianceHistory = n+1;
+  }
+  #end
+
+  compile(cs, cs_main);
+};

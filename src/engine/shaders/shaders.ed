@@ -19,6 +19,7 @@ shaders_list:t[] = [
   "shaders/gi_surfels/init_pool.tfx",
   "shaders/gi_surfels/prepare_nonlinear_aabbs.tfx",
   "shaders/gi_surfels/spatial_storage_binning.tfx",
+  "shaders/gi_surfels/surfels_acc_irradiance.tfx",
   "shaders/gi_surfels/surfels_find_surfel_alloc_pos.tfx",
   "shaders/gi_surfels/surfels_recycle.tfx",
   "shaders/gi_surfels/transform_surfels.tfx",

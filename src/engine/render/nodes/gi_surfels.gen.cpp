@@ -431,6 +431,35 @@ EventSystemRegistration mk_fg_node_gibs_transform_surfels_registration(
 
 //Engine::OnFrameGraphInit handler
 static
+void mk_fg_node_gibs_surfels_irradiance(Event*, ComponentsAccessor&)
+{
+  fg::register_node("gibs_surfels_irradiance", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    reg.orderMeBefore("gibs_sync_out");
+    auto gibs_surfels_storage_binned = reg.modifyBuffer("gibs_surfels_storage_binned", gapi::BufferState::BF_STATE_UAV_RW);
+    auto atm_sky_lut = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
+
+    return [gibs_surfels_storage_binned,atm_sky_lut](gapi::CmdEncoder& encoder)
+    {
+      tfx::set_extern("surfelsStorage", gibs_surfels_storage_binned.get());
+      tfx::set_extern("skyLUT", atm_sky_lut.get());
+      gibs_surfels_irradiance(encoder);
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_gibs_surfels_irradiance_registration(
+  mk_fg_node_gibs_surfels_irradiance,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_gibs_surfels_irradiance"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
 void mk_fg_node_gibs_test_rt(Event*, ComponentsAccessor&)
 {
   fg::register_node("gibs_test_rt", FG_FILE_DECL, [](fg::Registry& reg)
