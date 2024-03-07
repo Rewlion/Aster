@@ -196,8 +196,10 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
     auto gbuffer_depth = reg.renameTexture("late_opaque_depth", "gbuffer_depth", gapi::TextureState::DepthReadStencilRead);
     auto sph_buf = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_SRV, false);
     auto specular_light = reg.readTexture("specular_light", gapi::TextureState::ShaderRead, false);
+    auto gibs_surfels_storage_srv = reg.readBuffer("gibs_surfels_storage_srv", gapi::BufferState::BF_STATE_SRV, false);
+    auto gibs_surfels_spatial_storage_srv = reg.readBuffer("gibs_surfels_spatial_storage_srv", gapi::BufferState::BF_STATE_SRV, false);
 
-    return [resolve_target,gbuf0,gbuf1,gbuf2,post_process_input,motionBuf,clustered_lights,clusters_info,clusters_indirecion,gbuffer_depth,sph_buf,specular_light,render_size](gapi::CmdEncoder& encoder)
+    return [resolve_target,gbuf0,gbuf1,gbuf2,post_process_input,motionBuf,clustered_lights,clusters_info,clusters_indirecion,gbuffer_depth,sph_buf,specular_light,gibs_surfels_storage_srv,gibs_surfels_spatial_storage_srv,render_size](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("resolveTarget", resolve_target.get());
       tfx::set_extern("gbuffer_albedo", gbuf0.get());
@@ -211,6 +213,8 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
       tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
       tfx::set_extern("atmParamsBuffer", sph_buf.get());
       tfx::set_extern("specularLight", specular_light.get());
+      tfx::set_extern("surfelsStorage", gibs_surfels_storage_srv.get());
+      tfx::set_extern("surfelsSpatialStorage", gibs_surfels_spatial_storage_srv.get());
       gbuffer_resolve_exec(encoder, render_size.get());
     };
   });

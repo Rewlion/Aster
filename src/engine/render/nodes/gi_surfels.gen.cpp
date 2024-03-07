@@ -496,6 +496,8 @@ void mk_fg_node_gibs_sync_out(Event*, ComponentsAccessor&)
 {
   fg::register_node("gibs_sync_out", FG_FILE_DECL, [](fg::Registry& reg)
   { 
+    auto gibs_surfels_storage_srv = reg.renameBuffer("gibs_surfels_storage_binned", "gibs_surfels_storage_srv", gapi::BufferState::BF_STATE_SRV);
+    auto gibs_surfels_spatial_storage_srv = reg.renameBuffer("gibs_surfels_spatial_storage_binned", "gibs_surfels_spatial_storage_srv", gapi::BufferState::BF_STATE_SRV);
     reg.orderMeBefore("gbuffer_resolve");
     return [](gapi::CmdEncoder&){};
   });

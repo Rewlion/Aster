@@ -419,6 +419,9 @@ void gibs_test_rt(gapi::CmdEncoder& encoder, const uint2& render_size)
 NODE_BEGIN(gibs_sync_out)
   NO_EXEC()
 
+  RENAME_BUF(gibs_surfels_storage_binned, gibs_surfels_storage_srv, BUF_STATE(SRV))
+  RENAME_BUF(gibs_surfels_spatial_storage_binned, gibs_surfels_spatial_storage_srv, BUF_STATE(SRV))
+
   ORDER_ME_BEFORE(gbuffer_resolve)
 NODE_END()
 

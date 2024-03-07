@@ -125,6 +125,9 @@ NODE_BEGIN(gbuffer_resolve)
 
   BIND_TEX_SRV_AS(specular_light, specularLight)
 
+  BIND_BUF_SRV_AS(gibs_surfels_storage_srv, surfelsStorage)
+  BIND_BUF_SRV_AS(gibs_surfels_spatial_storage_srv, surfelsSpatialStorage)
+
   EXEC(gbuffer_resolve_exec)
 NODE_END()
 
