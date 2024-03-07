@@ -67,6 +67,7 @@ technique ResolveGbuffer {
 
   #hlsl
     #include "clustered_light/lights_apply.hlsl"
+    #include <gi_surfels/surfel_norm.hlsl>
 
     struct AccumulateIrradiance
     {
@@ -76,15 +77,6 @@ technique ResolveGbuffer {
       float accWeight;
       float totalAverageWeight;
       float3 totalIrradiance;
-
-      float calcSurfelEllipsoidNorm(float3 world_pos, SurfelData surfel)
-      {
-        float3 dr = world_pos - surfel.pos;
-        float F_scquash = 2;
-        //https://www.cs.umd.edu/~zwicker/publications/MeshlessRepresentationForLightTransport-SIG08.pdf
-        //2.2 weight functions
-        return length(dr + F_scquash * abs(dot(dr, surfel.normal)) * surfel.normal);
-      }
 
       void onSurfel(uint surfel_id)
       {

@@ -34,6 +34,7 @@ technique GIBS_AccSurfelsIrradiance
   #include "consts.hlsl"
   #include "spatial_storage.hlsl"
   #include "bindless_material_ids.hlsl"
+  #include "surfel_norm.hlsl"
 
   #include <math.hlsl>
 
@@ -73,6 +74,62 @@ technique GIBS_AccSurfelsIrradiance
     }
   };
 
+  struct ShareIrradiance
+  {
+    uint surfelID;
+    SurfelData surfel;
+
+    float3 irradiance;
+    float averageWeight;
+
+    void init(SurfelData surfel_data, uint surfel_id)
+    {
+      surfelID = surfel_id;
+      surfel = surfel_data;
+      irradiance = float3(0,0,0);
+      averageWeight = 0;
+    }
+
+    void onSurfel(uint surfel_id)
+    {
+      if (surfel_id == surfelID)
+        return;
+
+      SurfelData neighborSurfel = surfelsStorage[surfel_id];
+      
+      float ellipsoidNorm = calcSurfelEllipsoidNorm(surfel.pos, neighborSurfel);
+      float normalWeight =  max(0, dot(surfel.normal, neighborSurfel.normal));
+
+      float w = ellipsoidNorm;
+      w = max(w*w, 0.000001);
+
+      irradiance += neighborSurfel.irradiance * normalWeight / w;
+      averageWeight += 1.0/w;
+    }
+
+    float3 getResult()
+    {
+      return irradiance / max(averageWeight, 1);
+    }
+
+    bool finish()
+    {
+      return false;
+    }
+  };
+
+  float3 accNeighborSurfelsIrradiance(SurfelData surfel, uint surfel_id, ROSpatialStorage spatial_storage, float3 camera_pos)
+  {
+    ShareIrradiance shareIrradiance;
+    shareIrradiance.init(surfel, surfel_id);
+
+    float3 surfelCenter = surfel.pos;
+    float3 cameraToSurfelCenter = surfelCenter - camera_pos;
+
+    spatial_storage.forEachSurfelInCell(surfelCenter, cameraToSurfelCenter, shareIrradiance);
+    return shareIrradiance.getResult();
+  }
+
   [numthreads(64,1,1)]
   void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
   {
@@ -81,6 +138,7 @@ technique GIBS_AccSurfelsIrradiance
       return;
 
     RTAccelerationStructure rtas = initRTAS();
+    ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
 
     SurfelData surfel = surfelsStorage[surfelID];
     
@@ -103,7 +161,6 @@ technique GIBS_AccSurfelsIrradiance
       FindNeighborSurfelIrradiance cb;
       cb.init(surfel.normal,intersectPoint);
       
-      ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
       float3 cameraToWorldPos = intersectPoint - FrameScope.cameraPos;
       st.forEachSurfelInCell(intersectPoint, cameraToWorldPos, cb);
 
@@ -123,11 +180,14 @@ technique GIBS_AccSurfelsIrradiance
       }
     }
     
+    float3 neighborsIrradiance = accNeighborSurfelsIrradiance(surfel, surfelID, st, FrameScope.cameraPos);
+
     uint n = surfel.irradianceHistory;
     float3 irradiance = lerp(surfel.irradiance, L, 1.0 / (n+1));
+    irradiance = lerp(irradiance, neighborsIrradiance, 1.0 / (n+2));
 
     surfelsStorage[surfelID].irradiance = irradiance;
-    surfelsStorage[surfelID].irradianceHistory = n+1;
+    surfelsStorage[surfelID].irradianceHistory = n+2;
   }
   #end
 
