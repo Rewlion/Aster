@@ -99,29 +99,29 @@ void mk_fg_node_reflections(Event*, ComponentsAccessor&)
     const uint2 __renderSize__ = reg.getRenderSize();
 
     fg::dsl::AccessDecorator render_size{__renderSize__};
-    auto reflectionsTarget = reg.modifyTexture("reflections_target", gapi::TextureState::ShaderReadWrite);
-    auto gbuffer_albedo = reg.readTexture("gbuf0", gapi::TextureState::ShaderRead, false);
-    auto gbuffer_normal = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
-    auto gbuffer_metal_roughness = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead, false);
-    auto prevPostProcessInput = reg.readTexture("post_process_input", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+    auto reflections_target = reg.modifyTexture("reflections_target", gapi::TextureState::ShaderReadWrite);
+    auto gbuf0 = reg.readTexture("gbuf0", gapi::TextureState::ShaderRead, false);
+    auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
+    auto gbuf2 = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead, false);
+    auto post_process_input = reg.readTexture("post_process_input", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
     auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead, false);
-    auto gbuffer_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
+    auto late_opaque_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
     auto hi_z_buffer = reg.readTexture("hi_z_buffer", gapi::TextureState::ShaderRead, false);
-    auto enviSpecular = reg.readTexture("atm_envi_specular", gapi::TextureState::ShaderRead, true);
-    auto enviBRDF = reg.readTexture("atm_envi_brdf", gapi::TextureState::ShaderRead, true);
+    auto atm_envi_specular_srv = reg.readTexture("atm_envi_specular_srv", gapi::TextureState::ShaderRead, true);
+    auto atm_envi_brdf_srv = reg.readTexture("atm_envi_brdf_srv", gapi::TextureState::ShaderRead, true);
 
-    return [reflectionsTarget,gbuffer_albedo,gbuffer_normal,gbuffer_metal_roughness,prevPostProcessInput,motionBuf,gbuffer_depth,hi_z_buffer,enviSpecular,enviBRDF,render_size](gapi::CmdEncoder& encoder)
+    return [reflections_target,gbuf0,gbuf1,gbuf2,post_process_input,motionBuf,late_opaque_depth,hi_z_buffer,atm_envi_specular_srv,atm_envi_brdf_srv,render_size](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("reflectionsTarget", reflectionsTarget.get());
-      tfx::set_extern("gbuffer_albedo", gbuffer_albedo.get());
-      tfx::set_extern("gbuffer_normal", gbuffer_normal.get());
-      tfx::set_extern("gbuffer_metal_roughness", gbuffer_metal_roughness.get());
-      tfx::set_extern("prevPostProcessInput", prevPostProcessInput.get());
+      tfx::set_extern("reflectionsTarget", reflections_target.get());
+      tfx::set_extern("gbuffer_albedo", gbuf0.get());
+      tfx::set_extern("gbuffer_normal", gbuf1.get());
+      tfx::set_extern("gbuffer_metal_roughness", gbuf2.get());
+      tfx::set_extern("prevPostProcessInput", post_process_input.get());
       tfx::set_extern("motionBuf", motionBuf.get());
-      tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
+      tfx::set_extern("gbuffer_depth", late_opaque_depth.get());
       tfx::set_extern("hi_z_buffer", hi_z_buffer.get());
-      tfx::set_extern("enviSpecular", enviSpecular.get());
-      tfx::set_extern("enviBRDF", enviBRDF.get());
+      tfx::set_extern("enviSpecular", atm_envi_specular_srv.get());
+      tfx::set_extern("enviBRDF", atm_envi_brdf_srv.get());
       reflections(encoder, render_size.get());
     };
   });
@@ -147,22 +147,22 @@ void mk_fg_node_reflections_temporal_acc(Event*, ComponentsAccessor&)
 
     fg::dsl::AccessDecorator render_size{__renderSize__};
     auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead, false);
-    auto taInput = reg.readTexture("reflections_target", gapi::TextureState::ShaderRead, false);
-    auto taHistory = reg.readTexture("reflections_target_filtered", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
-    auto taVarianceHistory = reg.readTexture("reflections_variance", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
-    auto taVarianceOutput = reg.modifyTexture("reflections_variance", gapi::TextureState::ShaderReadWrite);
-    auto taOutput = reg.modifyTexture("reflections_acc", gapi::TextureState::ShaderReadWrite);
-    auto gbuffer_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
+    auto reflections_target = reg.readTexture("reflections_target", gapi::TextureState::ShaderRead, false);
+    auto reflections_target_filtered = reg.readTexture("reflections_target_filtered", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+    auto reflections_variance_prev = reg.readTexture("reflections_variance", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+    auto reflections_variance_cur = reg.modifyTexture("reflections_variance", gapi::TextureState::ShaderReadWrite);
+    auto reflections_acc = reg.modifyTexture("reflections_acc", gapi::TextureState::ShaderReadWrite);
+    auto late_opaque_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
 
-    return [motionBuf,taInput,taHistory,taVarianceHistory,taVarianceOutput,taOutput,gbuffer_depth,render_size](gapi::CmdEncoder& encoder)
+    return [motionBuf,reflections_target,reflections_target_filtered,reflections_variance_prev,reflections_variance_cur,reflections_acc,late_opaque_depth,render_size](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("motionBuf", motionBuf.get());
-      tfx::set_extern("taInput", taInput.get());
-      tfx::set_extern("taHistory", taHistory.get());
-      tfx::set_extern("taVarianceHistory", taVarianceHistory.get());
-      tfx::set_extern("taVarianceOutput", taVarianceOutput.get());
-      tfx::set_extern("taOutput", taOutput.get());
-      tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
+      tfx::set_extern("taInput", reflections_target.get());
+      tfx::set_extern("taHistory", reflections_target_filtered.get());
+      tfx::set_extern("taVarianceHistory", reflections_variance_prev.get());
+      tfx::set_extern("taVarianceOutput", reflections_variance_cur.get());
+      tfx::set_extern("taOutput", reflections_acc.get());
+      tfx::set_extern("gbuffer_depth", late_opaque_depth.get());
       reflections_temporal_acc(encoder, render_size.get());
     };
   });
@@ -187,17 +187,17 @@ void mk_fg_node_reflections_blur(Event*, ComponentsAccessor&)
     const uint2 __renderSize__ = reg.getRenderSize();
 
     fg::dsl::AccessDecorator render_size{__renderSize__};
-    auto blurInput = reg.readTexture("reflections_acc", gapi::TextureState::ShaderRead, false);
-    auto blurOutput = reg.modifyTexture("reflections_target_filtered", gapi::TextureState::ShaderReadWrite);
-    auto gbuffer_metal_roughness = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead, false);
-    auto taVariance = reg.readTexture("reflections_variance", gapi::TextureState::ShaderRead, false);
+    auto reflections_acc = reg.readTexture("reflections_acc", gapi::TextureState::ShaderRead, false);
+    auto reflections_target_filtered = reg.modifyTexture("reflections_target_filtered", gapi::TextureState::ShaderReadWrite);
+    auto gbuf2 = reg.readTexture("gbuf2", gapi::TextureState::ShaderRead, false);
+    auto reflections_variance = reg.readTexture("reflections_variance", gapi::TextureState::ShaderRead, false);
 
-    return [blurInput,blurOutput,gbuffer_metal_roughness,taVariance,render_size](gapi::CmdEncoder& encoder)
+    return [reflections_acc,reflections_target_filtered,gbuf2,reflections_variance,render_size](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("blurInput", blurInput.get());
-      tfx::set_extern("blurOutput", blurOutput.get());
-      tfx::set_extern("gbuffer_metal_roughness", gbuffer_metal_roughness.get());
-      tfx::set_extern("taVariance", taVariance.get());
+      tfx::set_extern("blurInput", reflections_acc.get());
+      tfx::set_extern("blurOutput", reflections_target_filtered.get());
+      tfx::set_extern("gbuffer_metal_roughness", gbuf2.get());
+      tfx::set_extern("taVariance", reflections_variance.get());
       reflections_blur(encoder, render_size.get());
     };
   });

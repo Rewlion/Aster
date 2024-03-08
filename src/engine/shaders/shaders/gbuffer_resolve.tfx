@@ -11,7 +11,7 @@
 scope ResolveGbufferScope {
   reserve:
     descriptor_set(2);
-    register(buffer, 0-6);
+    register(buffer, 0-4);
     register(texture, 0-10);
 
   RWStructuredBuffer<float3> atmParamsBuffer = extern(atmParamsBuffer);
@@ -35,12 +35,7 @@ scope ResolveGbufferScope {
   StructuredBuffer<ClusterIndirection> indirectionBuffer = extern(clustersIndirectionBuffer);
 
   //GI
-  #hlsl
-  #include <gi_surfels/surfel.hlsl>
-  #include <gi_surfels/spatial_storage.hlsl>
-  #end
-  RWStructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
-  StructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
+  Texture2D indirectLight = extern(indirectLight);
 };
 
 technique ResolveGbuffer {
@@ -63,65 +58,10 @@ technique ResolveGbuffer {
   USE_DEPTH_UTILS();
   USE_PBR();
   USE_MATERIALS_UNPACKING();
-  USE_COLOR_SPACES();
 
   #hlsl
     #include "clustered_light/lights_apply.hlsl"
-    #include <gi_surfels/surfel_norm.hlsl>
-
-    struct AccumulateIrradiance
-    {
-      float3 N;
-      float3 worldPos;
-      float3 irradiance;
-      float accWeight;
-      float totalAverageWeight;
-      float3 totalIrradiance;
-
-      void onSurfel(uint surfel_id)
-      {
-        SurfelData surfel = surfelsStorage[surfel_id];
-
-        float ellipsoidNorm = calcSurfelEllipsoidNorm(worldPos, surfel);
-        float normalWeight =  max(0, dot(N, surfel.normal));
-        float weight = smoothstep(1.0, 0.0, ellipsoidNorm / surfel.radius) * normalWeight;
-
-        irradiance += surfel.irradiance * weight;
-        accWeight += weight;
-
-        float averageWeight = max((ellipsoidNorm - surfel.radius), 0.00001);
-        averageWeight = averageWeight*averageWeight;
-        totalIrradiance += (surfel.irradiance * normalWeight) / (averageWeight);
-        totalAverageWeight += 1.0 / (averageWeight);
-      }
-
-      float3 getResult()
-      {
-        if (accWeight <= 0.1)
-        {
-          return (totalIrradiance / totalAverageWeight);
-        }
-        return irradiance / max(accWeight, 0.001);
-      }
-
-      bool finish()
-      {
-        return false;
-      }
-    };
-
-    float3 getDiffuseIndirectLight(float3 N, float3 world_pos, float3 camera_pos, float far_plane_dist)
-    {
-      AccumulateIrradiance accumulateIrradiance = {N, world_pos, 0.0.xxx, 0, 0, 0.xxx};
-
-      float3 cameraToWorldPos = world_pos - camera_pos;
-
-      ROSpatialStorage st = {surfelsSpatialStorage, far_plane_dist};
-      st.forEachSurfelInCell(world_pos, cameraToWorldPos, accumulateIrradiance);
-
-      return accumulateIrradiance.getResult();
-    }
-
+    
     [numthreads(8, 8, 1)]
     void cs_main(uint3 dispatch_thread_id: SV_DispatchThreadID)
     {
@@ -182,16 +122,15 @@ technique ResolveGbuffer {
       dynamicLights(dynamicLightParams, dynamicLightsDiffuseNoBRDF, dynamicLightsSpecular);
 
       float3 diffuseSPH = getSphDiffuseProbe(N);
-      float3 diffuseIndirectLight = getDiffuseIndirectLight(N, worldPos, FrameScope.cameraPos, FrameScope.zNear_zFar.x);
-      float3 sunL = float3(0,0,0);// getSunL() * NoL;
+      float3 sunL = getSunL() * NoL;
 
-      float3 diffusePart = diffuseBRDF(mat.diffuseColor, mat.specularReflection, VoH) * (diffuseIndirectLight + sunL + dynamicLightsDiffuseNoBRDF);
+      float3 diffuseGI = indirectLight.Load(tc).rgb;
+      float3 diffusePart = diffuseBRDF(mat.diffuseColor, mat.specularReflection, VoH) * (sunL + dynamicLightsDiffuseNoBRDF);
       float3 specularPart = specularLight.Load(tc).rgb;
 
       float3 Lo = diffusePart + specularPart;
 
-      Lo = diffusePart;
-      Lo = getDiffuseIndirectLight(N, worldPos, FrameScope.cameraPos, FrameScope.zNear_zFar.x);
+      Lo = diffuseGI;
       
       resolveTarget[tc.xy] = float4(Lo, 1.0);
     }

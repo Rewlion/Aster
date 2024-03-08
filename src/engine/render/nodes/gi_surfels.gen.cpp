@@ -438,13 +438,13 @@ void mk_fg_node_gibs_surfels_irradiance(Event*, ComponentsAccessor&)
     reg.orderMeBefore("gibs_sync_out");
     auto gibs_surfels_storage_binned = reg.modifyBuffer("gibs_surfels_storage_binned", gapi::BufferState::BF_STATE_UAV_RW);
     auto gibs_surfels_spatial_storage_binned = reg.readBuffer("gibs_surfels_spatial_storage_binned", gapi::BufferState::BF_STATE_SRV, false);
-    auto atm_sky_lut = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_sky_lut_srv = reg.readTexture("atm_sky_lut_srv", gapi::TextureState::ShaderRead, false);
 
-    return [gibs_surfels_storage_binned,gibs_surfels_spatial_storage_binned,atm_sky_lut](gapi::CmdEncoder& encoder)
+    return [gibs_surfels_storage_binned,gibs_surfels_spatial_storage_binned,atm_sky_lut_srv](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("surfelsStorage", gibs_surfels_storage_binned.get());
       tfx::set_extern("surfelsSpatialStorage", gibs_surfels_spatial_storage_binned.get());
-      tfx::set_extern("skyLUT", atm_sky_lut.get());
+      tfx::set_extern("skyLUT", atm_sky_lut_srv.get());
       gibs_surfels_irradiance(encoder);
     };
   });
@@ -492,12 +492,61 @@ EventSystemRegistration mk_fg_node_gibs_test_rt_registration(
 
 //Engine::OnFrameGraphInit handler
 static
+void mk_fg_node_gibs_indirect_light(Event*, ComponentsAccessor&)
+{
+  fg::register_node("gibs_indirect_light", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    const uint2 __renderSize__ = reg.getRenderSize();
+
+    reg.orderMeBefore("gibs_sync_out");
+    auto gibs_surfels_storage_srv = reg.renameBuffer("gibs_surfels_storage_binned", "gibs_surfels_storage_srv", gapi::BufferState::BF_STATE_SRV);
+    auto gibs_surfels_spatial_storage_srv = reg.renameBuffer("gibs_surfels_spatial_storage_binned", "gibs_surfels_spatial_storage_srv", gapi::BufferState::BF_STATE_SRV);
+
+    auto indirect_light = reg.createTexture("indirect_light",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R32G32B32A32_S,
+        .extent =          uint3(__renderSize__, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_UAV | gapi::TextureUsage::TEX_USAGE_SRV)
+      },
+      gapi::TextureState::ShaderReadWrite,
+      false
+    );
+
+    fg::dsl::AccessDecorator render_size{__renderSize__};
+    auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
+    auto late_opaque_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
+
+    return [indirect_light,gibs_surfels_storage_srv,gibs_surfels_spatial_storage_srv,gbuf1,late_opaque_depth,render_size](gapi::CmdEncoder& encoder)
+    {
+      tfx::set_extern("gibsIndirectLight", indirect_light.get());
+      tfx::set_extern("surfelsStorage", gibs_surfels_storage_srv.get());
+      tfx::set_extern("surfelsSpatialStorage", gibs_surfels_spatial_storage_srv.get());
+      tfx::set_extern("gbuffer_normal", gbuf1.get());
+      tfx::set_extern("gbuffer_depth", late_opaque_depth.get());
+      gibs_indirect_light(encoder, render_size.get());
+    };
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_gibs_indirect_light_registration(
+  mk_fg_node_gibs_indirect_light,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_gibs_indirect_light"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
 void mk_fg_node_gibs_sync_out(Event*, ComponentsAccessor&)
 {
   fg::register_node("gibs_sync_out", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto gibs_surfels_storage_srv = reg.renameBuffer("gibs_surfels_storage_binned", "gibs_surfels_storage_srv", gapi::BufferState::BF_STATE_SRV);
-    auto gibs_surfels_spatial_storage_srv = reg.renameBuffer("gibs_surfels_spatial_storage_binned", "gibs_surfels_spatial_storage_srv", gapi::BufferState::BF_STATE_SRV);
     reg.orderMeBefore("gbuffer_resolve");
     return [](gapi::CmdEncoder&){};
   });

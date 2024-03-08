@@ -231,15 +231,15 @@ void mk_fg_node_atm_ap_lut_render(Event*, ComponentsAccessor&)
 {
   fg::register_node("atm_ap_lut_render", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto trLUT = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
-    auto msLUT = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead, false);
-    auto apLUT = reg.modifyTexture("atm_ap_lut", gapi::TextureState::ShaderReadWrite);
+    auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_ms_lut = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_ap_lut = reg.modifyTexture("atm_ap_lut", gapi::TextureState::ShaderReadWrite);
 
-    return [trLUT,msLUT,apLUT](gapi::CmdEncoder& encoder)
+    return [atm_tr_lut,atm_ms_lut,atm_ap_lut](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("trLUT", trLUT.get());
-      tfx::set_extern("msLUT", msLUT.get());
-      tfx::set_extern("apLUT", apLUT.get());
+      tfx::set_extern("trLUT", atm_tr_lut.get());
+      tfx::set_extern("msLUT", atm_ms_lut.get());
+      tfx::set_extern("apLUT", atm_ap_lut.get());
       atm_ap_lut_render_exec(encoder);
     };
   });
@@ -290,15 +290,15 @@ void mk_fg_node_atm_ms_lut_render(Event*, ComponentsAccessor&)
 {
   fg::register_node("atm_ms_lut_render", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto trLUT = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
     reg.requestRenderPass()
       .addTarget("atm_ms_lut", gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
     ;
 
 
-    return [trLUT](gapi::CmdEncoder& encoder)
+    return [atm_tr_lut](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("trLUT", trLUT.get());
+      tfx::set_extern("trLUT", atm_tr_lut.get());
       atm_ms_lut_render_exec(encoder);
     };
   });
@@ -320,17 +320,17 @@ void mk_fg_node_atm_sky_lut_render(Event*, ComponentsAccessor&)
 {
   fg::register_node("atm_sky_lut_render", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto trLUT = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
-    auto msLUT = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_ms_lut = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead, false);
     reg.requestRenderPass()
       .addTarget("atm_sky_lut", gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
     ;
 
 
-    return [trLUT,msLUT](gapi::CmdEncoder& encoder)
+    return [atm_tr_lut,atm_ms_lut](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("trLUT", trLUT.get());
-      tfx::set_extern("msLUT", msLUT.get());
+      tfx::set_extern("trLUT", atm_tr_lut.get());
+      tfx::set_extern("msLUT", atm_ms_lut.get());
       atm_sky_lut_render_exec(encoder);
     };
   });
@@ -352,15 +352,15 @@ void mk_fg_node_atm_sph_render(Event*, ComponentsAccessor&)
 {
   fg::register_node("atm_sph_render", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto atmParamsBuffer = reg.modifyBuffer("sph_buf", gapi::BufferState::BF_STATE_UAV_RW);
-    auto trLUT = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
-    auto skyLUT = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
+    auto sph_buf = reg.modifyBuffer("sph_buf", gapi::BufferState::BF_STATE_UAV_RW);
+    auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_sky_lut = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
 
-    return [atmParamsBuffer,trLUT,skyLUT](gapi::CmdEncoder& encoder)
+    return [sph_buf,atm_tr_lut,atm_sky_lut](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("atmParamsBuffer", atmParamsBuffer.get());
-      tfx::set_extern("trLUT", trLUT.get());
-      tfx::set_extern("skyLUT", skyLUT.get());
+      tfx::set_extern("atmParamsBuffer", sph_buf.get());
+      tfx::set_extern("trLUT", atm_tr_lut.get());
+      tfx::set_extern("skyLUT", atm_sky_lut.get());
       atm_sph_render_exec(encoder);
     };
   });
@@ -382,21 +382,21 @@ void mk_fg_node_atm_sky_apply(Event*, ComponentsAccessor&)
 {
   fg::register_node("atm_sky_apply", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto apLUT = reg.readTexture("atm_ap_lut", gapi::TextureState::ShaderRead, false);
-    auto skyLUT = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
-    auto trLUT = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
-    auto gbufferDepth = reg.readTexture("gbuffer_depth", gapi::TextureState::DepthReadStencilRead, false);
+    auto atm_ap_lut = reg.readTexture("atm_ap_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_sky_lut = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
+    auto gbuffer_depth = reg.readTexture("gbuffer_depth", gapi::TextureState::DepthReadStencilRead, false);
     reg.requestRenderPass()
       .addTarget("resolve_target", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
     ;
 
 
-    return [apLUT,skyLUT,trLUT,gbufferDepth](gapi::CmdEncoder& encoder)
+    return [atm_ap_lut,atm_sky_lut,atm_tr_lut,gbuffer_depth](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("apLUT", apLUT.get());
-      tfx::set_extern("skyLUT", skyLUT.get());
-      tfx::set_extern("trLUT", trLUT.get());
-      tfx::set_extern("gbufferDepth", gbufferDepth.get());
+      tfx::set_extern("apLUT", atm_ap_lut.get());
+      tfx::set_extern("skyLUT", atm_sky_lut.get());
+      tfx::set_extern("trLUT", atm_tr_lut.get());
+      tfx::set_extern("gbufferDepth", gbuffer_depth.get());
       atm_sky_apply_exec(encoder);
     };
   });
@@ -418,15 +418,15 @@ void mk_fg_node_atm_envi_specular(Event*, ComponentsAccessor&)
 {
   fg::register_node("atm_envi_specular", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto trLUT = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
-    auto skyLUT = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
+    auto atm_sky_lut = reg.readTexture("atm_sky_lut", gapi::TextureState::ShaderRead, false);
     auto atm_envi_specular = reg.modifyTexture("atm_envi_specular", gapi::TextureState::RenderTarget);
     auto atm_envi_mips = reg.readBlob<int>("atm_envi_mips");
 
-    return [trLUT,skyLUT,atm_envi_specular,atm_envi_mips](gapi::CmdEncoder& encoder)
+    return [atm_tr_lut,atm_sky_lut,atm_envi_specular,atm_envi_mips](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("trLUT", trLUT.get());
-      tfx::set_extern("skyLUT", skyLUT.get());
+      tfx::set_extern("trLUT", atm_tr_lut.get());
+      tfx::set_extern("skyLUT", atm_sky_lut.get());
       atm_envi_specular_exec(encoder, atm_envi_specular.get(), atm_envi_mips.get());
     };
   });
@@ -467,6 +467,33 @@ EventSystemRegistration mk_fg_node_atm_envi_brdf_registration(
   {
   },
   "mk_fg_node_atm_envi_brdf"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
+void mk_fg_node_atm_sync_out(Event*, ComponentsAccessor&)
+{
+  fg::register_node("atm_sync_out", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    reg.orderMeAfter("frame_preparing");
+    auto atm_envi_specular_srv = reg.renameTexture("atm_envi_specular", "atm_envi_specular_srv", gapi::TextureState::ShaderRead);
+    auto atm_envi_brdf_srv = reg.renameTexture("atm_envi_brdf", "atm_envi_brdf_srv", gapi::TextureState::ShaderRead);
+    auto atm_tr_lut_srv = reg.renameTexture("atm_tr_lut", "atm_tr_lut_srv", gapi::TextureState::ShaderRead);
+    auto atm_ms_lut_srv = reg.renameTexture("atm_ms_lut", "atm_ms_lut_srv", gapi::TextureState::ShaderRead);
+    auto atm_sky_lut_srv = reg.renameTexture("atm_sky_lut", "atm_sky_lut_srv", gapi::TextureState::ShaderRead);
+    auto atm_ap_lut_srv = reg.renameTexture("atm_ap_lut", "atm_ap_lut_srv", gapi::TextureState::ShaderRead);
+    return [](gapi::CmdEncoder&){};
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_atm_sync_out_registration(
+  mk_fg_node_atm_sync_out,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_atm_sync_out"
 );
 
 

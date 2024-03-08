@@ -1,0 +1,120 @@
+#include <materials.inc.tfx>
+#include <depth.inc.tfx>
+#include <frame.inc.tfx>
+
+scope GIBS_IndirectLightScope
+{
+  reserve:
+    descriptor_set(1);
+    register(texture, 0-2);
+    register(buffer, 0-1);
+
+  Texture2D gbufferNormal = extern(gbuffer_normal);
+  Texture2D gbufferDepth = extern(gbuffer_depth);
+  RWTexture2D<float4> indirectLight = extern(gibsIndirectLight);
+
+  #hlsl
+  #include <gi_surfels/surfel.hlsl>
+  #include <gi_surfels/spatial_storage.hlsl>
+  #end
+  StructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
+  StructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
+};
+
+technique GIBS_IndirectLight
+{
+  support scope FrameScope;
+  activate scope GIBS_IndirectLightScope;
+
+  USE_MATERIALS_NORMAL_UNPACK();
+  USE_DEPTH_UTILS();
+
+  #hlsl
+  #include <gi_surfels/surfel_norm.hlsl>
+
+  struct AccumulateIrradiance
+  {
+    float3 N;
+    float3 worldPos;
+    float3 irradiance;
+    float accWeight;
+    float totalAverageWeight;
+    float3 totalIrradiance;
+
+    void onSurfel(uint surfel_id)
+    {
+      SurfelData surfel = surfelsStorage[surfel_id];
+
+      float ellipsoidNorm = calcSurfelEllipsoidNorm(worldPos, surfel);
+      float normalWeight =  max(0, dot(N, surfel.normal));
+      float weight = smoothstep(1.0, 0.0, ellipsoidNorm / surfel.radius) * normalWeight;
+
+      irradiance += surfel.irradiance * weight;
+      accWeight += weight;
+
+      float averageWeight = max((ellipsoidNorm - surfel.radius), 0.00001);
+      averageWeight = averageWeight*averageWeight;
+      totalIrradiance += (surfel.irradiance * normalWeight) / (averageWeight);
+      totalAverageWeight += 1.0 / (averageWeight);
+    }
+
+    float3 getResult()
+    {
+      if (accWeight <= 0.1)
+      {
+        return (totalIrradiance / totalAverageWeight);
+      }
+      return irradiance / max(accWeight, 0.001);
+    }
+
+    bool finish()
+    {
+      return false;
+    }
+  };
+
+  float3 getDiffuseIndirectLight(float3 N, float3 world_pos, float3 camera_pos, float far_plane_dist)
+  {
+    AccumulateIrradiance accumulateIrradiance = {N, world_pos, 0.0.xxx, 0, 0, 0.xxx};
+
+    float3 cameraToWorldPos = world_pos - camera_pos;
+
+    ROSpatialStorage st = {surfelsSpatialStorage, far_plane_dist};
+    st.forEachSurfelInCell(world_pos, cameraToWorldPos, accumulateIrradiance);
+
+    return accumulateIrradiance.getResult();
+  }
+
+  [numthreads(8,8,1)]
+  void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
+  {
+    uint2 renderSize;
+    indirectLight.GetDimensions(renderSize.x, renderSize.y);
+
+    if (any(dispatch_thread_id.xy >= renderSize))
+      return;
+
+    uint3 tc = dispatch_thread_id;
+    float depth = gbufferDepth.Load(tc).r;
+
+    if (depth == 0.0)
+      indirectLight[tc.xy] = 0.0.xxxx;
+
+    float3 leftRight = FrameScope.rtView_WS - FrameScope.ltView_WS;
+    float3 topBot = FrameScope.lbView_WS - FrameScope.ltView_WS;
+
+    float2 t = float2(tc.xy) / float2(renderSize - uint2(1, 1));
+    float3 farPlainPoint = FrameScope.ltView_WS + leftRight * t.x + topBot * t.y;
+    float3 viewDir = normalize(farPlainPoint);
+
+    float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+    float3 N = unpackMaterialNormal(tc);
+
+    float3 diffuseIndirectLight = getDiffuseIndirectLight(N, worldPos, FrameScope.cameraPos, FrameScope.zNear_zFar.x);
+
+    indirectLight[tc.xy] = float4(diffuseIndirectLight, 1.0);
+  }
+  #end
+
+  compile(cs, cs_main);
+};
