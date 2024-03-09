@@ -124,3 +124,11 @@ Denoise / Filters
  - https://developer.nvidia.com/gtc/2020/video/s22699-vid
    Dmitry Zhdan
    Fast Denoising with Self Stabilizing Recurrent Blurs
+ - https://www.uni-ulm.de/fileadmin/website_uni_ulm/iui.inst.100/institut/Papers/atrousGIfilter.pdf
+   Edge-Avoiding À-Trous Wavelet Transform for fast Global Illumination Filtering
+
+GI
+   Global Illumination based on Surfels
+ - https://www.youtube.com/watch?v=h1ocYFrtsM4&ab_channel=SEED%E2%80%93ElectronicArts
+ - https://www.youtube.com/watch?v=MyTOGHqyquU&t=1629s&ab_channel=DigitalDragons
+   
