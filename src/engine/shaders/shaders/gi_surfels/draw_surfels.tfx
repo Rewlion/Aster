@@ -5,7 +5,7 @@ scope GIBS_DrawSurfelsScope
 {
   reserve:
     descriptor_set(1);
-    register(buffer, 0-3);
+    register(buffer, 0-4);
     register(texture, 0);
 
   #hlsl
@@ -17,6 +17,7 @@ scope GIBS_DrawSurfelsScope
   StructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
   StructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
   StructuredBuffer<SurfelsMeta> surfelsMeta = extern(surfelsMeta);
+  StructuredBuffer<int> surfelsRayBudget = extern(surfelsRayBudget);
 
   uint showSurfelsCoverage = extern(showSurfelsCoverage);
   uint showSurfelSDF = extern(showSurfelSDF);
@@ -126,7 +127,16 @@ technique GIBS_DrawSurfels
     gbufferDepth.GetDimensions(renderSize.x, renderSize.y);
 
     float2 uv = (input.pos.xy + 0.5.xx) / float2(renderSize);
-    if (uv.y > 0.95)
+    if (uv.y > 0.90 && uv.y < 0.95)
+    {
+      int freeRayBudget = max(0, surfelsRayBudget[0]);
+      float sizeBorder = (SURFEL_RAY_BUDGET - freeRayBudget) / float(SURFEL_RAY_BUDGET);
+      if (uv.x <= sizeBorder)
+        return float4(0.0, 1.0, 0.0, 1.0);
+      else
+        return float4(0.0, 0.0, 0.0, 1.0);
+    }
+    else if (uv.y > 0.95)
     {
       SurfelsMeta meta = surfelsMeta[0];
       float sizeBorder = (float)meta.allocatedSurfelsCount / SURFEL_COUNT_TOTAL;

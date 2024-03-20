@@ -4,7 +4,7 @@ scope GIBS_TransformSurfelsScope
 {
   reserve:
     descriptor_set(1);
-    register(buffer, 0-1);
+    register(buffer, 0-2);
     register(texture, 0);
 
   #hlsl
@@ -14,6 +14,7 @@ scope GIBS_TransformSurfelsScope
   StructuredBuffer<uint> surfelsLifeTime = extern(surfelsLifeTime);
   RWStructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
   RWTexture2D<float2> rayguidingMap = extern(rayguidingMap);
+  RWStructuredBuffer<int> surfelsRayBudget = extern(surfelsRayBudget);
 };
 
 
@@ -59,6 +60,12 @@ technique GIBS_TransformSurfels
       surfelsStorage[id].radius = newRadius;
 
     surfelsStorage[id].irradiance = surfel.estimatorData.mean;
+
+    int rayBudget;
+    int rayRequest = lerp(1, SURFEL_MAX_RAYS, surfel.estimatorData.inconsistency);
+    rayRequest = clamp(rayRequest, 1, SURFEL_MAX_RAYS);
+    InterlockedAdd(surfelsRayBudget[0], -rayRequest, rayBudget);
+    surfelsStorage[id].rayBudget = rayBudget < 0 ? 0 : rayRequest;
 
     [BRANCH]
     if (surfelsStorage[id].rayguidingProcessedSamples >= RAYGUIDE_MAX_SAMPLES_PER_ITERATION)

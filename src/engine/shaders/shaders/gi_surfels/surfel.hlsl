@@ -18,6 +18,8 @@ struct SurfelData
   float3 irradiance;
   uint rayguidingProcessedSamples;
   MultiscaleMeanEstimatorData estimatorData;
+  uint rayBudget;
+  uint3 _p;
   
   void init(float3 _pos, float _radius, float3 _normal)
   {
@@ -28,6 +30,7 @@ struct SurfelData
     irradiance = float3(0,0,0);
     rayguidingProcessedSamples = 0;
     estimatorData.init();
+    rayBudget = 0;
   }
 };
 

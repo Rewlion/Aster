@@ -101,6 +101,8 @@ class GIOnSurfels
 ECS_COMP_GETTER(GIOnSurfels, state);
 
 NODE_BEGIN(gibs_resources)
+  ORDER_ME_AFTER (atm_sync_out)
+
   CREATE_TEX_2D             (gibs_dbg_rt, TEX_SIZE_RELATIVE(), R32G32B32A32_S,
                              TEX_USAGE2(SRV, UAV), TEX_STATE(ShaderReadWrite))
 
@@ -136,6 +138,9 @@ NODE_BEGIN(gibs_resources)
   CREATE_TEX_2D             (gibs_surfels_allocation_pos, TEX_SIZE_RELATIVE(), R8_UINT,
                              TEX_USAGE2(SRV, UAV), TEX_STATE(ShaderReadWrite))
 
+  CREATE_GPU_BUF            (gibs_surfels_ray_budget, BUF_USAGE(UAV), BUF_STATE(UAV_RW),
+                              BUF_SIZE(sizeof(int)))
+
   CREATE_TEX_2D_PERSISTENT  (gibs_rayguiding_map, TEX_SIZE(RAYGUIDE_TEX_DIM,RAYGUIDE_TEX_DIM,1), R32G32B32A32_S,
                                TEX_USAGE2(SRV, UAV), TEX_STATE(ShaderReadWrite))
 
@@ -157,10 +162,12 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
                          const gapi::BufferHandler gibs_nonlinear_aabbs,
                          const gapi::TextureHandle gibs_surfels_sdf,
                          const gapi::TextureHandle gibs_surfels_allocation_pos,
+                         const gapi::BufferHandler gibs_surfels_ray_budget,
                          const gapi::TextureHandle gibs_rayguiding_map)
 {
   encoder.fillBuffer(gibs_surfels_allocation_locks, 0, CELLS_COUNT * sizeof(uint), 0);
   encoder.fillBuffer(gibs_surfels_spatial_storage, 0, CELLS_COUNT * SPATIAL_STORAGE_CELL_PAYLOAD * sizeof(uint), 0);
+  encoder.fillBuffer(gibs_surfels_ray_budget, 0, sizeof(int), SURFEL_RAY_BUDGET);
   encoder.insertGlobalBufferBarrier(gapi::BufferState::BF_STATE_TRANSFER_DST, gapi::BufferState::BF_STATE_UAV_RW);
 
   encoder.clearColorTexture(gibs_dbg_rt,
@@ -283,12 +290,13 @@ void gibs_surfels_find_surfels_alloc_pos(gapi::CmdEncoder& encoder, const uint2 
 }
 
 NODE_BEGIN(gibs_draw_surfels)
-  ORDER_ME_BEFORE(gibs_binning_sync)
+  ORDER_ME_BEFORE(gibs_sync_out)
 
   BIND_TEX_RO_DEPTH_AS (late_opaque_depth, gbuffer_depth)
-  BIND_BUF_SRV_AS      (gibs_surfels_storage, surfelsStorage)
-  BIND_BUF_SRV_AS      (gibs_surfels_spatial_storage, surfelsSpatialStorage)
-  BIND_BUF_SRV_AS      (gibs_surfels_meta, surfelsMeta)
+  BIND_BUF_SRV_AS      (gibs_surfels_storage_binned, surfelsStorage)
+  BIND_BUF_SRV_AS      (gibs_surfels_spatial_storage_binned, surfelsSpatialStorage)
+  BIND_BUF_SRV_AS      (gibs_surfels_meta_binned, surfelsMeta)
+  BIND_BUF_SRV_AS      (gibs_surfels_ray_budget, surfelsRayBudget)
 
   RP_BEGIN()
     TARGET_LOAD_DONTCARE(gibs_dbg_surfels)
@@ -365,6 +373,7 @@ NODE_BEGIN(gibs_transform_surfels)
   BIND_BUF_RW_UAV_AS (gibs_surfels_storage_binned, surfelsStorage)
   BIND_BUF_SRV_AS    (gibs_surfels_lifetime, surfelsLifeTime)
   BIND_TEX_RW_UAV_AS (gibs_rayguiding_map, rayguidingMap)
+  BIND_BUF_RW_UAV_AS (gibs_surfels_ray_budget, surfelsRayBudget)
 
   EXEC(gibs_transform_surfels)
 NODE_END()

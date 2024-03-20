@@ -16,6 +16,8 @@
 #define SURFEL_COUNT_TOTAL                (250 * 1024)
 #define SURFEL_COUNT_PER_CELL             127
 #define SURFEL_RADIUS                     0.15
+#define SURFEL_RAY_BUDGET                 (250 * 1024)
+#define SURFEL_MAX_RAYS                   36
 
 #define CASCADE_ZERO    0
 #define CASCADE_X       1

@@ -192,14 +192,12 @@ technique GIBS_AccSurfelsIrradiance
     return Ri;
   }
 
-  uint rayguidedSampleEnvironment(RayGuiding rayguiding, float3 ray_pos, float3 surfel_normal, uint surfel_id,
+  uint rayguidedSampleEnvironment(RayGuiding rayguiding, uint rayBudget, float3 ray_pos, float3 surfel_normal, uint surfel_id,
                                   ROSpatialStorage st, RTAccelerationStructure rtas, inout MultiscaleMeanEstimatorData estimator_data)
   { 
-    const uint maxRayCounts = 36;
-
     float3 irradiance = 0.xxx;
 
-    for (uint i = 0; i < maxRayCounts; ++i)
+    for (uint i = 0; i < rayBudget; ++i)
     {
       float3 random = random_pcg3d(uint3(surfel_id, i, FrameScope.iFrame));
       
@@ -219,7 +217,7 @@ technique GIBS_AccSurfelsIrradiance
       rayguiding.feedbackLuminance(rayGuidingFeedbackTexel, luminance);
     }
 
-    uint processedSamples = maxRayCounts;
+    uint processedSamples = rayBudget;
 
     irradiance = irradiance / processedSamples;
     MultiscaleMeanEstimator(irradiance, estimator_data);
@@ -242,13 +240,16 @@ technique GIBS_AccSurfelsIrradiance
     ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
 
     SurfelData surfel = surfelsStorage[surfelID];
+    if (surfel.rayBudget == 0)
+      return;
+
     float3 rayPos = surfel.pos + surfel.normal * 0.1;
     
     sampleSunDiskRadiance(rayPos, surfel, rtas);
 
     RayGuiding rayguiding;
     rayguiding.init(rayguidingMap, surfel.rayguidingPmfScale, surfelID);
-    uint processedSamples = rayguidedSampleEnvironment(rayguiding, rayPos, surfel.normal, surfelID, st, rtas, surfel.estimatorData);
+    uint processedSamples = rayguidedSampleEnvironment(rayguiding, surfel.rayBudget, rayPos, surfel.normal, surfelID, st, rtas, surfel.estimatorData);
 
     surfelsStorage[surfelID].estimatorData = surfel.estimatorData;
     surfelsStorage[surfelID].rayguidingProcessedSamples = surfel.rayguidingProcessedSamples + processedSamples;
