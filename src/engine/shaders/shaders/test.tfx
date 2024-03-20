@@ -52,7 +52,7 @@ technique TestStaticMesh {
       float4 albedo = albedoTex.Sample(modelSampler, input.uv);
 
       UnpackedMaterial mat;
-      initAlbedo(mat, float3(1.0, 1.0, 1.0));
+      initAlbedo(mat, albedo.rgb);
       initMetal(mat, TestStaticMeshScope.metal);
       initRoughness(mat, TestStaticMeshScope.roughness);
       initNormal(mat, input.normal);

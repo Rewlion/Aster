@@ -45,23 +45,23 @@ NODE_BEGIN(atm_res_import)
   READ_BLOB(camera_data, Engine::CameraData)
   
   CREATE_TEX_2D_PERSISTENT(atm_tr_lut, TEX_SIZE2(TR_LUT_SIZE),
-                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(Undefined))
+                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
   
   CREATE_TEX_2D_PERSISTENT(atm_ms_lut, TEX_SIZE2(MS_LUT_SIZE),
-                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(Undefined))
+                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
   
   CREATE_TEX_2D_PERSISTENT(atm_sky_lut, TEX_SIZE2(SKY_LUT_SIZE),
-                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(Undefined))
+                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
 
   CREATE_TEX_2D_PERSISTENT(atm_ap_lut, TEX_SIZE(AP_LUT_SIZE.x, AP_LUT_SIZE.y, AP_LUT_SIZE.z),
-                           R16G16B16A16_SFLOAT, TEX_USAGE2(SRV,UAV), TEX_STATE(Undefined))
+                           R16G16B16A16_SFLOAT, TEX_USAGE2(SRV,UAV), TEX_STATE(ShaderReadWrite))
 
   CREATE_TEX_2D_EX(atm_envi_specular, TEX_SIZE2(ENVI_SPECULAR_LUT_SIZE),
-                  R16G16B16A16_SFLOAT, TEX_MIPS(get_envi_specular_mips()), TEX_USAGE2(RT,SRV), TEX_STATE(Undefined),
+                  R16G16B16A16_SFLOAT, TEX_MIPS(get_envi_specular_mips()), TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget),
                   TEX_PERSISTENT)
 
   CREATE_TEX_2D_PERSISTENT(atm_envi_brdf, TEX_SIZE2(ENVI_BRDF_SIZE),
-                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(Undefined))
+                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
 
   CREATE_BLOB(atm_envi_mips, int)
 

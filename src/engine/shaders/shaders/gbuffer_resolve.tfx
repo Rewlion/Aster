@@ -125,12 +125,13 @@ technique ResolveGbuffer {
       float3 sunL = getSunL() * NoL;
 
       float3 diffuseGI = indirectLight.Load(tc).rgb;
-      float3 diffusePart = diffuseBRDF(mat.diffuseColor, mat.specularReflection, VoH) * (sunL + dynamicLightsDiffuseNoBRDF);
+      //float3 diffusePart = diffuseBRDF(mat.diffuseColor, mat.specularReflection, VoH) * (sunL + dynamicLightsDiffuseNoBRDF);
+      float3 diffusePart = diffuseBRDF(mat.diffuseColor, mat.specularReflection, VoH) * (diffuseGI + dynamicLightsDiffuseNoBRDF);
       float3 specularPart = specularLight.Load(tc).rgb;
 
       float3 Lo = diffusePart + specularPart;
 
-      Lo = diffuseGI;
+      Lo = diffusePart;
       
       resolveTarget[tc.xy] = float4(Lo, 1.0);
     }

@@ -618,6 +618,68 @@ void cpos_cmd(eastl::span<string_view>)
   });
 }
 
+static
+void spawn_pg_test(eastl::span<string_view>)
+{
+  query_camera([](const float3& pos, const float2& rotation, const float3& forward)
+  {
+    const float3 spawnPos = pos + forward * 2.0f;
+    ecs::EntityComponents init;
+    init["pathguide_test_center"] = spawnPos;
+
+    ecs::get_registry().createEntity("pathguide_test", std::move(init));
+    return;
+  });
+}
+
+
+static
+float3 hemioct_to_float32x3(float2 e)
+{
+  // Rotate and scale the unit square back to the center diamond
+  float2 temp = float2(e.x + e.y, e.x - e.y) * 0.5f;
+  float3 v = float3(temp, 1.0 - abs(temp.x) - abs(temp.y));
+  return glm::normalize(v);
+}
+
+ECS_SYSTEM()
+void pg_test(
+  const float3& pathguide_test_center
+)
+{
+  static float nextTimeSpawnSec = 0;
+  static int i = 0;
+  const float tSec = Engine::Time::get_sec_since_start();
+
+  if (tSec < nextTimeSpawnSec)
+    return;
+
+  nextTimeSpawnSec = tSec + 0.1f;
+  
+  const uint x = 0;//i % 6;
+  const uint y = 0;//(i / 6) % 6;
+
+  float texelSize = 1.0 / 6.0;
+  float2 texelCenter = float2(texelSize, texelSize) * 0.5f;
+
+  float2 texelUV = texelCenter + texelSize * float2(x,y);
+  float2 perturbedUV = texelUV + glm::mix(-texelCenter, texelCenter, std::rand() / 32767.0);
+
+  float2 encodedRotation = perturbedUV * 2.0f - 1.0f;
+
+  const float2 uv = float2{
+    (float)x / 6.0f,
+    (float)y / 6.0f
+  };
+
+  float3 N = hemioct_to_float32x3(encodedRotation);
+  N = float3(N.x, N.z, N.y);
+
+  Engine::dbg::draw_line(pathguide_test_center, pathguide_test_center + N, float3(0,1,0), 0.2);
+
+  i = (i+1)%36;
+}
+
 CONSOLE_CMD("draw_line", 0, 0, draw_line_at_camera_pos);
 CONSOLE_CMD("draw_line_plane", 0, 0, draw_line_plane_at_camera_pos);
 CONSOLE_CMD("draw_plane", 0, 0, draw_plane_at_camera_pos);
@@ -635,3 +697,4 @@ CONSOLE_CMD("pawn", 0, 0, create_pawn);
 CONSOLE_CMD("bvh_test", 0, 0, spawn_bvh_test);
 CONSOLE_CMD("tlas_test", 0,0, spawn_tlas_test);
 CONSOLE_CMD("cpos", 0,0, cpos_cmd);
+CONSOLE_CMD("pg_test", 0,0, spawn_pg_test);

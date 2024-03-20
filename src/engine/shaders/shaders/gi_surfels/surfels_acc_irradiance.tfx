@@ -1,22 +1,28 @@
 #include <frame.inc.tfx>
 #include <atmosphere/sky.inc.tfx>
+#include <atmosphere/sph.inc.tfx>
+#include <atmosphere/atmosphere.inc.tfx>
 #include <math.inc.tfx>
 #include <noise.inc.tfx>
+#include <color_spaces.inc.tfx>
 
 scope GIBS_AccSurfelsIrradianceScope
 {
   reserve:
-    descriptor_set(1);
-    register(buffer, 0-1);
-    register(texture, 0);
+    descriptor_set(2);
+    register(buffer, 0-3);
+    register(texture, 0-1);
   
   #hlsl
   #include "surfel.hlsl"
   #end
 
   Texture2D skyLUT = extern(skyLUT);
+  StructuredBuffer<uint> surfelsLifeTime = extern(surfelsLifeTime);
+  RWTexture2D<float2> rayguidingMap = extern(rayguidingMap);
   RWStructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
   StructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
+  StructuredBuffer<float3> atmParamsBuffer = extern(atmParamsBuffer);
 };
 
 technique GIBS_AccSurfelsIrradiance
@@ -27,14 +33,23 @@ technique GIBS_AccSurfelsIrradiance
   USE_RT();
   USE_MATH();
 
+  #hlsl
+  #include <atmosphere/sph.hlsl>
+  #end
+
+  USE_ATM_SPH();
+  USE_ATMOSPHERE_PARAMS();
   USE_SKY_LUT_SAMPLING();
   USE_NOISE();
+  USE_COLOR_SPACES();
 
   #hlsl
   #include "consts.hlsl"
   #include "spatial_storage.hlsl"
   #include "bindless_material_ids.hlsl"
   #include "surfel_norm.hlsl"
+  #include "multiscale_mean_estimator.hlsl"
+  #include "rayguiding.hlsl"
 
   #include <math.hlsl>
 
@@ -61,7 +76,7 @@ technique GIBS_AccSurfelsIrradiance
       float dlSq = dot(dr,dr);
       bool isOutsideSurfel = dlSq > (surfel.radius*surfel.radius);
 
-      if (dot(surfel.normal, -rayDir) <= 0 || isOutsideSurfel)
+      if (isOutsideSurfel || dot(surfel.normal, -rayDir) < 0)
         return;
 
       surfelIrradiance = surfel.irradiance;
@@ -109,7 +124,7 @@ technique GIBS_AccSurfelsIrradiance
 
     float3 getResult()
     {
-      return irradiance / max(averageWeight, 1);
+      return irradiance / max(averageWeight, 0.001);
     }
 
     bool finish()
@@ -130,36 +145,30 @@ technique GIBS_AccSurfelsIrradiance
     return shareIrradiance.getResult();
   }
 
-  [numthreads(64,1,1)]
-  void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
+  void sampleSunDiskRadiance(float3 ray_pos, inout SurfelData surfel, RTAccelerationStructure rtas)
   {
-    uint surfelID = dispatch_thread_id.x;
-    if (surfelID >= SURFEL_COUNT_TOTAL)
-      return;
-
-    RTAccelerationStructure rtas = initRTAS();
-    ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
-
-    SurfelData surfel = surfelsStorage[surfelID];
-    
-    float3 random = random_pcg3d(uint3(surfelID,0, FrameScope.iFrame));
-    float dirPhi_ls = 2.0 * PI * random.x;
-    float dirTheta_ls = PI * random.y;
-    float3 dir_ls = sphericalToDecartian(dirTheta_ls, dirPhi_ls);
-
-    float3 rayDir = mul(dir_ls, tsToWs(surfel.normal));
-    float3 rayPos = surfel.pos + surfel.normal * 0.1;
-
-    TraceResult tRes = rtas.traceRay(rayPos, rayDir);
-    
-    float3 L = float3(0,0,0);
+    float3 lightDir = getAtmSunDir();
+    TraceResult tRes = rtas.traceRay(ray_pos, lightDir);
     if (tRes.t == TRACE_MISS)
-      L = sampleSkyLUT(rayDir);
+    {
+      float3 sunL = getSunL();
+      float NoL = dot(surfel.normal, lightDir);
+      MultiscaleMeanEstimator(sunL * NoL, surfel.estimatorData);
+    }
+  }
+
+  float3 traceHemisphereEnvironment(float3 ray_pos, float3 ray_dir, ROSpatialStorage st, RTAccelerationStructure rtas)
+  {
+    TraceResult tRes = rtas.traceRay(ray_pos, ray_dir);
+    
+    float3 Ri = float3(0,0,0);
+    if (tRes.t == TRACE_MISS)
+      Ri = sampleSkyLUT(ray_dir);
     else
     {
-      float3 intersectPoint = rayPos + rayDir * tRes.t;
+      float3 intersectPoint = ray_pos + ray_dir * tRes.t;
       FindNeighborSurfelIrradiance cb;
-      cb.init(surfel.normal,intersectPoint);
+      cb.init(ray_dir,intersectPoint);
       
       float3 cameraToWorldPos = intersectPoint - FrameScope.cameraPos;
       st.forEachSurfelInCell(intersectPoint, cameraToWorldPos, cb);
@@ -176,18 +185,73 @@ technique GIBS_AccSurfelsIrradiance
         float3 albedo = albedoTex.SampleLevel(modelSampler, uv, 0).rgb;
         float metalness = metalRoughnessTex.SampleLevel(modelSampler, uv, 0).r;
 
-        L = cb.surfelIrradiance * albedo * (1-metalness);
+        Ri = cb.surfelIrradiance * albedo * (1-metalness) / PI;
       }
     }
     
-    float3 neighborsIrradiance = accNeighborSurfelsIrradiance(surfel, surfelID, st, FrameScope.cameraPos);
+    return Ri;
+  }
 
-    uint n = surfel.irradianceHistory;
-    float3 irradiance = lerp(surfel.irradiance, L, 1.0 / (n+1));
-    irradiance = lerp(irradiance, neighborsIrradiance, 1.0 / (n+2));
+  uint rayguidedSampleEnvironment(RayGuiding rayguiding, float3 ray_pos, float3 surfel_normal, uint surfel_id,
+                                  ROSpatialStorage st, RTAccelerationStructure rtas, inout MultiscaleMeanEstimatorData estimator_data)
+  { 
+    const uint maxRayCounts = 36;
 
-    surfelsStorage[surfelID].irradiance = irradiance;
-    surfelsStorage[surfelID].irradianceHistory = n+2;
+    float3 irradiance = 0.xxx;
+
+    for (uint i = 0; i < maxRayCounts; ++i)
+    {
+      float3 random = random_pcg3d(uint3(surfel_id, i, FrameScope.iFrame));
+      
+      uint2 rayGuidingFeedbackTexel;
+      float rayGuidingProbability;
+      float3 dir_ls = rayguiding.guide(random, rayGuidingFeedbackTexel, rayGuidingProbability);
+  
+      float3 rayDir = mul(dir_ls, tsToWs(surfel_normal));
+      float NoWi = dot(rayDir, surfel_normal);
+
+      float incomingLuminance;
+      float3 Ri = traceHemisphereEnvironment(ray_pos, rayDir, st, rtas);
+
+      irradiance += Ri * NoWi / rayGuidingProbability;
+      float luminance = luminance_ub(Ri * NoWi);
+
+      rayguiding.feedbackLuminance(rayGuidingFeedbackTexel, luminance);
+    }
+
+    uint processedSamples = maxRayCounts;
+
+    irradiance = irradiance / processedSamples;
+    MultiscaleMeanEstimator(irradiance, estimator_data);
+
+    return processedSamples;
+  }
+
+  [numthreads(64,1,1)]
+  void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
+  {
+    uint surfelID = dispatch_thread_id.x;
+    if (surfelID >= SURFEL_COUNT_TOTAL)
+      return;
+
+    Lifetime lifetime = {surfelsLifeTime[surfelID]};
+    if (!lifetime.isAlive())
+      return;
+
+    RTAccelerationStructure rtas = initRTAS();
+    ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
+
+    SurfelData surfel = surfelsStorage[surfelID];
+    float3 rayPos = surfel.pos + surfel.normal * 0.1;
+    
+    sampleSunDiskRadiance(rayPos, surfel, rtas);
+
+    RayGuiding rayguiding;
+    rayguiding.init(rayguidingMap, surfel.rayguidingPmfScale, surfelID);
+    uint processedSamples = rayguidedSampleEnvironment(rayguiding, rayPos, surfel.normal, surfelID, st, rtas, surfel.estimatorData);
+
+    surfelsStorage[surfelID].estimatorData = surfel.estimatorData;
+    surfelsStorage[surfelID].rayguidingProcessedSamples = surfel.rayguidingProcessedSamples + processedSamples;
   }
   #end
 

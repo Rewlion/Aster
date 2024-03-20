@@ -23,5 +23,10 @@ technique_macro USE_COLOR_SPACES
   {
     return max(dot(rgb, float3(0.299, 0.587, 0.144)), 0.001);
   }
+
+  float luminance_ub(float3 rgb)
+  {
+    return dot(rgb, float3(0.299, 0.587, 0.144));
+  }
   #end
 };

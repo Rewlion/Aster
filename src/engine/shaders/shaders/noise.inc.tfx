@@ -10,5 +10,15 @@ technique_macro USE_NOISE {
     v.x += v.y*v.z; v.y += v.z*v.x; v.z += v.x*v.y;
     return uint3(v) * (1.0/float(0xffffffffu));
   }
+
+  //https://www.reedbeta.com/blog/hash-functions-for-gpu-rendering/
+  float random_pcg(uint input)
+  {
+    uint state = input * 747796405u + 2891336453u;
+    uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+    uint res = (word >> 22u) ^ word;
+
+    return res * (1.0/float(0xffffffffu));
+  }
   #end
 };

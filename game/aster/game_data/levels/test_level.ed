@@ -6,62 +6,91 @@ scene
   // GI_TEST
   /////////////////////////
 
+  //bot
   object
   {
-    pos:f3 = 200.0 , 599.0 , 0.0
-    scale:f3 = 15.0, 0.5, 15.0
+    pos:f3 = 200 , 600.0 , 0
+    scale:f3 = 40.0, 1.0, 40
+    model:t = "cube_white"
+  }
+
+  //top
+  object
+  {
+    pos:f3 = 200 , 630.0 , 0
+    scale:f3 = 40.0, 1.0, 40
+    model:t = "cube_white"
+  }
+
+  //fwd
+  object
+  {
+    pos:f3 = 200 , 600.0 , 40
+    scale:f3 = 40.0, 40.0, 1
+    model:t = "cube_white"
+  }
+
+  //left
+  object
+  {
+    pos:f3 = 160 , 600.0 , 0
+    scale:f3 = 1.0, 40.0, 40
+    model:t = "cube_white"
+  }
+
+  //right
+  object
+  {
+    pos:f3 = 240 , 600.0 , 0
+    scale:f3 = 1.0, 40.0, 40
+    model:t = "cube_white"
+  }
+
+  //back
+  object
+  {
+    pos:f3 = 200 , 600.0 , -40
+    scale:f3 = 40.0, 10.0, 1
     model:t = "cube_white"
   }
 
   object
   {
-    pos:f3 = 190.0 , 600.0 , 0.0
-    scale:f3 = 0.5, 15.0, 15
+    pos:f3 = 200 , 630.0 , -40
+    scale:f3 = 40.0, 10.0, 1
+    model:t = "cube_white"
+  }
+
+  //windows
+  object
+  {
+    pos:f3 = 200 , 615.0 , -40
+    //scale:f3 = 15.0, 10.0, 1
+    scale:f3 = 4.0, 1.0, 1
     model:t = "cube_white"
   }
 
   object
   {
-    pos:f3 = 194.0 , 600.0 , 0.0
-    scale:f3 = 1.5, 0.5, 7
+    pos:f3 = 160 , 615.0 , -40
+    scale:f3 = 15.0, 10.0, 1
+    model:t = "cube_white"
+  }
+
+  object
+  {
+    pos:f3 = 240 , 615.0 , -40
+    scale:f3 = 15.0, 10.0, 1
+    model:t = "cube_white"
+  }
+
+  object
+  {
+    pos:f3 = 180 , 602.0 , -10
+    scale:f3 = 7.0, 3.0, 5.0
     model:t = "cube_green"
   }
 
-  object
-  {
-    pos:f3 = 194.0 , 610.0 , 0.0
-    scale:f3 = 1.5, 3.0, 7
-    model:t = "cube_red"
-  }
-
-  object
-  {
-    pos:f3 = 192.0 , 613.0 , 0.0
-    scale:f3 = 2.0, 0.5, 7
-    model:t = "cube_red"
-  }
-
-  object
-  {
-    pos:f3 = 200.0 , 600.0 , 15.0
-    scale:f3 = 15.0, 15.0, 0.5
-    model:t = "cube_white"
-  }
-
-  object
-  {
-    pos:f3 = 200.0 , 600.0 , -15.0
-    scale:f3 = 15.0, 15.0, 0.5
-    model:t = "cube_white"
-  }
-
-  object
-  {
-    pos:f3 = 200.0 , 603.0 , 0.0
-    pos:f3 = 200.0 , 606.0 , 0.0
-    scale:f3 = 15.0, 0.5, 15.0
-    model:t = "cube_white"
-  }
 
   /////////////////////////
 

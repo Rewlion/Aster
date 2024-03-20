@@ -5,6 +5,7 @@ scope GIBS_TransformSurfelsScope
   reserve:
     descriptor_set(1);
     register(buffer, 0-1);
+    register(texture, 0);
 
   #hlsl
   #include "surfel.hlsl"
@@ -12,6 +13,7 @@ scope GIBS_TransformSurfelsScope
 
   StructuredBuffer<uint> surfelsLifeTime = extern(surfelsLifeTime);
   RWStructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
+  RWTexture2D<float2> rayguidingMap = extern(rayguidingMap);
 };
 
 
@@ -23,6 +25,7 @@ technique GIBS_TransformSurfels
   #hlsl
   #include "consts.hlsl"
   #include "lifetime.hlsl"
+  #include "rayguiding.hlsl"
   #include "spatial_hash.hlsl"
 
   [numthreads(64,1,1)]
@@ -33,8 +36,8 @@ technique GIBS_TransformSurfels
     if (id >= SURFEL_COUNT_TOTAL)
       return;
 
-    uint lifetime = surfelsLifeTime[id];
-    if (id == SURFEL_STATE_UNUSED)
+    Lifetime lifetime = {surfelsLifeTime[id]};
+    if (!lifetime.isAlive())
       return;
 
     SurfelData surfel = surfelsStorage[id];
@@ -54,6 +57,15 @@ technique GIBS_TransformSurfels
 
     if (newRadius != surfel.radius)
       surfelsStorage[id].radius = newRadius;
+
+    surfelsStorage[id].irradiance = surfel.estimatorData.mean;
+
+    [BRANCH]
+    if (surfelsStorage[id].rayguidingProcessedSamples >= RAYGUIDE_MAX_SAMPLES_PER_ITERATION)
+    {
+      surfelsStorage[id].rayguidingPmfScale = renormalizeRayguidingMap(rayguidingMap, id);
+      surfelsStorage[id].rayguidingProcessedSamples = 0;
+    }
   }
   #end
 

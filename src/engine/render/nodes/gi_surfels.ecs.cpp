@@ -136,6 +136,9 @@ NODE_BEGIN(gibs_resources)
   CREATE_TEX_2D             (gibs_surfels_allocation_pos, TEX_SIZE_RELATIVE(), R8_UINT,
                              TEX_USAGE2(SRV, UAV), TEX_STATE(ShaderReadWrite))
 
+  CREATE_TEX_2D_PERSISTENT  (gibs_rayguiding_map, TEX_SIZE(RAYGUIDE_TEX_DIM,RAYGUIDE_TEX_DIM,1), R32G32B32A32_S,
+                               TEX_USAGE2(SRV, UAV), TEX_STATE(ShaderReadWrite))
+
   EXEC(gibs_resources_init)
 NODE_END()
 
@@ -153,7 +156,8 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
                          const gapi::BufferHandler gibs_surfels_meta,
                          const gapi::BufferHandler gibs_nonlinear_aabbs,
                          const gapi::TextureHandle gibs_surfels_sdf,
-                         const gapi::TextureHandle gibs_surfels_allocation_pos)
+                         const gapi::TextureHandle gibs_surfels_allocation_pos,
+                         const gapi::TextureHandle gibs_rayguiding_map)
 {
   encoder.fillBuffer(gibs_surfels_allocation_locks, 0, CELLS_COUNT * sizeof(uint), 0);
   encoder.fillBuffer(gibs_surfels_spatial_storage, 0, CELLS_COUNT * SPATIAL_STORAGE_CELL_PAYLOAD * sizeof(uint), 0);
@@ -177,6 +181,9 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
   GIOnSurfels& state = get_state();
   if (!state.initialized || force_reset)
   {
+    encoder.clearColorTexture(gibs_rayguiding_map,
+      gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
+      
     {
       encoder.fillBuffer(gibs_surfels_storage, 0, SURFEL_COUNT_TOTAL * sizeof(SurfelData), 0);
       encoder.fillBuffer(gibs_surfels_lifetime, 0, SURFEL_COUNT_TOTAL * sizeof(uint), SURFEL_STATE_UNUSED);
@@ -323,6 +330,7 @@ NODE_BEGIN(gibs_allocate_surfels)
   BIND_BUF_RW_UAV_AS   (gibs_surfels_allocation_locks, surfelsAllocLocks)
   BIND_BUF_RW_UAV_AS   (gibs_surfels_meta_binned, surfelsMeta)
   BIND_TEX_SRV_AS      (gibs_surfels_allocation_pos, surfelsAllocPos)
+  BIND_TEX_RW_UAV_AS   (gibs_rayguiding_map, rayguidingMap)
 
   ORDER_ME_BEFORE(gbuffer_resolve)
 
@@ -354,8 +362,9 @@ void gibs_allocate_surfels(gapi::CmdEncoder& encoder, const uint2 render_size)
 
 NODE_BEGIN(gibs_transform_surfels)
   ORDER_ME_BEFORE(gibs_sync_out)
-  BIND_BUF_RW_UAV_AS(gibs_surfels_storage_binned, surfelsStorage)
-  BIND_BUF_SRV_AS   (gibs_surfels_lifetime, surfelsLifeTime)
+  BIND_BUF_RW_UAV_AS (gibs_surfels_storage_binned, surfelsStorage)
+  BIND_BUF_SRV_AS    (gibs_surfels_lifetime, surfelsLifeTime)
+  BIND_TEX_RW_UAV_AS (gibs_rayguiding_map, rayguidingMap)
 
   EXEC(gibs_transform_surfels)
 NODE_END()
@@ -378,7 +387,11 @@ NODE_BEGIN(gibs_surfels_irradiance)
   ORDER_ME_BEFORE(gibs_sync_out)
   BIND_BUF_RW_UAV_AS(gibs_surfels_storage_binned, surfelsStorage)
   BIND_BUF_SRV_AS   (gibs_surfels_spatial_storage_binned, surfelsSpatialStorage)
+  BIND_TEX_RW_UAV_AS(gibs_rayguiding_map, rayguidingMap)
   BIND_TEX_SRV_AS   (atm_sky_lut_srv, skyLUT)
+  BIND_BUF_SRV_AS   (gibs_surfels_lifetime, surfelsLifeTime)
+  BIND_BUF_SRV_AS   (sph_buf, atmParamsBuffer)
+
 
   EXEC(gibs_surfels_irradiance)
 NODE_END()
@@ -387,6 +400,7 @@ NODE_EXEC()
 static
 void gibs_surfels_irradiance(gapi::CmdEncoder& encoder)
 {
+  tfx::activate_scope("AtmosphereScope", encoder);
   tfx::activate_technique("GIBS_AccSurfelsIrradiance", encoder);
   encoder.updateResources();
   

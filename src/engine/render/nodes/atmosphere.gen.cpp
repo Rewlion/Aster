@@ -132,7 +132,7 @@ void mk_fg_node_atm_res_import(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::Undefined,
+      gapi::TextureState::RenderTarget,
       fg::PERSISTENT
     );
 
@@ -146,7 +146,7 @@ void mk_fg_node_atm_res_import(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::Undefined,
+      gapi::TextureState::RenderTarget,
       fg::PERSISTENT
     );
 
@@ -160,7 +160,7 @@ void mk_fg_node_atm_res_import(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::Undefined,
+      gapi::TextureState::RenderTarget,
       fg::PERSISTENT
     );
 
@@ -174,7 +174,7 @@ void mk_fg_node_atm_res_import(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_UAV)
       },
-      gapi::TextureState::Undefined,
+      gapi::TextureState::ShaderReadWrite,
       fg::PERSISTENT
     );
 
@@ -188,7 +188,7 @@ void mk_fg_node_atm_res_import(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::Undefined,
+      gapi::TextureState::RenderTarget,
       fg::PERSISTENT
     );
 
@@ -202,7 +202,7 @@ void mk_fg_node_atm_res_import(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::Undefined,
+      gapi::TextureState::RenderTarget,
       fg::PERSISTENT
     );
 

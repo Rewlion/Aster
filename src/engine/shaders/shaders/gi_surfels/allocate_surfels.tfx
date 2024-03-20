@@ -7,7 +7,7 @@ scope GIBS_AllocateSurfelsScope
   reserve:
     descriptor_set(1);
     register(buffer, 0-7);
-    register(texture, 0-4);
+    register(texture, 0-5);
 
   RWTexture2D<float4> dbgOutput = extern(dbgTex);
   Texture2D gbufferDepth = extern(gbuffer_depth);
@@ -24,6 +24,7 @@ scope GIBS_AllocateSurfelsScope
   RWStructuredBuffer<uint> surfelsPool = extern(surfelsPool);
   RWStructuredBuffer<uint> surfelsAllocLocks = extern(surfelsAllocLocks);
   RWStructuredBuffer<SurfelsMeta> surfelsMeta = extern(surfelsMeta);
+  RWTexture2D<float2> rayguidingMap = extern(rayguidingMap);
 };
 
 technique GIBS_AllocateSurfels
@@ -38,6 +39,7 @@ technique GIBS_AllocateSurfels
   #include "lifetime.hlsl"
   #include "spatial_hash.hlsl"
   #include "surfel_pool.hlsl"
+  #include "rayguiding.hlsl"
 
   struct SpatialLock
   {
@@ -99,6 +101,8 @@ technique GIBS_AllocateSurfels
         float r = calcSurfelRadius(spatialInfo.cellSize);
         SurfelData surfel;
         surfel.init(worldPos, r, N);
+
+        initializeRayguidingMap(rayguidingMap, surfelId);
 
         surfelsStorage[surfelId] = surfel;
         

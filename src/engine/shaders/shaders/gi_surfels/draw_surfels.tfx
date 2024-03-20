@@ -89,6 +89,36 @@ technique GIBS_DrawSurfels
     }
   };
 
+  struct ShowEstimator
+  {
+    bool found;
+    float3 irradiance;
+    float3 wpos;
+
+    void init(float3 world_pos)
+    {
+      wpos = world_pos;
+      found = false;
+      irradiance = float3(0,0,0);
+    }
+
+    void onSurfel(uint surfel_id)
+    {
+      SurfelData surfel = surfelsStorage[surfel_id];
+      float dl = length(surfel.pos - wpos);
+      if (dl - surfel.radius <= 0)
+      {
+        irradiance = surfel.estimatorData.inconsistency.xxx;
+        found = true;
+      }
+    }
+
+    bool finish()
+    {
+      return found;
+    }
+  };
+
   float4 ps_main(VsOutput input) : SV_Target0
   {
     uint3 tc = uint3(input.pos.xy, 0);
@@ -133,6 +163,7 @@ technique GIBS_DrawSurfels
       color = st.drawCells(worldPos, cameraToWorldPos);
     else if (GIBS_DrawSurfelsScope.showIrradiance)
     {
+      //ShowEstimator ic; ic.init(worldPos);
       IrradianceCollector ic; ic.init(worldPos);
       st.forEachSurfelInCell(worldPos, cameraToWorldPos, ic);
       color = float4(tonemap(ic.irradiance), 1.0);

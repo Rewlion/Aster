@@ -170,9 +170,23 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
     );
 
 
-    return [gibs_dbg_rt,gibs_dbg_alloc,gibs_dbg_surfels,gibs_surfels_lifetime,gibs_surfels_storage,gibs_surfels_pool,gibs_surfels_allocation_locks,gibs_surfels_spatial_storage,gibs_surfels_meta,gibs_nonlinear_aabbs,gibs_surfels_sdf,gibs_surfels_allocation_pos](gapi::CmdEncoder& encoder)
+    auto gibs_rayguiding_map = reg.createTexture("gibs_rayguiding_map",
+      gapi::TextureAllocationDescription{
+        .format =          gapi::TextureFormat::R32G32B32A32_S,
+        .extent =          uint3(4096, 4096, 1),
+        .mipLevels =       1,
+        .arrayLayers =     1,
+        .samplesPerPixel = gapi::TextureSamples::s1,
+        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_UAV)
+      },
+      gapi::TextureState::ShaderReadWrite,
+      fg::PERSISTENT
+    );
+
+
+    return [gibs_dbg_rt,gibs_dbg_alloc,gibs_dbg_surfels,gibs_surfels_lifetime,gibs_surfels_storage,gibs_surfels_pool,gibs_surfels_allocation_locks,gibs_surfels_spatial_storage,gibs_surfels_meta,gibs_nonlinear_aabbs,gibs_surfels_sdf,gibs_surfels_allocation_pos,gibs_rayguiding_map](gapi::CmdEncoder& encoder)
     {
-      gibs_resources_init(encoder, gibs_dbg_rt.get(), gibs_dbg_alloc.get(), gibs_dbg_surfels.get(), gibs_surfels_lifetime.get(), gibs_surfels_storage.get(), gibs_surfels_pool.get(), gibs_surfels_allocation_locks.get(), gibs_surfels_spatial_storage.get(), gibs_surfels_meta.get(), gibs_nonlinear_aabbs.get(), gibs_surfels_sdf.get(), gibs_surfels_allocation_pos.get());
+      gibs_resources_init(encoder, gibs_dbg_rt.get(), gibs_dbg_alloc.get(), gibs_dbg_surfels.get(), gibs_surfels_lifetime.get(), gibs_surfels_storage.get(), gibs_surfels_pool.get(), gibs_surfels_allocation_locks.get(), gibs_surfels_spatial_storage.get(), gibs_surfels_meta.get(), gibs_nonlinear_aabbs.get(), gibs_surfels_sdf.get(), gibs_surfels_allocation_pos.get(), gibs_rayguiding_map.get());
     };
   });
 }
@@ -372,9 +386,10 @@ void mk_fg_node_gibs_allocate_surfels(Event*, ComponentsAccessor&)
     auto gibs_surfels_allocation_locks = reg.modifyBuffer("gibs_surfels_allocation_locks", gapi::BufferState::BF_STATE_UAV_RW);
     auto gibs_surfels_meta_binned = reg.modifyBuffer("gibs_surfels_meta_binned", gapi::BufferState::BF_STATE_UAV_RW);
     auto gibs_surfels_allocation_pos = reg.readTexture("gibs_surfels_allocation_pos", gapi::TextureState::ShaderRead, false);
+    auto gibs_rayguiding_map = reg.modifyTexture("gibs_rayguiding_map", gapi::TextureState::ShaderReadWrite);
     reg.orderMeBefore("gbuffer_resolve");
 
-    return [gibs_dbg_alloc,gbuf1,late_opaque_depth,gibs_surfels_lifetime,gibs_surfels_storage_binned,gibs_surfels_pool_binned,gibs_surfels_allocation_locks,gibs_surfels_meta_binned,gibs_surfels_allocation_pos,render_size](gapi::CmdEncoder& encoder)
+    return [gibs_dbg_alloc,gbuf1,late_opaque_depth,gibs_surfels_lifetime,gibs_surfels_storage_binned,gibs_surfels_pool_binned,gibs_surfels_allocation_locks,gibs_surfels_meta_binned,gibs_surfels_allocation_pos,gibs_rayguiding_map,render_size](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("dbgTex", gibs_dbg_alloc.get());
       tfx::set_extern("gbuffer_normal", gbuf1.get());
@@ -385,6 +400,7 @@ void mk_fg_node_gibs_allocate_surfels(Event*, ComponentsAccessor&)
       tfx::set_extern("surfelsAllocLocks", gibs_surfels_allocation_locks.get());
       tfx::set_extern("surfelsMeta", gibs_surfels_meta_binned.get());
       tfx::set_extern("surfelsAllocPos", gibs_surfels_allocation_pos.get());
+      tfx::set_extern("rayguidingMap", gibs_rayguiding_map.get());
       gibs_allocate_surfels(encoder, render_size.get());
     };
   });
@@ -409,11 +425,13 @@ void mk_fg_node_gibs_transform_surfels(Event*, ComponentsAccessor&)
     reg.orderMeBefore("gibs_sync_out");
     auto gibs_surfels_storage_binned = reg.modifyBuffer("gibs_surfels_storage_binned", gapi::BufferState::BF_STATE_UAV_RW);
     auto gibs_surfels_lifetime = reg.readBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_SRV, false);
+    auto gibs_rayguiding_map = reg.modifyTexture("gibs_rayguiding_map", gapi::TextureState::ShaderReadWrite);
 
-    return [gibs_surfels_storage_binned,gibs_surfels_lifetime](gapi::CmdEncoder& encoder)
+    return [gibs_surfels_storage_binned,gibs_surfels_lifetime,gibs_rayguiding_map](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("surfelsStorage", gibs_surfels_storage_binned.get());
       tfx::set_extern("surfelsLifeTime", gibs_surfels_lifetime.get());
+      tfx::set_extern("rayguidingMap", gibs_rayguiding_map.get());
       gibs_transform_surfels(encoder);
     };
   });
@@ -438,13 +456,19 @@ void mk_fg_node_gibs_surfels_irradiance(Event*, ComponentsAccessor&)
     reg.orderMeBefore("gibs_sync_out");
     auto gibs_surfels_storage_binned = reg.modifyBuffer("gibs_surfels_storage_binned", gapi::BufferState::BF_STATE_UAV_RW);
     auto gibs_surfels_spatial_storage_binned = reg.readBuffer("gibs_surfels_spatial_storage_binned", gapi::BufferState::BF_STATE_SRV, false);
+    auto gibs_rayguiding_map = reg.modifyTexture("gibs_rayguiding_map", gapi::TextureState::ShaderReadWrite);
     auto atm_sky_lut_srv = reg.readTexture("atm_sky_lut_srv", gapi::TextureState::ShaderRead, false);
+    auto gibs_surfels_lifetime = reg.readBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_SRV, false);
+    auto sph_buf = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_SRV, false);
 
-    return [gibs_surfels_storage_binned,gibs_surfels_spatial_storage_binned,atm_sky_lut_srv](gapi::CmdEncoder& encoder)
+    return [gibs_surfels_storage_binned,gibs_surfels_spatial_storage_binned,gibs_rayguiding_map,atm_sky_lut_srv,gibs_surfels_lifetime,sph_buf](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("surfelsStorage", gibs_surfels_storage_binned.get());
       tfx::set_extern("surfelsSpatialStorage", gibs_surfels_spatial_storage_binned.get());
+      tfx::set_extern("rayguidingMap", gibs_rayguiding_map.get());
       tfx::set_extern("skyLUT", atm_sky_lut_srv.get());
+      tfx::set_extern("surfelsLifeTime", gibs_surfels_lifetime.get());
+      tfx::set_extern("atmParamsBuffer", sph_buf.get());
       gibs_surfels_irradiance(encoder);
     };
   });

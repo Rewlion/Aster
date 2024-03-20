@@ -82,3 +82,9 @@ template @("name: TLAS_test")
   tlas_test_forward:f3 = 0,0,1
   tlas_test_flag:b = yes
 }
+
+template @("name: pathguide_test")
+{
+  pathguide_test_center:f3 = 0,0,0
+  pathguide_test_flag:b = yes
+}

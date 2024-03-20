@@ -131,4 +131,11 @@ GI
    Global Illumination based on Surfels
  - https://www.youtube.com/watch?v=h1ocYFrtsM4&ab_channel=SEED%E2%80%93ElectronicArts
  - https://www.youtube.com/watch?v=MyTOGHqyquU&t=1629s&ab_channel=DigitalDragons
+ - https://media.contentapi.ea.com/content/dam/ea/seed/presentations/2019-ray-tracing-gems-chapter-25-barre-brisebois-et-al.pdf
    
+
+MISC:
+   A Survey of Efficient Representations for Independent Unit Vectors
+ - https://jcgt.org/published/0003/02/01/paper.pdf
+   Hash Functions for GPU Rendering, Jarzynski et al.
+ - http://www.jcgt.org/published/0009/03/02/

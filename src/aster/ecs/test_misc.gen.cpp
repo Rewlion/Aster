@@ -334,3 +334,19 @@ static SystemRegistration render_tlas_test_registration(
   },
   "render_tlas_test"
 );
+
+
+static void pg_test_internal(ComponentsAccessor& accessor)
+{
+  const float3& pathguide_test_center = accessor.get<float3>(compile_ecs_name_hash("pathguide_test_center"));
+  pg_test(pathguide_test_center);
+}
+
+
+static SystemRegistration pg_test_registration(
+  pg_test_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("pathguide_test_center", float3)
+  },
+  "pg_test"
+);

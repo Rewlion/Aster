@@ -7,6 +7,12 @@
 #define CELLS_DIMS_F                      float3(CELLS_DIM, CELLS_DIM, CELLS_DIM)
 #define CELL_SIZE                         1.0
 
+#define RAYGUIDE_CELL_DIM 6
+#define RAYGUIDE_CELL_COUNT (RAYGUIDE_CELL_DIM*RAYGUIDE_CELL_DIM)
+#define RAYGUIDE_TEX_DIM 4096
+#define RAYGUIDE_TEX_SURFEL_DIM 500 // <= TEX_DIM / CELL_DIM
+#define RAYGUIDE_MAX_SAMPLES_PER_ITERATION 128
+
 #define SURFEL_COUNT_TOTAL                (250 * 1024)
 #define SURFEL_COUNT_PER_CELL             127
 #define SURFEL_RADIUS                     0.15
