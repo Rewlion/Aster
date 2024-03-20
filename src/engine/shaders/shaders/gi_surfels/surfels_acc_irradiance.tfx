@@ -197,6 +197,8 @@ technique GIBS_AccSurfelsIrradiance
   { 
     float3 irradiance = 0.xxx;
 
+    uint usefulRays = 0;
+
     for (uint i = 0; i < rayBudget; ++i)
     {
       float3 random = random_pcg3d(uint3(surfel_id, i, FrameScope.iFrame));
@@ -214,12 +216,16 @@ technique GIBS_AccSurfelsIrradiance
       irradiance += Ri * NoWi / rayGuidingProbability;
       float luminance = luminance_ub(Ri * NoWi);
 
-      rayguiding.feedbackLuminance(rayGuidingFeedbackTexel, luminance);
+      if (luminance > 0)
+      {
+        rayguiding.feedbackLuminance(rayGuidingFeedbackTexel, luminance);
+        usefulRays += 1;
+      }
     }
 
     uint processedSamples = rayBudget;
 
-    irradiance = irradiance / processedSamples;
+    irradiance = irradiance / max(usefulRays, 1);
     MultiscaleMeanEstimator(irradiance, estimator_data);
 
     return processedSamples;
