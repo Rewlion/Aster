@@ -33,6 +33,7 @@ namespace fg
     placeBlobs();
     flushResources();
     execNodes();
+    updatePersistentResourceStates();
     ++m_iFrame;
   }
 
@@ -416,6 +417,11 @@ namespace fg
     }
 
     encoder->flush();
+  }
+
+  void Manager::updatePersistentResourceStates()
+  {
+    m_PersistentResourceStorage.updateTexturesStateFrom(getStorage());
   }
 
   auto Manager::getResourceId(const virt_res_id_t virt_res_id)  -> res_id_t

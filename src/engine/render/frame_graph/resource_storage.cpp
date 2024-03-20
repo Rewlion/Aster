@@ -225,6 +225,21 @@ namespace fg
         savedInfo = res_info;
       }
     }
+  }
 
+  void PersistentResourceStorage::updateTexturesStateFrom(const ResourceStorage& from)
+  {
+    const res_id_t resourcesCount = (res_id_t)m_Storage.m_Resources.size();
+    for (res_id_t i{0}; i < resourcesCount; ++i)
+    {
+      if (auto* persistentTex = std::get_if<ResourceStorage::TextureResource>(&m_Storage.m_Resources.get(i)))
+      {
+        const auto& updatedTex = std::get<ResourceStorage::TextureResource>(from.m_Resources.get(i));
+        persistentTex->texture = gapi::TextureViewWithState {
+          (gapi::TextureHandle)persistentTex->texture,
+          updatedTex.texture.getState()
+        };
+      }
+    }
   }
 }

@@ -76,6 +76,7 @@ namespace fg
     public:
       void importResTo(const res_id_t, ResourceStorage&);
       void create(const res_id_t, const Registry::Resource&);
+      void updateTexturesStateFrom(const ResourceStorage&);
       void reset() { m_Storage.reset(); }
     private:
 

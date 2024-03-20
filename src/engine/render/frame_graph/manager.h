@@ -41,6 +41,7 @@ namespace fg
       void placeBlobs();
       void flushResources();
       void execNodes();
+      void updatePersistentResourceStates();
 
     private:
       enum class State
