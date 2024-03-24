@@ -65,8 +65,8 @@ scene
   object
   {
     pos:f3 = 200 , 615.0 , -40
-    //scale:f3 = 15.0, 10.0, 1
-    scale:f3 = 4.0, 1.0, 1
+    scale:f3 = 15.0, 10.0, 1
+    //scale:f3 = 4.0, 1.0, 1
     model:t = "cube_white"
   }
 

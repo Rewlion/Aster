@@ -157,13 +157,18 @@ technique GIBS_AccSurfelsIrradiance
     }
   }
 
-  float3 traceHemisphereEnvironment(float3 ray_pos, float3 ray_dir, ROSpatialStorage st, RTAccelerationStructure rtas)
+  float3 traceHemisphereEnvironment(float3 ray_pos, float3 ray_dir, ROSpatialStorage st, RTAccelerationStructure rtas, out bool useful_ray)
   {
     TraceResult tRes = rtas.traceRay(ray_pos, ray_dir);
     
+    useful_ray = false;
     float3 Ri = float3(0,0,0);
+
     if (tRes.t == TRACE_MISS)
+    {
       Ri = sampleSkyLUT(ray_dir);
+      useful_ray = true;
+    }
     else
     {
       float3 intersectPoint = ray_pos + ray_dir * tRes.t;
@@ -186,6 +191,7 @@ technique GIBS_AccSurfelsIrradiance
         float metalness = metalRoughnessTex.SampleLevel(modelSampler, uv, 0).r;
 
         Ri = cb.surfelIrradiance * albedo * (1-metalness) / PI;
+        useful_ray = true;
       }
     }
     
@@ -211,12 +217,13 @@ technique GIBS_AccSurfelsIrradiance
       float NoWi = dot(rayDir, surfel_normal);
 
       float incomingLuminance;
-      float3 Ri = traceHemisphereEnvironment(ray_pos, rayDir, st, rtas);
+      bool isUsefulRay;
+      float3 Ri = traceHemisphereEnvironment(ray_pos, rayDir, st, rtas, isUsefulRay);
 
       irradiance += Ri * NoWi / rayGuidingProbability;
       float luminance = luminance_ub(Ri * NoWi);
 
-      if (luminance > 0)
+      if (isUsefulRay)
       {
         rayguiding.feedbackLuminance(rayGuidingFeedbackTexel, luminance);
         usefulRays += 1;
