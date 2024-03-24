@@ -132,7 +132,10 @@ GI
  - https://www.youtube.com/watch?v=h1ocYFrtsM4&ab_channel=SEED%E2%80%93ElectronicArts
  - https://www.youtube.com/watch?v=MyTOGHqyquU&t=1629s&ab_channel=DigitalDragons
  - https://media.contentapi.ea.com/content/dam/ea/seed/presentations/2019-ray-tracing-gems-chapter-25-barre-brisebois-et-al.pdf
-   
+
+RESTIR
+ - https://research.nvidia.com/publication/2020-07_spatiotemporal-reservoir-resampling-real-time-ray-tracing-dynamic-direct
+ - https://agraphicsguynotes.com/posts/understanding_the_math_behind_restir_di/
 
 MISC:
    A Survey of Efficient Representations for Independent Unit Vectors
