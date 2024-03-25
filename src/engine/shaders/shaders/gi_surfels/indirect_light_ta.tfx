@@ -1,0 +1,109 @@
+#include <frame.inc.tfx>
+#include <materials.inc.tfx>
+#include <depth.inc.tfx>
+#include <color_spaces.inc.tfx>
+
+scope GIBS_IndirectLightTemporalAccumulationScope
+{
+  reserve:
+    descriptor_set(1);
+    register(texture, 0-9);
+
+  RWTexture2D<float4> taOutput = extern(taOutput);
+  Texture2D taHistory = extern(taHistory);
+  Texture2D inputIrradiance = extern(inputIrradiance);
+  RWTexture2D<float> varianceOutput = extern(varianceOutput);
+  Texture2D varianceHistory = extern(varianceHistory);
+
+  Texture2D motionBuf = extern(motionBuf);
+  Texture2D gbufferNormal = extern(gbuffer_normal);
+  Texture2D gbufferNormal_prev = extern(gbuffer_normal_prev);
+  Texture2D gbufferDepth = extern(gbuffer_depth);
+  Texture2D gbufferDepth_prev = extern(gbuffer_depth_prev);
+};
+
+technique GIBS_IndirectLightTemporalAccumulation
+{
+  support scope FrameScope;
+  activate scope GIBS_IndirectLightTemporalAccumulationScope;
+
+  USE_FRAME_HELPERS();
+  USE_MATERIALS_MOTION_VEC_UNPACK();
+  USE_MATERIALS_NORMAL_UNPACK();
+  USE_DEPTH_UTILS();
+  USE_COLOR_SPACES();
+
+  #hlsl
+
+  // float planeDistance(float3 wpos, float3 wpos_history, float3 plane_normal)
+  // {
+  //   float3 dl = wpos - wpos_history;
+  //   return abs(dot(dl, plane_normal));
+  // }
+
+  bool isHistoryValid(uint3 tc, int2 history_tc_reprojected, float depth, uint2 render_size)
+  {
+    if (any(history_tc_reprojected < 0.xx) || any(history_tc_reprojected >= render_size))
+      return false;
+
+    float3 normal = unpackNormal(gbufferNormal.Load(tc).rgb);
+    float3 normalHistory = 0.xxx;
+
+    uint3 historyTC = uint3(history_tc_reprojected, 0);
+    float depthHistory = gbufferDepth_prev.Load(historyTC).r;
+
+    if (depthHistory != 0.0)
+      normalHistory = unpackNormal(gbufferNormal_prev.Load(historyTC).rgb);
+
+    const bool passedDepthDisocclusion = abs(depthHistory - depth) < 0.001;
+    const bool passedNormalDisocclusion = dot(normal, normalHistory) > 0.99;
+
+    return passedDepthDisocclusion && passedNormalDisocclusion;
+  }
+
+  float calcVariance(float3 radiance, float3 history_radiance)
+  {
+    float curLuminance = luminance(radiance);
+    float historyLuminance = luminance(history_radiance);
+    float diff = abs(historyLuminance - curLuminance) / max(max(historyLuminance, curLuminance), 0.5);
+    return diff * diff;
+  }
+
+  [numthreads(8,8,1)]
+  void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
+  {
+    uint2 renderSize;
+    taOutput.GetDimensions(renderSize.x, renderSize.y);
+
+    if (any(dispatch_thread_id.xy >= renderSize))
+      return;
+
+    uint3 tc = uint3(dispatch_thread_id.xy, 0);
+
+    float depth = gbufferDepth.Load(tc).r;
+    if (depth == 0.0)
+    {
+      taOutput[tc.xy] = 0.xxxx;
+      return;
+    }
+
+    int2 historyTCReprojected = reprojectFrameTC(tc, renderSize);
+    float3 historyIrradiance = taHistory.Load(uint3(historyTCReprojected, 0)).rgb;
+    float3 irradiance = inputIrradiance.Load(tc).rgb;
+
+    bool useHistory = isHistoryValid(tc, historyTCReprojected, depth, renderSize);
+    float w = useHistory ? 0.2 : 1.0;
+
+    float Var = calcVariance(irradiance, historyIrradiance);
+    float historyVar = varianceHistory.Load(tc).r;
+    float resVariance = useHistory ? lerp(historyVar, Var, 0.2) : 1.0;
+    
+    float4 resColor = float4(lerp(historyIrradiance, irradiance, w), 1);
+
+    taOutput[tc.xy] = resColor;
+    varianceOutput[tc.xy] = resVariance;
+  }
+  #end
+
+  compile(cs, cs_main);
+};

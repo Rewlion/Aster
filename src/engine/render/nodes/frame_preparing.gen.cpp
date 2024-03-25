@@ -8,6 +8,35 @@
 
 using namespace ecs;
 
+const static DirectQueryRegistration query_render_prev_far_plane_points_queryReg{
+  {
+    DESCRIBE_QUERY_COMPONENT("render_prev_lt_view_ws", float3),
+    DESCRIBE_QUERY_COMPONENT("render_prev_rt_view_ws", float3),
+    DESCRIBE_QUERY_COMPONENT("render_prev_lb_view_ws", float3),
+    DESCRIBE_QUERY_COMPONENT("render_prev_rb_view_ws", float3)
+  },
+  "query_render_prev_far_plane_points"};
+const static query_id_t query_render_prev_far_plane_points_queryId = query_render_prev_far_plane_points_queryReg.getId();
+
+
+void query_render_prev_far_plane_points (eastl::function<
+  void(
+    float3& render_prev_lt_view_ws,
+    float3& render_prev_rt_view_ws,
+    float3& render_prev_lb_view_ws,
+    float3& render_prev_rb_view_ws)> cb)
+{
+  ecs::get_registry().query(query_render_prev_far_plane_points_queryId, [&](ComponentsAccessor& accessor)
+  {
+    float3& render_prev_lt_view_ws = accessor.get<float3>(compile_ecs_name_hash("render_prev_lt_view_ws"));
+    float3& render_prev_rt_view_ws = accessor.get<float3>(compile_ecs_name_hash("render_prev_rt_view_ws"));
+    float3& render_prev_lb_view_ws = accessor.get<float3>(compile_ecs_name_hash("render_prev_lb_view_ws"));
+    float3& render_prev_rb_view_ws = accessor.get<float3>(compile_ecs_name_hash("render_prev_rb_view_ws"));
+    cb(render_prev_lt_view_ws,render_prev_rt_view_ws,render_prev_lb_view_ws,render_prev_rb_view_ws);
+  });
+}
+
+
 //Engine::OnFrameGraphInit handler
 static
 void mk_fg_node_backbuffer_acquiring(Event*, ComponentsAccessor&)

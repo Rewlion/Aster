@@ -10,6 +10,11 @@ template @("name: CoreRender") {
   //TAA
   render_prev_view_proj:m4 = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
   render_prev_jitter:f2 = 0, 0
+  
+  render_prev_lt_view_ws:f3 = 0,0,0
+  render_prev_rt_view_ws:f3 = 0,0,0
+  render_prev_lb_view_ws:f3 = 0,0,0
+  render_prev_rb_view_ws:f3 = 0,0,0
 }
 
 template @("name: CoreRenderDebug; extends: CoreRender") {

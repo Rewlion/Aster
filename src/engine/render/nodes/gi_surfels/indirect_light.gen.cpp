@@ -10,9 +10,9 @@ using namespace ecs;
 
 //Engine::OnFrameGraphInit handler
 static
-void mk_fg_node_gibs_indirect_light(Event*, ComponentsAccessor&)
+void mk_fg_node_gibs_trace_indirect_light(Event*, ComponentsAccessor&)
 {
-  fg::register_node("gibs_indirect_light", FG_FILE_DECL, [](fg::Registry& reg)
+  fg::register_node("gibs_trace_indirect_light", FG_FILE_DECL, [](fg::Registry& reg)
   { 
     const uint2 __renderSize__ = reg.getRenderSize();
 
@@ -20,7 +20,7 @@ void mk_fg_node_gibs_indirect_light(Event*, ComponentsAccessor&)
     auto gibs_surfels_storage_srv = reg.renameBuffer("gibs_surfels_storage_binned", "gibs_surfels_storage_srv", gapi::BufferState::BF_STATE_SRV);
     auto gibs_surfels_spatial_storage_srv = reg.renameBuffer("gibs_surfels_spatial_storage_binned", "gibs_surfels_spatial_storage_srv", gapi::BufferState::BF_STATE_SRV);
 
-    auto indirect_light = reg.createTexture("indirect_light",
+    auto gibs_indirect_light_sample = reg.createTexture("gibs_indirect_light_sample",
       gapi::TextureAllocationDescription{
         .format =          gapi::TextureFormat::R32G32B32A32_S,
         .extent =          uint3(__renderSize__, 1),
@@ -36,24 +36,26 @@ void mk_fg_node_gibs_indirect_light(Event*, ComponentsAccessor&)
     fg::dsl::AccessDecorator render_size{__renderSize__};
     auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
     auto late_opaque_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
+    auto atm_sky_lut_srv = reg.readTexture("atm_sky_lut_srv", gapi::TextureState::ShaderRead, false);
 
-    return [indirect_light,gibs_surfels_storage_srv,gibs_surfels_spatial_storage_srv,gbuf1,late_opaque_depth,render_size](gapi::CmdEncoder& encoder)
+    return [gibs_indirect_light_sample,gibs_surfels_storage_srv,gibs_surfels_spatial_storage_srv,gbuf1,late_opaque_depth,atm_sky_lut_srv,render_size](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("gibsIndirectLight", indirect_light.get());
+      tfx::set_extern("outputTex", gibs_indirect_light_sample.get());
       tfx::set_extern("surfelsStorage", gibs_surfels_storage_srv.get());
       tfx::set_extern("surfelsSpatialStorage", gibs_surfels_spatial_storage_srv.get());
       tfx::set_extern("gbuffer_normal", gbuf1.get());
       tfx::set_extern("gbuffer_depth", late_opaque_depth.get());
+      tfx::set_extern("skyLUT", atm_sky_lut_srv.get());
       gibs_indirect_light(encoder, render_size.get());
     };
   });
 }
 
 static
-EventSystemRegistration mk_fg_node_gibs_indirect_light_registration(
-  mk_fg_node_gibs_indirect_light,
+EventSystemRegistration mk_fg_node_gibs_trace_indirect_light_registration(
+  mk_fg_node_gibs_trace_indirect_light,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
   },
-  "mk_fg_node_gibs_indirect_light"
+  "mk_fg_node_gibs_trace_indirect_light"
 );

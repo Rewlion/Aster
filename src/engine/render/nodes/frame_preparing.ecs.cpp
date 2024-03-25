@@ -13,6 +13,35 @@
 
 #include <engine/shaders/shaders/atmosphere/sph.hlsl>
 
+ECS_DESCRIBE_QUERY(query_render_prev_far_plane_points,
+                    (float3& render_prev_lt_view_ws,
+                    float3& render_prev_rt_view_ws,
+                    float3& render_prev_lb_view_ws,
+                    float3& render_prev_rb_view_ws));
+
+auto get_prev_far_plane_points() -> math::FarPlanePoints
+{
+  math::FarPlanePoints res;
+  query_render_prev_far_plane_points([&](float3& lt, float3& rt, float3& lb, float3& rb){
+    res.leftTop = lt;
+    res.rightTop = rt;
+    res.leftBot = lb;
+    res.rightBot = rb;
+  });
+
+  return res;
+}
+
+void set_prev_far_plane_points(const math::FarPlanePoints& points)
+{
+  query_render_prev_far_plane_points([&](float3& lt, float3& rt, float3& lb, float3& rb){
+    lt = points.leftTop;
+    rt = points.rightTop;
+    lb = points.leftBot;
+    rb = points.rightBot;
+  });
+}
+
 
 static
 auto import_backbuffer() -> fg::TextureImport
@@ -121,6 +150,9 @@ void frame_preparing_exec(gapi::CmdEncoder& encoder,
     math::get_far_plane_points_world_space(camera_data.proj, viewRot);
   const math::FarPlanePoints fpViewVS =
     math::get_far_plane_points_view_space(camera_data.proj);
+  
+  const math::FarPlanePoints prevFpViewWS = get_prev_far_plane_points();
+  set_prev_far_plane_points(fpViewWS);
 
   const Engine::Scene::GpuRTAccelerationStructure& rtas = Engine::scene.getRTAS();
   tfx::set_extern("RT_tlasInstances",       (gapi::BufferHandler)rtas.tlas.instances);
@@ -148,6 +180,10 @@ void frame_preparing_exec(gapi::CmdEncoder& encoder,
   tfx::set_extern("rtView_WS", float3(fpViewWS.rightTop));
   tfx::set_extern("lbView_WS", float3(fpViewWS.leftBot));
   tfx::set_extern("rbView_WS", float3(fpViewWS.rightBot));
+  tfx::set_extern("ltView_prev_WS", float3(prevFpViewWS.leftTop));
+  tfx::set_extern("rtView_prev_WS", float3(prevFpViewWS.rightTop));
+  tfx::set_extern("lbView_prev_WS", float3(prevFpViewWS.leftBot));
+  tfx::set_extern("rbView_prev_WS", float3(prevFpViewWS.rightBot));
   tfx::set_extern("ltView_VS", float3(fpViewVS.leftTop));
   tfx::set_extern("rtView_VS", float3(fpViewVS.rightTop));
   tfx::set_extern("lbView_VS", float3(fpViewVS.leftBot));

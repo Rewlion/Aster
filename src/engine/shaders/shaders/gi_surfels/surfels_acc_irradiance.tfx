@@ -264,7 +264,7 @@ technique GIBS_AccSurfelsIrradiance
 
     for (uint i = 0; i < rayBudget; ++i)
     {
-      float3 random = random_pcg3d(uint3(surfel_id, i, FrameScope.iFrame));
+      float3 random = random_pcg3d(uint3(surfel_id % 64, i, FrameScope.iFrame));
       
       uint2 rayGuidingFeedbackTexel;
       float rayGuidingProbability;

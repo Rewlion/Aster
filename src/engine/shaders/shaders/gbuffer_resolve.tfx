@@ -131,7 +131,7 @@ technique ResolveGbuffer {
 
       float3 Lo = diffusePart + specularPart;
 
-      Lo = diffusePart;
+      Lo = diffuseGI;//diffusePart;
       
       resolveTarget[tc.xy] = float4(Lo, 1.0);
     }

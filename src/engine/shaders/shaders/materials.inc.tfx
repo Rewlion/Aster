@@ -69,6 +69,18 @@ technique_macro USE_MATERIALS_PACKING
   #end
 };
 
+technique_macro USE_MATERIALS_MOTION_VEC_UNPACK
+{
+  #hlsl
+  int2 reprojectFrameTC(uint3 tc, uint2 render_size)
+  {
+    float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
+    int2 motionTC = int2(motionVec * render_size);
+    return int2(tc.xy) - motionTC;
+  }
+  #end
+};
+
 technique_macro USE_MATERIALS_NORMAL_UNPACK
 {
   #hlsl

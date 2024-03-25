@@ -40,6 +40,10 @@ scope FrameScope {
   float3 rtView_WS = extern(rtView_WS);
   float3 lbView_WS = extern(lbView_WS);
   float3 rbView_WS = extern(rbView_WS);
+  float3 ltView_prev_WS = extern(ltView_prev_WS);
+  float3 rtView_prev_WS = extern(rtView_prev_WS);
+  float3 lbView_prev_WS = extern(lbView_prev_WS);
+  float3 rbView_prev_WS = extern(rbView_prev_WS);
   //same for view space
   float3 ltView_VS = extern(ltView_VS);
   float3 rtView_VS = extern(rtView_VS);
@@ -55,6 +59,8 @@ scope FrameScope {
 
 technique_macro USE_RT {
   #hlsl
+  #include "bindless_material_ids.hlsl"
+
   RTAccelerationStructure initRTAS()
   {
     RTAccelerationStructure rtas;
@@ -85,5 +91,27 @@ technique_macro USE_FRAME_HELPERS {
       return float2(window_coords.x, FrameScope.viewPortSize.y - window_coords.y)
               / FrameScope.viewPortSize * 2.0 - 1.0;
     }
+
+    float3 getFarPlanePointImpl(float3 lt_view_ws, float3 rt_view_ws, float3 lb_view_ws, uint2 tc, uint2 render_size)
+    {
+      float3 leftRight = rt_view_ws - lt_view_ws;
+      float3 topBot = lb_view_ws - lt_view_ws;
+
+      float2 t = float2(tc.xy) / float2(render_size - uint2(1, 1));
+      float3 farPlainPoint = lt_view_ws + leftRight * t.x + topBot * t.y;
+
+      return farPlainPoint;
+    }
+
+    float3 getFarPlanePoint(uint2 tc, uint2 render_size)
+    {
+      return getFarPlanePointImpl(FrameScope.ltView_WS, FrameScope.rtView_WS, FrameScope.lbView_WS, tc, render_size );
+    }
+
+    float3 getPrevFrameFarPlanePoint(uint2 tc, uint2 render_size)
+    {
+      return getFarPlanePointImpl(FrameScope.ltView_prev_WS, FrameScope.rtView_prev_WS, FrameScope.lbView_prev_WS, tc, render_size );
+    }
+
   #end
 };

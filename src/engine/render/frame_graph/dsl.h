@@ -490,6 +490,7 @@ namespace fg::dsl
 
 #define READ_PREV_FRAME_TEX_SRV(name) READ_PREV_FRAME_TEX(name, TEX_STATE(ShaderRead))
 #define READ_PREV_FRAME_TEX_SRV_AS(name, as) READ_PREV_FRAME_TEX_AS(name, as, TEX_STATE(ShaderRead))
+#define READ_PREV_FRAME_RO_DEPTH_AS(name, as) READ_PREV_FRAME_TEX_AS(name, as, TEX_STATE(DepthReadStencilRead))
 
 #define RENAME_TEX_RT(from, to) RENAME_TEX(from, to, TEX_STATE(RenderTarget))
 #define RENAME_TEX_RO_DEPTH(from, to) RENAME_TEX(from, to, TEX_STATE(DepthReadStencilRead))
@@ -508,6 +509,7 @@ namespace fg::dsl
 #define BIND_OPTIONAL_TEX_SRV_AS(res_name, as_var_name) BIND_RES_AS(READ_OPTIONAL_TEX_SRV_AS, res_name, as_var_name)
 
 #define BIND_PREV_FRAME_TEX_SRV_AS(res_name, as_var_name) BIND_RES_AS(READ_PREV_FRAME_TEX_SRV_AS, res_name, as_var_name)
+#define BIND_PREV_FRAME_RO_DEPTH_AS(res_name, as_var_name) BIND_RES_AS(READ_PREV_FRAME_RO_DEPTH_AS, res_name, as_var_name)
 
 
 #define EXEC(func) fg::dsl::ExecFunction<fg::dsl::Name<#func>> NAME_WITH_LINE(execFunc);

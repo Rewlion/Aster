@@ -126,6 +126,8 @@ Denoise / Filters
    Fast Denoising with Self Stabilizing Recurrent Blurs
  - https://www.uni-ulm.de/fileadmin/website_uni_ulm/iui.inst.100/institut/Papers/atrousGIfilter.pdf
    Edge-Avoiding À-Trous Wavelet Transform for fast Global Illumination Filtering
+ - https://research.nvidia.com/publication/2017-07_spatiotemporal-variance-guided-filtering-real-time-reconstruction-path-traced
+   SVGF
 
 GI
    Global Illumination based on Surfels

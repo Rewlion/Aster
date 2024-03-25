@@ -123,7 +123,7 @@ NODE_BEGIN(gbuffer_resolve)
 
   BIND_BUF_SRV_AS(sph_buf, atmParamsBuffer)
 
-  BIND_TEX_SRV_AS(indirect_light, indirectLight)
+  BIND_TEX_SRV_AS(gibs_indirect_light_srv, indirectLight)
   BIND_TEX_SRV_AS(specular_light, specularLight)
 
   EXEC(gbuffer_resolve_exec)
