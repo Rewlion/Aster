@@ -1,0 +1,10 @@
+extern bool gibs_enable_surfels_transform;
+extern bool gibs_force_reset;
+extern bool gibs_freeze_allocation;
+extern bool gibs_show_cells;
+extern bool gibs_show_cells_coverage;
+extern bool gibs_show_surfels;
+extern bool gibs_show_surfels_coverage;
+extern bool gibs_show_surfels_irradiance;
+extern bool gibs_show_surfels_sdf;
+extern bool gibs_slow_allocation;

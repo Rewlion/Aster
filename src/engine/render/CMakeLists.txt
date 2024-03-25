@@ -50,6 +50,9 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/virtual_texture/vtile_lru.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/world_render.cpp"
 
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/dbg_wnd.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/gi_state.cpp"
+
   ECS_FILES
     "${CMAKE_SOURCE_DIR}/src/engine/render/clustered_lights.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/show_tex.ecs.cpp"
@@ -61,7 +64,6 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/dbg_text.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/decals.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/frame_preparing.ecs.cpp"
-    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/hi_z.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/opaque.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/post_process.ecs.cpp"
@@ -70,6 +72,17 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/taa.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/ui.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/virtual_terrain.ecs.cpp"
+
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/dbg_draw_surfels.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/indirect_light.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/resources.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/spatial_storage_binning.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/surfels_acc_irradiance.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/surfels_allocate.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/surfels_find_alloc_pos.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/surfels_recycle.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/surfels_transform.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/sync_nodes.ecs.cpp"
 )
 
 set(FONT_SRC
