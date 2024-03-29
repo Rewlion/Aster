@@ -30,6 +30,14 @@ scene
     model:t = "cube_white"
   }
 
+  object
+  {
+    pos:f3 = 200 , 600.0 , 30
+    scale:f3 = 10.0, 40.0, 1
+    model:t = "cube_white"
+  }
+
+
   //left
   object
   {

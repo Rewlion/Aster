@@ -76,7 +76,6 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/dbg_draw_surfels.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/indirect_light.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/indirect_light_spatial_filter.ecs.cpp"
-    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/indirect_light_ta.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/resources.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/spatial_storage_binning.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/surfels_acc_irradiance.ecs.cpp"

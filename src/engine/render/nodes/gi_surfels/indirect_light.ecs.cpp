@@ -25,9 +25,9 @@ static
 void gibs_indirect_light(gapi::CmdEncoder& encoder,
                         const uint2& render_size)
 {
-  tfx::activate_technique("GIBS_TraceIndirectLight", encoder);
+  tfx::activate_technique("GIBS_IndirectLight", encoder);
   encoder.updateResources();
 
-  const uint3 gc = tfx::calc_group_count("GIBS_TraceIndirectLight", uint3{render_size, 1});
+  const uint3 gc = tfx::calc_group_count("GIBS_IndirectLight", uint3{render_size, 1});
   encoder.dispatch(gc.x, gc.y, gc.z);
 }

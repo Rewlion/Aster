@@ -92,7 +92,7 @@ technique GIBS_IndirectLightTemporalAccumulation
     float3 irradiance = inputIrradiance.Load(tc).rgb;
 
     bool useHistory = isHistoryValid(tc, historyTCReprojected, depth, renderSize);
-    float w = useHistory ? 0.2 : 1.0;
+    float w = useHistory ? 1.0 : 1.0;
 
     float Var = calcVariance(irradiance, historyIrradiance);
     float historyVar = varianceHistory.Load(tc).r;

@@ -141,6 +141,7 @@ void frame_preparing_exec(gapi::CmdEncoder& encoder,
 
   auto prevViewProjTm = Engine::Render::get_prev_view_proj();
   auto viewProjTm = camera_data.proj * camera_data.view;
+  auto invViewProjTm = glm::inverse(viewProjTm);
   Engine::Render::set_prev_view_proj(viewProjTm);
   
   float4x4 viewRot = camera_data.view;
@@ -172,6 +173,7 @@ void frame_preparing_exec(gapi::CmdEncoder& encoder,
   tfx::set_extern("cameraJitter", cameraJitter);
   tfx::set_extern("prev_view_proj", prevViewProjTm);
   tfx::set_extern("view_proj", viewProjTm);
+  tfx::set_extern("inv_view_proj", invViewProjTm);
   tfx::set_extern("view", camera_data.view);
   tfx::set_extern("proj", camera_data.proj);
   tfx::set_extern("camera_pos", camera_data.pos);

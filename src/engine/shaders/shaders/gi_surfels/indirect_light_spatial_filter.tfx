@@ -1,5 +1,7 @@
 #include <materials.inc.tfx>
 #include <color_spaces.inc.tfx>
+#include <depth.inc.tfx>
+#include <frame.inc.tfx>
 
 scope GIBS_IndirectLightSpatialFilterScope
 {
@@ -13,17 +15,19 @@ scope GIBS_IndirectLightSpatialFilterScope
   Texture2D filterInput = extern(filterInput);
   RWTexture2D<float4> filterOutput = extern(filterOutput);
 
-  Texture2D variance = extern(variance);
   Texture2D gbufferNormal = extern(gbuffer_normal);
   Texture2D gbufferDepth = extern(gbuffer_depth);
 };
 
 technique GIBS_IndirectLightSpatialFilter
 {
+  support scope FrameScope;
   activate scope GIBS_IndirectLightSpatialFilterScope;
 
   USE_MATERIALS_NORMAL_UNPACK();
   USE_COLOR_SPACES();
+  USE_DEPTH_UTILS();
+  USE_FRAME_HELPERS();
 
   #hlsl
 
@@ -33,30 +37,21 @@ technique GIBS_IndirectLightSpatialFilter
     return pow(max(0, dot(normal, sample_normal) ), sigma);
   }
 
-  float SVGF_depthWeight(float depth, float sample_depth, float2 depth_grad, float2 offset)
+  float planeDistance(float3 wpos, float3 sample_wpos, float3 plane_normal)
   {
-    int sigma = 1;
-    float eps = 0.005;
+    return abs(dot(wpos - sample_wpos, plane_normal));
+  }
 
-    return exp( - ( abs(sample_depth - depth) ) / (sigma * abs(dot(depth_grad, offset)) + eps) );
+  float SVGF_depthWeight(float3 wpos, float3 sample_wpos, float3 normal)
+  {
+    return planeDistance(wpos, sample_wpos, normal) < 0.01 ? 1.0 : 0.0;
   }
 
   float SVGF_luminanceWeight(float luminance, float sample_luminance, float Var)
   {
     float eps = 0.005;
     float sigma = 4.0;
-    return exp(- (sample_luminance - luminance) / (sigma * Var + eps));
-  }
-
-  float2 calcDepthGrad(float depth, uint3 tc, uint2 render_size)
-  {
-    int3 rightTC = int3(clamp(int2(tc.xy) + int2(1,0), 0.xx, render_size - 1.xx), 0);
-    int3 topTC   = int3(clamp(int2(tc.xy) + int2(0,1), 0.xx, render_size - 1.xx), 0);
-
-    float rightDepth = gbufferDepth.Load(rightTC).r;
-    float topDepth = gbufferDepth.Load(topTC).r;
-
-    return float2(rightDepth - depth, topDepth - depth);
+    return exp(- abs(sample_luminance - luminance) / (sigma * Var + eps));
   }
 
   [numthreads(8,8,1)]
@@ -71,33 +66,44 @@ technique GIBS_IndirectLightSpatialFilter
 
     float depth = gbufferDepth.Load(tc).r;
     if (depth == 0.0)
+    {
+      filterOutput[tc.xy] = 0.xxxx;
       return;
+    }
 
-    float2 depthGrad = calcDepthGrad(depth, tc, renderSize);
+    float3 farPlanePoint = getFarPlanePoint(tc.xy, renderSize);
+    float3 wpos = calcWorldPosITM(tc.xy, renderSize, depth);
     float3 normal = unpackMaterialNormal(tc);
     float3 color = filterInput.Load(tc).rgb;
     float pLuminance = luminance(color);
-    float Var = variance.Load(tc).r;
+    float Var = 1.0;//variance.Load(tc).r;
 
     float h[3] = {3.0/8.0, 1.0/4.0, 1.0/16.0};
 
-    float3 resColor = 0.0.xxx;
-    float wSum = 0.0;
+    float3 resColor = color * h[0];
+    float wSum = h[0];
 
-    for (int x = -1; x <= 1; ++x)
-      for (int y = -1; y <= 1; ++y)
+    for (int y = -2; y <= 2; ++y)
+      for (int x = -2; x <= 2; ++x)
       {
-        float h_i = h[abs(x) + abs(y)];
+        if (x == 0 && y == 0)
+          continue;
+
+        float h_i = h[abs(x)]*h[abs(y)];
         int2 tcOffset = int2(x,y) * GIBS_IndirectLightSpatialFilterScope.stepSize;
-        uint3 sampleTC = uint3(clamp(tc.xy + tcOffset, 0.xx, renderSize - 1.xx), 0);
+        uint3 sampleTC = uint3(tc.xy + tcOffset, 0);
+
+        if (any(sampleTC.xy < 0) || any(sampleTC.xy >= renderSize))
+          continue;
 
         float3 sampleNormal = unpackMaterialNormal(sampleTC).rgb;
         float sampleDepth = gbufferDepth.Load(sampleTC).r;
+        float3 sampleWpos = calcWorldPosITM(sampleTC.xy, renderSize, sampleDepth);
         float3 sampleColor = filterInput.Load(sampleTC).rgb;
         float sampleLuminance = luminance(sampleColor);
 
         float w_normal = SVGF_normalWeight(normal, sampleNormal);
-        float w_depth = SVGF_depthWeight(depth, sampleDepth, depthGrad, tcOffset);
+        float w_depth = SVGF_depthWeight(wpos, sampleWpos, normal);
         float w_luminance = SVGF_luminanceWeight(pLuminance, sampleLuminance, Var);
 
         float w_i = w_normal * w_depth * w_luminance * h_i;

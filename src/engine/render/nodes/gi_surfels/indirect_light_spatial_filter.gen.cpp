@@ -10,46 +10,9 @@ using namespace ecs;
 
 //Engine::OnFrameGraphInit handler
 static
-void mk_fg_node_gibs_indirect_light_sfilter_first_pass(Event*, ComponentsAccessor&)
+void mk_fg_node_gibs_indirect_light_sfilter(Event*, ComponentsAccessor&)
 {
-  fg::register_node("gibs_indirect_light_sfilter_first_pass", FG_FILE_DECL, [](fg::Registry& reg)
-  { 
-    const uint2 __renderSize__ = reg.getRenderSize();
-
-    auto gibs_indirect_light_sfilter_feedback = reg.renameTexture("gibs_indirect_light_ta_history", "gibs_indirect_light_sfilter_feedback", gapi::TextureState::ShaderReadWrite);
-    fg::dsl::AccessDecorator render_size{__renderSize__};
-    auto gibs_indirect_light_ta_target = reg.readTexture("gibs_indirect_light_ta_target", gapi::TextureState::ShaderRead, false);
-    auto gibs_indirect_light_variance = reg.readTexture("gibs_indirect_light_variance", gapi::TextureState::ShaderRead, false);
-    auto late_opaque_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
-    auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
-
-    return [gibs_indirect_light_ta_target,gibs_indirect_light_sfilter_feedback,gibs_indirect_light_variance,late_opaque_depth,gbuf1,render_size](gapi::CmdEncoder& encoder)
-    {
-      tfx::set_extern("filterInput", gibs_indirect_light_ta_target.get());
-      tfx::set_extern("filterOutput", gibs_indirect_light_sfilter_feedback.get());
-      tfx::set_extern("variance", gibs_indirect_light_variance.get());
-      tfx::set_extern("gbuffer_depth", late_opaque_depth.get());
-      tfx::set_extern("gbuffer_normal", gbuf1.get());
-      gibs_indirect_light_sfilter_first_pass(encoder, render_size.get());
-    };
-  });
-}
-
-static
-EventSystemRegistration mk_fg_node_gibs_indirect_light_sfilter_first_pass_registration(
-  mk_fg_node_gibs_indirect_light_sfilter_first_pass,
-  compile_ecs_name_hash("OnFrameGraphInit"),
-  {
-  },
-  "mk_fg_node_gibs_indirect_light_sfilter_first_pass"
-);
-
-
-//Engine::OnFrameGraphInit handler
-static
-void mk_fg_node_gibs_indirect_light_sfilter_rest_passes(Event*, ComponentsAccessor&)
-{
-  fg::register_node("gibs_indirect_light_sfilter_rest_passes", FG_FILE_DECL, [](fg::Registry& reg)
+  fg::register_node("gibs_indirect_light_sfilter", FG_FILE_DECL, [](fg::Registry& reg)
   { 
     const uint2 __renderSize__ = reg.getRenderSize();
 
@@ -82,28 +45,26 @@ void mk_fg_node_gibs_indirect_light_sfilter_rest_passes(Event*, ComponentsAccess
     );
 
     fg::dsl::AccessDecorator render_size{__renderSize__};
-    auto gibs_indirect_light_sfilter_feedback = reg.readTexture("gibs_indirect_light_sfilter_feedback", gapi::TextureState::ShaderRead, false);
-    auto gibs_indirect_light_variance = reg.readTexture("gibs_indirect_light_variance", gapi::TextureState::ShaderRead, false);
+    auto gibs_indirect_light_sample = reg.readTexture("gibs_indirect_light_sample", gapi::TextureState::ShaderRead, false);
     auto late_opaque_depth = reg.readTexture("late_opaque_depth", gapi::TextureState::DepthReadStencilRead, false);
     auto gbuf1 = reg.readTexture("gbuf1", gapi::TextureState::ShaderRead, false);
 
-    return [gibs_indirect_light_variance,late_opaque_depth,gbuf1,render_size,gibs_indirect_light_sfilter_tex_one,gibs_indirect_light_sfilter_tex_two,gibs_indirect_light_sfilter_feedback](gapi::CmdEncoder& encoder)
+    return [late_opaque_depth,gbuf1,render_size,gibs_indirect_light_sfilter_tex_one,gibs_indirect_light_sfilter_tex_two,gibs_indirect_light_sample](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("variance", gibs_indirect_light_variance.get());
       tfx::set_extern("gbuffer_depth", late_opaque_depth.get());
       tfx::set_extern("gbuffer_normal", gbuf1.get());
-      gibs_indirect_light_sfilter_rest_passes(encoder, render_size.get(), gibs_indirect_light_sfilter_tex_one.get(), gibs_indirect_light_sfilter_tex_two.get(), gibs_indirect_light_sfilter_feedback.get());
+      gibs_indirect_light_sfilter(encoder, render_size.get(), gibs_indirect_light_sfilter_tex_one.get(), gibs_indirect_light_sfilter_tex_two.get(), gibs_indirect_light_sample.get());
     };
   });
 }
 
 static
-EventSystemRegistration mk_fg_node_gibs_indirect_light_sfilter_rest_passes_registration(
-  mk_fg_node_gibs_indirect_light_sfilter_rest_passes,
+EventSystemRegistration mk_fg_node_gibs_indirect_light_sfilter_registration(
+  mk_fg_node_gibs_indirect_light_sfilter,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
   },
-  "mk_fg_node_gibs_indirect_light_sfilter_rest_passes"
+  "mk_fg_node_gibs_indirect_light_sfilter"
 );
 
 
@@ -113,7 +74,7 @@ void mk_fg_node_gibs_indirect_light_end(Event*, ComponentsAccessor&)
 {
   fg::register_node("gibs_indirect_light_end", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto gibs_indirect_light_srv = reg.renameTexture("gibs_indirect_light_sfilter_tex_one", "gibs_indirect_light_srv", gapi::TextureState::ShaderRead);
+    auto gibs_indirect_light_srv = reg.renameTexture("gibs_indirect_light_sfilter_tex_two", "gibs_indirect_light_srv", gapi::TextureState::ShaderRead);
     return [](gapi::CmdEncoder&){};
   });
 }

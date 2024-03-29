@@ -19,16 +19,17 @@ NODE_EXEC()
 static
 void gibs_surfels_irradiance(gapi::CmdEncoder& encoder)
 {
-  {
-    tfx::activate_scope("AtmosphereScope", encoder);
-    tfx::activate_technique("GIBS_AccSunIrradiance", encoder);
-    encoder.updateResources();
+  tfx::activate_scope("AtmosphereScope", encoder);
+  // {
+  //   tfx::activate_scope("AtmosphereScope", encoder);
+  //   tfx::activate_technique("GIBS_AccSunIrradiance", encoder);
+  //   encoder.updateResources();
   
-    const uint3 ds = tfx::calc_group_count("GIBS_AccSunIrradiance", uint3(SURFEL_COUNT_TOTAL, 1, 1));
-    encoder.dispatch(ds.x, ds.y, ds.z);
-  }
+  //   const uint3 ds = tfx::calc_group_count("GIBS_AccSunIrradiance", uint3(SURFEL_COUNT_TOTAL, 1, 1));
+  //   encoder.dispatch(ds.x, ds.y, ds.z);
+  // }
 
-  encoder.insertGlobalBufferBarrier(gapi::BufferState::BF_STATE_UAV_RW, gapi::BufferState::BF_STATE_UAV_RW);
+  // encoder.insertGlobalBufferBarrier(gapi::BufferState::BF_STATE_UAV_RW, gapi::BufferState::BF_STATE_UAV_RW);
 
   {
     tfx::activate_technique("GIBS_AccSurfelsIrradiance", encoder);

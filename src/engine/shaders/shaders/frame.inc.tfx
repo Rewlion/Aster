@@ -31,6 +31,7 @@ scope FrameScope {
   float2 cameraJitter = extern(cameraJitter);
   float4x4 prevViewProj = extern(prev_view_proj);
   float4x4 viewProj = extern(view_proj);
+  float4x4 invViewProj = extern(inv_view_proj);
   float4x4 view = extern(view);
   float4x4 proj = extern(proj);
   float3 cameraPos = extern(camera_pos);
@@ -113,5 +114,13 @@ technique_macro USE_FRAME_HELPERS {
       return getFarPlanePointImpl(FrameScope.ltView_prev_WS, FrameScope.rtView_prev_WS, FrameScope.lbView_prev_WS, tc, render_size );
     }
 
+    float3 calcWorldPosITM(uint2 tc, uint2 render_size, float depth)
+    {
+      float2 uv = float2(tc.xy) / render_size;
+      uv.y = 1.0 - uv.y;
+      uv = uv * 2.0 - 1.0;
+      float4 wpos = mul(FrameScope.invViewProj, float4(uv, depth, 1.0));
+      return wpos.xyz / wpos.w;
+    }
   #end
 };

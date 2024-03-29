@@ -5,6 +5,7 @@
 #include <math.inc.tfx>
 #include <noise.inc.tfx>
 #include <color_spaces.inc.tfx>
+#include <materials.inc.tfx>
 
 scope GIBS_AccSunIrradianceScope
 {
@@ -86,7 +87,7 @@ scope GIBS_AccSurfelsIrradianceScope
 {
   reserve:
     descriptor_set(2);
-    register(buffer, 0-2);
+    register(buffer, 0-3);
     register(texture, 0-1);
   
   #hlsl
@@ -98,6 +99,7 @@ scope GIBS_AccSurfelsIrradianceScope
   RWTexture2D<float2> rayguidingMap = extern(rayguidingMap);
   RWStructuredBuffer<SurfelData> surfelsStorage = extern(surfelsStorage);
   StructuredBuffer<uint> surfelsSpatialStorage = extern(surfelsSpatialStorage);
+  StructuredBuffer<float3> atmParamsBuffer = extern(atmParamsBuffer);
 };
 
 technique GIBS_AccSurfelsIrradiance
@@ -111,6 +113,12 @@ technique GIBS_AccSurfelsIrradiance
   USE_SKY_LUT_SAMPLING();
   USE_NOISE();
   USE_COLOR_SPACES();
+
+  #hlsl
+  #include <atmosphere/sph.hlsl>
+  #end
+  USE_ATM_SPH();
+  USE_ATMOSPHERE_PARAMS();
 
   #hlsl
   #include "consts.hlsl"
@@ -214,6 +222,21 @@ technique GIBS_AccSurfelsIrradiance
     return shareIrradiance.getResult();
   }
 
+  float3 traceSun(float3 ray_pos, float3 normal, RTAccelerationStructure rtas)
+  {
+    float3 lightDir = getAtmSunDir();
+    TraceResult tRes = rtas.traceRay(ray_pos + normal * 0.2, lightDir);
+
+    if (tRes.t == TRACE_MISS)
+    {
+      float3 sunL = getSunL();
+      float NoL = dot(normal, lightDir);
+      return sunL * NoL;
+    }
+
+    return 0.xxx;
+  }
+
   float3 traceHemisphereEnvironment(float3 ray_pos, float3 ray_dir, ROSpatialStorage st, RTAccelerationStructure rtas, out bool useful_ray)
   {
     TraceResult tRes = rtas.traceRay(ray_pos, ray_dir);
@@ -228,7 +251,24 @@ technique GIBS_AccSurfelsIrradiance
     }
     else
     {
+      uint bindlessPackId = tlasInstanceToBindlessPackId[tRes.instanceID] * BINDLESS_MATERIAL_TEX_COUNT;
+      uint albedoId = bindlessPackId + BINDLESS_MATERIAL_ALBEDO_TEX;
+      uint normalId = bindlessPackId + BINDLESS_MATERIAL_NORMAL_TEX;
+      uint metalRoughnessId = bindlessPackId + BINDLESS_MATERIAL_METAL_ROUGHNESS_TEX;
+      Texture2D albedoTex = bindlessModelTextures[NonUniformResourceIndex(albedoId)];
+      Texture2D metalRoughnessTex = bindlessModelTextures[NonUniformResourceIndex(metalRoughnessId)];
+      Texture2D normalTex = bindlessModelTextures[NonUniformResourceIndex(normalId)];
+
+      float2 uv = tRes.payload[0].uv * tRes.uvw[0] + tRes.payload[1].uv * tRes.uvw[1] + tRes.payload[2].uv * tRes.uvw[2];
+      float3 albedo = albedoTex.SampleLevel(modelSampler, uv, 0).rgb;
+      float3 normal = normalTex.SampleLevel(modelSampler, uv, 0).rgb / 0.5f - 1.0f;
+      float metalness = metalRoughnessTex.SampleLevel(modelSampler, uv, 0).r;
+
+      float3 irradiance = 0.xxx;
       float3 intersectPoint = ray_pos + ray_dir * tRes.t;
+
+      irradiance += traceSun(intersectPoint, normal, rtas);
+
       FindNeighborSurfelIrradiance cb;
       cb.init(ray_dir,intersectPoint);
       
@@ -236,20 +276,10 @@ technique GIBS_AccSurfelsIrradiance
       st.forEachSurfelInCell(intersectPoint, cameraToWorldPos, cb);
 
       if (cb.found)
-      {
-        uint bindlessPackId = tlasInstanceToBindlessPackId[tRes.instanceID] * BINDLESS_MATERIAL_TEX_COUNT;
-        uint albedoId = bindlessPackId + BINDLESS_MATERIAL_ALBEDO_TEX;
-        uint metalRoughnessId = bindlessPackId + BINDLESS_MATERIAL_METAL_ROUGHNESS_TEX;
-        Texture2D albedoTex = bindlessModelTextures[NonUniformResourceIndex(albedoId)];
-        Texture2D metalRoughnessTex = bindlessModelTextures[NonUniformResourceIndex(metalRoughnessId)];
-
-        float2 uv = tRes.payload[0].uv * tRes.uvw[0] + tRes.payload[1].uv * tRes.uvw[1] + tRes.payload[2].uv * tRes.uvw[2];
-        float3 albedo = albedoTex.SampleLevel(modelSampler, uv, 0).rgb;
-        float metalness = metalRoughnessTex.SampleLevel(modelSampler, uv, 0).r;
-
-        Ri = cb.surfelIrradiance * albedo * (1-metalness) / PI;
-        useful_ray = true;
-      }
+        irradiance += cb.surfelIrradiance;
+      
+      Ri = irradiance * albedo * (1-metalness) / PI;
+      useful_ray = all(irradiance != 0.xxx);
     }
     
     return Ri;
@@ -313,7 +343,7 @@ technique GIBS_AccSurfelsIrradiance
     if (surfel.rayBudget == 0)
       return;
 
-    float3 rayPos = surfel.pos + surfel.normal * 0.1;
+    float3 rayPos = surfel.pos + surfel.normal * 0.2;
     
     RayGuiding rayguiding;
     rayguiding.init(rayguidingMap, surfel.rayguidingPmfScale, surfelID);
