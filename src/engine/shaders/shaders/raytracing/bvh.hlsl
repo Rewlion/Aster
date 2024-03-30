@@ -30,6 +30,7 @@ struct TraceResult
   uint instanceID;
   float t;
   float3 uvw;
+  float3 normal;
   float4x4 objectToWorldTm;
   float4x4 worldToObjectTm;
 

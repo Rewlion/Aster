@@ -39,6 +39,8 @@ struct BLAS
       res.payload[0] = vp0;
       res.payload[1] = vp1;
       res.payload[2] = vp2;
+
+      res.normal = normalize(cross(v1-v0, v2-v0));
     }
 
     return res;
