@@ -59,7 +59,7 @@ technique GIBS_TransformSurfels
     if (newRadius != surfel.radius)
       surfelsStorage[id].radius = newRadius;
 
-    surfelsStorage[id].irradiance = surfel.estimatorData.mean;
+    surfelsStorage[id].irradiance = surfel.estimatorData.meanIrradiance;
 
     int rayBudget;
     int rayRequest = lerp(1, SURFEL_MAX_RAYS, surfel.estimatorData.inconsistency);

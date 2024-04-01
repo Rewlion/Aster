@@ -34,6 +34,7 @@ technique GIBS_AllocateSurfels
 
   USE_DEPTH_UTILS();
   USE_MATERIALS_NORMAL_UNPACK();
+  USE_FRAME_HELPERS();
 
   #hlsl
   #include "lifetime.hlsl"
@@ -83,7 +84,7 @@ technique GIBS_AllocateSurfels
     float2 t = float2(tc.xy) / float2(renderSize - uint2(1, 1));
     float3 farPlainPoint = FrameScope.ltView_WS + leftRight * t.x + topBot * t.y;
 
-    float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
+    float3 worldPos = calcWorldPosITM(tc.xy, renderSize, depth);//calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
     float3 cameraToWorldPos = worldPos - FrameScope.cameraPos;
     
     SpatialInfo spatialInfo = calcSpatialInfo(cameraToWorldPos, FrameScope.zNear_zFar.x);

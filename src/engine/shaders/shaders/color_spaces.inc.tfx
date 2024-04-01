@@ -1,6 +1,9 @@
 technique_macro USE_COLOR_SPACES
 {
   #hlsl
+  #ifndef COLOR_SPACES_HLSL
+  #define COLOR_SPACES_HLSL
+
   float3 RGB2YCbCR(float3 rgb)
   {
     float3 res;
@@ -28,5 +31,6 @@ technique_macro USE_COLOR_SPACES
   {
     return dot(rgb, float3(0.299, 0.587, 0.144));
   }
+  #endif
   #end
 };
