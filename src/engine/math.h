@@ -27,6 +27,15 @@ namespace math
     );
   }
 
+  inline
+  float3 altitudeAzimuthToDecartian(float altitude, float azimuth)
+  {
+    return normalize(float3(cos(altitude)*sin(azimuth),
+                     sin(altitude),
+                     cos(altitude)*cos(azimuth)));
+  }
+
+
   template <typename T>
   inline
   auto sign(T val) -> int

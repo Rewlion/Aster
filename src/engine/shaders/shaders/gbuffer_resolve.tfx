@@ -1,17 +1,18 @@
 #include "atmosphere/atmosphere.inc.tfx"
 #include "atmosphere/sph.inc.tfx"
+#include "color_spaces.inc.tfx"
 #include "depth.inc.tfx"
 #include "frame.inc.tfx"
 #include "materials.inc.tfx"
 #include "math.inc.tfx"
+#include "noise.inc.tfx"
 #include "pbr.inc.tfx"
 #include "screen_space.inc.tfx"
-#include "color_spaces.inc.tfx"
 
 scope ResolveGbufferScope {
   reserve:
     descriptor_set(2);
-    register(buffer, 0-4);
+    register(buffer, 0-5);
     register(texture, 0-10);
 
   RWStructuredBuffer<float3> atmParamsBuffer = extern(atmParamsBuffer);
@@ -36,6 +37,10 @@ scope ResolveGbufferScope {
 
   //GI
   Texture2D indirectLight = extern(indirectLight);
+
+  /////////
+  Texture2D shadowMap = extern(shadowMap);
+  float4x4 shadowMap_viewProjTm = extern(shadowMap_viewProjTm);
 };
 
 technique ResolveGbuffer {
@@ -58,10 +63,52 @@ technique ResolveGbuffer {
   USE_DEPTH_UTILS();
   USE_PBR();
   USE_MATERIALS_UNPACKING();
+  USE_NOISE();
 
   #hlsl
     #include "clustered_light/lights_apply.hlsl"
     
+    float staticShadowPCF(float3 world_pos)
+    {
+      float3 projected = mul(ResolveGbufferScope.shadowMap_viewProjTm, float4(world_pos, 1)).rgb;
+      float2 uv = projected.xy * 0.5 + 0.5;
+      uv.y = 1.0 - uv.y;
+
+      float2 shadowMapSize;
+      shadowMap.GetDimensions(shadowMapSize.x, shadowMapSize.y);
+
+      float2 texelSize = 1.0.xx / shadowMapSize;
+      float pcf = 0.0;
+
+      const int kernelSize = 2;
+      for (int y = -kernelSize; y <= kernelSize; ++y)
+        for (int x = -kernelSize; x <= kernelSize; ++x)
+        {
+          float2 texel = float2(x,y) + 0.5;
+          float2 random = random_pcg3d(uint3(x,y,0)).xy - 0.5;
+          float2 jitteredTexel = texel + random;
+          float2 jitteredUV = jitteredTexel * texelSize;
+          float2 warpedUVOffset = texelSize*jitteredTexel.y * float2(
+            cos(2.0 * PI * jitteredTexel.x),
+            sin(2.0 * PI * jitteredTexel.x)
+          );
+
+          float2 sampleUV = uv + warpedUVOffset;
+
+          float sunDepth = shadowMap.SampleLevel(linearClampSampler, sampleUV, 0).r;
+          float bias = 0.0001;
+          pcf += sunDepth < projected.z+bias ? 1.0 : 0.0;
+        }
+
+      float totalSamples = float( (kernelSize*2+1) * (kernelSize*2+1) );
+      return pcf / totalSamples;
+    }
+
+    float staticShadow(float3 world_pos)
+    {
+      return staticShadowPCF(world_pos);
+    }
+
     [numthreads(8, 8, 1)]
     void cs_main(uint3 dispatch_thread_id: SV_DispatchThreadID)
     {
@@ -121,17 +168,21 @@ technique ResolveGbuffer {
       float3 dynamicLightsSpecular;
       dynamicLights(dynamicLightParams, dynamicLightsDiffuseNoBRDF, dynamicLightsSpecular);
 
+      float shadow = staticShadow(worldPos);
+
       float3 diffuseSPH = getSphDiffuseProbe(N);
-      float3 sunL = getSunL() * NoL;
+      float3 sunL = getSunL() * NoL * shadow;
 
       float3 diffuseGI = indirectLight.Load(tc).rgb;
       //float3 diffusePart = diffuseBRDF(mat.diffuseColor, mat.specularReflection, VoH) * (sunL + dynamicLightsDiffuseNoBRDF);
-      float3 diffusePart = diffuseBRDF(mat.diffuseColor, mat.specularReflection, VoH) * (diffuseGI + dynamicLightsDiffuseNoBRDF);
+      float3 diffusePart = diffuseBRDF(mat.diffuseColor, mat.specularReflection, VoH) * (diffuseGI + dynamicLightsDiffuseNoBRDF + sunL);
       float3 specularPart = specularLight.Load(tc).rgb;
 
       float3 Lo = diffusePart + specularPart;
 
-      Lo = diffuseGI;//diffusePart;
+      Lo = diffusePart;
+
+
       resolveTarget[tc.xy] = float4(Lo, 1.0);
     }
   #end

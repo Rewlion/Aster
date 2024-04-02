@@ -64,6 +64,7 @@ NODE_BEGIN(atm_res_import)
                            R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
 
   CREATE_BLOB(atm_envi_mips, int)
+  CREATE_BLOB(sun_azimuth_altitude, float2)
 
   EXEC(atm_res_import_exec)
 NODE_END()
@@ -72,12 +73,15 @@ NODE_EXEC()
 static
 void atm_res_import_exec(gapi::CmdEncoder& encoder,
                          int& atm_envi_mips,
-                         const Engine::CameraData& camera_data)
+                         const Engine::CameraData& camera_data,
+                         float2& sun_azimuth_altitude)
 {
   atm_envi_mips = get_envi_specular_mips();
 
   query_atm_params([&](float atm_radius_bot_km, float atm_radius_top_km){
   query_sun_params([&](float sun_azimuth, float sun_altitude){
+    sun_azimuth_altitude = float2(sun_azimuth, sun_altitude);
+
     float4 sunAzimuth_sunAltitude_rTopMM_rBotMM{
       math::radians(sun_azimuth),
       math::radians(sun_altitude),

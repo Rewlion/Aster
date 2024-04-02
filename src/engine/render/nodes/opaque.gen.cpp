@@ -8,35 +8,6 @@
 
 using namespace ecs;
 
-const static DirectQueryRegistration query_dynamic_mesh_queryReg{
-  {
-    DESCRIBE_QUERY_COMPONENT("test_static_mesh_model", string),
-    DESCRIBE_QUERY_COMPONENT("test_static_mesh_pos", float3),
-    DESCRIBE_QUERY_COMPONENT("test_static_mesh_rot", float3),
-    DESCRIBE_QUERY_COMPONENT("test_static_mesh_scale", float3)
-  },
-  "query_dynamic_mesh"};
-const static query_id_t query_dynamic_mesh_queryId = query_dynamic_mesh_queryReg.getId();
-
-
-void query_dynamic_mesh (eastl::function<
-  void(
-    const string& test_static_mesh_model,
-    const float3& test_static_mesh_pos,
-    const float3& test_static_mesh_rot,
-    const float3& test_static_mesh_scale)> cb)
-{
-  ecs::get_registry().query(query_dynamic_mesh_queryId, [&](ComponentsAccessor& accessor)
-  {
-    const string& test_static_mesh_model = accessor.get<string>(compile_ecs_name_hash("test_static_mesh_model"));
-    const float3& test_static_mesh_pos = accessor.get<float3>(compile_ecs_name_hash("test_static_mesh_pos"));
-    const float3& test_static_mesh_rot = accessor.get<float3>(compile_ecs_name_hash("test_static_mesh_rot"));
-    const float3& test_static_mesh_scale = accessor.get<float3>(compile_ecs_name_hash("test_static_mesh_scale"));
-    cb(test_static_mesh_model,test_static_mesh_pos,test_static_mesh_rot,test_static_mesh_scale);
-  });
-}
-
-
 //Engine::OnFrameGraphInit handler
 static
 void mk_fg_node_gbuffer_main_pass(Event*, ComponentsAccessor&)
@@ -116,6 +87,7 @@ void mk_fg_node_gbuffer_main_pass(Event*, ComponentsAccessor&)
       false
     );
 
+    auto camera_data = reg.readBlob<Engine::CameraData>("camera_data");
     reg.requestRenderPass()
       .addTarget(gbuf0, gapi::LoadOp::Clear, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
       .addTarget(gbuf1, gapi::LoadOp::Clear, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
@@ -124,9 +96,9 @@ void mk_fg_node_gbuffer_main_pass(Event*, ComponentsAccessor&)
       .addRWDepth(opaque_depth, gapi::LoadOp::Clear, gapi::StoreOp::Store);
 
 
-    return [](gapi::CmdEncoder& encoder)
+    return [camera_data](gapi::CmdEncoder& encoder)
     {
-      gbuffer_main_pass_exec(encoder);
+      gbuffer_main_pass_exec(encoder, camera_data.get());
     };
   });
 }
@@ -197,8 +169,10 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
     auto sph_buf = reg.readBuffer("sph_buf", gapi::BufferState::BF_STATE_SRV, false);
     auto gibs_indirect_light_srv = reg.readTexture("gibs_indirect_light_srv", gapi::TextureState::ShaderRead, false);
     auto specular_light = reg.readTexture("specular_light", gapi::TextureState::ShaderRead, false);
+    auto shadow_map_viewProj = reg.readBlob<float4x4>("shadow_map_viewProj");
+    auto shadow_map = reg.readTexture("shadow_map", gapi::TextureState::DepthReadStencilRead, false);
 
-    return [resolve_target,gbuf0,gbuf1,gbuf2,post_process_input,motionBuf,clustered_lights,clusters_info,clusters_indirecion,gbuffer_depth,sph_buf,gibs_indirect_light_srv,specular_light,render_size](gapi::CmdEncoder& encoder)
+    return [resolve_target,gbuf0,gbuf1,gbuf2,post_process_input,motionBuf,clustered_lights,clusters_info,clusters_indirecion,gbuffer_depth,sph_buf,gibs_indirect_light_srv,specular_light,shadow_map,render_size,shadow_map_viewProj](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("resolveTarget", resolve_target.get());
       tfx::set_extern("gbuffer_albedo", gbuf0.get());
@@ -213,7 +187,8 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
       tfx::set_extern("atmParamsBuffer", sph_buf.get());
       tfx::set_extern("indirectLight", gibs_indirect_light_srv.get());
       tfx::set_extern("specularLight", specular_light.get());
-      gbuffer_resolve_exec(encoder, render_size.get());
+      tfx::set_extern("shadowMap", shadow_map.get());
+      gbuffer_resolve_exec(encoder, render_size.get(), shadow_map_viewProj.get());
     };
   });
 }

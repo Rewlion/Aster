@@ -207,10 +207,11 @@ void mk_fg_node_atm_res_import(Event*, ComponentsAccessor&)
     );
 
     auto atm_envi_mips = reg.createBlob<int>("atm_envi_mips");
+    auto sun_azimuth_altitude = reg.createBlob<float2>("sun_azimuth_altitude");
 
-    return [atm_envi_mips,camera_data](gapi::CmdEncoder& encoder)
+    return [atm_envi_mips,camera_data,sun_azimuth_altitude](gapi::CmdEncoder& encoder)
     {
-      atm_res_import_exec(encoder, atm_envi_mips.get(), camera_data.get());
+      atm_res_import_exec(encoder, atm_envi_mips.get(), camera_data.get(), sun_azimuth_altitude.get());
     };
   });
 }

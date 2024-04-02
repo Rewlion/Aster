@@ -55,6 +55,7 @@ add_ecs_library(
 
   ECS_FILES
     "${CMAKE_SOURCE_DIR}/src/engine/render/clustered_lights.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/model_render.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/show_tex.ecs.cpp"
     
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/atmosphere.ecs.cpp"
@@ -69,6 +70,7 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/post_process.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/present.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/reflections.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/shadow/shadow_map.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/taa.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/ui.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/virtual_terrain.ecs.cpp"

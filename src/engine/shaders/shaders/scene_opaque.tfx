@@ -24,7 +24,7 @@ technique SceneOpaque {
 
     VsOutput vs_main(SceneOpaque_input input)
     {
-      float4x4 mvp = FrameScope.viewProj;
+      float4x4 mvp = StaticModelScope.viewProjTm;
       float4x4 prevMvp = FrameScope.prevViewProj;
       mvp = mul(mvp, StaticModelScope.modelTm);
       prevMvp = mul(prevMvp, StaticModelScope.modelTm);

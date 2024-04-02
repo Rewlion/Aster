@@ -8,8 +8,10 @@ scope StaticModelScope {
   Texture2D metalRoughnessTex = channel(metal_roughness);
   Texture2D normalTex = channel(normal);
 
-  float4x4 modelTm = channel(model_tm);
-  float4x4 normalTm = channel(normal_tm);
+  uint depthPrepass = extern(depthPrepass);
+  float4x4 viewProjTm = extern(viewProj_obj_tm);
+  float4x4 modelTm = channel(model_obj_tm);
+  float4x4 normalTm = channel(normal_obj_tm);
 };
 
 technique_macro USE_STATIC_MESH {
