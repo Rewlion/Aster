@@ -224,6 +224,9 @@ namespace gapi::vulkan
       case TextureFormat::R16G16B16A16_UINT:   return vk::Format::eR16G16B16A16Uint;
       case TextureFormat::R16G16B16A16_UNORM:  return vk::Format::eR16G16B16A16Unorm;
       case TextureFormat::R32G32B32A32_S:      return vk::Format::eR32G32B32A32Sfloat;
+      case TextureFormat::R32G32_SFLOAT:       return vk::Format::eR32G32Sfloat;
+      case TextureFormat::R32G32_SINT:         return vk::Format::eR32G32Sint;
+      case TextureFormat::R32G32_UINT:         return vk::Format::eR32G32Uint;
       case TextureFormat::R32_UINT:            return vk::Format::eR32Uint;
       case TextureFormat::R32_FLOAT:           return vk::Format::eR32Sfloat;
       case TextureFormat::D24_UNORM_S8_UINT:   return vk::Format::eD24UnormS8Uint;
@@ -275,6 +278,9 @@ namespace gapi::vulkan
       case vk::Format::eR16G16B16A16Unorm:
       case vk::Format::eR32Uint:
       case vk::Format::eR32Sfloat:
+      case vk::Format::eR32G32Sfloat:
+      case vk::Format::eR32G32Sint:
+      case vk::Format::eR32G32Uint:
       case vk::Format::eR32G32B32A32Sfloat: return vk::ImageAspectFlagBits::eColor;
       case vk::Format::eD24UnormS8Uint: return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
       default: {
