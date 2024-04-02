@@ -10,8 +10,6 @@ namespace gapi::vulkan
 {
   vk::RenderPass RenderPassStorage::getRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil)
   {
-    ASSERT_FMT(renderTargets.count() > 0, "At least one RT has to be provided");
-
     const size_t hash = hashRenderPass(renderTargets, depthStencil);
 
     const auto it = m_RenderPasses.find(hash);
@@ -30,13 +28,18 @@ namespace gapi::vulkan
 
   size_t RenderPassStorage::hashRenderPass(const RenderTargets& renderTargets, const RenderPassDepthStencilAttachment& depthStencil) const
   {
+    ASSERT_FMT(renderTargets.hasAny() || depthStencil.texture != gapi::TextureHandle::Invalid,
+                "vk: empty render pass");
+
     using boost::hash_combine;
     size_t hash = 0;
 
     const auto hashAttachment = [this](const RenderPassAttachment& att)
     {
       size_t hash = 0;
-      const auto format = m_Device->getTextureFormat(att.texture);
+      const auto format = att.texture != gapi::TextureHandle::Invalid ?
+                            m_Device->getTextureFormat(att.texture) :
+                            vk::Format::eUndefined;
       hash_combine(hash, format);
       hash_combine(hash, att.initialState);
       hash_combine(hash, att.finalState);
@@ -61,9 +64,22 @@ namespace gapi::vulkan
       return hash;
     };
 
-    for (const auto& rt: renderTargets)
+    if (renderTargets.hasAny())
     {
-      size_t rtHash = hashAttachment(rt);
+      for (const auto& rt: renderTargets)
+      {
+        size_t rtHash = hashAttachment(rt);
+        hash_combine(hash, rtHash);
+      }
+    }
+    else
+    {
+      gapi::RenderPassAttachment emptyAttachment;
+      emptyAttachment.texture = gapi::TextureHandle::Invalid;
+      emptyAttachment.loadOp = gapi::LoadOp::DontCare;
+      emptyAttachment.storeOp = gapi::StoreOp::DontCare;
+
+      size_t rtHash = hashAttachment(emptyAttachment);
       hash_combine(hash, rtHash);
     }
 
@@ -100,9 +116,6 @@ namespace gapi::vulkan
       attachmentsCount += 1;
     }
     size_t rtCount = attachmentsCount;
-
-    if (rtCount == 0)
-      logerror("BeginRenderPassCmd: render targets count: 0");
 
     size_t depthStencilId = -1;
     if (depthStencil.texture !=  TextureHandle::Invalid)
