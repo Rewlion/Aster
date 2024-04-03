@@ -8,6 +8,7 @@ NODE_END()
 
 NODE_BEGIN(post_process)
   BIND_TEX_SRV_AS(post_process_input, post_process_input)
+  BIND_TEX_SRV_AS(bayer_matrix_8x8, bayerMatrix8x8)
   CREATE_TEX_2D(final_target, TEX_SIZE_RELATIVE(), R8G8B8A8_UNORM, TEX_USAGE3(RT,SRV, TRANSFER_SRC), TEX_STATE(RenderTarget))
   RP_BEGIN()
     TARGET(final_target)

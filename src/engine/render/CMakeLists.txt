@@ -65,6 +65,7 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/dbg_text.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/decals.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/frame_preparing.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/generate_bayer_matrix.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/hi_z.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/opaque.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/post_process.ecs.cpp"

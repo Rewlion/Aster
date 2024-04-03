@@ -3,9 +3,10 @@
 scope PostProcessScope {
   reserve:
     descriptor_set(2);
-    register(texture, 0);
+    register(texture, 0-1);
 
   Texture2D postProcessInput = extern(post_process_input);
+  Texture2D bayerMatrix8x8 = extern(bayerMatrix8x8);
 };
 
 technique PostProcess {
@@ -39,9 +40,10 @@ technique PostProcess {
       return lerp(c / (l + 1.0), tc, tc);
     }
 
-
     float3 ps_main(float4 input: SV_Position) : SV_Target0
     {
+      float dithering = bayerMatrix8x8.Load(uint3(input.xy % 8, 0)).r;
+
       float2 uv = input.xy / FrameScope.viewPortSize;
       float3 L = postProcessInput.Sample(linearClampSampler, uv).rgb;
       float exposure = exp2(4.0);
@@ -52,6 +54,8 @@ technique PostProcess {
       float g = 1.0/2.2;
       L = pow(L, float3(g,g,g));
 
+      L += dithering * 1.0 / 255.0;
+      
       return L;
     }
   #end

@@ -38,6 +38,7 @@ void mk_fg_node_post_process(Event*, ComponentsAccessor&)
     const uint2 __renderSize__ = reg.getRenderSize();
 
     auto post_process_input = reg.readTexture("post_process_input", gapi::TextureState::ShaderRead, false);
+    auto bayer_matrix_8x8 = reg.readTexture("bayer_matrix_8x8", gapi::TextureState::ShaderRead, false);
 
     auto final_target = reg.createTexture("final_target",
       gapi::TextureAllocationDescription{
@@ -57,9 +58,10 @@ void mk_fg_node_post_process(Event*, ComponentsAccessor&)
     ;
 
 
-    return [post_process_input](gapi::CmdEncoder& encoder)
+    return [post_process_input,bayer_matrix_8x8](gapi::CmdEncoder& encoder)
     {
       tfx::set_extern("post_process_input", post_process_input.get());
+      tfx::set_extern("bayerMatrix8x8", bayer_matrix_8x8.get());
       post_process_exec(encoder);
     };
   });
