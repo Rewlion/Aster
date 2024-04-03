@@ -169,7 +169,7 @@ technique GIBS_AccSurfelsIrradiance
   float3 traceSun(float3 ray_pos, float3 normal, RTAccelerationStructure rtas)
   {
     float3 lightDir = getAtmSunDir();
-    TraceResult tRes = rtas.traceRay(ray_pos + normal * 0.1, lightDir);
+    TraceResult tRes = rtas.traceRay(ray_pos + normal * 0.01, lightDir);
 
     if (tRes.t == TRACE_MISS)
     {
@@ -196,15 +196,19 @@ technique GIBS_AccSurfelsIrradiance
     else
     {
       uint bindlessPackId = tlasInstanceToBindlessPackId[tRes.instanceID] * BINDLESS_MATERIAL_TEX_COUNT;
-      uint albedoId = bindlessPackId + BINDLESS_MATERIAL_ALBEDO_TEX;
+      float2 uv = tRes.payload[0].uv * tRes.uvw[0] + tRes.payload[1].uv * tRes.uvw[1] + tRes.payload[2].uv * tRes.uvw[2];
       uint normalId = bindlessPackId + BINDLESS_MATERIAL_NORMAL_TEX;
+      float3 normal = mul(tRes.objectToWorldTm, float4(tRes.normal_os, 0.0)).rgb;
+
+      if (dot(normal, ray_dir) >= 0)
+        return Ri;
+
+      uint albedoId = bindlessPackId + BINDLESS_MATERIAL_ALBEDO_TEX;
       uint metalRoughnessId = bindlessPackId + BINDLESS_MATERIAL_METAL_ROUGHNESS_TEX;
       Texture2D albedoTex = bindlessModelTextures[NonUniformResourceIndex(albedoId)];
       Texture2D metalRoughnessTex = bindlessModelTextures[NonUniformResourceIndex(metalRoughnessId)];
 
-      float2 uv = tRes.payload[0].uv * tRes.uvw[0] + tRes.payload[1].uv * tRes.uvw[1] + tRes.payload[2].uv * tRes.uvw[2];
       float3 albedo = albedoTex.SampleLevel(modelSampler, uv, 0).rgb;
-      float3 normal = mul(tRes.objectToWorldTm, float4(tRes.normal_os, 0.0)).rgb;
       float metalness = metalRoughnessTex.SampleLevel(modelSampler, uv, 0).r;
 
       float3 irradiance = 0.xxx;
