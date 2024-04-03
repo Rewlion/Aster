@@ -88,12 +88,12 @@ technique ResolveGbuffer {
           float2 random = random_pcg3d(uint3(x,y,0)).xy - 0.5;
           float2 jitteredTexel = texel + random;
           float2 jitteredUV = jitteredTexel * texelSize;
-          float2 warpedUVOffset = texelSize*jitteredTexel.y * float2(
-            cos(2.0 * PI * jitteredTexel.x),
-            sin(2.0 * PI * jitteredTexel.x)
-          );
+          // float2 warpedUVOffset = texelSize*jitteredTexel.y * float2(
+          //   cos(2.0 * PI * jitteredTexel.x),
+          //   sin(2.0 * PI * jitteredTexel.x)
+          // );
 
-          float2 sampleUV = uv + warpedUVOffset;
+          float2 sampleUV = uv + jitteredUV;
 
           float sunDepth = shadowMap.SampleLevel(linearClampSampler, sampleUV, 0).r;
           float bias = 0.0001;
