@@ -22,7 +22,9 @@ void initializeRayguidingMap(inout RWTexture2D<float2> rayguiding_map, uint surf
   uint2 storageTexelBegin = calcRayguidingMapTexelBegin(surfel_id);
   float initPmf = 1.0 / RAYGUIDE_CELL_COUNT;
   float initLuminance = 0.0f;
-  float2 initValue = float2(initPmf, initLuminance);
+  float2 initValue;
+  initValue[RAYGUIDE_MAP_PMF] = initPmf;
+  initValue[RAYGUIDE_MAP_LUMINANCE] = initLuminance;
 
   for (uint y = 0; y < RAYGUIDE_CELL_DIM; ++y)
     for (uint x = 0; x < RAYGUIDE_CELL_DIM; ++x)
@@ -43,7 +45,7 @@ float renormalizeRayguidingMap(RWTexture2D<float2> rayguiding_map, uint surfel_i
   {
     for (uint x = 0; x < RAYGUIDE_CELL_DIM; ++x)
     {
-      float luminance = rayguiding_map[beginTexel + uint2(x,y)].g;
+      float luminance = rayguiding_map[beginTexel + uint2(x,y)][RAYGUIDE_MAP_LUMINANCE];
 
       luminanceSum += luminance;
       luminanceCache[x + y * RAYGUIDE_CELL_DIM] = luminance;
@@ -66,8 +68,8 @@ float renormalizeRayguidingMap(RWTexture2D<float2> rayguiding_map, uint surfel_i
       float newLuminance = 0.0;
 
       float2 guideVal;
-      guideVal.r = newPmf;
-      guideVal.g = newLuminance;
+      guideVal[RAYGUIDE_MAP_PMF] = newPmf;
+      guideVal[RAYGUIDE_MAP_LUMINANCE] = newLuminance;
 
       rayguiding_map[beginTexel + uint2(x,y)] = guideVal;
       pmfSum += newPmf;
@@ -94,7 +96,7 @@ struct RayGuiding
 
   float getPmf(uint2 texel)
   {
-    return rayguidingMap[storageTexelBegin + texel].r * pmfScale;
+    return rayguidingMap[storageTexelBegin + texel][RAYGUIDE_MAP_PMF] * pmfScale;
   }
 
   float3 guide(float3 random, out uint2 feedback_texel, out float probability)
@@ -144,7 +146,7 @@ struct RayGuiding
 
   void feedbackLuminance(uint2 selected_texel, float new_luminance)
   {
-    rayguidingMap[selected_texel].g += new_luminance;
+    rayguidingMap[selected_texel][RAYGUIDE_MAP_LUMINANCE] += new_luminance;
   }
 };
 
