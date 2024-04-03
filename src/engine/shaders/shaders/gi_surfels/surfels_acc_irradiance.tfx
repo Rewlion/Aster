@@ -204,7 +204,7 @@ technique GIBS_AccSurfelsIrradiance
 
       float2 uv = tRes.payload[0].uv * tRes.uvw[0] + tRes.payload[1].uv * tRes.uvw[1] + tRes.payload[2].uv * tRes.uvw[2];
       float3 albedo = albedoTex.SampleLevel(modelSampler, uv, 0).rgb;
-      float3 normal = tRes.normal;
+      float3 normal = mul(tRes.objectToWorldTm, float4(tRes.normal_os, 0.0)).rgb;
       float metalness = metalRoughnessTex.SampleLevel(modelSampler, uv, 0).r;
 
       float3 irradiance = 0.xxx;
