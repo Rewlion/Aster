@@ -200,7 +200,7 @@ technique GIBS_AccSurfelsIrradiance
       uint normalId = bindlessPackId + BINDLESS_MATERIAL_NORMAL_TEX;
       float3 normal = mul(tRes.objectToWorldTm, float4(tRes.normal_os, 0.0)).rgb;
 
-      if (dot(normal, ray_dir) >= 0)
+      if (dot(normal, ray_dir) >= -0.1)
         return Ri;
 
       uint albedoId = bindlessPackId + BINDLESS_MATERIAL_ALBEDO_TEX;
@@ -290,7 +290,7 @@ technique GIBS_AccSurfelsIrradiance
     if (surfel.rayBudget == 0)
       return;
 
-    float3 rayPos = surfel.pos + surfel.normal * 0.2;
+    float3 rayPos = surfel.pos + surfel.normal * 0.05;
     
     RayGuiding rayguiding;
     rayguiding.init(rayguidingMap, surfel.rayguidingPmfScale, surfelID);
