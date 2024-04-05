@@ -23,8 +23,9 @@ NODE_END()
 NODE_EXEC()
 static
 void gibs_indirect_light(gapi::CmdEncoder& encoder,
-                        const uint2& render_size)
+                         uint2 render_size)
 {
+  render_size /= 2;
   tfx::activate_technique("GIBS_IndirectLight", encoder);
   encoder.updateResources();
 
