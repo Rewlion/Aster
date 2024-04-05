@@ -1,6 +1,5 @@
-#include "utils.h"
-
 #include <engine/render/frame_graph/dsl.h>
+#include <engine/render/nodes/utils.h>
 
 NODE_BEGIN(reflections_resources)
   CREATE_TEX_2D ( reflections_target, TEX_SIZE_RELATIVE(), R32G32B32A32_S,
