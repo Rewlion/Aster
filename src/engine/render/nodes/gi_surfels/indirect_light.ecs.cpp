@@ -6,7 +6,7 @@ NODE_BEGIN(gibs_trace_indirect_light)
   RENAME_BUF(gibs_surfels_storage_binned, gibs_surfels_storage_srv, BUF_STATE(SRV))
   RENAME_BUF(gibs_surfels_spatial_storage_binned, gibs_surfels_spatial_storage_srv, BUF_STATE(SRV))
 
-  CREATE_TEX_2D(gibs_indirect_light_sample, TEX_SIZE_RELATIVE(), R32G32B32A32_S, TEX_USAGE2(UAV,SRV), TEX_STATE(ShaderReadWrite))
+  CREATE_TEX_2D(gibs_indirect_light_sample, TEX_SIZE_RELATIVE_DIV(2), R32G32B32A32_S, TEX_USAGE2(UAV,SRV), TEX_STATE(ShaderReadWrite))
 
   BIND_SHADER_VAR_AS   (gibs_indirect_light_sample, outputTex)
   BIND_SHADER_VAR_AS   (gibs_surfels_storage_srv, surfelsStorage)

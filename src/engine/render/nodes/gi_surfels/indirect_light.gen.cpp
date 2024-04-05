@@ -23,7 +23,7 @@ void mk_fg_node_gibs_trace_indirect_light(Event*, ComponentsAccessor&)
     auto gibs_indirect_light_sample = reg.createTexture("gibs_indirect_light_sample",
       gapi::TextureAllocationDescription{
         .format =          gapi::TextureFormat::R32G32B32A32_S,
-        .extent =          uint3(__renderSize__, 1),
+        .extent =          uint3(__renderSize__ / uint(2), 1),
         .mipLevels =       1,
         .arrayLayers =     1,
         .samplesPerPixel = gapi::TextureSamples::s1,

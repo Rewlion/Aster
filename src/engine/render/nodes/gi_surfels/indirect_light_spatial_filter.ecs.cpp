@@ -2,8 +2,8 @@
 #include <engine/render/frame_graph/dsl.h>
 
 NODE_BEGIN(gibs_indirect_light_sfilter)
-  CREATE_TEX_2D(gibs_indirect_light_sfilter_tex_one, TEX_SIZE_RELATIVE(), R32G32B32A32_S, TEX_USAGE2(UAV,SRV), TEX_STATE(ShaderReadWrite))
-  CREATE_TEX_2D(gibs_indirect_light_sfilter_tex_two, TEX_SIZE_RELATIVE(), R32G32B32A32_S, TEX_USAGE2(UAV,SRV), TEX_STATE(ShaderReadWrite))
+  CREATE_TEX_2D(gibs_indirect_light_sfilter_tex_one, TEX_SIZE_RELATIVE_DIV(2), R32G32B32A32_S, TEX_USAGE2(UAV,SRV), TEX_STATE(ShaderReadWrite))
+  CREATE_TEX_2D(gibs_indirect_light_sfilter_tex_two, TEX_SIZE_RELATIVE_DIV(2), R32G32B32A32_S, TEX_USAGE2(UAV,SRV), TEX_STATE(ShaderReadWrite))
   
   READ_RENDER_SIZE_AS (render_size)
   READ_TEX_SRV(gibs_indirect_light_sample)
@@ -17,11 +17,13 @@ NODE_END()
 NODE_EXEC()
 static
 void gibs_indirect_light_sfilter(gapi::CmdEncoder& encoder,
-                                 const uint2& render_size,
+                                 uint2 render_size,
                                  const gapi::TextureHandle gibs_indirect_light_sfilter_tex_one,
                                  const gapi::TextureHandle gibs_indirect_light_sfilter_tex_two,
                                  const gapi::TextureHandle gibs_indirect_light_sample)
 {
+  render_size = render_size / 2u;
+
   const uint3 dispatchDim = tfx::calc_group_count("GIBS_IndirectLightSpatialFilter", uint3{render_size, 1});
   tfx::set_extern("dispatchDim", uint2(dispatchDim));
 
@@ -74,18 +76,21 @@ void gibs_indirect_light_sfilter(gapi::CmdEncoder& encoder,
     dispatchStep(8);
   }
 
-  // texOne.transitState(encoder, gapi::TextureState::ShaderReadWrite);
-  // texTwo.transitState(encoder, gapi::TextureState::ShaderRead);
-  // tfx::set_extern("filterInput", texTwo);
-  // tfx::set_extern("filterOutput", texOne);
-  // dispatchStep(4);
+  {
+    GAPI_MARK("gibs_sfilter_4", encoder);
+    texOne.transitState(encoder, gapi::TextureState::ShaderReadWrite);
+    texTwo.transitState(encoder, gapi::TextureState::ShaderRead);
+    tfx::set_extern("filterInput", texTwo);
+    tfx::set_extern("filterOutput", texOne);
+    dispatchStep(4);
+  }
 
-  texOne.transitState(encoder, gapi::TextureState::ShaderReadWrite);
-  // texTwo.transitState(encoder, gapi::TextureState::ShaderReadWrite);
+  // texOne.transitState(encoder, gapi::TextureState::ShaderReadWrite);
+  texTwo.transitState(encoder, gapi::TextureState::ShaderReadWrite);
 }
 
 NODE_BEGIN(gibs_indirect_light_end)
-  RENAME_TEX(gibs_indirect_light_sfilter_tex_two, gibs_indirect_light_srv, TEX_STATE(ShaderRead))
-  // RENAME_TEX(gibs_indirect_light_sfilter_tex_one, gibs_indirect_light_srv, TEX_STATE(ShaderRead))
+  // RENAME_TEX(gibs_indirect_light_sfilter_tex_two, gibs_indirect_light_srv, TEX_STATE(ShaderRead))
+  RENAME_TEX(gibs_indirect_light_sfilter_tex_one, gibs_indirect_light_srv, TEX_STATE(ShaderRead))
   NO_EXEC()
 NODE_END()

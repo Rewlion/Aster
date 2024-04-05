@@ -20,7 +20,7 @@ void mk_fg_node_gibs_indirect_light_sfilter(Event*, ComponentsAccessor&)
     auto gibs_indirect_light_sfilter_tex_one = reg.createTexture("gibs_indirect_light_sfilter_tex_one",
       gapi::TextureAllocationDescription{
         .format =          gapi::TextureFormat::R32G32B32A32_S,
-        .extent =          uint3(__renderSize__, 1),
+        .extent =          uint3(__renderSize__ / uint(2), 1),
         .mipLevels =       1,
         .arrayLayers =     1,
         .samplesPerPixel = gapi::TextureSamples::s1,
@@ -34,7 +34,7 @@ void mk_fg_node_gibs_indirect_light_sfilter(Event*, ComponentsAccessor&)
     auto gibs_indirect_light_sfilter_tex_two = reg.createTexture("gibs_indirect_light_sfilter_tex_two",
       gapi::TextureAllocationDescription{
         .format =          gapi::TextureFormat::R32G32B32A32_S,
-        .extent =          uint3(__renderSize__, 1),
+        .extent =          uint3(__renderSize__ / uint(2), 1),
         .mipLevels =       1,
         .arrayLayers =     1,
         .samplesPerPixel = gapi::TextureSamples::s1,
@@ -74,7 +74,7 @@ void mk_fg_node_gibs_indirect_light_end(Event*, ComponentsAccessor&)
 {
   fg::register_node("gibs_indirect_light_end", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto gibs_indirect_light_srv = reg.renameTexture("gibs_indirect_light_sfilter_tex_two", "gibs_indirect_light_srv", gapi::TextureState::ShaderRead);
+    auto gibs_indirect_light_srv = reg.renameTexture("gibs_indirect_light_sfilter_tex_one", "gibs_indirect_light_srv", gapi::TextureState::ShaderRead);
     return [](gapi::CmdEncoder&){};
   });
 }
