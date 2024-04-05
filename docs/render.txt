@@ -144,3 +144,5 @@ MISC:
  - https://jcgt.org/published/0003/02/01/paper.pdf
    Hash Functions for GPU Rendering, Jarzynski et al.
  - http://www.jcgt.org/published/0009/03/02/
+ - Optimizing Compute Shaders for L2 Locality using Thread-Group ID Swizzling
+   https://developer.nvidia.com/blog/optimizing-compute-shaders-for-l2-locality-using-thread-group-id-swizzling/

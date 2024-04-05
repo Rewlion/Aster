@@ -1,3 +1,4 @@
+#include <engine/debug_marks.h>
 #include <engine/render/frame_graph/dsl.h>
 
 NODE_BEGIN(gibs_indirect_light_sfilter)
@@ -21,40 +22,57 @@ void gibs_indirect_light_sfilter(gapi::CmdEncoder& encoder,
                                  const gapi::TextureHandle gibs_indirect_light_sfilter_tex_two,
                                  const gapi::TextureHandle gibs_indirect_light_sample)
 {
-  const auto dispatchStep = [&](uint stepSize) {
+  const uint3 dispatchDim = tfx::calc_group_count("GIBS_IndirectLightSpatialFilter", uint3{render_size, 1});
+  tfx::set_extern("dispatchDim", uint2(dispatchDim));
+
+  const auto dispatchStep = [&](int stepSize) {
     tfx::set_extern("stepSize", stepSize);
 
     tfx::activate_technique("GIBS_IndirectLightSpatialFilter", encoder);
     encoder.updateResources();
 
-    const uint3 gc = tfx::calc_group_count("GIBS_IndirectLightSpatialFilter", uint3{render_size, 1});
-    encoder.dispatch(gc.x, gc.y, gc.z);
+    encoder.dispatch(dispatchDim.x, dispatchDim.y, dispatchDim.z);
   };
   
   gapi::TextureViewWithState input(gibs_indirect_light_sample, gapi::TextureState::ShaderRead);
   gapi::TextureViewWithState texOne(gibs_indirect_light_sfilter_tex_one, gapi::TextureState::ShaderReadWrite);
   gapi::TextureViewWithState texTwo(gibs_indirect_light_sfilter_tex_two, gapi::TextureState::ShaderReadWrite);
 
-  tfx::set_extern("filterInput", input);
-  tfx::set_extern("filterOutput", texOne);
-  dispatchStep(64);
+  {
+    GAPI_MARK("gibs_sfilter_64", encoder);
 
-  texOne.transitState(encoder, gapi::TextureState::ShaderRead);
-  tfx::set_extern("filterInput", texOne);
-  tfx::set_extern("filterOutput", texTwo);
-  dispatchStep(32);
+    tfx::set_extern("filterInput", input);
+    tfx::set_extern("filterOutput", texOne);
+    dispatchStep(64);
+  }
 
-  texOne.transitState(encoder, gapi::TextureState::ShaderReadWrite);
-  texTwo.transitState(encoder, gapi::TextureState::ShaderRead);
-  tfx::set_extern("filterInput", texTwo);
-  tfx::set_extern("filterOutput", texOne);
-  dispatchStep(16);
+  {
+    GAPI_MARK("gibs_sfilter_32", encoder);
 
-  texOne.transitState(encoder, gapi::TextureState::ShaderRead);
-  texTwo.transitState(encoder, gapi::TextureState::ShaderReadWrite);
-  tfx::set_extern("filterInput", texOne);
-  tfx::set_extern("filterOutput", texTwo);
-  dispatchStep(8);
+    texOne.transitState(encoder, gapi::TextureState::ShaderRead);
+    tfx::set_extern("filterInput", texOne);
+    tfx::set_extern("filterOutput", texTwo);
+    dispatchStep(32);
+  }
+
+  {
+    GAPI_MARK("gibs_sfilter_16", encoder);
+    
+    texOne.transitState(encoder, gapi::TextureState::ShaderReadWrite);
+    texTwo.transitState(encoder, gapi::TextureState::ShaderRead);
+    tfx::set_extern("filterInput", texTwo);
+    tfx::set_extern("filterOutput", texOne);
+    dispatchStep(16);
+  }
+
+  {
+    GAPI_MARK("gibs_sfilter_8", encoder);
+    texOne.transitState(encoder, gapi::TextureState::ShaderRead);
+    texTwo.transitState(encoder, gapi::TextureState::ShaderReadWrite);
+    tfx::set_extern("filterInput", texOne);
+    tfx::set_extern("filterOutput", texTwo);
+    dispatchStep(8);
+  }
 
   // texOne.transitState(encoder, gapi::TextureState::ShaderReadWrite);
   // texTwo.transitState(encoder, gapi::TextureState::ShaderRead);

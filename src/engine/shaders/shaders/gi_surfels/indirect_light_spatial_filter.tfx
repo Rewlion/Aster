@@ -10,7 +10,8 @@ scope GIBS_IndirectLightSpatialFilterScope
     register(texture, 0-4);
     register(buffer, 0);
 
-  uint stepSize = extern(stepSize);
+  int stepSize = extern(stepSize);
+  uint2 dispatchDim = extern(dispatchDim);
 
   Texture2D filterInput = extern(filterInput);
   RWTexture2D<float4> filterOutput = extern(filterOutput);
@@ -30,6 +31,8 @@ technique GIBS_IndirectLightSpatialFilter
   USE_FRAME_HELPERS();
 
   #hlsl
+
+  #include <ThreadGroupTilingX.hlsl>
 
   float SVGF_normalWeight(float3 normal, float3 sample_normal)
   {
@@ -54,13 +57,23 @@ technique GIBS_IndirectLightSpatialFilter
     return exp(- abs(sample_luminance - luminance) / (sigma * Var + eps));
   }
 
+  #define KERNEL_RADIUS 1
+  #define TILING_N 16
+
   [numthreads(8,8,1)]
-  void cs_main(uint3 dispatch_thread_id : SV_DispatchThreadID)
+  void cs_main(uint2 group_thread_id : SV_GroupThreadID, uint2 group_id : SV_GroupID, uint3 dispatch_thread_id : SV_DispatchThreadID)
   {
     uint2 renderSize;
     filterInput.GetDimensions(renderSize.x, renderSize.y);
 
-    uint3 tc = uint3(dispatch_thread_id.xy, 0);
+    uint3 tc = uint3(ThreadGroupTilingX(
+      GIBS_IndirectLightSpatialFilterScope.dispatchDim,
+      uint2(8,8),
+      TILING_N,
+      group_thread_id,
+      group_id
+    ), 0);
+
     if (any(tc.xy > renderSize))
       return;
 
@@ -83,15 +96,15 @@ technique GIBS_IndirectLightSpatialFilter
     float3 resColor = color * h[0];
     float wSum = h[0];
 
-    for (int y = -2; y <= 2; ++y)
-      for (int x = -2; x <= 2; ++x)
+    for (int y = -KERNEL_RADIUS; y <= KERNEL_RADIUS; ++y)
+      for (int x = -KERNEL_RADIUS; x <= KERNEL_RADIUS; ++x)
       {
         if (x == 0 && y == 0)
           continue;
 
         float h_i = h[abs(x)]*h[abs(y)];
         int2 tcOffset = int2(x,y) * GIBS_IndirectLightSpatialFilterScope.stepSize;
-        uint3 sampleTC = uint3(tc.xy + tcOffset, 0);
+        int3 sampleTC = int3(tc.xy + tcOffset, 0);
 
         if (any(sampleTC.xy < 0) || any(sampleTC.xy >= renderSize))
           continue;
