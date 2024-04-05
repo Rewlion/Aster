@@ -75,7 +75,10 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/ui.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/virtual_terrain.ecs.cpp"
     
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/reflections/filter.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/reflections/reflections.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/reflections/resources.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/reflections/temporal_accumulation.ecs.cpp"
 
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/dbg_draw_surfels.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/indirect_light.ecs.cpp"

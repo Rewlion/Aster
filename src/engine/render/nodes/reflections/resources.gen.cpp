@@ -31,51 +31,9 @@ void mk_fg_node_reflections_resources(Event*, ComponentsAccessor&)
     );
 
 
-    auto reflections_acc = reg.createTexture("reflections_acc",
-      gapi::TextureAllocationDescription{
-        .format =          gapi::TextureFormat::R32G32B32A32_S,
-        .extent =          uint3(__renderSize__, 1),
-        .mipLevels =       1,
-        .arrayLayers =     1,
-        .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_UAV | gapi::TextureUsage::TEX_USAGE_SRV)
-      },
-      gapi::TextureState::ShaderReadWrite,
-      false
-    );
-
-
-    auto reflections_variance = reg.createTexture("reflections_variance",
-      gapi::TextureAllocationDescription{
-        .format =          gapi::TextureFormat::R8_UNORM,
-        .extent =          uint3(__renderSize__, 1),
-        .mipLevels =       1,
-        .arrayLayers =     1,
-        .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_UAV | gapi::TextureUsage::TEX_USAGE_SRV)
-      },
-      gapi::TextureState::ShaderReadWrite,
-      false
-    );
-
-
-    auto reflections_target_filtered = reg.createTexture("reflections_target_filtered",
-      gapi::TextureAllocationDescription{
-        .format =          gapi::TextureFormat::R32G32B32A32_S,
-        .extent =          uint3(__renderSize__, 1),
-        .mipLevels =       1,
-        .arrayLayers =     1,
-        .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_UAV | gapi::TextureUsage::TEX_USAGE_SRV)
-      },
-      gapi::TextureState::ShaderReadWrite,
-      false
-    );
-
-
-    return [reflections_target,reflections_acc,reflections_variance,reflections_target_filtered](gapi::CmdEncoder& encoder)
+    return [reflections_target](gapi::CmdEncoder& encoder)
     {
-      reflections_resources(encoder, reflections_target.get(), reflections_acc.get(), reflections_variance.get(), reflections_target_filtered.get());
+      reflections_resources(encoder, reflections_target.get());
     };
   });
 }
