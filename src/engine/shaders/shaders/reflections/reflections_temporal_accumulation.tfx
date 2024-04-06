@@ -58,12 +58,46 @@ technique Reflections_TemporalAccumulation
     return passedDepthDisocclusion && passedNormalDisocclusion;
   }
 
-  float calcVariance(float3 radiance, float3 history_radiance)
+  float calcLuminanceVariance(float3 irradiance, float3 history_irradiance)
   {
-    float curLuminance = luminance(radiance);
-    float historyLuminance = luminance(history_radiance);
+    float curLuminance = luminance_ub(irradiance);
+    float historyLuminance = luminance_ub(history_irradiance);
     float diff = (curLuminance - historyLuminance);
     return diff * diff;
+  }
+
+  void estimateNeighborBBox(int2 tc, int2 render_size, float3 center_irradiance, out float3 rgb_min, out float3 rgb_max)
+  {
+    float3 E_x = center_irradiance;
+    float3 E_x2 = center_irradiance*center_irradiance;
+
+    float w = 1;
+
+    for (int y = -1; y <= 1; ++y)
+    for (int x = -1; x <= 1; ++x)
+    {
+      if (x == 0 && y == 0)
+        continue;
+
+      int2 sampleTC = tc + int2(x,y);
+      if (any(sampleTC < 0) || any(sampleTC >= render_size))
+        continue;
+
+      float3 irradiance = inputIrradiance.Load(uint3(sampleTC,0)).rgb;
+      float w_i = exp( - 3.0 * (x*x + y*y) / (5.0*5.0) );
+
+      E_x += irradiance * w_i;
+      E_x2 += irradiance*irradiance*w_i;
+      w += w_i;
+    }
+
+    E_x /= w;
+    E_x2 /= w;
+
+    float3 Var = E_x2 - E_x*E_x;
+
+    rgb_min = E_x - Var;
+    rgb_max = E_x + Var;
   }
 
   [numthreads(8,8,1)]
@@ -90,18 +124,23 @@ technique Reflections_TemporalAccumulation
     [BRANCH]
     if (all(historyTCReprojected >= 0) && all(historyTCReprojected < renderSize))
     {
+      float3 rgbBBoxMin, rgbBBoxMax;
+      estimateNeighborBBox(tc.xy, renderSize, irradiance, rgbBBoxMin, rgbBBoxMax);
+
       float3 historyIrradiance = taHistory.Load(uint3(historyTCReprojected, 0)).rgb;
       float historyVar = varianceHistory.Load(uint3(historyTCReprojected, 0)).r;
       
       bool useHistory = isHistoryValid(tc, historyTCReprojected, depth, renderSize);
-      float Var = calcVariance(irradiance, historyIrradiance);
-      
+
+      float Var = calcLuminanceVariance(irradiance, historyIrradiance);
       float resVariance = useHistory ? lerp(historyVar, Var, 0.2) : 1.0;
       
       float w = useHistory ? 0.2 : 1.0;
-      float4 resColor = float4(lerp(historyIrradiance, irradiance, w), 1);
+      float3 resColor = lerp(historyIrradiance, irradiance, w);
 
-      taOutput[tc.xy] = resColor;
+      float3 clampedColor = clamp(resColor, rgbBBoxMin, rgbBBoxMax);
+
+      taOutput[tc.xy] = float4(clampedColor,1);
       varianceOutput[tc.xy] = resVariance;
     }
     else

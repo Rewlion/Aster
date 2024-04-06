@@ -150,6 +150,22 @@ technique SpecularReflection {
     return R_ws;
   }
 
+  float2 reprojectHitPointUV(float2 ray_sample_hit_point, float depth_plane)
+  {
+    float2 uv = ray_sample_hit_point;
+    uv.y = 1.0 - ray_sample_hit_point.y;
+    uv = uv * 2.0 - 1.0;
+
+    float4 hitpoint_ws = mul(FrameScope.invViewProj, float4(uv, depth_plane, 1));
+    hitpoint_ws.xyz /= hitpoint_ws.w;
+
+    float4 reprojectedHitpoint_ss = mul(FrameScope.prevViewProj, float4(hitpoint_ws.xyz, 1));
+    float2 reprojectedUV = (reprojectedHitpoint_ss.xy / reprojectedHitpoint_ss.w) * 0.5 + 0.5;
+    reprojectedUV.y = 1.0 - reprojectedUV.y;
+
+    return reprojectedUV;
+  }
+
   float3 ssr(float3 view_dir, float3 N, float3 worldPos, float2 screen_size, float ggx_alpha, uint2 px, out float ssr_power)
   {
     float3 R = sample_ssr_reflection_vector(view_dir, N, ggx_alpha, px);
@@ -217,10 +233,9 @@ technique SpecularReflection {
       ++iterations;
     }
 
-    uint3 tc = uint3((uint2)(raySample.xy * screen_size), 0);
-    float2 motionVec = motionBuf.Load(tc).rg * float2(0.5, -0.5);
-    float3 reflection = prevPostProcessInput.SampleLevel(linearClampSampler, raySample.xy - motionVec, 0).rgb;
-    
+    float2 reprojectedHitPointUV = reprojectHitPointUV(raySample.xy, depthPlane);
+    float3 reflection = prevPostProcessInput.SampleLevel(linearClampSampler, reprojectedHitPointUV, 0).rgb;
+  
     ssr_power = calcSSRPower(rayOrigin.xy, raySample, hiZLevel, screen_size, depthPlane, depthThickness, R);
     return reflection * ssr_power;
   }
