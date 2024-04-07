@@ -75,6 +75,9 @@ namespace ecs
   auto Archetypes::findArchetypesWithComponents(const eastl::vector<registered_component_id_t>& comps)
     -> eastl::vector<archetype_id_t>
   {
+    if (comps.empty())
+      return {};
+
     components_set_hash_t hash = hashCompIds(comps);
     const auto getDesiredArchs = [hash, this]() -> eastl::vector<archetype_id_t>
     {
