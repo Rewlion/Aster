@@ -85,6 +85,7 @@ namespace ecs
         eastl::vector<component_type_id_t>
       > m_Archetypes;
 
+      bool m_DirtyComponentsCache = false;
       eastl::vector_multimap<components_set_hash_t, archetype_id_t> m_CompsHashToArchetypes;
   };
 }

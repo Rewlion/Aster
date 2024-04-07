@@ -13,7 +13,6 @@ namespace ecs
     EntityStorage storage{entity_size};
 
     components_set_hash_t compsIdsHash = hashCompIds(comp_ids);
-    m_CompsHashToArchetypes.insert({compsIdsHash, id});
 
     m_Archetypes.emplace_back(
       std::move(entity_size),
@@ -26,6 +25,8 @@ namespace ecs
       std::move(sizes),
       std::move(types)
     );
+
+    m_DirtyComponentsCache = true;
 
     return id;
   }
@@ -77,6 +78,12 @@ namespace ecs
   {
     if (comps.empty())
       return {};
+
+    if (m_DirtyComponentsCache)
+    {
+      m_CompsHashToArchetypes.clear();
+      m_DirtyComponentsCache = false;
+    }
 
     components_set_hash_t hash = hashCompIds(comps);
     const auto getDesiredArchs = [hash, this]() -> eastl::vector<archetype_id_t>
