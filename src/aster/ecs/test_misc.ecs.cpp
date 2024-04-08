@@ -50,7 +50,6 @@ class TestEDComponent
 };
 
 DECLARE_TRIVIAL_ECS_COMPONENT_WITH_NAME(TestEDComponent, "test_ed_component");
-DECLARE_ECS_ED_TYPE(TestEDComponent, "test_ed_component");
 
 ECS_SYSTEM()
 static void test_ed_comp(const TestEDComponent& ed)

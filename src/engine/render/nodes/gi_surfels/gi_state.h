@@ -1,9 +1,15 @@
 #pragma once
 
+namespace ed
+{
+  class Scope;
+}
+
 class GIOnSurfels
 {
   public:
-    void init()
+    GIOnSurfels() = default;
+    GIOnSurfels(const ed::Scope*)
     {
       initialized = false;
     }

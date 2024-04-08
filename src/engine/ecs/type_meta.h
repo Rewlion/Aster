@@ -244,7 +244,8 @@ namespace ecs
       [](ed::CustomTypeRegistry& reg) {reg.add<type>(type_name); }\
     }
 
-  #define DECLARE_ECS_COMPONENT(type, type_name, type_manager, is_trivial, is_trivial_relocatable) \
+  #define DECLARE_ECS_COMPONENT_BASE(type, type_name, type_manager, is_trivial, is_trivial_relocatable, ed_registration) \
+    ed_registration\
     ecs::TypeMetaRegistration type ## _reg{ ecs::TypeMeta{ \
       .size = sizeof(type), \
       .typeId = ecs::CompileTypeId::from<type>(), \
@@ -253,17 +254,37 @@ namespace ecs
       .isTrivial = is_trivial, \
       .isTrivialRelocatable = is_trivial_relocatable }}
 
+  #define ED_NOP
+
+  #define DECLARE_ECS_COMPONENT(type, type_name, type_manager, is_trivial, is_trivial_relocatable) \
+          DECLARE_ECS_COMPONENT_BASE(type, type_name, type_manager, is_trivial, is_trivial_relocatable, DECLARE_ECS_ED_TYPE(type, type_name);)
+
+  #define DECLARE_ECS_COMPONENT_NO_ED(type, type_name, type_manager, is_trivial, is_trivial_relocatable) \
+          DECLARE_ECS_COMPONENT_BASE(type, type_name, type_manager, is_trivial, is_trivial_relocatable, ED_NOP)
+
   #define DECLARE_TRIVIAL_ECS_COMPONENT_WITH_NAME(type, name) \
           DECLARE_ECS_COMPONENT(type, name, ecs::TrivialTypeManager<type>, true, true)
+
+  #define DECLARE_TRIVIAL_ECS_COMPONENT_WITH_NAME_NO_ED(type, name)\
+          DECLARE_ECS_COMPONENT_NO_ED(type, name, ecs::TrivialTypeManager<type>, true, true)
 
   #define DECLARE_TRIVIAL_ECS_COMPONENT(type) \
           DECLARE_TRIVIAL_ECS_COMPONENT_WITH_NAME(type, #type)
   
+  #define DECLARE_TRIVIAL_ECS_COMPONENT_NO_ED(type)\
+          DECLARE_TRIVIAL_ECS_COMPONENT_WITH_NAME_NO_ED(type, #type)
+
   #define DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT_WITH_NAME(type, name) \
           DECLARE_ECS_COMPONENT(type, name, ecs::NonTrivialTypeManager<type>, false, true)
 
+  #define DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT_WITH_NAME_NO_ED(type, name) \
+          DECLARE_ECS_COMPONENT_NO_ED(type, name, ecs::NonTrivialTypeManager<type>, false, true)
+
   #define DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT(type) \
           DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT_WITH_NAME(type, #type)
+
+  #define DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT_NO_ED(type) \
+          DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT_WITH_NAME_NO_ED(type, #type)
 
   #define DECLARE_INITABLE_ECS_OBJECT_COMPONENT(type) \
           DECLARE_ECS_COMPONENT(type, #type, (ecs::NonTrivialTypeManager<type, ecs::INITABLE_TYPE>), false, true)

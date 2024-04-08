@@ -75,16 +75,6 @@ namespace ecs
       {
         comps[name] = EntityId{};
       }
-      else if (type == "component")
-      {
-        const auto names = Utils::split_view(name, ' ');
-        if (names.size() != 2)
-        {
-          logerror("ecs: invalid obj component `{}` expected format: `[type] [name]`", name);
-          continue;
-        }
-        comps[names[1]] = ecs::TemplateTypeWrapper{string{names[0]}};
-      }
     }
 
     return comps;

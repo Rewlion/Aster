@@ -10,6 +10,11 @@ namespace gapi
   class CmdEncoder;
 }
 
+namespace ed
+{
+  class Scope;
+}
+
 namespace Engine::dbg
 {
   class LineRenderer
@@ -23,6 +28,7 @@ namespace Engine::dbg
     public:
       LineRenderer() = default;
       LineRenderer(const LineRenderer& ecs_tmpl) {}
+      LineRenderer(const ed::Scope*) {}
 
       void addLine(const float3& start, const float3& end,
                    const float3& color, float lifetime_sec);

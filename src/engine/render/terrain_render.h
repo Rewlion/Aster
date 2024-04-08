@@ -7,6 +7,11 @@
 
 #include <EASTL/vector.h>
 
+namespace ed
+{
+  class Scope;
+}
+
 namespace Engine::Render
 {
   class TerrainRender
@@ -14,6 +19,7 @@ namespace Engine::Render
     public:
       TerrainRender() = default;
       TerrainRender(const TerrainRender&);
+      TerrainRender(const ed::Scope*) {}
       TerrainRender(const string& vterrain_name,
                     const int patch_side_bits,
                     const int world_size_meters,

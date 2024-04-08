@@ -1,5 +1,10 @@
 #pragma once
 
+namespace ed
+{
+  class Scope;
+}
+
 namespace gapi
 {
   class CmdEncoder;
@@ -15,6 +20,8 @@ namespace Engine::Render
   class GuiRender
   {
     public:
+      GuiRender() = default;
+      GuiRender(const ed::Scope*) {}
       void render(gapi::CmdEncoder& encoder);
 
     private:

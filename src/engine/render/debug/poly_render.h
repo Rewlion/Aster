@@ -10,6 +10,11 @@ namespace gapi
   class CmdEncoder;
 }
 
+namespace ed
+{
+  class Scope;
+}
+
 namespace Engine::dbg
 {
   class PolyRenderer
@@ -27,6 +32,7 @@ namespace Engine::dbg
     public:
       PolyRenderer() = default;
       PolyRenderer(const PolyRenderer& ecs_tmpl) {}
+      PolyRenderer(const ed::Scope*) {}
 
       void addPoly(const float3& a, const float3& b, const float3& c,
                    const float4& color, const float lifetime_sec);

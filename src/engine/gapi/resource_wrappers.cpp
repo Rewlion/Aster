@@ -118,5 +118,5 @@ namespace gapi
     m_Encoder.setScissor(m_Scissor);
   }
 
-  DECLARE_ECS_COMPONENT(TextureWrapper, "texture", (ecs::HandlerTypeManager<TextureWrapper>), false, true);
+  DECLARE_ECS_COMPONENT_NO_ED(TextureWrapper, "texture", (ecs::HandlerTypeManager<TextureWrapper>), false, true);
 }

@@ -5,6 +5,11 @@
 
 #include <EASTL/bonus/fixed_ring_buffer.h>
 
+namespace ed
+{
+  class Scope;
+}
+
 namespace Engine::Render::dbg
 {
   struct QueuedText
@@ -25,6 +30,8 @@ namespace Engine::Render::dbg
     public:
       TextDbgQueue()
       {}
+
+      TextDbgQueue(const ed::Scope*) {}
 
       void init();
       void tick();

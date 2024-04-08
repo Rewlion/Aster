@@ -18,6 +18,11 @@ namespace gapi
   class CmdEncoder;
 }
 
+namespace ed
+{
+  class Scope;
+}
+
 namespace Engine::Render
 {
   class FontRender
@@ -25,6 +30,7 @@ namespace Engine::Render
     public:
       FontRender() = default;
       FontRender(const FontRender& tmpl);
+      FontRender(const ed::Scope*) {}
 
       const FontRender& operator=(const FontRender&);
 

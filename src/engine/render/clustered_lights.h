@@ -4,6 +4,11 @@
 
 #include <engine/shaders/shaders/clustered_light/utils.hlsl>
 
+namespace ed
+{
+  class Scope;
+}
+
 namespace Engine::Render
 {
   class ClusteredLights
@@ -11,6 +16,7 @@ namespace Engine::Render
     public:
       ClusteredLights();
       ClusteredLights(const ClusteredLights& ecs_tmpl) {}
+      ClusteredLights(const ed::Scope*) {}
 
       void addPointLight(PointLight&&);
 

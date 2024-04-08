@@ -5,12 +5,18 @@
 
 struct ImDrawData;
 
+namespace ed
+{
+  class Scope;
+}
+
 namespace Engine::Render
 {
   class ImGuiRender
   {
     public:
       ImGuiRender() = default;
+      ImGuiRender(const ed::Scope*) {}
       ImGuiRender(const ImGuiRender& ecs_tmpl) {};
       const ImGuiRender& operator=(const ImGuiRender& ecs_tmpl) { return *this; }
       ~ImGuiRender();
