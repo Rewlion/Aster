@@ -1,4 +1,5 @@
 #include "template_component.h"
+#include <engine/data/ed.h>
 
 #include <EASTL/utility.h>
 
@@ -49,10 +50,13 @@ namespace ecs
   {
     if (m_TypeId != INVALID_COMPONENT_TYPE_ID)
     {
-      const TypeMeta* meta = getMeta();
-      if (isBoxedType(meta->size) && !(m_Flags & COMPONENT_TYPE_WRAPPER))
+      if (destructor)
       {
-        meta->manager->destructor(as.ptr);
+        const TypeMeta* meta = getMeta();
+        if (isBoxedType(meta->size))
+          destructor(as.ptr, meta->manager);
+        else
+          destructor(&as.rawValue, meta->manager);
       }
 
       as.rawValue = 0;
@@ -70,6 +74,35 @@ namespace ecs
     std::swap(m_Flags, rvl.m_Flags);
 
     return *this;
+  }
+
+  void TemplateComponent::operator=(const ed::TypeConstructor& tc)
+  {
+    const TypeMeta* meta = get_meta_storage().getMeta(tc.typeName);
+    ASSERT_FMT(meta != nullptr, "ecs: failed to init component with type `{}`. Type is not registered", tc.typeName);
+
+    const bool boxedType = isBoxedType(meta->size);
+    if (boxedType)
+    {
+      as.ptr = new uint8_t[meta->size];
+      meta->manager->constructor(as.ptr, tc.data.get());
+      destructor = [](void* data, const TypeManager* type_manager)
+      {
+        type_manager->destructor(data);
+        uint8_t* typedData = reinterpret_cast<uint8_t*>(data);
+        delete[] typedData;
+      };
+    }
+    else
+    {
+      meta->manager->constructor(&as.rawValue, tc.data.get());
+      destructor = [](void* data, const TypeManager* type_manager)
+      {
+        type_manager->destructor(data);
+      };
+    }
+
+    m_TypeId = meta->typeId;
   }
 
   auto TemplateComponent::isBoxedType(const size_t size) -> bool

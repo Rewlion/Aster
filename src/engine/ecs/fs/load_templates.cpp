@@ -49,6 +49,14 @@ namespace ecs
         ADD_TMPL_COMP(Mat4, mat4)
         ADD_TMPL_COMP(Text, string)
         ADD_TMPL_COMP(Bool, bool)
+
+        case ed::ValueType::TypeConstructor:
+        {
+          const auto& tc = std::get<ed::TypeConstructor>(var.value);
+          comps[var.name] = tc;
+          break;
+        }
+
         default:
         {
           logwarn("ecs: template `{}`, ignored component: `{}` ", tmpl.getName(), var.name);
@@ -132,7 +140,9 @@ namespace ecs
 
   void add_templates_from_ed(Registry& registry, const string_view file)
   {
-    std::optional<ed::Scope> templates = ed::load_from_file(file);
+    std::shared_ptr<ed::CustomTypeRegistry> customTypeRegistry = get_custom_type_registry();
+
+    std::optional<ed::Scope> templates = ed::load_from_file(file, customTypeRegistry);
     ASSERT_FMT_RETURN(templates.has_value(), , "failed to load ecs templates from `{}`", file);
 
     for(const ed::Scope& tmpl: templates->getScopes())

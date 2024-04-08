@@ -88,3 +88,10 @@ template @("name: pathguide_test")
   pathguide_test_center:f3 = 0,0,0
   pathguide_test_flag:b = yes
 }
+
+template @("name: ed_test")
+{
+  ed: test_ed_component = {
+    val:i = 333
+  }
+}

@@ -25,6 +25,8 @@ namespace ecs
 
     loginfo("ecs: initializing components meta");
     init_meta_storage();
+    loginfo("ecs: initializing engine data custom type registry");
+    init_custom_type_registry();
 
     loginfo("ecs: init templates");
     for (const char* p: {

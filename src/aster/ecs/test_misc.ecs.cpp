@@ -4,6 +4,7 @@
 #include <engine/ecs/ecs.h>
 #include <engine/ecs/macros.h>
 #include <engine/ecs/template_utils.h>
+#include <engine/ecs/type_meta.h>
 #include <engine/events.h>
 #include <engine/gui/gui.h>
 #include <engine/input/input.h>
@@ -32,6 +33,30 @@
 //   if (evt.action == str_hash("MouseClick"))
 //     Engine::gui::manager.setMouseClickState(evt.status == Engine::Input::ButtonStatus::Press);
 // }
+
+class TestEDComponent
+{
+  public:
+    TestEDComponent() = default;
+    TestEDComponent(const ed::Scope* ed)
+    {
+      val = ed->getVariableOr<int>("val", -2);
+    }
+
+    int val = -1;
+    int v2 = 25;
+    int v6 = 31;
+    int v7 = 1222;
+};
+
+DECLARE_TRIVIAL_ECS_COMPONENT_WITH_NAME(TestEDComponent, "test_ed_component");
+DECLARE_ECS_ED_TYPE(TestEDComponent, "test_ed_component");
+
+ECS_SYSTEM()
+static void test_ed_comp(const TestEDComponent& ed)
+{
+  volatile bool f = false;
+}
 
 ECS_EVENT_SYSTEM()
 static void system_init(ecs::OnEntityCreated& evt, const float2 test_float2)

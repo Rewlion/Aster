@@ -8,6 +8,22 @@
 
 using namespace ecs;
 
+static void test_ed_comp_internal(ComponentsAccessor& accessor)
+{
+  const const TestEDComponent& ed = accessor.get<const TestEDComponent>(compile_ecs_name_hash("ed"));
+  test_ed_comp(ed);
+}
+
+
+static SystemRegistration test_ed_comp_registration(
+  test_ed_comp_internal,
+  {
+    DESCRIBE_QUERY_COMPONENT("ed", const TestEDComponent)
+  },
+  "test_ed_comp"
+);
+
+
 static void system_init_internal(Event* event, ComponentsAccessor& accessor)
 {
   ecs::OnEntityCreated* casted_event = reinterpret_cast<ecs::OnEntityCreated*>(event);

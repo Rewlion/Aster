@@ -9,6 +9,7 @@ namespace ecs
   component_type_id_t CompileTypeId::m_LastId{0};
   
   TypeMetaStorage meta_storage;
+  std::shared_ptr<ed::CustomTypeRegistry> ed_custom_type_registry;
 
   void TypeMetaStorage::init()
   {
@@ -49,6 +50,26 @@ namespace ecs
     return meta_storage;
   }
 
+  EngineDataTypeRegistration* EngineDataTypeRegistration::m_List = nullptr;
+  EngineDataTypeRegistration::EngineDataTypeRegistration(EngineDataTypeRegistrationCb&& cb)
+  {
+    m_Next = m_List;
+    m_List = this;
+
+    m_Id = m_Next ? m_Next->m_Id + 1 : 0;
+    m_EDRegistrationCb = std::move(cb);
+  }
+
+  void EngineDataTypeRegistration::addRegistrations(ed::CustomTypeRegistry& reg)
+  {
+    const EngineDataTypeRegistration* p = m_List;
+    while(p)
+    {
+      p->m_EDRegistrationCb(reg);
+      p = p->m_Next;
+    }
+  }
+
   TypeMetaRegistration* TypeMetaRegistration::m_List = nullptr;
   TypeMetaRegistration::TypeMetaRegistration(const TypeMeta& meta)
   {
@@ -57,6 +78,17 @@ namespace ecs
 
     m_Id = m_Next ? m_Next->m_Id + 1 : 0;
     m_Meta = meta;
+  }
+
+  void init_custom_type_registry()
+  {
+    ed_custom_type_registry.reset(new ed::CustomTypeRegistry);
+    EngineDataTypeRegistration::addRegistrations(*ed_custom_type_registry);
+  }
+
+  auto get_custom_type_registry() -> std::shared_ptr<ed::CustomTypeRegistry>
+  {
+    return ed_custom_type_registry;
   }
 
   DECLARE_TRIVIAL_ECS_COMPONENT(bool);

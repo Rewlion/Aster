@@ -4,6 +4,13 @@
 #include "type_meta.h"
 #include "hash.h"
 
+#include <function2/function2.hpp>
+
+namespace ed
+{
+  class TypeConstructor;
+}
+
 namespace ecs
 {
   struct TemplateTypeWrapper
@@ -23,6 +30,8 @@ namespace ecs
       ~TemplateComponent();
 
       auto operator=(TemplateComponent&&) -> TemplateComponent&;
+
+      void operator=(const ed::TypeConstructor&);
 
       template<class T>
       void operator=(T&& v) &;
@@ -49,7 +58,7 @@ namespace ecs
     private:
       enum
       {
-        COMPONENT_TYPE_WRAPPER = 1
+        COMPONENT_TYPE_WRAPPER = 1,
       };
 
       union
@@ -58,6 +67,8 @@ namespace ecs
         uint64_t rawValue;
       } as;
 
+      fu2::function_base<true, false, fu2::capacity_none,
+        false, true, void(void*, const TypeManager*) const> destructor;
       component_type_id_t m_TypeId;
       name_hash_t m_NameHash;
       uint8_t m_Flags = 0;
@@ -79,9 +90,23 @@ namespace ecs
         using PtrType = typename std::remove_cvref<T>::type;
         as.ptr = new PtrType;
         *(PtrType*)as.ptr = std::move(v);
+
+        destructor = [](void* data, const TypeManager*)
+        {
+          PtrType* typedData = reinterpret_cast<PtrType*>(data);
+          delete typedData;
+        };
       }
       else
+      {
         new (&as.rawValue) Type{std::forward<T>(v)};
+        using PtrType = typename std::remove_cvref<T>::type;
+        destructor = [](void* data, const TypeManager*)
+        {
+          PtrType* typedData = reinterpret_cast<PtrType*>(data);
+          typedData->~PtrType();
+        };
+      }
       m_TypeId = CompileTypeId::from<T>();
     }
   }

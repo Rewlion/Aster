@@ -3,8 +3,15 @@
 #include "core_types.h"
 
 #include <engine/assert.h>
+#include <engine/data/ed.h>
 
+#include <function2/function2.hpp>
 #include <EASTL/vector_map.h>
+
+namespace ed
+{
+  class Scope;
+}
 
 namespace ecs
 {
@@ -28,16 +35,19 @@ namespace ecs
   {
     public:
       virtual
-      void constructor(void* component) = 0;
+      void constructor(void* component) const = 0;
 
       virtual
-      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) = 0;
+      void constructor(void* __restrict__ component, const ed::Scope* __restrict__ engine_data) const {}
+
+      virtual
+      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) const = 0;
       
       virtual
-      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) = 0;
+      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) const = 0;
 
       virtual
-      void destructor(void* component) = 0;
+      void destructor(void* component) const = 0;
 
       // virtual
       // void copy(void* __restrict__ to, const void* __restrict__ from) {}
@@ -47,25 +57,38 @@ namespace ecs
   };
 
   template<class T>
-  class TrivialTypeManager : public TypeManager
+  class TypeManagerWithEngineDataCtor : public TypeManager
   {
     public:
-      void constructor(void* component) override
+      void constructor(void* __restrict__ component, const ed::Scope* __restrict__ engine_data) const override
+      {
+        if constexpr (HasCtorForEngineData<T>)
+        {
+          new (component) T{engine_data};
+        }
+      }
+  };
+
+  template<class T>
+  class TrivialTypeManager : public TypeManagerWithEngineDataCtor<T>
+  {
+    public:
+      void constructor(void* component) const override
       {
         *reinterpret_cast<T*>(component) = T{};
       }
 
-      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) override
+      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) const override
       {
         std::memcpy(component, init_comp, sizeof(T));
       }
 
-      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) override
+      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) const override
       {
          std::memcpy(component, init_comp, sizeof(T));
       }
 
-      void destructor(void* component) override
+      void destructor(void* component) const override
       {
       }
 
@@ -83,10 +106,10 @@ namespace ecs
   constexpr bool INITABLE_TYPE = true;
 
   template<class T, bool has_init = false>
-  class NonTrivialTypeManager : public TypeManager
+  class NonTrivialTypeManager : public TypeManagerWithEngineDataCtor<T>
   {
     public:
-      void constructor(void* component) override
+      void constructor(void* component) const override
       {
         new (component) T{};
 
@@ -94,7 +117,7 @@ namespace ecs
           reinterpret_cast<T*>(component)->init();
       }
 
-      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) override
+      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) const override
       {
         const T& init = *reinterpret_cast<const T*>(init_comp);
         new (component) T(init);
@@ -102,13 +125,13 @@ namespace ecs
         if constexpr (has_init)
           reinterpret_cast<T*>(component)->init();
       }
-      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) override
+      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) const override
       {
         T& init = *reinterpret_cast<T*>(init_comp);
         new (component) T(std::move(init));
       }
       virtual
-      void destructor(void* component) override
+      void destructor(void* component) const override
       {
         T* s =  reinterpret_cast<T*>(component);
         s->~T();
@@ -134,22 +157,22 @@ namespace ecs
   class HandlerTypeManager : public TypeManager
   {
     public:
-      void constructor(void* component) override
+      void constructor(void* component) const override
       {
         new (component) T{};
       }
 
-      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) override
+      void constructor(void* __restrict__ component, const void* __restrict__ init_comp) const override
       {
         ASSERT(!"Handlers type must be used with move semantics only");
       }
-      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) override
+      void moveConstructor(void* __restrict__ component, void* __restrict__ init_comp) const override
       {
         T& init = *reinterpret_cast<T*>(init_comp);
         new (component) T(std::move(init));
       }
       virtual
-      void destructor(void* component) override
+      void destructor(void* component) const override
       {
         T* s =  reinterpret_cast<T*>(component);
         s->~T();
@@ -166,6 +189,31 @@ namespace ecs
 
     uint64_t isTrivial : 1;
     uint64_t isTrivialRelocatable : 1;
+  };
+
+  using EngineDataTypeRegistrationCb = fu2::function_base<true, false, fu2::capacity_none,
+                                      false, true, void(ed::CustomTypeRegistry&) const>;
+
+  class EngineDataTypeRegistration
+  {
+    public:
+      EngineDataTypeRegistration(EngineDataTypeRegistrationCb&&);
+
+      static
+      void addRegistrations(ed::CustomTypeRegistry&);
+
+      static
+      auto size() -> size_t
+      {
+        return m_List ? m_List->m_Id+1 : 0;
+      }
+
+    private:
+      static EngineDataTypeRegistration* m_List;
+      EngineDataTypeRegistration* m_Next;
+
+      EngineDataTypeRegistrationCb m_EDRegistrationCb;
+      size_t m_Id;
   };
 
   class TypeMetaRegistration
@@ -190,6 +238,11 @@ namespace ecs
       TypeMeta m_Meta;
       size_t m_Id;
   };
+
+  #define DECLARE_ECS_ED_TYPE(type, type_name)\
+    ecs::EngineDataTypeRegistration type ## _engine_data_reg {\
+      [](ed::CustomTypeRegistry& reg) {reg.add<type>(type_name); }\
+    }
 
   #define DECLARE_ECS_COMPONENT(type, type_name, type_manager, is_trivial, is_trivial_relocatable) \
     ecs::TypeMetaRegistration type ## _reg{ ecs::TypeMeta{ \
@@ -230,6 +283,9 @@ namespace ecs
 
   void init_meta_storage();
   auto get_meta_storage() -> const TypeMetaStorage&;
+
+  void init_custom_type_registry();
+  auto get_custom_type_registry() -> std::shared_ptr<ed::CustomTypeRegistry> ;
 }
 
 #include "type_meta.inc.hpp"
