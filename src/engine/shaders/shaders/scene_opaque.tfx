@@ -56,7 +56,7 @@ technique SceneOpaque {
       initMetal(mat, metal);
       initRoughness(mat, roughness);
       initNormal(mat, normal);
-      initMotionVector(mat, input.prevPos, input.curPos);
+      initMotionVector(mat, input.prevPos, input.curPos, FrameScope.cameraSumJitter);
 
       return packMaterial(mat);
     }

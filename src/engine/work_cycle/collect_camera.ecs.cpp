@@ -50,14 +50,16 @@ namespace Engine
       zFar = _zFar;
     });
 
-    pos += jitter;
-
     std::swap(zNear, zFar);
+
+    float4x4 proj = math::perspective(fov, aspect, zNear, zFar);
+    proj[2][0] = jitter.x;
+    proj[2][1] = jitter.y;
 
     return {
       .pos = pos,
       .view = math::look_at(pos + forward * 2.0f, pos),
-      .proj = math::perspective(fov, aspect, zNear, zFar),
+      .proj = proj,
       .zNear = zNear,
       .zFar = zFar
     };

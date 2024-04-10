@@ -131,8 +131,8 @@ void frame_preparing_exec(gapi::CmdEncoder& encoder,
     float2(7.0f / 8.0f,  5.0f / 9.0f),
     float2(1.0f / 16.0f, 8.0f / 9.0f)
   };
-  const float2 jitterOffs = { 1.0 / (float)(2 * window_size.x), 1.0 / (float)(2 * window_size.y)};
-  const float2 cameraJitter = float2(haltonSequence[iFrame++ % haltonCount] * 2.0f - float2(1.0, 1.0)) * jitterOffs;
+  const float2 jitterOffs = { 1.0 / (float)(window_size.x), 1.0 / (float)(window_size.y)};
+  float2 cameraJitter = (haltonSequence[iFrame++ % haltonCount] - 0.5f) * 2.0f * jitterOffs;
   const float2 prevCameraJitter = Engine::Render::get_prev_jitter();
   Engine::Render::set_prev_jitter(cameraJitter);
 
@@ -171,6 +171,7 @@ void frame_preparing_exec(gapi::CmdEncoder& encoder,
 
   tfx::set_extern("cameraPrevJitter", prevCameraJitter);
   tfx::set_extern("cameraJitter", cameraJitter);
+  tfx::set_extern("cameraSumJitter", cameraJitter - prevCameraJitter);
   tfx::set_extern("prev_view_proj", prevViewProjTm);
   tfx::set_extern("view_proj", viewProjTm);
   tfx::set_extern("inv_view_proj", invViewProjTm);

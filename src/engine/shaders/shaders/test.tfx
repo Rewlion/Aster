@@ -56,7 +56,7 @@ technique TestStaticMesh {
       initMetal(mat, TestStaticMeshScope.metal);
       initRoughness(mat, TestStaticMeshScope.roughness);
       initNormal(mat, input.normal);
-      initMotionVector(mat, input.prevPos, input.curPos);
+      initMotionVector(mat, input.prevPos, input.curPos, FrameScope.cameraSumJitter);
 
       return packMaterial(mat);
     }

@@ -233,7 +233,7 @@ technique Terrain
     initMetal(m, 0);
     initRoughness(m, 1.0);
     initNormal(m, input.normal);
-    initMotionVector(m, input.prevPos, input.curPos);
+    initMotionVector(m, input.prevPos, input.curPos, FrameScope.cameraSumJitter);
 
     return packMaterial(m);
   }

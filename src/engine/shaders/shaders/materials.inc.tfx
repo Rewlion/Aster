@@ -45,16 +45,17 @@ technique_macro USE_MATERIALS_PACKING
     m.normal = normal;
   }
 
-  float2 calcMotion(float4 prev_pos, float4 cur_pos)
+  float2 calcMotion(float4 prev_pos, float4 cur_pos, float2 sum_jitter)
   {
     prev_pos /= prev_pos.w;
     cur_pos /= cur_pos.w;
-    return (cur_pos - prev_pos).xy;
+    
+    return (cur_pos - prev_pos).xy - sum_jitter;
   }
 
-  void initMotionVector(inout UnpackedMaterial m, float4 prev_pos, float4 cur_pos)
+  void initMotionVector(inout UnpackedMaterial m, float4 prev_pos, float4 cur_pos, float2 sum_jitter)
   {
-    m.motion = calcMotion(prev_pos, cur_pos);
+    m.motion = calcMotion(prev_pos, cur_pos, sum_jitter);
   }
 
   PackedMaterial packMaterial(UnpackedMaterial m)
