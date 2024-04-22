@@ -28,6 +28,7 @@ technique GIBS_IndirectLight
 
   USE_MATERIALS_NORMAL_UNPACK();
   USE_DEPTH_UTILS();
+  USE_FRAME_HELPERS();
 
   #hlsl
   #include <gi_surfels/surfel_norm.hlsl>
@@ -110,11 +111,7 @@ technique GIBS_IndirectLight
       return;
     }
 
-    float3 leftRight = FrameScope.rtView_WS - FrameScope.ltView_WS;
-    float3 topBot = FrameScope.lbView_WS - FrameScope.ltView_WS;
-
-    float2 t = float2(tc.xy) / float2(renderSize - uint2(1, 1));
-    float3 farPlainPoint = FrameScope.ltView_WS + leftRight * t.x + topBot * t.y;
+    float3 farPlainPoint = getFarPlanePoint(tc.xy, renderSize);
     float3 viewDir = normalize(farPlainPoint);
 
     float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);

@@ -58,6 +58,7 @@ technique ResolveGbuffer {
 
   USE_DEPTH_UTILS();
   USE_MATERIALS_UNPACKING();
+  USE_FRAME_HELPERS();
 
   #hlsl
     #include "clustered_light/lights_apply.hlsl"
@@ -121,11 +122,7 @@ technique ResolveGbuffer {
       if (depth == 0.0)
         return;
 
-      float3 leftRight = FrameScope.rtView_WS - FrameScope.ltView_WS;
-      float3 topBot = FrameScope.lbView_WS - FrameScope.ltView_WS;
-
-      float2 t = float2(tc.xy) / float2(renderSize - uint2(1, 1));
-      float3 farPlainPoint = FrameScope.ltView_WS + leftRight * t.x + topBot * t.y;
+      float3 farPlainPoint = getFarPlanePoint(tc.xy, renderSize);
       float3 viewDir = normalize(farPlainPoint);
 
       ProcessedMaterial mat = processMaterial(unpackMaterial(tc));
