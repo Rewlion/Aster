@@ -2,7 +2,6 @@
 #include <atmosphere/sky.inc.tfx>
 #include <atmosphere/sph.inc.tfx>
 #include <atmosphere/atmosphere.inc.tfx>
-#include <math.inc.tfx>
 #include <noise.inc.tfx>
 #include <color_spaces.inc.tfx>
 #include <materials.inc.tfx>
@@ -32,9 +31,9 @@ technique GIBS_AccSunIrradiance
   activate scope GIBS_AccSunIrradianceScope;
 
   USE_RT();
-  USE_MATH();
 
   #hlsl
+  #include "math.hlsl"
   #include <atmosphere/sph.hlsl>
   #end
   USE_ATM_SPH();
@@ -108,13 +107,13 @@ technique GIBS_AccSurfelsIrradiance
   activate scope GIBS_AccSurfelsIrradianceScope;
 
   USE_RT();
-  USE_MATH();
 
   USE_SKY_LUT_SAMPLING();
   USE_NOISE();
   USE_COLOR_SPACES();
 
   #hlsl
+  #include "math.hlsl"
   #include <atmosphere/sph.hlsl>
   #end
   USE_ATM_SPH();

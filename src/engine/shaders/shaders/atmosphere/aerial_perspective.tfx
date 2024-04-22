@@ -1,5 +1,4 @@
 #include <frame.inc.tfx>
-#include <math.inc.tfx>
 #include "atmosphere.inc.tfx"
 #include "ebruneton.inc.tfx"
 #include "multiple_scattering.inc.tfx"
@@ -24,7 +23,10 @@ technique AerialPerspective {
   support scope FrameScope;
   activate scope AerialPerspectiveScope;
   
-  USE_MATH();
+  #hlsl
+  #include "math.hlsl"
+  #end
+
   USE_ATMOSPHERE_PARAMS();
 
   USE_EBRUNETON_HELPERS();

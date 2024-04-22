@@ -2,7 +2,6 @@
 #include <depth.inc.tfx>
 #include <frame.inc.tfx>
 #include <materials.inc.tfx>
-#include <math.inc.tfx>
 #include <noise.inc.tfx>
 #include <pbr.inc.tfx>
 #include <screen_space.inc.tfx>
@@ -32,7 +31,9 @@ technique SpecularReflection {
   activate scope SpecularReflectionScope;
   support scope FrameScope;
 
-  USE_MATH();
+  #hlsl
+  #include "math.hlsl"
+  #end
 
   USE_NOISE();
   USE_PBR();

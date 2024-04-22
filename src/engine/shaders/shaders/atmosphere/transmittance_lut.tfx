@@ -1,5 +1,4 @@
 #include <screen_space.inc.tfx>
-#include <math.inc.tfx>
 #include "atmosphere.inc.tfx"
 #include "ebruneton.inc.tfx"
 #include "scattering.inc.tfx"
@@ -7,7 +6,10 @@
 technique TransmittanceLUT {
   USE_ATMOSPHERE_PARAMS();
 
-  USE_MATH();
+  #hlsl
+  #include "math.hlsl"
+  #end
+
   USE_SCREENSPACE_BASE();
   USE_EBRUNETON_HELPERS();
   USE_SCATTERING();

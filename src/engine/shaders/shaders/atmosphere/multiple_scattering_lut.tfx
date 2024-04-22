@@ -1,5 +1,4 @@
 #include <frame.inc.tfx>
-#include <math.inc.tfx>
 #include <screen_space.inc.tfx>
 #include "atmosphere.inc.tfx"
 #include "ebruneton.inc.tfx"
@@ -19,7 +18,10 @@ technique MultipleScatteringLUT {
   USE_ATMOSPHERE_PARAMS();
   activate scope MsLUTScope;
 
-  USE_MATH();
+  #hlsl
+  #include "math.hlsl"
+  #end
+
   USE_EBRUNETON_HELPERS();
   USE_SCATTERING();
   USE_TRANSMITTANCE_LUT();

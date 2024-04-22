@@ -1,5 +1,4 @@
 #include <frame.inc.tfx>
-#include <math.inc.tfx>
 #include "atmosphere.inc.tfx"
 #include "ebruneton.inc.tfx"
 #include "sky.inc.tfx"
@@ -20,7 +19,10 @@ technique AtmSphericalHarmonics {
   support scope FrameScope;
   activate scope AtmSphericalHarmonicsScope;
 
-  USE_MATH();
+  #hlsl
+  #include "math.hlsl"
+  #end
+
   USE_ATMOSPHERE_PARAMS();
   USE_EBRUNETON_HELPERS();
   USE_TRANSMITTANCE_LUT();

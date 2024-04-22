@@ -1,5 +1,4 @@
 #include <frame.inc.tfx>
-#include <math.inc.tfx>
 #include <noise.inc.tfx>
 #include <pbr.inc.tfx>
 #include <screen_space.inc.tfx>
@@ -23,7 +22,11 @@ scope EnviSpecularScope {
 
 technique EnviSpecular {
   support scope FrameScope;
-  USE_MATH();
+  
+  #hlsl
+  #include "math.hlsl"
+  #end
+
   USE_ATMOSPHERE_PARAMS();
   activate scope EnviSpecularScope;
 
@@ -94,7 +97,10 @@ scope EnviBRDFScope {
 technique EnviBRDF {
   activate scope EnviBRDFScope;
 
-  USE_MATH();
+  #hlsl
+  #include "math.hlsl"
+  #end
+
   USE_SCREENSPACE_BASE();
   USE_NOISE();
   USE_PBR();

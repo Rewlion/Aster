@@ -1,6 +1,5 @@
 #include <depth.inc.tfx>
 #include <frame.inc.tfx>
-#include <math.inc.tfx>
 #include <screen_space.inc.tfx>
 #include "atmosphere.inc.tfx"
 #include "ebruneton.inc.tfx"
@@ -26,7 +25,10 @@ technique SkyApply {
   support scope FrameScope;
   activate scope SkyApplyScope;
 
-  USE_MATH();
+  #hlsl
+  #include "math.hlsl"
+  #end
+
   USE_ATMOSPHERE_PARAMS();
 
   USE_DEPTH_UTILS();

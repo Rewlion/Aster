@@ -236,8 +236,6 @@ struct ROSpatialStorage
     return coverage;
   }
 
-  #define MAX_FLOAT 3.402823466e+38
-
   bool checkFreeSpaceForNewSurfel(float3 wpos, float3 camera_to_wpos, StructuredBuffer<SurfelData> surfels_storage, RWStructuredBuffer<uint> surfels_lifetime)
   {
     SpatialInfo spatialInfo = calcSpatialInfo(camera_to_wpos, zFar);
@@ -255,7 +253,7 @@ struct ROSpatialStorage
     uint overlapsCount = 0;
     Lifetime overlappingSurfelLifetime;
 
-    float sdf = MAX_FLOAT;
+    float sdf = FLOAT_MAX;
     for (uint i = idBegin; (i < idEnd) && (overlapsCount < 2); ++i)
     {
       uint surfelId = surfelsSpatialStorage[i];
@@ -371,14 +369,14 @@ struct ROSpatialStorage
     uint idsCount = surfelsSpatialStorage[counter];
     uint idEnd = idBegin+idsCount;
 
-    float sdf = MAX_FLOAT;
+    float sdf = FLOAT_MAX;
     for (uint i = idBegin; (i < idEnd) && (sdf > 0.0); ++i)
     {
       uint surfelId = surfelsSpatialStorage[i];
       SurfelData surfel = surfels_storage[surfelId];
 
       float3 dr = wpos - surfel.pos;
-      float dist = clamp(length(dr) - surfel.radius, 0.0, MAX_FLOAT);
+      float dist = clamp(length(dr) - surfel.radius, 0.0, FLOAT_MAX);
       sdf = min(sdf, dist);
     }
 
