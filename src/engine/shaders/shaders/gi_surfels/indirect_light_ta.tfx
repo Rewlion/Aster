@@ -1,7 +1,6 @@
 #include <frame.inc.tfx>
 #include <materials.inc.tfx>
 #include <depth.inc.tfx>
-#include <color_spaces.inc.tfx>
 
 scope GIBS_IndirectLightTemporalAccumulationScope
 {
@@ -31,9 +30,9 @@ technique GIBS_IndirectLightTemporalAccumulation
   USE_MATERIALS_MOTION_VEC_UNPACK();
   USE_MATERIALS_NORMAL_UNPACK();
   USE_DEPTH_UTILS();
-  USE_COLOR_SPACES();
 
   #hlsl
+  #include <color_spaces.hlsl>
 
   // float planeDistance(float3 wpos, float3 wpos_history, float3 plane_normal)
   // {

@@ -1,5 +1,4 @@
 #include <materials.inc.tfx>
-#include <color_spaces.inc.tfx>
 #include <depth.inc.tfx>
 #include <frame.inc.tfx>
 
@@ -26,13 +25,12 @@ technique GIBS_IndirectLightSpatialFilter
   activate scope GIBS_IndirectLightSpatialFilterScope;
 
   USE_MATERIALS_NORMAL_UNPACK();
-  USE_COLOR_SPACES();
   USE_DEPTH_UTILS();
   USE_FRAME_HELPERS();
 
   #hlsl
-
   #include <ThreadGroupTilingX.hlsl>
+  #include <color_spaces.hlsl>
 
   float SVGF_normalWeight(float3 normal, float3 sample_normal)
   {

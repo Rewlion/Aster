@@ -1,6 +1,5 @@
 #include "atmosphere/atmosphere.inc.tfx"
 #include "atmosphere/sph.inc.tfx"
-#include "color_spaces.inc.tfx"
 #include "depth.inc.tfx"
 #include "frame.inc.tfx"
 #include "materials.inc.tfx"

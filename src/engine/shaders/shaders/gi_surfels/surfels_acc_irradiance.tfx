@@ -2,7 +2,6 @@
 #include <atmosphere/sky.inc.tfx>
 #include <atmosphere/sph.inc.tfx>
 #include <atmosphere/atmosphere.inc.tfx>
-#include <color_spaces.inc.tfx>
 #include <materials.inc.tfx>
 
 scope GIBS_AccSunIrradianceScope
@@ -108,7 +107,6 @@ technique GIBS_AccSurfelsIrradiance
   USE_RT();
 
   USE_SKY_LUT_SAMPLING();
-  USE_COLOR_SPACES();
 
   #hlsl
   #include "math.hlsl"
@@ -125,6 +123,7 @@ technique GIBS_AccSurfelsIrradiance
   #include "multiscale_mean_estimator.hlsl"
   #include "rayguiding.hlsl"
 
+  #include <color_spaces.hlsl>
   #include <noise.hlsl>
 
   struct FindNeighborSurfelIrradiance
