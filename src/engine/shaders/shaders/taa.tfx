@@ -1,5 +1,4 @@
 #include "color_spaces.inc.tfx"
-#include "filters.inc.tfx"
 #include "frame.inc.tfx"
 #include "screen_space.inc.tfx"
 
@@ -26,9 +25,10 @@ technique TAA
   USE_SCREENSPACE_BASE();
   USE_FRAME_HELPERS();
   USE_COLOR_SPACES();
-  USE_FILTERS();
 
   #hlsl
+  #include "filters.hlsl"
+  
   float3 ps_main(VsOutput input) : SV_Target0
   {
     float3 bbMin = float3(1e3,1e3,1e3);
