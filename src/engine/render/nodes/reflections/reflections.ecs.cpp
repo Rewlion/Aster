@@ -20,8 +20,11 @@ NODE_END()
 NODE_EXEC()
 static
 void reflections(gapi::CmdEncoder& encoder,
-                 const uint2& render_size)
+                 const uint2& render_size,
+                 const fg::TextureRequest& hi_z_buffer)
 {
+  const uint hiZMips = hi_z_buffer.describe().mipLevels;
+  tfx::set_extern("SSSR_maxHiZLevel", hiZMips-1);
   tfx::activate_scope("SpecularReflectionScope", encoder);
   tfx::activate_technique("SpecularReflection", encoder);
   

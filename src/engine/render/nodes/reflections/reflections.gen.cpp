@@ -40,7 +40,7 @@ void mk_fg_node_reflections(Event*, ComponentsAccessor&)
       tfx::set_extern("hi_z_buffer", hi_z_buffer.get());
       tfx::set_extern("enviSpecular", atm_envi_specular_srv.get());
       tfx::set_extern("enviBRDF", atm_envi_brdf_srv.get());
-      reflections(encoder, render_size.get());
+      reflections(encoder, render_size.get(), hi_z_buffer);
     };
   });
 }
