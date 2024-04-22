@@ -1,6 +1,5 @@
 #include "frame.inc.tfx"
 #include "mesh.inc.tfx"
-#include "normals.inc.tfx"
 #include "materials.inc.tfx"
 
 technique SceneOpaque {
@@ -8,10 +7,11 @@ technique SceneOpaque {
   support scope StaticModelScope;
 
   USE_STATIC_MESH();
-  USE_NORMALS_UTILS();
   USE_MATERIALS_PACKING();
 
   #hlsl
+    #include "normals.hlsl"
+
     struct VsOutput
     {
       float4 pos: SV_Position;
