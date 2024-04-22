@@ -4,6 +4,7 @@
 #define LIGHTS_APPLY_INCLUDE_GUARD
 
 #include "utils.hlsl"
+#include <pbr.hlsl>
 
 float pointLightAttenuation(float light_radius, float distance_sq)
 {

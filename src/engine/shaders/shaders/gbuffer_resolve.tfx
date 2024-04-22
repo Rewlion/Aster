@@ -5,7 +5,6 @@
 #include "frame.inc.tfx"
 #include "materials.inc.tfx"
 #include "noise.inc.tfx"
-#include "pbr.inc.tfx"
 #include "screen_space.inc.tfx"
 
 scope ResolveGbufferScope {
@@ -60,12 +59,12 @@ technique ResolveGbuffer {
   USE_ATM_SPH();
 
   USE_DEPTH_UTILS();
-  USE_PBR();
   USE_MATERIALS_UNPACKING();
   USE_NOISE();
 
   #hlsl
     #include "clustered_light/lights_apply.hlsl"
+    #include "pbr.hlsl"
     
     float staticShadowPCF(float3 world_pos)
     {

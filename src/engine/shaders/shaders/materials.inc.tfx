@@ -115,6 +115,8 @@ technique_macro USE_MATERIALS_UNPACKING
   USE_MATERIALS_ROUGHNESS_UNPACK();
 
   #hlsl
+  #include <pbr.hlsl>
+  
   struct ProcessedMaterial
   {
     float metal;

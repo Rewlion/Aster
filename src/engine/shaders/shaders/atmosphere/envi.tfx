@@ -1,6 +1,5 @@
 #include <frame.inc.tfx>
 #include <noise.inc.tfx>
-#include <pbr.inc.tfx>
 #include <screen_space.inc.tfx>
 #include "atmosphere.inc.tfx"
 #include "ebruneton.inc.tfx"
@@ -103,9 +102,10 @@ technique EnviBRDF {
 
   USE_SCREENSPACE_BASE();
   USE_NOISE();
-  USE_PBR();
 
   #hlsl
+  #include <pbr.hlsl>
+
   #define SAMPLES_COUNT 1024
   #define SAMPLES_COUNT_SQ 32
 

@@ -3,7 +3,6 @@
 #include <frame.inc.tfx>
 #include <materials.inc.tfx>
 #include <noise.inc.tfx>
-#include <pbr.inc.tfx>
 #include <screen_space.inc.tfx>
 
 scope SpecularReflectionScope {
@@ -36,14 +35,14 @@ technique SpecularReflection {
   #end
 
   USE_NOISE();
-  USE_PBR();
   USE_MATERIALS_UNPACKING();
   USE_DEPTH_UTILS();
   USE_ENVI_IBL();
 
 #hlsl
+  #include <pbr.hlsl>
+
   #define SSR_MAX_DISTANCE 60.0
-  #define FLOAT_MAX 3.402823466e+38
 
   //advance once cell forward to skip self intersection
   float3 initRaySample(float3 begin, float3 dir, float3 inv_dir, float2 cell_border_step, float2 cell_uv_offset, float2 init_cells_count)
