@@ -2,7 +2,6 @@
 #include <depth.inc.tfx>
 #include <frame.inc.tfx>
 #include <materials.inc.tfx>
-#include <noise.inc.tfx>
 #include <screen_space.inc.tfx>
 
 scope SpecularReflectionScope {
@@ -34,12 +33,12 @@ technique SpecularReflection {
   #include "math.hlsl"
   #end
 
-  USE_NOISE();
   USE_MATERIALS_UNPACKING();
   USE_DEPTH_UTILS();
   USE_ENVI_IBL();
 
 #hlsl
+  #include <noise.hlsl>
   #include <pbr.hlsl>
 
   #define SSR_MAX_DISTANCE 60.0

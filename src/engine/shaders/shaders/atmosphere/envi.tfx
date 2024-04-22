@@ -1,5 +1,4 @@
 #include <frame.inc.tfx>
-#include <noise.inc.tfx>
 #include <screen_space.inc.tfx>
 #include "atmosphere.inc.tfx"
 #include "ebruneton.inc.tfx"
@@ -31,12 +30,13 @@ technique EnviSpecular {
 
   USE_SCREENSPACE_BASE();
   USE_FRAME_HELPERS();
-  USE_NOISE();
   USE_EBRUNETON_HELPERS();
   USE_TRANSMITTANCE_LUT();
   USE_SKY_LUT();
 
   #hlsl
+  #include <noise.hlsl>
+
   #define SAMPLES_COUNT 1024.0
 
   float3 ps_main(VsOutput input) : SV_Target0
@@ -101,9 +101,9 @@ technique EnviBRDF {
   #end
 
   USE_SCREENSPACE_BASE();
-  USE_NOISE();
 
   #hlsl
+  #include <noise.hlsl>
   #include <pbr.hlsl>
 
   #define SAMPLES_COUNT 1024
