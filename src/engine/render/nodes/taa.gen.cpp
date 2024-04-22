@@ -16,8 +16,8 @@ void mk_fg_node_TAA(Event*, ComponentsAccessor&)
   { 
     const uint2 __renderSize__ = reg.getRenderSize();
 
-    auto taaCurrentFrame = reg.readTexture("post_opaque_target", gapi::TextureState::ShaderRead, false);
-    auto taaPrevFrame = reg.readTexture("taa_target", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
+    auto post_opaque_target = reg.readTexture("post_opaque_target", gapi::TextureState::ShaderRead, false);
+    auto taa_target_prev = reg.readTexture("taa_target", gapi::TextureState::RenderTarget, fg::Timeline::Previous);
     auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead, false);
     auto gbuffer_depth = reg.readTexture("gbuffer_depth", gapi::TextureState::DepthReadStencilRead, false);
 
@@ -39,10 +39,10 @@ void mk_fg_node_TAA(Event*, ComponentsAccessor&)
     ;
 
 
-    return [taaCurrentFrame,taaPrevFrame,motionBuf,gbuffer_depth](gapi::CmdEncoder& encoder)
+    return [post_opaque_target,taa_target_prev,motionBuf,gbuffer_depth](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("taaCurrentFrame", taaCurrentFrame.get());
-      tfx::set_extern("taaPrevFrame", taaPrevFrame.get());
+      tfx::set_extern("taaCurrentFrame", post_opaque_target.get());
+      tfx::set_extern("taaPrevFrame", taa_target_prev.get());
       tfx::set_extern("motionBuf", motionBuf.get());
       tfx::set_extern("gbuffer_depth", gbuffer_depth.get());
       taa_exec(encoder);
