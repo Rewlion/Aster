@@ -56,7 +56,7 @@ technique GIBS_AccSunIrradiance
       return;
 
     RTAccelerationStructure rtas = initRTAS();
-    ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
+    ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.nearPlaneDist_farPlaneDist.y};
 
     SurfelData surfel = surfelsStorage[surfelID];
     if (surfel.rayBudget == 0)
@@ -280,7 +280,7 @@ technique GIBS_AccSurfelsIrradiance
       return;
 
     RTAccelerationStructure rtas = initRTAS();
-    ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
+    ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.nearPlaneDist_farPlaneDist.y};
 
     SurfelData surfel = surfelsStorage[surfelID];
     if (surfel.rayBudget == 0)

@@ -42,7 +42,7 @@ technique GIBS_SpatialStorageBinning
       return;
 
     SurfelData surfel = surfelsStorage[surfelId];
-    SpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
+    SpatialStorage st = {surfelsSpatialStorage, FrameScope.nearPlaneDist_farPlaneDist.y};
     bool surfelInserted = st.insertSurfel(surfel, surfelId, FrameScope.cameraPos, nonlinearAABBs);
 
     if (!surfelInserted)

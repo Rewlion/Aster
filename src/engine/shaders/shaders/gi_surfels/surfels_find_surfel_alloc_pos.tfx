@@ -51,7 +51,7 @@ technique GIBS_FindSurfelsAllocPos
     float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
     float3 cameraToWorldPos = worldPos - FrameScope.cameraPos;
 
-    ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.zNear_zFar.x};
+    ROSpatialStorage st = {surfelsSpatialStorage, FrameScope.nearPlaneDist_farPlaneDist.y};
     bool hasSpace = st.checkFreeSpaceForNewSurfel(worldPos, cameraToWorldPos, surfelsStorage, surfelsLifeTime);
 
     surfelsAllocPos[tc.xy] = hasSpace ? 1 : 0;

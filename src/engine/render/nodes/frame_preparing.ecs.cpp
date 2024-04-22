@@ -179,6 +179,7 @@ void frame_preparing_exec(gapi::CmdEncoder& encoder,
   tfx::set_extern("proj", camera_data.proj);
   tfx::set_extern("camera_pos", camera_data.pos);
   tfx::set_extern("zNear_zFar", float2{camera_data.zNear, camera_data.zFar});
+  tfx::set_extern("nearPlaneDist_farPlaneDist", float2{camera_data.nearPlaneDist, camera_data.farPlaneDist});
   tfx::set_extern("ltView_WS", float3(fpViewWS.leftTop));
   tfx::set_extern("rtView_WS", float3(fpViewWS.rightTop));
   tfx::set_extern("lbView_WS", float3(fpViewWS.leftBot));

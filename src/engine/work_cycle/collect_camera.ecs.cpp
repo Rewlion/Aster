@@ -50,6 +50,9 @@ namespace Engine
       zFar = _zFar;
     });
 
+    const float nearPlaneDist = zNear;
+    const float farPlaneDist = zFar;
+
     std::swap(zNear, zFar);
 
     float4x4 proj = math::perspective(fov, aspect, zNear, zFar);
@@ -61,7 +64,9 @@ namespace Engine
       .view = math::look_at(pos + forward * 2.0f, pos),
       .proj = proj,
       .zNear = zNear,
-      .zFar = zFar
+      .zFar = zFar,
+      .nearPlaneDist = nearPlaneDist,
+      .farPlaneDist = farPlaneDist
     };
   }
 }

@@ -41,8 +41,8 @@ technique GIBS_PrepareNonLinearAABBs
     float3 leftTopDir = float3(leftTop, 1);
     float3 rightTopDir = float3(rightTop, 1);
 
-    float backPlaneDist = calcDepthFromSlice(id.z, FrameScope.zNear_zFar.x);
-    float fwdPlaneDist = calcDepthFromSlice(id.z+1, FrameScope.zNear_zFar.x);
+    float backPlaneDist = calcDepthFromSlice(id.z, FrameScope.nearPlaneDist_farPlaneDist.y);
+    float fwdPlaneDist = calcDepthFromSlice(id.z+1, FrameScope.nearPlaneDist_farPlaneDist.y);
 
     float3 ab = leftBotDir  * backPlaneDist;
     float3 bb = rightBotDir * backPlaneDist;

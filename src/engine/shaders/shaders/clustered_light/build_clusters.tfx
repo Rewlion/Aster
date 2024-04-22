@@ -22,15 +22,14 @@ technique BuildClusters
 
   #hlsl
 
-  float3 calcSlicePoint(float3 far_plane_point, uint slice, uint n_slices, float z_near, float z_far)
+  float3 calcSlicePoint(float3 far_plane_point, uint slice, uint n_slices)
   {
-    //inv z
-    float zNear = z_far;
-    float zFar = z_near;
+    float nearPlane = FrameScope.nearPlaneDist_farPlaneDist.x;
+    float farPlane = FrameScope.nearPlaneDist_farPlaneDist.y;
 
-    float sliceZ = zNear * pow(zFar / zNear, (float)slice / (float)n_slices);
+    float sliceZ = nearPlane * pow(farPlane / nearPlane, (float)slice / (float)n_slices);
 
-    return far_plane_point * (sliceZ / zFar);
+    return far_plane_point * (sliceZ / farPlane);
   }
 
   [numthreads(CLUSTERS_THREADS_X, CLUSTERS_THREADS_Y, CLUSTERS_THREADS_Z)]
@@ -52,19 +51,16 @@ technique BuildClusters
     float slice0 = id.z;
     float slice1 = id.z+1;
     float numSlices = CLUSTERS_DIM_Z;
-    
-    float zNear = FrameScope.zNear_zFar.x;
-    float zFar = FrameScope.zNear_zFar.y;
 
-    float3 leftTopSlice0  = calcSlicePoint(leftTopFarPlane,  slice0, numSlices, zNear, zFar);
-    float3 rightTopSlice0 = calcSlicePoint(rightTopFarPlane, slice0, numSlices, zNear, zFar);
-    float3 leftBotSlice0  = calcSlicePoint(leftBotFarPlane,  slice0, numSlices, zNear, zFar);
-    float3 rightBotSlice0 = calcSlicePoint(rightBotFarPlane, slice0, numSlices, zNear, zFar);
+    float3 leftTopSlice0  = calcSlicePoint(leftTopFarPlane,  slice0, numSlices);
+    float3 rightTopSlice0 = calcSlicePoint(rightTopFarPlane, slice0, numSlices);
+    float3 leftBotSlice0  = calcSlicePoint(leftBotFarPlane,  slice0, numSlices);
+    float3 rightBotSlice0 = calcSlicePoint(rightBotFarPlane, slice0, numSlices);
 
-    float3 leftTopSlice1  = calcSlicePoint(leftTopFarPlane,  slice1, numSlices, zNear, zFar);
-    float3 rightTopSlice1 = calcSlicePoint(rightTopFarPlane, slice1, numSlices, zNear, zFar);
-    float3 leftBotSlice1  = calcSlicePoint(leftBotFarPlane,  slice1, numSlices, zNear, zFar);
-    float3 rightBotSlice1 = calcSlicePoint(rightBotFarPlane, slice1, numSlices, zNear, zFar);
+    float3 leftTopSlice1  = calcSlicePoint(leftTopFarPlane,  slice1, numSlices);
+    float3 rightTopSlice1 = calcSlicePoint(rightTopFarPlane, slice1, numSlices);
+    float3 leftBotSlice1  = calcSlicePoint(leftBotFarPlane,  slice1, numSlices);
+    float3 rightBotSlice1 = calcSlicePoint(rightBotFarPlane, slice1, numSlices);
 
     Cluster cluster = (Cluster)0;
     cluster.minPoint.xyz = min(

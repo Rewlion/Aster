@@ -120,7 +120,7 @@ technique GIBS_IndirectLight
     float3 worldPos = calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
     float3 N = unpackNormal(gbufferNormal.SampleLevel(pointClampSampler, uv, 0).rgb);
 
-    float3 diffuseIndirectLight = getDiffuseIndirectLight(N, worldPos, FrameScope.cameraPos, FrameScope.zNear_zFar.x);
+    float3 diffuseIndirectLight = getDiffuseIndirectLight(N, worldPos, FrameScope.cameraPos, FrameScope.nearPlaneDist_farPlaneDist.y);
 
     outputTex[tc.xy] = float4(diffuseIndirectLight, 1.0);
   }

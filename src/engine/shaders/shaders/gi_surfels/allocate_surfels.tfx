@@ -87,7 +87,7 @@ technique GIBS_AllocateSurfels
     float3 worldPos = calcWorldPosITM(tc.xy, renderSize, depth);//calcWorldPos(FrameScope.cameraPos, farPlainPoint, depth, FrameScope.zNear_zFar.x, FrameScope.zNear_zFar.y);
     float3 cameraToWorldPos = worldPos - FrameScope.cameraPos;
     
-    SpatialInfo spatialInfo = calcSpatialInfo(cameraToWorldPos, FrameScope.zNear_zFar.x);
+    SpatialInfo spatialInfo = calcSpatialInfo(cameraToWorldPos, FrameScope.nearPlaneDist_farPlaneDist.y);
 
     SpatialLock spatialLocks = {surfelsAllocLocks};
 

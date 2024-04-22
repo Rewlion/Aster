@@ -53,6 +53,7 @@ scope FrameScope {
   float3 rbView_VS = extern(rbView_VS);
 
   float2 zNear_zFar = extern(zNear_zFar);
+  float2 nearPlaneDist_farPlaneDist = extern(nearPlaneDist_farPlaneDist);
 
   uint iFrame = extern(iFrame);
   float secSinceStart = extern(sec_since_start);

@@ -11,6 +11,8 @@ namespace Engine
     mat4 proj;
     float zNear;
     float zFar;
+    float nearPlaneDist;
+    float farPlaneDist;
   };
 
   auto get_camera(const float aspect, const float3 jitter) -> CameraData;
