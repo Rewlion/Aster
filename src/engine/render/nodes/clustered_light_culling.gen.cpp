@@ -58,7 +58,8 @@ void mk_fg_node_clustered_light_resources(Event*, ComponentsAccessor&)
         .size = (16 * 8 * 24) * sizeof(ClusterInfo),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_UAV_RW
+      gapi::BufferState::BF_STATE_UAV_RW,
+      false
     );
     auto clusters_indirecion = reg.createBuffer(
       "clusters_indirecion",
@@ -66,7 +67,8 @@ void mk_fg_node_clustered_light_resources(Event*, ComponentsAccessor&)
         .size = (16 * 8 * 24) * 128 * sizeof(ClusterIndirection),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_UAV_RW
+      gapi::BufferState::BF_STATE_UAV_RW,
+      false
     );
     auto clusters_indirecion_offset = reg.createBuffer(
       "clusters_indirecion_offset",
@@ -74,7 +76,8 @@ void mk_fg_node_clustered_light_resources(Event*, ComponentsAccessor&)
         .size = sizeof(uint),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_TRANSFER_DST
+      gapi::BufferState::BF_STATE_TRANSFER_DST,
+      false
     );
     auto clustered_lights = reg.importBufferProducer("clustered_lights", import_clustered_lights);
 
@@ -107,7 +110,8 @@ void mk_fg_node_build_light_clusters(Event*, ComponentsAccessor&)
         .size = (16 * 8 * 24) * sizeof(Cluster),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_UAV_RW
+      gapi::BufferState::BF_STATE_UAV_RW,
+      false
     );
 
     return [frustum_clusters](gapi::CmdEncoder& encoder)
@@ -134,19 +138,19 @@ void mk_fg_node_clustered_lights_culling(Event*, ComponentsAccessor&)
 {
   fg::register_node("clustered_lights_culling", FG_FILE_DECL, [](fg::Registry& reg)
   { 
-    auto frustumClusters = reg.readBuffer("frustum_clusters", gapi::BufferState::BF_STATE_SRV, false);
-    auto clustersLightBuffer = reg.readBuffer("clustered_lights", gapi::BufferState::BF_STATE_SRV, false);
-    auto clustersInfoBuffer = reg.modifyBuffer("clusters_info", gapi::BufferState::BF_STATE_UAV_RW);
-    auto clustersIndirectionBuffer = reg.modifyBuffer("clusters_indirecion", gapi::BufferState::BF_STATE_UAV_RW);
-    auto clustersIndirectionBufferNextPos = reg.modifyBuffer("clusters_indirecion_offset", gapi::BufferState::BF_STATE_UAV_RW);
+    auto frustum_clusters = reg.readBuffer("frustum_clusters", gapi::BufferState::BF_STATE_SRV, false);
+    auto clustered_lights = reg.readBuffer("clustered_lights", gapi::BufferState::BF_STATE_SRV, false);
+    auto clusters_info = reg.modifyBuffer("clusters_info", gapi::BufferState::BF_STATE_UAV_RW);
+    auto clusters_indirecion = reg.modifyBuffer("clusters_indirecion", gapi::BufferState::BF_STATE_UAV_RW);
+    auto clusters_indirecion_offset = reg.modifyBuffer("clusters_indirecion_offset", gapi::BufferState::BF_STATE_UAV_RW);
 
-    return [frustumClusters,clustersLightBuffer,clustersInfoBuffer,clustersIndirectionBuffer,clustersIndirectionBufferNextPos](gapi::CmdEncoder& encoder)
+    return [frustum_clusters,clustered_lights,clusters_info,clusters_indirecion,clusters_indirecion_offset](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("frustumClusters", frustumClusters.get());
-      tfx::set_extern("clustersLightBuffer", clustersLightBuffer.get());
-      tfx::set_extern("clustersInfoBuffer", clustersInfoBuffer.get());
-      tfx::set_extern("clustersIndirectionBuffer", clustersIndirectionBuffer.get());
-      tfx::set_extern("clustersIndirectionBufferNextPos", clustersIndirectionBufferNextPos.get());
+      tfx::set_extern("frustumClusters", frustum_clusters.get());
+      tfx::set_extern("clustersLightBuffer", clustered_lights.get());
+      tfx::set_extern("clustersInfoBuffer", clusters_info.get());
+      tfx::set_extern("clustersIndirectionBuffer", clusters_indirecion.get());
+      tfx::set_extern("clustersIndirectionBufferNextPos", clusters_indirecion_offset.get());
       clustered_lights_culling(encoder);
     };
   });
@@ -169,12 +173,12 @@ void mk_fg_node_dbg_clustered_render(Event*, ComponentsAccessor&)
   fg::register_node("dbg_clustered_render", FG_FILE_DECL, [](fg::Registry& reg)
   { 
     reg.orderMeBefore("ui");
-    auto clustersInfoBuffer = reg.readBuffer("clusters_info", gapi::BufferState::BF_STATE_SRV, false);
+    auto clusters_info = reg.readBuffer("clusters_info", gapi::BufferState::BF_STATE_SRV, false);
     auto rt = reg.modifyTexture("final_target", gapi::TextureState::RenderTarget);
 
-    return [clustersInfoBuffer,rt](gapi::CmdEncoder& encoder)
+    return [clusters_info,rt](gapi::CmdEncoder& encoder)
     {
-      tfx::set_extern("clustersInfoBuffer", clustersInfoBuffer.get());
+      tfx::set_extern("clustersInfoBuffer", clusters_info.get());
       dbg_clustered_render_exec(encoder, rt.get());
     };
   });

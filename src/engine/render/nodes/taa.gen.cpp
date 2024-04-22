@@ -17,7 +17,7 @@ void mk_fg_node_TAA(Event*, ComponentsAccessor&)
     const uint2 __renderSize__ = reg.getRenderSize();
 
     auto post_opaque_target = reg.readTexture("post_opaque_target", gapi::TextureState::ShaderRead, false);
-    auto taa_target_prev = reg.readTexture("taa_target", gapi::TextureState::RenderTarget, fg::Timeline::Previous);
+    auto taa_target_prev = reg.readTexture("taa_target", gapi::TextureState::ShaderRead, fg::Timeline::Previous);
     auto motionBuf = reg.readTexture("motionBuf", gapi::TextureState::ShaderRead, false);
     auto gbuffer_depth = reg.readTexture("gbuffer_depth", gapi::TextureState::DepthReadStencilRead, false);
 

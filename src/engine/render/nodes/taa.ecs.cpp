@@ -2,7 +2,7 @@
 
 NODE_BEGIN(TAA)
   BIND_TEX_SRV_AS(post_opaque_target, taaCurrentFrame)
-  READ_PREV_FRAME_TEX_AS(taa_target, taa_target_prev, TEX_STATE(RenderTarget))
+  READ_PREV_FRAME_TEX_AS(taa_target, taa_target_prev, TEX_STATE(ShaderRead))
   BIND_SHADER_VAR_AS(taa_target_prev, taaPrevFrame)
   BIND_TEX_SRV_AS(motionBuf, motionBuf)
   BIND_TEX_RO_DEPTH_AS(gbuffer_depth, gbuffer_depth)
