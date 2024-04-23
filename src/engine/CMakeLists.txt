@@ -10,6 +10,7 @@ target_link_libraries(engine
   deps_imgui_node_editor
   deps_tracy
   engine_assets
+  engine_components
   engine_console
   engine_data
   engine_dbg_text

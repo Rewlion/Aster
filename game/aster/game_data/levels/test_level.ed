@@ -228,6 +228,10 @@ entity @("camera")
   forward:f3 = 0.0, 0.0, 1.0
 }
 
+entity @("test_static_mesh")
+{
+}
+
 entity @("Atmosphere")
 {
 }

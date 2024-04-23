@@ -57,6 +57,66 @@ namespace math
     return glm::rotate(radians, float3{0.0, 1.0, 0.0}) * float4{1.0, 0.0, 0.0, 0.0};
   }
 
+  auto rotate(const float roll, const float pitch, const float yaw) -> float4x4
+  {
+    float cosa = std::cos(-roll);
+    float sina = std::sin(-roll);
+    float cosb = std::cos(-yaw);
+    float sinb = std::sin(-yaw);
+    float cosg = std::cos(-pitch);
+    float sing = std::sin(-pitch);
+
+    float4x4 ZXY;
+    ZXY[0] = float4{cosa*cosb-sina*sinb*sing, cosa*sinb*sing + sina*cosb, -sinb * cosg, 0};
+    ZXY[1] = float4{-sina*cosg, cosa*cosg, sing, 0};
+    ZXY[2] = float4{sina*cosb*sing + cosa*sinb, sina*sinb - cosa*cosb*sing, cosb * cosg, 0};
+    ZXY[3] = float4{0,0,0,1};
+
+    return ZXY;
+  }
+
+  auto rotateX(const float radians) -> float4x4
+  {
+    const float c = std::cos(-radians);
+    const float s = std::sin(-radians);
+
+    float4x4 X;
+    X[0] = float4{1,0,0,0};
+    X[1] = float4{0,c,s,0};
+    X[2] = float4{0,-s,c,0};
+    X[3] = float4{0,0,0,1};
+
+    return X;
+  }
+
+  auto rotateY(const float radians) -> float4x4
+  {
+    const float c = std::cos(-radians);
+    const float s = std::sin(-radians);
+
+    float4x4 Y;
+    Y[0] = float4{c,0,-s,0};
+    Y[1] = float4{0,1,0,0};
+    Y[2] = float4{s,0,c,0};
+    Y[3] = float4{0,0,0,1};
+
+    return Y;
+  }
+
+  auto rotateZ(const float radians) -> float4x4
+  {
+    const float c = std::cos(-radians);
+    const float s = std::sin(-radians);
+
+    float4x4 Z;
+    Z[0] = float4{c,s,0,0};
+    Z[1] = float4{-s,c,0,0};
+    Z[2] = float4{0,0,1,0};
+    Z[3] = float4{0,0,0,1};
+
+    return Z;
+  }
+
   static
   auto get_far_plane_points(const float4x4& proj, const float4x4& view) -> FarPlanePoints
   {

@@ -95,3 +95,15 @@ template @("name: ed_test")
     val:i = 333
   }
 }
+
+template @("name: test_static_mesh")
+{
+  root_tm: TransformComponent = {
+    position:f3 = 192.299 , 609.8611 , -10
+    rotation:f3 = -90, 90, 90
+  }
+
+  static_mesh: StaticMeshComponent = {
+    model:t = "damaged_helmet"
+  }
+}

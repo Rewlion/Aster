@@ -74,6 +74,7 @@ configure_file("${CMAKE_SOURCE_DIR}/deps/dxc/win64/dxcompiler.lib" "${CMAKE_BINA
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/assets")
+add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/components")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/console")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/data")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/ecs")

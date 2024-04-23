@@ -35,3 +35,23 @@ void query_dynamic_mesh (eastl::function<
     cb(test_static_mesh_model,test_static_mesh_pos,test_static_mesh_rot,test_static_mesh_scale);
   });
 }
+
+
+const static DirectQueryRegistration query_static_mesh_queryReg{
+  {
+    DESCRIBE_QUERY_COMPONENT("static_mesh", const StaticMeshComponent)
+  },
+  "query_static_mesh"};
+const static query_id_t query_static_mesh_queryId = query_static_mesh_queryReg.getId();
+
+
+void query_static_mesh (eastl::function<
+  void(
+    const const StaticMeshComponent& static_mesh)> cb)
+{
+  ecs::get_registry().query(query_static_mesh_queryId, [&](ComponentsAccessor& accessor)
+  {
+    const const StaticMeshComponent& static_mesh = accessor.get<const StaticMeshComponent>(compile_ecs_name_hash("static_mesh"));
+    cb(static_mesh);
+  });
+}
