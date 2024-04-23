@@ -23,6 +23,7 @@ namespace ecs
                        TemplateParentNames&&,
                        TemplateComponentsMap&&);
       auto getEntityTemplateName(const EntityId eid) const -> string_view;
+      auto isEntityAlive(const EntityId eid) const -> bool;
 
       auto createEntity(const string_view tmpl, EntityComponents&& inits = {}) -> EntityId;
       auto recreateEntity(const EntityId eid, const string_view tmpl, EntityComponents&& inits) -> EntityId;

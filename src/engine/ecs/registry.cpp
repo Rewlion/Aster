@@ -58,6 +58,12 @@ namespace ecs
     return "";
   }
 
+  auto Registry::isEntityAlive(const EntityId eid) const -> bool
+  {
+    const auto eInfoIt = m_EntityInfosMap.find(eid.getId());
+    return eInfoIt != m_EntityInfosMap.end() && eInfoIt->second.eid == eid;
+  }
+
   auto Registry::createEntity(const string_view tmpl_name, EntityComponents&& inits) -> EntityId
   {
     return recreateEntity({}, tmpl_name, std::move(inits));
