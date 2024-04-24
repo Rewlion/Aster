@@ -41,7 +41,8 @@ namespace Engine
     public:
       void init();
 
-      ModelAsset* getModel(const string& assetName);
+      auto getModel(const string& assetName) const -> const ModelAsset*;
+      auto getModel(const string_view asset_name) const -> const ModelAsset*;
 
       bool getTexture(const string_hash assetUri, TextureAsset& asset);
       auto getTexture(const string& assetUri, TextureAsset& asset) -> bool;

@@ -8,35 +8,6 @@
 
 using namespace ecs;
 
-const static DirectQueryRegistration query_dynamic_mesh_queryReg{
-  {
-    DESCRIBE_QUERY_COMPONENT("test_static_mesh_model", string),
-    DESCRIBE_QUERY_COMPONENT("test_static_mesh_pos", float3),
-    DESCRIBE_QUERY_COMPONENT("test_static_mesh_rot", float3),
-    DESCRIBE_QUERY_COMPONENT("test_static_mesh_scale", float3)
-  },
-  "query_dynamic_mesh"};
-const static query_id_t query_dynamic_mesh_queryId = query_dynamic_mesh_queryReg.getId();
-
-
-void query_dynamic_mesh (eastl::function<
-  void(
-    const string& test_static_mesh_model,
-    const float3& test_static_mesh_pos,
-    const float3& test_static_mesh_rot,
-    const float3& test_static_mesh_scale)> cb)
-{
-  ecs::get_registry().query(query_dynamic_mesh_queryId, [&](ComponentsAccessor& accessor)
-  {
-    const string& test_static_mesh_model = accessor.get<string>(compile_ecs_name_hash("test_static_mesh_model"));
-    const float3& test_static_mesh_pos = accessor.get<float3>(compile_ecs_name_hash("test_static_mesh_pos"));
-    const float3& test_static_mesh_rot = accessor.get<float3>(compile_ecs_name_hash("test_static_mesh_rot"));
-    const float3& test_static_mesh_scale = accessor.get<float3>(compile_ecs_name_hash("test_static_mesh_scale"));
-    cb(test_static_mesh_model,test_static_mesh_pos,test_static_mesh_rot,test_static_mesh_scale);
-  });
-}
-
-
 const static DirectQueryRegistration query_static_mesh_queryReg{
   {
     DESCRIBE_QUERY_COMPONENT("static_mesh", const StaticMeshComponent)

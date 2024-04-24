@@ -42,9 +42,14 @@ namespace Engine
     fence->wait();
   }
 
-  ModelAsset* AssetsManager::getModel(const string& assetName)
+  auto AssetsManager::getModel(const string& assetName) const -> const ModelAsset*
   {
-    const string_hash assetNameHash = str_hash(assetName.c_str());
+    return getModel(string_view{assetName});
+  }
+
+  auto AssetsManager::getModel(const string_view asset_name) const -> const ModelAsset*
+  {
+    const string_hash assetNameHash = str_hash(asset_name);
 
     const auto it = m_ModelAssets.find(assetNameHash);
     if (it != m_ModelAssets.end())

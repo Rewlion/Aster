@@ -70,9 +70,11 @@ template @("name: MovingPointLight; extends: PointLight")
   moving_point_light_tag:b = yes
 }
 
-template @("name: BVH_Helmet; extends: TestStaticMesh")
+template @("name: BVH_Helmet; extends: SceneRoot")
 {
-  test_static_mesh_model:t = "damaged_helmet"
+  static_mesh: StaticMeshComponent = {
+    model:t = "damaged_helmet"
+  }
   bvh_test_flag:b = yes
 }
 

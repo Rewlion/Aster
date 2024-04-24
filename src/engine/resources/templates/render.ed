@@ -65,10 +65,13 @@ template @("name: PointLight") {
   point_light_color:f3 = 1, 1, 1
 }
 
-template @("name: TestStaticMesh")
-{
-  test_static_mesh_model:t = "cube_rough"
-  test_static_mesh_pos:f3 = 0,0,0
-  test_static_mesh_rot:f3 = 0,0,0
-  test_static_mesh_scale:f3 = 1,1,1
+///
+
+//hierarchy basement
+template @("name: SceneRoot") {
+  root_tm : TransformComponent = {
+    position: f3 = 0,0,0
+    rotation: f3 = 0,0,0 //roll, pitch, yaw
+    scale: f3 = 1,1,1
+  }
 }

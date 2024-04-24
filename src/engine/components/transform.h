@@ -14,6 +14,14 @@ class TransformComponent
 {
   public:
     TransformComponent() = default;
+    
+    TransformComponent(const float3& pos, const float3& rot, const float3& scale)
+      : m_LocalPosition(pos)
+      , m_LocalRotation(rot)
+      , m_LocalScale(scale)
+    {
+    }
+
     TransformComponent(const ed::Scope*);
 
     void attachToEntity(const ecs::EntityId, const TransformComponent* entity_comp);
@@ -25,6 +33,10 @@ class TransformComponent
     auto getLocalRotation() const -> float3 { return m_LocalRotation; }
     
     auto getWorldTransform() const -> float4x4;
+
+    void setLocalPosition(const float3& pos) { m_LocalPosition = pos; }
+    void setLocalRotation(const float3& rot) { m_LocalPosition = rot; }
+    void setLocalScale(const float3& scale) { m_LocalPosition = scale; }
 
   protected:
     struct SelfAttachment

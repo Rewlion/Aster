@@ -1,4 +1,5 @@
 #include <engine/assets/assets_manager.h>
+#include <engine/components/static_mesh.h>
 #include <engine/console/cmd.h>
 #include <engine/console/console.h>
 #include <engine/ecs/ecs.h>
@@ -533,9 +534,8 @@ void spawn_bvh_test(eastl::span<string_view>)
   {
     const float3 spawnPos = pos + forward * 5.0f;
     ecs::EntityComponents init;
-    init["test_static_mesh_pos"] = spawnPos;
-    init["test_static_mesh_model"] = string{"damaged_helmet"}; //FIXME: template extend doesn't overwrite the default value, wtf?
-    init["test_static_mesh_rot"] = float3{45.0, 180.0, 0.0};
+    init["root_tm"] = TransformComponent{spawnPos, float3{-90,90,90}, float3{1,1,1}};
+    //init["test_static_mesh_model"] = string{"damaged_helmet"}; //FIXME: template extend doesn't overwrite the default value, wtf?
 
     ecs::get_registry().createEntity("BVH_Helmet", std::move(init));
     return;
@@ -544,25 +544,17 @@ void spawn_bvh_test(eastl::span<string_view>)
 
 ECS_SYSTEM()
 void render_bvh_test(
-  const string& test_static_mesh_model,
-  const float3& test_static_mesh_pos,
-  const float3& test_static_mesh_rot,
-  const float3& test_static_mesh_scale,
+  const StaticMeshComponent& static_mesh,
   const bool bvh_test_flag)
 {
-  const mat4 rotTm = glm::rotate(test_static_mesh_rot.z, float3{0.0, 0.0, 1.0}) *
-                     glm::rotate(test_static_mesh_rot.y, float3{0.0, 1.0, 0.0}) *
-                     glm::rotate(test_static_mesh_rot.x, float3{1.0, 0.0, 0.0});
-  const mat4 scaleTm = glm::scale(test_static_mesh_scale);
-  const mat4 trTm = glm::translate(test_static_mesh_pos);
-
-  const float4x4 modelTm = trTm * scaleTm * rotTm;
+  const float4x4 modelTm = static_mesh.getWorldTransform();
+  const float3 modelPos = modelTm[3];
   const float4x4 invModelTm = glm::inverse(modelTm);
 
-  const Engine::ModelAsset* asset = Engine::assets_manager.getModel(test_static_mesh_model);
+  const Engine::ModelAsset* asset = Engine::assets_manager.getModel(static_mesh.getModelName());
   const Engine::BVH& bvh = asset->mesh->submeshesBVH.get(0);
 
-  const float3 rayPos = test_static_mesh_pos - float3{0.0f, 1.0f, 2.0f};
+  const float3 rayPos = modelPos - float3{0.0f, 1.0f, 2.0f};
   const float time = Engine::Time::get_sec_since_start();
   const float3 rayDir = glm::normalize( float3{0.0f, 0.0f, 1.0f} + float3{0.0f, 1.0f, 0.0f} * std::abs(sin(time)) );
 

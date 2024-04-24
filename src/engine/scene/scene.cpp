@@ -65,7 +65,7 @@ namespace Engine
 
     for (const string& modelName: modelNames)
     {
-      ModelAsset* asset = assets_manager.getModel(modelName);
+      const ModelAsset* asset = assets_manager.getModel(modelName);
       if (m_ModelToBindlessParams.find(asset->mesh->name) != m_ModelToBindlessParams.end())
         continue;
 
@@ -113,7 +113,7 @@ namespace Engine
     uint geometryId = 0; 
     for (const string& modelName: modelNames)
     {
-      ModelAsset* asset = assets_manager.getModel(modelName);
+      const ModelAsset* asset = assets_manager.getModel(modelName);
       if (m_MeshToGeometryId.find(asset->mesh->name) != m_MeshToGeometryId.end())
         continue;
 
@@ -137,7 +137,7 @@ namespace Engine
 
     for (const SceneObject& obj: m_SceneObjects)
     {
-      ModelAsset* asset = assets_manager.getModel(obj.model);
+      const ModelAsset* asset = assets_manager.getModel(obj.model);
       const uint geometryID = m_MeshToGeometryId[asset->mesh->name];
       const uint bindlessPackId = m_ModelToBindlessParams[obj.model];
 

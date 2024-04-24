@@ -7,65 +7,19 @@
 
 #include <glm/gtx/transform.hpp>
 
-ECS_DESCRIBE_QUERY(query_dynamic_mesh,
-  (const string& test_static_mesh_model,
-   const float3& test_static_mesh_pos,
-   const float3& test_static_mesh_rot,
-   const float3& test_static_mesh_scale));
-
 ECS_DESCRIBE_QUERY(query_static_mesh, const StaticMeshComponent& static_mesh);
 
 namespace
 {
-  //deprecated TODO:remove
   void render_model(gapi::CmdEncoder& encoder,
-                    const string& model,
-                    const float3& pos,
-                    const float3& scale,
-                    const float3& rotation)
+                    const string_view model_name,
+                    const float4x4& model_tm)
   {
-    const mat4 rotTm = glm::rotate(rotation.z, float3{0.0, 0.0, 1.0}) *
-                       glm::rotate(rotation.y, float3{0.0, 1.0, 0.0}) *
-                       glm::rotate(rotation.x, float3{1.0, 0.0, 0.0});
-    const mat4 scaleTm = glm::scale(scale);
-    const mat4 trTm = glm::translate(pos);
-
-    const float4x4 modelTm = trTm * scaleTm * rotTm;
-    const float4x4 normalTm = glm::transpose(glm::inverse(modelTm));
-    tfx::set_channel("model_obj_tm", modelTm);
+    const float4x4 normalTm = glm::transpose(glm::inverse(model_tm));
+    tfx::set_channel("model_obj_tm", model_tm);
     tfx::set_channel("normal_obj_tm", normalTm);
 
-    Engine::ModelAsset* asset = Engine::assets_manager.getModel(model);
-
-    for(size_t i = 0; i < asset->mesh->gpuSubmeshes.count(); ++i)
-    {
-      const Engine::GpuSubmesh& submesh = asset->mesh->gpuSubmeshes.get(i);
-      const tfx::Material& material = asset->materials[i];
-
-      tfx::activate_technique(material.technique, encoder);
-
-      for (const auto& m: material.params)
-        tfx::set_channel(m.name, m.value);
-
-      tfx::activate_scope("StaticModelScope", encoder);
-      encoder.updateResources();
-
-      encoder.bindVertexBuffer(submesh.vertexBuffer);
-      encoder.bindIndexBuffer(submesh.indexBuffer);
-
-      encoder.drawIndexed(submesh.indexCount, 1, 0, 0, 0);
-    }
-  }
-
-  void render_static_mesh(gapi::CmdEncoder& encoder,
-                          const StaticMeshComponent& mesh)
-  {
-    const float4x4 modelTm = mesh.getWorldTransform();
-    const float4x4 normalTm = glm::transpose(glm::inverse(modelTm));
-    tfx::set_channel("model_obj_tm", modelTm);
-    tfx::set_channel("normal_obj_tm", normalTm);
-
-    Engine::ModelAsset* asset = Engine::assets_manager.getModel(string{mesh.getModelName()});
+    const Engine::ModelAsset* asset = Engine::assets_manager.getModel(model_name);
 
     for(size_t i = 0; i < asset->mesh->gpuSubmeshes.count(); ++i)
     {
@@ -95,13 +49,18 @@ void render_models(gapi::CmdEncoder& encoder, const float4x4& view_proj, const M
 
   const auto objects = Engine::scene.queueObjects();
   for (const auto& obj: objects)
-    render_model(encoder, obj.model, obj.pos, obj.scale, obj.rot);
+  {
+    const mat4 rotTm = glm::rotate(obj.rot.z, float3{0.0, 0.0, 1.0}) *
+                       glm::rotate(obj.rot.y, float3{0.0, 1.0, 0.0}) *
+                       glm::rotate(obj.rot.x, float3{1.0, 0.0, 0.0});
+    const mat4 scaleTm = glm::scale(obj.scale);
+    const mat4 trTm = glm::translate(obj.pos);
+    const float4x4 modelTm = trTm * scaleTm * rotTm;
 
-  query_dynamic_mesh([&encoder](const string& model, const float3& pos, const float3& rot, const float3& scale) {
-    render_model(encoder, model, pos, scale, rot);
-  });
+    render_model(encoder, obj.model, modelTm);
+  }
 
   query_static_mesh([&encoder](const StaticMeshComponent& c) {
-    render_static_mesh(encoder, c);
+    render_model(encoder, c.getModelName(), c.getWorldTransform());
   });
 }

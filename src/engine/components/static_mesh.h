@@ -9,6 +9,7 @@ class StaticMeshComponent : public TransformComponent
     StaticMeshComponent(const ed::Scope*);
 
     auto getModelName() const -> string_view { return m_Model; }
+    void setModelName(const string& name) { m_Model = name; }
 
   private:
     string m_Model;
