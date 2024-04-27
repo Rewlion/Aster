@@ -11,14 +11,14 @@
     void query_name(eastl::function<void(params)>);
 
   #define ECS_COMP_GETTER_(type, name)\
-    static type& get_ ## name()\
+    static type* get_ ## name()\
     {\
-      type* comp;\
+      type* comp = nullptr;\
       query_ ## name([&](type& val)\
       {\
         comp = &val;\
       });\
-      return *comp;\
+      return comp;\
     }
 
   #define ECS_COMP_GETTER(type, name)\

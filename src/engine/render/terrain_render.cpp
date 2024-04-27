@@ -1,5 +1,6 @@
 #include "terrain_render.h"
 
+#include <engine/components/terrain.h>
 #include <engine/assets/assets_manager.h>
 #include <engine/debug_marks.h>
 #include <engine/ecs/type_meta.h>
@@ -20,36 +21,20 @@ namespace Engine::Render
     ASSERT(!"Unexpected ecs call");
   }
 
-  TerrainRender::TerrainRender(const string& vterrain_name,
-                               const int patch_side_bits,
-                               const int world_size_meters,
-                               const float2 vterrain_heightmap_min_max_border,
-                               const float vterrain_heightmap_max_height,
-                               const string& vterrain_detail,
-                               const int vterrain_detailSize)
-    : m_TerrainAlbedo(vterrain_name + ".albedo")
-    , m_TerrainHeightmap(vterrain_name + ".heightmap")
-    , m_TerrainDetailAlbedo(vterrain_detail + ".albedo")
-    , m_PatchSideBits(patch_side_bits)
-    , m_PatchSideSize(1<<patch_side_bits)
-    , m_WorldSizeMeters(world_size_meters)
-    , m_MaxLods(5)
-    , m_MinMaxHeightBorder(vterrain_heightmap_min_max_border)
-    , m_MaxHeight(vterrain_heightmap_max_height)
-    , m_DetailSize(vterrain_detailSize)
+  TerrainRender::TerrainRender(const VTerrainComponent& vt)
   {
     std::unique_ptr<gapi::CmdEncoder> encoder{gapi::allocate_cmd_encoder()};
     const float texelSizeM = 0.01; 
-    m_VirtualTexture.init(*encoder, world_size_meters, texelSizeM);
+    m_VirtualTexture.init(*encoder, vt.getWorldSize(), texelSizeM);
     encoder->flush();
 
     m_FeedbackPromise.reset(gapi::allocate_cmd_promise());
   }
 
-  void TerrainRender::setView(const float3 view_pos)
+  void TerrainRender::setView(const VTerrainComponent& vt, const float3 view_pos)
   {
     const int patchLodLimit = 3;
-    int lod0Radius = 1 << (m_PatchSideBits-1);
+    int lod0Radius = 1 << (vt.getPathSideBits()-1);
 
     const auto alignAtBorder = [&](float v)
     {
@@ -58,8 +43,9 @@ namespace Engine::Render
     };
     float2 viewOriginXZ{alignAtBorder(view_pos.x), alignAtBorder(view_pos.z)};
 
-    int2 worldLeftTop = int2(-m_WorldSizeMeters/2,m_WorldSizeMeters/2);
-    int worldRadius = m_WorldSizeMeters/2;
+    const int worldSize = vt.getWorldSize();
+    const int worldRadius = worldSize/2;
+    const int2 worldLeftTop = int2(-worldRadius, worldRadius);
 
     struct MinMax {int2 min; int2 max;};
     const auto getMinMax = [](int2 left_top, int size)
@@ -176,7 +162,7 @@ namespace Engine::Render
     tfx::set_extern("terrainPatches", (gapi::BufferHandler)m_PatchesBufInfo);
   }
 
-  void TerrainRender::render(gapi::CmdEncoder& encoder, const gapi::TextureHandle feedback_buf, const int2 feedback_size)
+  void TerrainRender::render(const VTerrainComponent& vt, gapi::CmdEncoder& encoder, const gapi::TextureHandle feedback_buf, const int2 feedback_size)
   {
     m_VirtualTexture.setVTexTfxExterns(encoder);
     tfx::activate_scope("VTexParamsScope", encoder);
@@ -185,15 +171,19 @@ namespace Engine::Render
     tfx::set_extern("terrainFeedbackBuf", feedback_buf);
     tfx::set_extern("terrainFeedbackSize", (float2)feedback_size);
 
+    const string_view terrainName = vt.getTerrainName();
+    const string heightmap = fmt::format("{}.heightmap", terrainName);
+    const string albedo = fmt::format("{}.albedo", terrainName);
+
     Engine::TextureAsset asset;
-    Engine::assets_manager.getTexture(m_TerrainHeightmap, asset);
+    Engine::assets_manager.getTexture(heightmap, asset);
     tfx::set_channel("terrainHeightmap", asset.texture);
-    Engine::assets_manager.getTexture(m_TerrainAlbedo, asset);
+    Engine::assets_manager.getTexture(albedo, asset);
     tfx::set_channel("terrainAlbedo", asset.texture);
 
-    tfx::set_channel("worldMapSize", (float)(m_WorldSizeMeters));
-    tfx::set_channel("terrainMinMaxHeightBorder", m_MinMaxHeightBorder);
-    tfx::set_channel("terrainMaxHeight", m_MaxHeight);
+    tfx::set_channel("worldMapSize", (float)(vt.getWorldSize()));
+    tfx::set_channel("terrainMinMaxHeightBorder", vt.getHeightmapMinMaxBorder());
+    tfx::set_channel("terrainMaxHeight", vt.getHeightmapMaxHeight());
 
     tfx::activate_technique("Terrain", encoder);
     encoder.updateResources();
@@ -241,7 +231,8 @@ namespace Engine::Render
     return feedback;
   }
 
-  void TerrainRender::updateVTex(gapi::CmdEncoder& encoder,
+  void TerrainRender::updateVTex(const VTerrainComponent& vt,
+                                 gapi::CmdEncoder& encoder,
                                  const gapi::TextureHandle feedback_buf,
                                  const int2 feedback_size)
   {
@@ -259,14 +250,15 @@ namespace Engine::Render
     if (feedbackTiles.empty())
       return;
 
-    const auto tileRender = [this](gapi::CmdEncoder& encoder, const uint2 packed_vtile_ptile){
+    const auto tileRender = [this, &vt](gapi::CmdEncoder& encoder, const uint2 packed_vtile_ptile){
       Engine::TextureAsset asset;
-      Engine::assets_manager.getTexture(m_TerrainDetailAlbedo, asset);
+      const string detailAlbedo = fmt::format("{}.detail.albedo", vt.getTerrainName());
+      Engine::assets_manager.getTexture(detailAlbedo, asset);
       tfx::set_extern("packedVTile", packed_vtile_ptile.x);
       tfx::set_extern("packedPTile", packed_vtile_ptile.y);
       tfx::set_channel("terrainDetailAlbedo", asset.texture);
-      tfx::set_channel("terrainDetailSize", (float)m_DetailSize);
-      tfx::set_channel("terrainSize", (float)m_WorldSizeMeters);
+      tfx::set_channel("terrainDetailSize", (float)vt.getDetailSize());
+      tfx::set_channel("terrainSize", (float)vt.getWorldSize());
       tfx::activate_scope("TerrainTileScope", encoder);
       tfx::activate_technique("TerrainTile", encoder);
       encoder.updateResources();

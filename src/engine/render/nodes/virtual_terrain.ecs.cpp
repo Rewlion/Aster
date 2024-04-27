@@ -1,5 +1,6 @@
 #include <engine/assert.h>
 #include <engine/assets/assets_manager.h>
+#include <engine/components/terrain.h>
 #include <engine/ecs/ecs.h>
 #include <engine/render/ecs_utils.h>
 #include <engine/render/frame_graph/dsl.h>
@@ -8,37 +9,18 @@
 #include <engine/utils/bits.h>
 #include <engine/work_cycle/camera.h>
 
-ECS_QUERY()
-static
-void query_vterrain(eastl::function<void(Engine::Render::TerrainRender& vterrain_render)> cb);
+ECS_COMP_GETTER(Engine::Render::TerrainRender, vterrain_render);
+ECS_COMP_GETTER(VTerrainComponent, vterrain);
 
 ECS_EVENT_SYSTEM()
 static
 void virtual_terrain_creation_handler(
   const ecs::OnEntityCreated& evt,
-  const string& vterrain_name,
-  const float2& vterrain_heightmapMinMaxBorder,
-  const float vterrain_heightmapMaxHeight,
-  const int vterrain_patchSideBits,
-  const int vterrain_worldSize_meters,
-  const int vterrain_detailSize,
-  const string& vterrain_detail
+  const VTerrainComponent& vterrain
   )
 {
-  ASSERT_FMT(
-    Utils::is_pow_of_2(vterrain_worldSize_meters) &&
-    vterrain_worldSize_meters > 0,
-    "Virtual Terrain has invalid world size[{}]. It must be: power of 2, > 0",
-    vterrain_worldSize_meters);
-
-  uint tileSize = 1 << vterrain_patchSideBits;
-  ASSERT(tileSize < vterrain_worldSize_meters);
-
   ecs::EntityComponents init;
-  init["vterrain_render"] = Engine::Render::TerrainRender {
-    vterrain_name, vterrain_patchSideBits, vterrain_worldSize_meters,
-    vterrain_heightmapMinMaxBorder, vterrain_heightmapMaxHeight,
-    vterrain_detail, vterrain_detailSize};
+  init["vterrain_render"] = Engine::Render::TerrainRender {vterrain};
   ecs::get_registry().createEntity("VirtualTerrainRender", std::move(init));
 }
 
@@ -50,7 +32,9 @@ void virtual_terrain_on_tick(
 )
 {
   float3 cameraPos = Engine::get_camera_pos();
-  vterrain_render.setView(cameraPos);
+  const VTerrainComponent* vt = get_vterrain();
+  if (vt)
+    vterrain_render.setView(*vt, cameraPos);
 }
 
 NODE_BEGIN(terrain)
@@ -73,9 +57,11 @@ void terrain_exec(gapi::CmdEncoder& encoder,
                   const gapi::TextureHandle opaque_depth,
                   const gapi::TextureHandle terrainFeedback)
 {
-  query_vterrain([&](auto& terrain)
+  Engine::Render::TerrainRender* terrain = get_vterrain_render();
+  const VTerrainComponent* vt = get_vterrain();
+  if (terrain && vt)
   {
-    terrain.updateGpuData(encoder);
+    terrain->updateGpuData(encoder);
     encoder.clearColorTexture(terrainFeedback, gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite, {(uint32_t)~0}, {});
 
     encoder.beginRenderpass(
@@ -90,9 +76,9 @@ void terrain_exec(gapi::CmdEncoder& encoder,
         .finalState = gapi::TextureState::DepthWriteStencilWrite,
       }
     );
-    terrain.render(encoder, terrainFeedback, uint2(gapi::get_texture_extent(terrainFeedback)));
+    terrain->render(*vt, encoder, terrainFeedback, uint2(gapi::get_texture_extent(terrainFeedback)));
     encoder.endRenderpass();
-  });
+  };
 }
 
 NODE_BEGIN(terrain_update_vtex)
@@ -109,10 +95,12 @@ static
 void terrain_update_vtex_exec(gapi::CmdEncoder& encoder,
                               const gapi::TextureHandle terrainFeedback)
 {
-  query_vterrain([&](auto& terrain)
+  Engine::Render::TerrainRender* terrain = get_vterrain_render();
+  const VTerrainComponent* vt = get_vterrain();
+  if (terrain && vt)
   {
-    terrain.updateVTex(encoder, terrainFeedback, gapi::get_texture_extent(terrainFeedback));
-  });
+    terrain->updateVTex(*vt, encoder, terrainFeedback, gapi::get_texture_extent(terrainFeedback));
+  };
 }
 
 ECS_EVENT_SYSTEM()
@@ -127,10 +115,11 @@ void virtual_terrain_vtx_dbg_import_node(
     reg.orderMeAfter("terrain_update_vtex");
     reg.importTextureProducer("terrain_vtex", [&](){
       gapi::TextureHandle tex = gapi::TextureHandle::Invalid;
-      query_vterrain([&](auto& terrain)
+      Engine::Render::TerrainRender* terrain;
+      if (terrain)
       {
-        tex = terrain.getVTexTilesStorage();
-      });
+        tex = terrain->getVTexTilesStorage();
+      };
 
       return fg::TextureImport{tex, gapi::TextureState::ShaderRead};
     });

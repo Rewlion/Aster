@@ -8,19 +8,19 @@
 
 using namespace ecs;
 
-const static DirectQueryRegistration query_vterrain_queryReg{
+const static DirectQueryRegistration query_vterrain_render_queryReg{
   {
     DESCRIBE_QUERY_COMPONENT("vterrain_render", Engine::Render::TerrainRender)
   },
-  "query_vterrain"};
-const static query_id_t query_vterrain_queryId = query_vterrain_queryReg.getId();
+  "query_vterrain_render"};
+const static query_id_t query_vterrain_render_queryId = query_vterrain_render_queryReg.getId();
 
 
-void query_vterrain (eastl::function<
+void query_vterrain_render (eastl::function<
   void(
     Engine::Render::TerrainRender& vterrain_render)> cb)
 {
-  ecs::get_registry().query(query_vterrain_queryId, [&](ComponentsAccessor& accessor)
+  ecs::get_registry().query(query_vterrain_render_queryId, [&](ComponentsAccessor& accessor)
   {
     Engine::Render::TerrainRender& vterrain_render = accessor.get<Engine::Render::TerrainRender>(compile_ecs_name_hash("vterrain_render"));
     cb(vterrain_render);
@@ -28,17 +28,31 @@ void query_vterrain (eastl::function<
 }
 
 
+const static DirectQueryRegistration query_vterrain_queryReg{
+  {
+    DESCRIBE_QUERY_COMPONENT("vterrain", VTerrainComponent)
+  },
+  "query_vterrain"};
+const static query_id_t query_vterrain_queryId = query_vterrain_queryReg.getId();
+
+
+void query_vterrain (eastl::function<
+  void(
+    VTerrainComponent& vterrain)> cb)
+{
+  ecs::get_registry().query(query_vterrain_queryId, [&](ComponentsAccessor& accessor)
+  {
+    VTerrainComponent& vterrain = accessor.get<VTerrainComponent>(compile_ecs_name_hash("vterrain"));
+    cb(vterrain);
+  });
+}
+
+
 static void virtual_terrain_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
 {
   const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
-  const string& vterrain_name = accessor.get<string>(compile_ecs_name_hash("vterrain_name"));
-  const float2& vterrain_heightmapMinMaxBorder = accessor.get<float2>(compile_ecs_name_hash("vterrain_heightmapMinMaxBorder"));
-  float vterrain_heightmapMaxHeight = accessor.get<float>(compile_ecs_name_hash("vterrain_heightmapMaxHeight"));
-  int vterrain_patchSideBits = accessor.get<int>(compile_ecs_name_hash("vterrain_patchSideBits"));
-  int vterrain_worldSize_meters = accessor.get<int>(compile_ecs_name_hash("vterrain_worldSize_meters"));
-  int vterrain_detailSize = accessor.get<int>(compile_ecs_name_hash("vterrain_detailSize"));
-  const string& vterrain_detail = accessor.get<string>(compile_ecs_name_hash("vterrain_detail"));
-  virtual_terrain_creation_handler(*casted_event, vterrain_name,vterrain_heightmapMinMaxBorder,vterrain_heightmapMaxHeight,vterrain_patchSideBits,vterrain_worldSize_meters,vterrain_detailSize,vterrain_detail);
+  const const VTerrainComponent& vterrain = accessor.get<const VTerrainComponent>(compile_ecs_name_hash("vterrain"));
+  virtual_terrain_creation_handler(*casted_event, vterrain);
 }
 
 
@@ -46,13 +60,7 @@ static EventSystemRegistration virtual_terrain_creation_handler_registration(
   virtual_terrain_creation_handler_internal,
   compile_ecs_name_hash("OnEntityCreated"),
   {
-    DESCRIBE_QUERY_COMPONENT("vterrain_name", string),
-    DESCRIBE_QUERY_COMPONENT("vterrain_heightmapMinMaxBorder", float2),
-    DESCRIBE_QUERY_COMPONENT("vterrain_heightmapMaxHeight", float),
-    DESCRIBE_QUERY_COMPONENT("vterrain_patchSideBits", int),
-    DESCRIBE_QUERY_COMPONENT("vterrain_worldSize_meters", int),
-    DESCRIBE_QUERY_COMPONENT("vterrain_detailSize", int),
-    DESCRIBE_QUERY_COMPONENT("vterrain_detail", string)
+    DESCRIBE_QUERY_COMPONENT("vterrain", const VTerrainComponent)
   },
   "virtual_terrain_creation_handler"
 );

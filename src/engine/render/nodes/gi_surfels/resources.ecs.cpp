@@ -96,8 +96,8 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
   encoder.clearColorTexture(gibs_surfels_allocation_pos,
     gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
 
-  GIOnSurfels& state = get_state();
-  if (!state.initialized || gibs_force_reset)
+  GIOnSurfels* state = get_state();  
+  if (!state->initialized || gibs_force_reset)
   {
     encoder.clearColorTexture(gibs_rayguiding_map,
       gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
@@ -118,7 +118,7 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
       encoder.dispatch(gc.x, gc.y, gc.z);
     }
 
-    state.initialized = true;
+    state->initialized = true;
   }
   
   //if (!state.initialized || gibs_force_reset)
@@ -131,6 +131,6 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
     encoder.dispatch(gc.x, gc.y, gc.z);
   }
 
-  state.initialized = true;
+  state->initialized = true;
   gibs_force_reset = false;
 }

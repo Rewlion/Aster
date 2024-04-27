@@ -39,6 +39,15 @@ template @("name: Sun") {
 }
 
 template @("name: VirtualTerrain") {
+  vterrain : VTerrainComponent = {
+    name:t = "" // terrain file name
+    heightmap_min_max_border:f2 = 0, 1
+    heightmap_max_height:f = 30
+    patch_side_bits:i = 5  // LOD 0 splits on AxA 1meter patches [A = 2^patch_side_bits]
+    world_size_km:i = 1 // 1x1 km map
+    detail_size:i = 256 // [name].detail size
+  }
+
   vterrain_name:t = ""
   vterrain_heightmapMinMaxBorder:f2 = 0, 1 //texture values borders
   vterrain_heightmapMaxHeight:f = 30
