@@ -24,8 +24,10 @@ template @("name: CoreRenderDebug; extends: CoreRender") {
 }
 
 template @("name: Atmosphere") {
-  atm_radius_top_km:f = 6420
-  atm_radius_bot_km:f = 6360
+  atmosphere : AtmosphereComponent = {
+    top_radius_km:f = 6420
+    bot_radius_km:f = 6360
+  }
 }
 
 template @("name: AtmosphereRender") {

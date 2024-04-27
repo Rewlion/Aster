@@ -1,3 +1,4 @@
+#include <engine/components/atmosphere.h>
 #include <engine/console/cmd.h>
 #include <engine/ecs/ecs.h>
 #include <engine/gapi/gapi.h>
@@ -16,7 +17,7 @@
 #include <bit>
 
 ECS_DESCRIBE_QUERY(query_atm_tr_lut, (const gapi::TextureWrapper& atm_tr_lut));
-ECS_DESCRIBE_QUERY(query_atm_params, (float atm_radius_bot_km, float atm_radius_top_km));
+ECS_COMP_GETTER(AtmosphereComponent, atmosphere);
 ECS_DESCRIBE_QUERY(query_sun_params, (float sun_azimuth, float sun_altitude));
 ECS_DESCRIBE_QUERY(query_atm_lut_state, (int& atm_lut_state));
 
@@ -27,7 +28,8 @@ enum class AtmosphereLutState : int
 };
 
 ECS_EVENT_SYSTEM()
-static void atmosphere_creation_handler(const ecs::OnEntityCreated& evt, float atm_radius_bot_km, float atm_radius_top_km)
+static void atmosphere_creation_handler(const ecs::OnEntityCreated& evt,
+                                        const AtmosphereComponent& atmosphere)
 {
   ecs::EntityComponents init;
   init["atm_lut_state"] = (int)AtmosphereLutState::Preparing;
@@ -78,15 +80,18 @@ void atm_res_import_exec(gapi::CmdEncoder& encoder,
 {
   atm_envi_mips = get_envi_specular_mips();
 
-  query_atm_params([&](float atm_radius_bot_km, float atm_radius_top_km){
+  const AtmosphereComponent* atmosphere = get_atmosphere();
+  if (!atmosphere)
+    return;
+
   query_sun_params([&](float sun_azimuth, float sun_altitude){
     sun_azimuth_altitude = float2(sun_azimuth, sun_altitude);
 
     float4 sunAzimuth_sunAltitude_rTopMM_rBotMM{
       math::radians(sun_azimuth),
       math::radians(sun_altitude),
-      atm_radius_top_km / 1000.0,
-      atm_radius_bot_km / 1000.0
+      atmosphere->getTopRadiusKm() / 1000.0,
+      atmosphere->getBotRadiusKm() / 1000.0
     };
 
     float cameraH = sunAzimuth_sunAltitude_rTopMM_rBotMM.w + camera_data.pos.y;
@@ -96,7 +101,7 @@ void atm_res_import_exec(gapi::CmdEncoder& encoder,
     tfx::set_extern("maxAerialDist_mm", 0.032f);
     tfx::set_channel("sunAzimuth_sunAltitude_rTopMM_rBotMM", sunAzimuth_sunAltitude_rTopMM_rBotMM);
     tfx::activate_scope("AtmosphereScope", encoder);
-  });});
+  });
 }
 
 NODE_BEGIN(atm_ap_lut_render)

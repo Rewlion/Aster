@@ -28,25 +28,22 @@ void query_atm_tr_lut (eastl::function<
 }
 
 
-const static DirectQueryRegistration query_atm_params_queryReg{
+const static DirectQueryRegistration query_atmosphere_queryReg{
   {
-    DESCRIBE_QUERY_COMPONENT("atm_radius_bot_km", float),
-    DESCRIBE_QUERY_COMPONENT("atm_radius_top_km", float)
+    DESCRIBE_QUERY_COMPONENT("atmosphere", AtmosphereComponent)
   },
-  "query_atm_params"};
-const static query_id_t query_atm_params_queryId = query_atm_params_queryReg.getId();
+  "query_atmosphere"};
+const static query_id_t query_atmosphere_queryId = query_atmosphere_queryReg.getId();
 
 
-void query_atm_params (eastl::function<
+void query_atmosphere (eastl::function<
   void(
-    float atm_radius_bot_km,
-    float atm_radius_top_km)> cb)
+    AtmosphereComponent& atmosphere)> cb)
 {
-  ecs::get_registry().query(query_atm_params_queryId, [&](ComponentsAccessor& accessor)
+  ecs::get_registry().query(query_atmosphere_queryId, [&](ComponentsAccessor& accessor)
   {
-    float atm_radius_bot_km = accessor.get<float>(compile_ecs_name_hash("atm_radius_bot_km"));
-    float atm_radius_top_km = accessor.get<float>(compile_ecs_name_hash("atm_radius_top_km"));
-    cb(atm_radius_bot_km,atm_radius_top_km);
+    AtmosphereComponent& atmosphere = accessor.get<AtmosphereComponent>(compile_ecs_name_hash("atmosphere"));
+    cb(atmosphere);
   });
 }
 
@@ -97,9 +94,8 @@ void query_atm_lut_state (eastl::function<
 static void atmosphere_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
 {
   const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
-  float atm_radius_bot_km = accessor.get<float>(compile_ecs_name_hash("atm_radius_bot_km"));
-  float atm_radius_top_km = accessor.get<float>(compile_ecs_name_hash("atm_radius_top_km"));
-  atmosphere_creation_handler(*casted_event, atm_radius_bot_km,atm_radius_top_km);
+  const const AtmosphereComponent& atmosphere = accessor.get<const AtmosphereComponent>(compile_ecs_name_hash("atmosphere"));
+  atmosphere_creation_handler(*casted_event, atmosphere);
 }
 
 
@@ -107,8 +103,7 @@ static EventSystemRegistration atmosphere_creation_handler_registration(
   atmosphere_creation_handler_internal,
   compile_ecs_name_hash("OnEntityCreated"),
   {
-    DESCRIBE_QUERY_COMPONENT("atm_radius_bot_km", float),
-    DESCRIBE_QUERY_COMPONENT("atm_radius_top_km", float)
+    DESCRIBE_QUERY_COMPONENT("atmosphere", const AtmosphereComponent)
   },
   "atmosphere_creation_handler"
 );
