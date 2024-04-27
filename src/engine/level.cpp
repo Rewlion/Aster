@@ -2,6 +2,7 @@
 
 #include <engine/data/utils.h>
 #include <engine/ecs/ecs.h>
+#include <engine/ecs/type_meta.h>
 #include <engine/input/input.h>
 #include <engine/scene/scene.h>
 
@@ -37,6 +38,14 @@ namespace
         DECL_COMP_INIT(Bool,   bool)
         DECL_COMP_INIT(Mat3,   mat3)
         DECL_COMP_INIT(Mat4,   mat4)
+
+        case ed::ValueType::TypeConstructor:
+        {
+          const auto& tc = std::get<ed::TypeConstructor>(var.value);
+          init[var.name.c_str()] = tc;
+          break;
+        }
+
         default: {}
       }
     }
@@ -63,7 +72,9 @@ namespace Engine
 
   void load_level(const string_view file)
   {
-    std::optional<ed::Scope> level = ed::load_from_file(file);
+    std::shared_ptr<ed::CustomTypeRegistry> customTypeRegistry = ecs::get_custom_type_registry();
+
+    std::optional<ed::Scope> level = ed::load_from_file(file, customTypeRegistry);
     ASSERT_FMT_RETURN(level.has_value(), , "failed to load the level `{}`", file);
 
     for(const ed::Scope& entity: level->getScopes())
