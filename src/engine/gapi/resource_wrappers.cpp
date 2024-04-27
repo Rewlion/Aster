@@ -38,39 +38,41 @@ namespace gapi
   }
 
   TextureViewWithState::TextureViewWithState()
-    : UniqueTextureWithState()
-  {
-  }
-
-  TextureViewWithState::TextureViewWithState(const TextureHandle h,
-                                             const TextureState st)
-    : UniqueTextureWithState(h,st)
-  {
-  }
-
-  TextureViewWithState::~TextureViewWithState()
-  {
-    m_Handle = gapi::TextureHandle::Invalid;
-  }
-
-  UniqueTextureWithState::UniqueTextureWithState()
     : m_Handle(gapi::TextureHandle::Invalid)
     , m_State(gapi::TextureState::Undefined)
   {
   }
 
-  UniqueTextureWithState::UniqueTextureWithState(const TextureHandle h,
-                                                 const gapi::TextureState state)
+  TextureViewWithState::TextureViewWithState(const TextureHandle h,
+                                             const TextureState st)
     : m_Handle(h)
-    , m_State(state)
+    , m_State(st)
+  {
+  }
+
+  void TextureViewWithState::transitState(gapi::CmdEncoder& encoder,
+                                          const gapi::TextureState to_state)
+  {
+    encoder.transitTextureState(m_Handle, m_State, to_state);
+    m_State = to_state;
+  }
+
+  UniqueTextureWithState::UniqueTextureWithState()
+    : TextureViewWithState()
+  {
+  }
+
+  UniqueTextureWithState::UniqueTextureWithState(const TextureHandle h,
+                                                 const gapi::TextureState st)
+    : TextureViewWithState(h, st)
   {
   }
 
   UniqueTextureWithState::UniqueTextureWithState(UniqueTextureWithState&& r)
   {
-    this->~UniqueTextureWithState();
-    std::swap(m_Handle, r.m_Handle);
-    std::swap(m_State, r.m_State);
+    m_Handle = r.m_Handle;
+    m_State = r.m_State;
+    r.m_Handle = gapi::TextureHandle::Invalid;
   }
 
   UniqueTextureWithState::~UniqueTextureWithState()
@@ -89,13 +91,6 @@ namespace gapi
     std::swap(m_State, r.m_State);
 
     return *this;
-  }
-
-  void UniqueTextureWithState::transitState(gapi::CmdEncoder& encoder,
-                                            const gapi::TextureState to_state)
-  {
-    encoder.transitTextureState(m_Handle, m_State, to_state);
-    m_State = to_state;
   }
 
   BufferWrapper::BufferWrapper()
@@ -132,25 +127,19 @@ namespace gapi
   }
 
   UniqueBufferWithState::UniqueBufferWithState()
-    : m_Handle(BufferHandler::Invalid)
-    , m_State(BufferState::BF_STATE_SRV)
+    : BufferViewWithState()
   {
   }
 
   UniqueBufferWithState::UniqueBufferWithState(const BufferHandler h,
                                                const BufferState st)
-    : m_Handle(h)
-    , m_State(st)
+    : BufferViewWithState(h, st)
   {
   }
 
   UniqueBufferWithState::UniqueBufferWithState(UniqueBufferWithState&& rvl)
-    : m_Handle(rvl.m_Handle)
-    , m_State(rvl.m_State)
+    : BufferViewWithState(std::move(rvl))
   {
-    this->~UniqueBufferWithState();
-    std::swap(m_Handle, rvl.m_Handle);
-    std::swap(m_State, rvl.m_State);
   }
 
   UniqueBufferWithState::~UniqueBufferWithState()
@@ -165,37 +154,29 @@ namespace gapi
   auto UniqueBufferWithState::operator=(UniqueBufferWithState&& rvl)
     -> UniqueBufferWithState&
   {
+    this->~UniqueBufferWithState();
     std::swap(m_Handle, rvl.m_Handle);
     std::swap(m_State, rvl.m_State);
     return *this;
   }
 
-  void UniqueBufferWithState::transitState(gapi::CmdEncoder& encoder,
-                                          const gapi::BufferState to_state)
-  {
-    encoder.insertGlobalBufferBarrier(m_State, to_state);
-    m_State = to_state;
-  }
-
   BufferViewWithState::BufferViewWithState()
-    : UniqueBufferWithState()
+    : m_Handle(gapi::BufferHandler::Invalid)
+    , m_State((gapi::BufferState)0)
   {
   }
 
   BufferViewWithState::BufferViewWithState(const BufferViewWithState& r)
-    : UniqueBufferWithState(r.m_Handle, r.m_State)
+    : m_Handle(r.m_Handle)
+    , m_State(r.m_State)
   {
   }
 
   BufferViewWithState::BufferViewWithState(const gapi::BufferHandler h,
-                                           const gapi::BufferState s)
-    : UniqueBufferWithState(h, s)
+                                           const gapi::BufferState st)
+    : m_Handle(h)
+    , m_State(st)
   {
-  }
-
-  BufferViewWithState::~BufferViewWithState()
-  {
-    m_Handle = gapi::BufferHandler::Invalid;
   }
 
   auto BufferViewWithState::operator=(const BufferViewWithState& r) -> BufferViewWithState&
@@ -203,6 +184,13 @@ namespace gapi
     m_Handle = r.m_Handle;
     m_State = r.m_State;
     return *this;
+  }
+
+  void BufferViewWithState::transitState(gapi::CmdEncoder& encoder,
+                                         const gapi::BufferState to_state)
+  {
+    encoder.insertGlobalBufferBarrier(m_State, to_state);
+    m_State = to_state;
   }
 
   ScopedScissor::ScopedScissor(const Scissor sc, CmdEncoder& encoder)

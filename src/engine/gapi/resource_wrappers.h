@@ -22,18 +22,14 @@ namespace gapi
       gapi::TextureHandle m_Handle;
   };
 
-  class UniqueTextureWithState
+  class TextureViewWithState
   {
     public:
-      UniqueTextureWithState();
-      UniqueTextureWithState(const UniqueTextureWithState&) = default;
-      UniqueTextureWithState(const TextureHandle, const gapi::TextureState);
-      UniqueTextureWithState(UniqueTextureWithState&& rvl);
+      TextureViewWithState();
+      TextureViewWithState(const TextureViewWithState&) = default;
+      TextureViewWithState(const TextureHandle, const gapi::TextureState);
 
-      ~UniqueTextureWithState();
-
-      auto operator=(const UniqueTextureWithState&) -> UniqueTextureWithState& = default;
-      auto operator=(UniqueTextureWithState&&) -> UniqueTextureWithState&;
+      auto operator=(const TextureViewWithState&) -> TextureViewWithState& = default;
       operator TextureHandle() const { return m_Handle; }
 
       auto getState() const -> gapi::TextureState { return m_State; }
@@ -50,16 +46,18 @@ namespace gapi
       gapi::TextureState m_State;
   };
 
-  class TextureViewWithState : public UniqueTextureWithState
+  class UniqueTextureWithState : public TextureViewWithState
   {
     public:
-      TextureViewWithState();
-      TextureViewWithState(const TextureViewWithState&) = default;
-      TextureViewWithState(const TextureHandle h, gapi::TextureState m_State);
+      UniqueTextureWithState();
+      UniqueTextureWithState(const UniqueTextureWithState&) = default;
+      UniqueTextureWithState(const TextureHandle, const gapi::TextureState);
+      UniqueTextureWithState(UniqueTextureWithState&& rvl);
 
-      ~TextureViewWithState();
+      ~UniqueTextureWithState();
 
-      auto operator=(const TextureViewWithState&) -> TextureViewWithState& = default;
+      auto operator=(const UniqueTextureWithState&) -> UniqueTextureWithState& = default;
+      auto operator=(UniqueTextureWithState&&) -> UniqueTextureWithState&;
       operator TextureHandle() const { return m_Handle; }
   };
 
@@ -82,18 +80,14 @@ namespace gapi
       gapi::BufferHandler m_Handle;
   };
 
-  class UniqueBufferWithState
+  class BufferViewWithState
   {
     public:
-      UniqueBufferWithState();
-      UniqueBufferWithState(const UniqueBufferWithState&) = default;
-      UniqueBufferWithState(const gapi::BufferHandler, const gapi::BufferState);
-      UniqueBufferWithState(UniqueBufferWithState&& rvl);
+      BufferViewWithState();
+      BufferViewWithState(const BufferViewWithState&);
+      BufferViewWithState(const gapi::BufferHandler, const gapi::BufferState);
 
-      ~UniqueBufferWithState();
-
-      auto operator=(const UniqueBufferWithState&) -> UniqueBufferWithState& = delete;
-      auto operator=(UniqueBufferWithState&&) -> UniqueBufferWithState&;
+      auto operator=(const BufferViewWithState&) -> BufferViewWithState&;
       operator gapi::BufferHandler() const { return m_Handle; }
 
       auto getState() const -> gapi::BufferState { return m_State; }
@@ -110,16 +104,18 @@ namespace gapi
       gapi::BufferState m_State;
   };
 
-  class BufferViewWithState : public UniqueBufferWithState
+  class UniqueBufferWithState : public BufferViewWithState
   {
     public:
-      BufferViewWithState();
-      BufferViewWithState(const BufferViewWithState&);
-      BufferViewWithState(const gapi::BufferHandler, const gapi::BufferState);
+      UniqueBufferWithState();
+      UniqueBufferWithState(const UniqueBufferWithState&) = delete;
+      UniqueBufferWithState(const gapi::BufferHandler, const gapi::BufferState);
+      UniqueBufferWithState(UniqueBufferWithState&& rvl);
 
-      ~BufferViewWithState();
+      ~UniqueBufferWithState();
 
-      auto operator=(const BufferViewWithState&) -> BufferViewWithState&;
+      auto operator=(const UniqueBufferWithState&) -> UniqueBufferWithState& = delete;
+      auto operator=(UniqueBufferWithState&&) -> UniqueBufferWithState&;
       operator gapi::BufferHandler() const { return m_Handle; }
   };
 

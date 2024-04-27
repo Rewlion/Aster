@@ -4,11 +4,6 @@
 #include "consts.hlsl"
 #include "multiscale_mean_estimator.hlsl"
 
-float calcSurfelRadius(float cell_size)
-{
-  return SURFEL_RADIUS * cell_size;
-}
-
 struct SurfelData
 {
   float3 pos;
@@ -21,6 +16,7 @@ struct SurfelData
   uint rayBudget;
   uint3 _p;
   
+#ifdef __preshader__
   void init(float3 _pos, float _radius, float3 _normal)
   {
     pos = _pos;
@@ -32,6 +28,15 @@ struct SurfelData
     estimatorData.init();
     rayBudget = 0;
   }
+#endif
 };
+
+#ifdef __preshader__
+float calcSurfelRadius(float cell_size)
+{
+  return SURFEL_RADIUS * cell_size;
+}
+#endif
+
 
 #endif

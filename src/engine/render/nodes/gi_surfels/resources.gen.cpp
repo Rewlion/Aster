@@ -30,6 +30,32 @@ void query_state (eastl::function<
 
 //Engine::OnFrameGraphInit handler
 static
+void mk_fg_node_gibs_resources_import(Event*, ComponentsAccessor&)
+{
+  fg::register_node("gibs_resources_import", FG_FILE_DECL, [](fg::Registry& reg)
+  { 
+    auto gibs_surfels_lifetime = reg.importBufferProducer("gibs_surfels_lifetime", import_surfels_lifetime);
+    auto gibs_surfels_storage = reg.importBufferProducer("gibs_surfels_storage", import_surfels_storage);
+    auto gibs_surfels_pool = reg.importBufferProducer("gibs_surfels_pool", import_surfels_pool);
+    auto gibs_surfels_meta = reg.importBufferProducer("gibs_surfels_meta", import_surfels_meta);
+    auto gibs_nonlinear_aabbs = reg.importBufferProducer("gibs_nonlinear_aabbs", import_nonlinear_aabbs);
+    auto gibs_rayguiding_map = reg.importTextureProducer("gibs_rayguiding_map", import_rayguiding_map);
+    return [](gapi::CmdEncoder&){};
+  });
+}
+
+static
+EventSystemRegistration mk_fg_node_gibs_resources_import_registration(
+  mk_fg_node_gibs_resources_import,
+  compile_ecs_name_hash("OnFrameGraphInit"),
+  {
+  },
+  "mk_fg_node_gibs_resources_import"
+);
+
+
+//Engine::OnFrameGraphInit handler
+static
 void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
 {
   fg::register_node("gibs_resources", FG_FILE_DECL, [](fg::Registry& reg)
@@ -79,33 +105,9 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
       false
     );
 
-    auto gibs_surfels_lifetime = reg.createBuffer(
-      "gibs_surfels_lifetime",
-      gapi::BufferAllocationDescription{
-        .size = (250 * 1024) * sizeof(uint),
-        .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
-      },
-      gapi::BufferState::BF_STATE_UAV_RW,
-      fg::PERSISTENT
-    );
-    auto gibs_surfels_storage = reg.createBuffer(
-      "gibs_surfels_storage",
-      gapi::BufferAllocationDescription{
-        .size = (250 * 1024) * sizeof(SurfelData),
-        .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
-      },
-      gapi::BufferState::BF_STATE_UAV_RW,
-      fg::PERSISTENT
-    );
-    auto gibs_surfels_pool = reg.createBuffer(
-      "gibs_surfels_pool",
-      gapi::BufferAllocationDescription{
-        .size = (250 * 1024) * sizeof(uint),
-        .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
-      },
-      gapi::BufferState::BF_STATE_UAV_RW,
-      fg::PERSISTENT
-    );
+    auto gibs_surfels_lifetime = reg.modifyBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_surfels_storage = reg.modifyBuffer("gibs_surfels_storage", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_surfels_pool = reg.modifyBuffer("gibs_surfels_pool", gapi::BufferState::BF_STATE_UAV_RW);
     auto gibs_surfels_allocation_locks = reg.createBuffer(
       "gibs_surfels_allocation_locks",
       gapi::BufferAllocationDescription{
@@ -124,24 +126,8 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
       gapi::BufferState::BF_STATE_UAV_RW,
       false
     );
-    auto gibs_surfels_meta = reg.createBuffer(
-      "gibs_surfels_meta",
-      gapi::BufferAllocationDescription{
-        .size = sizeof(SurfelsMeta),
-        .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
-      },
-      gapi::BufferState::BF_STATE_UAV_RW,
-      fg::PERSISTENT
-    );
-    auto gibs_nonlinear_aabbs = reg.createBuffer(
-      "gibs_nonlinear_aabbs",
-      gapi::BufferAllocationDescription{
-        .size = uint(21 * 21 * 21) * sizeof(AABB),
-        .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
-      },
-      gapi::BufferState::BF_STATE_UAV_RW,
-      fg::PERSISTENT
-    );
+    auto gibs_surfels_meta = reg.modifyBuffer("gibs_surfels_meta", gapi::BufferState::BF_STATE_UAV_RW);
+    auto gibs_nonlinear_aabbs = reg.modifyBuffer("gibs_nonlinear_aabbs", gapi::BufferState::BF_STATE_UAV_RW);
 
     auto gibs_surfels_sdf = reg.createTexture("gibs_surfels_sdf",
       gapi::TextureAllocationDescription{
@@ -179,20 +165,7 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
       gapi::BufferState::BF_STATE_UAV_RW,
       false
     );
-
-    auto gibs_rayguiding_map = reg.createTexture("gibs_rayguiding_map",
-      gapi::TextureAllocationDescription{
-        .format =          gapi::TextureFormat::R32G32B32A32_S,
-        .extent =          uint3(4096, 4096, 1),
-        .mipLevels =       1,
-        .arrayLayers =     1,
-        .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_UAV)
-      },
-      gapi::TextureState::ShaderReadWrite,
-      fg::PERSISTENT
-    );
-
+    auto gibs_rayguiding_map = reg.modifyTexture("gibs_rayguiding_map", gapi::TextureState::ShaderReadWrite);
 
     return [gibs_dbg_rt,gibs_dbg_alloc,gibs_dbg_surfels,gibs_surfels_lifetime,gibs_surfels_storage,gibs_surfels_pool,gibs_surfels_allocation_locks,gibs_surfels_spatial_storage,gibs_surfels_meta,gibs_nonlinear_aabbs,gibs_surfels_sdf,gibs_surfels_allocation_pos,gibs_surfels_ray_budget,gibs_rayguiding_map](gapi::CmdEncoder& encoder)
     {

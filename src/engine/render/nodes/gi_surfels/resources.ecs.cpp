@@ -11,6 +11,59 @@
 
 ECS_COMP_GETTER(GIOnSurfels, state);
 
+auto import_surfels_lifetime() -> gapi::BufferViewWithState*
+{
+  if (auto* st = get_state())
+    return st->getSurfelsLifetime();
+  return nullptr;
+}
+
+auto import_surfels_meta() -> gapi::BufferViewWithState*
+{
+  if (auto* st = get_state())
+    return st->getSurfelsLifetime();
+  return nullptr;
+}
+
+auto import_surfels_storage() -> gapi::BufferViewWithState*
+{
+  if (auto* st = get_state())
+    return st->getSurfelsStorage();
+  return nullptr;
+}
+
+auto import_surfels_pool() -> gapi::BufferViewWithState*
+{
+  if (auto* st = get_state())
+    return st->getSurfelsPool();
+  return nullptr;
+}
+
+auto import_nonlinear_aabbs() -> gapi::BufferViewWithState*
+{
+  if (auto* st = get_state())
+    return st->getNonlinearAabbs();
+  return nullptr;
+}
+
+auto import_rayguiding_map() -> gapi::TextureViewWithState*
+{
+  if (auto* st = get_state())
+    return st->getRayguidingMap();
+  return nullptr;
+}
+
+NODE_BEGIN(gibs_resources_import)
+  IMPORT_BUF                (gibs_surfels_lifetime, import_surfels_lifetime)
+  IMPORT_BUF                (gibs_surfels_storage, import_surfels_storage)
+  IMPORT_BUF                (gibs_surfels_pool, import_surfels_pool)
+  IMPORT_BUF                (gibs_surfels_meta, import_surfels_meta)
+  IMPORT_BUF                (gibs_nonlinear_aabbs, import_nonlinear_aabbs)
+  IMPORT_TEX                (gibs_rayguiding_map, import_rayguiding_map)
+
+  NO_EXEC()
+NODE_END()
+
 NODE_BEGIN(gibs_resources)
   ORDER_ME_AFTER (atm_sync_out)
 
@@ -23,14 +76,11 @@ NODE_BEGIN(gibs_resources)
   CREATE_TEX_2D             (gibs_dbg_surfels, TEX_SIZE_RELATIVE(), R32G32B32A32_S,
                              TEX_USAGE2(SRV, RT), TEX_STATE(ShaderReadWrite))
   
-  CREATE_GPU_BUF_PERSISTENT (gibs_surfels_lifetime, BUF_USAGE(UAV), BUF_STATE(UAV_RW),
-                             BUF_SIZE(SURFEL_COUNT_TOTAL * sizeof(uint)))
+  MODIFY_BUF_UAV            (gibs_surfels_lifetime)
 
-  CREATE_GPU_BUF_PERSISTENT (gibs_surfels_storage, BUF_USAGE(UAV), BUF_STATE(UAV_RW),
-                             BUF_SIZE(SURFEL_COUNT_TOTAL * sizeof(SurfelData)))
-  
-  CREATE_GPU_BUF_PERSISTENT (gibs_surfels_pool, BUF_USAGE(UAV), BUF_STATE(UAV_RW),
-                             BUF_SIZE(SURFEL_COUNT_TOTAL * sizeof(uint)))
+  MODIFY_BUF_UAV            (gibs_surfels_storage)
+
+  MODIFY_BUF_UAV            (gibs_surfels_pool)
 
   CREATE_GPU_BUF            (gibs_surfels_allocation_locks, BUF_USAGE(UAV), BUF_STATE(UAV_RW),
                               BUF_SIZE(CELLS_COUNT * sizeof(uint)))
@@ -38,10 +88,9 @@ NODE_BEGIN(gibs_resources)
   CREATE_GPU_BUF            (gibs_surfels_spatial_storage, BUF_USAGE(UAV), BUF_STATE(UAV_RW),
                               BUF_SIZE(CELLS_COUNT * SPATIAL_STORAGE_CELL_PAYLOAD * sizeof(uint)))
 
-  CREATE_GPU_BUF_PERSISTENT (gibs_surfels_meta, BUF_USAGE(UAV), BUF_STATE(UAV_RW), BUF_SIZE(sizeof(SurfelsMeta)))
+  MODIFY_BUF_UAV            (gibs_surfels_meta)
   
-  CREATE_GPU_BUF_PERSISTENT (gibs_nonlinear_aabbs, BUF_USAGE(UAV), BUF_STATE(UAV_RW),
-                              BUF_SIZE(CELLS_PER_CASCADE * sizeof(AABB)))
+  MODIFY_BUF_UAV            (gibs_nonlinear_aabbs)
 
   CREATE_TEX_2D             (gibs_surfels_sdf, TEX_SIZE_RELATIVE(), R32_FLOAT,
                              TEX_USAGE2(SRV, UAV), TEX_STATE(ShaderReadWrite))
@@ -52,8 +101,7 @@ NODE_BEGIN(gibs_resources)
   CREATE_GPU_BUF            (gibs_surfels_ray_budget, BUF_USAGE(UAV), BUF_STATE(UAV_RW),
                               BUF_SIZE(sizeof(int)))
 
-  CREATE_TEX_2D_PERSISTENT  (gibs_rayguiding_map, TEX_SIZE(RAYGUIDE_TEX_DIM,RAYGUIDE_TEX_DIM,1), R32G32B32A32_S,
-                               TEX_USAGE2(SRV, UAV), TEX_STATE(ShaderReadWrite))
+  MODIFY_TEX_UAV            (gibs_rayguiding_map)
 
   EXEC(gibs_resources_init)
 NODE_END()
@@ -97,7 +145,7 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
     gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
 
   GIOnSurfels* state = get_state();  
-  if (!state->initialized || gibs_force_reset)
+  if (!state->isInitialized() || gibs_force_reset)
   {
     encoder.clearColorTexture(gibs_rayguiding_map,
       gapi::TextureState::ShaderReadWrite, gapi::TextureState::ShaderReadWrite,  {(uint32_t)0}, {});
@@ -118,7 +166,7 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
       encoder.dispatch(gc.x, gc.y, gc.z);
     }
 
-    state->initialized = true;
+    state->markInitialized();
   }
   
   //if (!state.initialized || gibs_force_reset)
@@ -131,6 +179,6 @@ void gibs_resources_init(gapi::CmdEncoder& encoder,
     encoder.dispatch(gc.x, gc.y, gc.z);
   }
 
-  state->initialized = true;
+  state->markInitialized();
   gibs_force_reset = false;
 }
