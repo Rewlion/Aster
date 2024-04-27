@@ -6,6 +6,7 @@ add_ecs_library(
   engine_components
   FILES
     "${CMAKE_SOURCE_DIR}/src/engine/components/atmosphere.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/components/sun.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/components/terrain.cpp"
   ECS_FILES
     "${CMAKE_SOURCE_DIR}/src/engine/components/static_mesh.ecs.cpp"

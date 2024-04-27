@@ -238,8 +238,10 @@ entity @("Atmosphere")
 
 entity @("Sun")
 {
-  sun_altitude:f = 20
-  sun_azimuth:f = 180
+  sun : SunComponent = {
+    altitude:f = 20
+    azimuth:f = 180
+  }
 }
 
 entity @("VirtualTerrain")

@@ -36,8 +36,10 @@ template @("name: AtmosphereRender") {
 }
 
 template @("name: Sun") {
-  sun_azimuth:f = 40
-  sun_altitude:f = 35
+  sun : SunComponent = {
+    azimuth:f = 40
+    altitude:f = 35
+  }
 }
 
 template @("name: VirtualTerrain") {

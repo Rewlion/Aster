@@ -48,25 +48,22 @@ void query_atmosphere (eastl::function<
 }
 
 
-const static DirectQueryRegistration query_sun_params_queryReg{
+const static DirectQueryRegistration query_sun_queryReg{
   {
-    DESCRIBE_QUERY_COMPONENT("sun_azimuth", float),
-    DESCRIBE_QUERY_COMPONENT("sun_altitude", float)
+    DESCRIBE_QUERY_COMPONENT("sun", SunComponent)
   },
-  "query_sun_params"};
-const static query_id_t query_sun_params_queryId = query_sun_params_queryReg.getId();
+  "query_sun"};
+const static query_id_t query_sun_queryId = query_sun_queryReg.getId();
 
 
-void query_sun_params (eastl::function<
+void query_sun (eastl::function<
   void(
-    float sun_azimuth,
-    float sun_altitude)> cb)
+    SunComponent& sun)> cb)
 {
-  ecs::get_registry().query(query_sun_params_queryId, [&](ComponentsAccessor& accessor)
+  ecs::get_registry().query(query_sun_queryId, [&](ComponentsAccessor& accessor)
   {
-    float sun_azimuth = accessor.get<float>(compile_ecs_name_hash("sun_azimuth"));
-    float sun_altitude = accessor.get<float>(compile_ecs_name_hash("sun_altitude"));
-    cb(sun_azimuth,sun_altitude);
+    SunComponent& sun = accessor.get<SunComponent>(compile_ecs_name_hash("sun"));
+    cb(sun);
   });
 }
 
@@ -491,26 +488,3 @@ EventSystemRegistration mk_fg_node_atm_sync_out_registration(
   },
   "mk_fg_node_atm_sync_out"
 );
-
-
-const static DirectQueryRegistration query_sun_queryReg{
-  {
-    DESCRIBE_QUERY_COMPONENT("sun_azimuth", float),
-    DESCRIBE_QUERY_COMPONENT("sun_altitude", float)
-  },
-  "query_sun"};
-const static query_id_t query_sun_queryId = query_sun_queryReg.getId();
-
-
-void query_sun (eastl::function<
-  void(
-    float& sun_azimuth,
-    float& sun_altitude)> cb)
-{
-  ecs::get_registry().query(query_sun_queryId, [&](ComponentsAccessor& accessor)
-  {
-    float& sun_azimuth = accessor.get<float>(compile_ecs_name_hash("sun_azimuth"));
-    float& sun_altitude = accessor.get<float>(compile_ecs_name_hash("sun_altitude"));
-    cb(sun_azimuth,sun_altitude);
-  });
-}

@@ -1,4 +1,5 @@
 #include <engine/components/atmosphere.h>
+#include <engine/components/sun.h>
 #include <engine/console/cmd.h>
 #include <engine/ecs/ecs.h>
 #include <engine/gapi/gapi.h>
@@ -18,7 +19,7 @@
 
 ECS_DESCRIBE_QUERY(query_atm_tr_lut, (const gapi::TextureWrapper& atm_tr_lut));
 ECS_COMP_GETTER(AtmosphereComponent, atmosphere);
-ECS_DESCRIBE_QUERY(query_sun_params, (float sun_azimuth, float sun_altitude));
+ECS_COMP_GETTER(SunComponent, sun);
 ECS_DESCRIBE_QUERY(query_atm_lut_state, (int& atm_lut_state));
 
 enum class AtmosphereLutState : int
@@ -81,27 +82,29 @@ void atm_res_import_exec(gapi::CmdEncoder& encoder,
   atm_envi_mips = get_envi_specular_mips();
 
   const AtmosphereComponent* atmosphere = get_atmosphere();
-  if (!atmosphere)
+  const SunComponent* sun = get_sun();
+  if (!atmosphere || !sun)
     return;
 
-  query_sun_params([&](float sun_azimuth, float sun_altitude){
-    sun_azimuth_altitude = float2(sun_azimuth, sun_altitude);
+  const float azimuth = sun->getAzimuth();
+  const float altitude = sun->getAltitude();
 
-    float4 sunAzimuth_sunAltitude_rTopMM_rBotMM{
-      math::radians(sun_azimuth),
-      math::radians(sun_altitude),
-      atmosphere->getTopRadiusKm() / 1000.0,
-      atmosphere->getBotRadiusKm() / 1000.0
-    };
+  sun_azimuth_altitude = float2(azimuth, altitude);
 
-    float cameraH = sunAzimuth_sunAltitude_rTopMM_rBotMM.w + camera_data.pos.y;
-    cameraH = (cameraH < 10.0 ? 10.0 : cameraH) / 1e6;
+  float4 sunAzimuth_sunAltitude_rTopMM_rBotMM{
+    math::radians(azimuth),
+    math::radians(altitude),
+    atmosphere->getTopRadiusKm() / 1000.0,
+    atmosphere->getBotRadiusKm() / 1000.0
+  };
 
-    tfx::set_extern("atmPosMM", float3(0.0f, sunAzimuth_sunAltitude_rTopMM_rBotMM.w + cameraH, 0.0f));
-    tfx::set_extern("maxAerialDist_mm", 0.032f);
-    tfx::set_channel("sunAzimuth_sunAltitude_rTopMM_rBotMM", sunAzimuth_sunAltitude_rTopMM_rBotMM);
-    tfx::activate_scope("AtmosphereScope", encoder);
-  });
+  float cameraH = sunAzimuth_sunAltitude_rTopMM_rBotMM.w + camera_data.pos.y;
+  cameraH = (cameraH < 10.0 ? 10.0 : cameraH) / 1e6;
+
+  tfx::set_extern("atmPosMM", float3(0.0f, sunAzimuth_sunAltitude_rTopMM_rBotMM.w + cameraH, 0.0f));
+  tfx::set_extern("maxAerialDist_mm", 0.032f);
+  tfx::set_channel("sunAzimuth_sunAltitude_rTopMM_rBotMM", sunAzimuth_sunAltitude_rTopMM_rBotMM);
+  tfx::activate_scope("AtmosphereScope", encoder);
 }
 
 NODE_BEGIN(atm_ap_lut_render)
@@ -288,8 +291,6 @@ NODE_BEGIN(atm_sync_out)
   NO_EXEC()
 NODE_END()
 
-ECS_DESCRIBE_QUERY(query_sun, (float& sun_azimuth, float& sun_altitude));
-
 static bool show_wnd = false;
 void imgui_draw_sun_params()
 {
@@ -298,20 +299,21 @@ void imgui_draw_sun_params()
 
   float altitude = 0.0;
   float azimuth = 0.0;
-  query_sun([&](float& _azimuth, float& _altitude){
-    azimuth = _azimuth;
-    altitude = _altitude;
-  });
+
+  SunComponent* sun = get_sun();
+  if (sun)
+  {
+    azimuth = sun->getAzimuth();
+    altitude = sun->getAltitude();
+  }
 
   ImGui::Begin("sun", nullptr, 0);
   ImGui::SliderFloat("altitude", &altitude, -90.0, 90.0);
   ImGui::SliderFloat("azimuth", &azimuth, 0.0, 360.0);
   ImGui::End();
 
-  query_sun([&](float& _azimuth, float& _altitude){
-    _azimuth = azimuth;
-    _altitude = altitude;
-  });
+  if (sun)
+    sun->updateOrientation(azimuth, altitude);
 }
 
 static
