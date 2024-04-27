@@ -252,15 +252,6 @@ entity @("VirtualTerrain")
     world_size_km:i = 2 
     detail_size:i = 256
   }
-
-  vterrain_name:t = "test_level"
-  vterrain_heightmapMinMaxBorder:f2 = 0.28, 0.42
-  vterrain_heightmapMaxHeight:f = 140
-
-  vterrain_worldSize_meters:i = 2048
-  vterrain_patchSideBits:i = 5
-
-  vterrain_detail:t = "test_level.detail"
 }
 
 entity @("MovingDecal")

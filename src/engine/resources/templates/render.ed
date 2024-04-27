@@ -47,15 +47,6 @@ template @("name: VirtualTerrain") {
     world_size_km:i = 1 // 1x1 km map
     detail_size:i = 256 // [name].detail size
   }
-
-  vterrain_name:t = ""
-  vterrain_heightmapMinMaxBorder:f2 = 0, 1 //texture values borders
-  vterrain_heightmapMaxHeight:f = 30
-  vterrain_patchSideBits:i = 5 // LOD 0 splits on 32x32 1meter patches
-  vterrain_worldSize_meters:i = 1024
-
-  vterrain_detailSize:i = 256
-  vterrain_detail:t = ""
 }
 
 template @("name: VirtualTerrainRender") {
