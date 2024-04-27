@@ -121,7 +121,13 @@ void virtual_terrain_vtx_dbg_import_node(
         tex = terrain->getVTexTilesStorage();
       };
 
-      return fg::TextureImport{tex, gapi::TextureState::ShaderRead};
+      static gapi::TextureViewWithState tmpWorkaround;
+      tmpWorkaround = {
+        tex,
+        gapi::TextureState::ShaderRead
+      };
+
+      return &tmpWorkaround;
     });
     return [](gapi::CmdEncoder&) {};
   });

@@ -6,6 +6,7 @@
 
 #include <engine/gapi/cmd_encoder.h>
 #include <engine/gapi/resources.h>
+#include <engine/gapi/resource_wrappers.h>
 #include <engine/utils/fixed_stack.hpp>
 #include <engine/utils/resizable_vector.hpp>
 
@@ -24,19 +25,8 @@ namespace fg
   using ExecFunction = fu2::function_base<true, true, exec_function_capacity, false, true, void(gapi::CmdEncoder&)>;
   using BuildFunction = fu2::function<ExecFunction(Registry&)>;
 
-  struct TextureImport
-  {
-    gapi::TextureHandle tex;
-    gapi::TextureState initState;
-  };
-  using TextureProduceFunction = fu2::function<TextureImport() const>;
-
-  struct BufferImport
-  {
-    gapi::BufferHandler buf;
-    gapi::BufferState initState;
-  };
-  using BufferProduceFunction = fu2::function<BufferImport() const>;
+  using TextureProduceFunction = fu2::function<gapi::TextureViewWithState*() const>;
+  using BufferProduceFunction = fu2::function<gapi::BufferViewWithState*() const>;
 
   class Registry
   {

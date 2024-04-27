@@ -15,14 +15,17 @@ void clustered_render_prepare(const Engine::OnBeforeRender& evt,
   clustered_lights.beforeRender(*evt.encoder);
 }
 
-auto import_clustered_lights() -> fg::BufferImport
+auto import_clustered_lights() -> gapi::BufferViewWithState*
 {
   gapi::BufferHandler buf = gapi::BufferHandler::Invalid;
   query_clustered_lights([&](Engine::Render::ClusteredLights& clustered_lights){
     buf = clustered_lights.getLightsBuffer();
   });
 
-  return {.buf = buf, .initState = gapi::BufferState::BF_STATE_SRV};
+  static gapi::BufferViewWithState workaround;
+  workaround = {buf, gapi::BufferState::BF_STATE_SRV};
+
+  return &workaround;
 }
 
 NODE_BEGIN(clustered_light_resources)

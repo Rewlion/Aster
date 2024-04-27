@@ -2,4 +2,9 @@
 
 #include <engine/ecs/type_meta.h>
 
-DECLARE_TRIVIAL_ECS_COMPONENT(GIOnSurfels);
+void GIOnSurfels::init()
+{
+  initialized = false;
+}
+
+DECLARE_INITABLE_ECS_OBJECT_COMPONENT(GIOnSurfels);

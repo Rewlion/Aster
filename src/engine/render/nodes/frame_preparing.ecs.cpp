@@ -44,9 +44,14 @@ void set_prev_far_plane_points(const math::FarPlanePoints& points)
 
 
 static
-auto import_backbuffer() -> fg::TextureImport
+auto import_backbuffer() -> gapi::TextureViewWithState*
 {
-  return fg::TextureImport{gapi::get_backbuffer(), gapi::TextureState::Present};
+  static gapi::TextureViewWithState tmpWorkaround;
+  tmpWorkaround = {
+    gapi::get_backbuffer(),
+    gapi::TextureState::Present
+  };
+  return &tmpWorkaround;
 }
 
 NODE_BEGIN(backbuffer_acquiring)

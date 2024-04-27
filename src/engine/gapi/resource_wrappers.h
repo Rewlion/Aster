@@ -22,16 +22,18 @@ namespace gapi
       gapi::TextureHandle m_Handle;
   };
 
-  class TextureViewWithState
+  class UniqueTextureWithState
   {
     public:
-      TextureViewWithState();
-      TextureViewWithState(const TextureViewWithState&) = default;
-      TextureViewWithState(const TextureHandle h, gapi::TextureState m_State);
-      TextureViewWithState(TextureViewWithState&& rvl);
+      UniqueTextureWithState();
+      UniqueTextureWithState(const UniqueTextureWithState&) = default;
+      UniqueTextureWithState(const TextureHandle, const gapi::TextureState);
+      UniqueTextureWithState(UniqueTextureWithState&& rvl);
 
-      auto operator=(const TextureViewWithState&) -> TextureViewWithState& = default;
-      auto operator=(TextureViewWithState&&) -> TextureViewWithState&;
+      ~UniqueTextureWithState();
+
+      auto operator=(const UniqueTextureWithState&) -> UniqueTextureWithState& = default;
+      auto operator=(UniqueTextureWithState&&) -> UniqueTextureWithState&;
       operator TextureHandle() const { return m_Handle; }
 
       auto getState() const -> gapi::TextureState { return m_State; }
@@ -43,9 +45,22 @@ namespace gapi
         return {m_Handle, m_State};
       }
 
-    private:
+    protected:
       gapi::TextureHandle m_Handle;
       gapi::TextureState m_State;
+  };
+
+  class TextureViewWithState : public UniqueTextureWithState
+  {
+    public:
+      TextureViewWithState();
+      TextureViewWithState(const TextureViewWithState&) = default;
+      TextureViewWithState(const TextureHandle h, gapi::TextureState m_State);
+
+      ~TextureViewWithState();
+
+      auto operator=(const TextureViewWithState&) -> TextureViewWithState& = default;
+      operator TextureHandle() const { return m_Handle; }
   };
 
   class BufferWrapper
@@ -65,6 +80,47 @@ namespace gapi
 
     private:
       gapi::BufferHandler m_Handle;
+  };
+
+  class UniqueBufferWithState
+  {
+    public:
+      UniqueBufferWithState();
+      UniqueBufferWithState(const UniqueBufferWithState&) = default;
+      UniqueBufferWithState(const gapi::BufferHandler, const gapi::BufferState);
+      UniqueBufferWithState(UniqueBufferWithState&& rvl);
+
+      ~UniqueBufferWithState();
+
+      auto operator=(const UniqueBufferWithState&) -> UniqueBufferWithState& = delete;
+      auto operator=(UniqueBufferWithState&&) -> UniqueBufferWithState&;
+      operator gapi::BufferHandler() const { return m_Handle; }
+
+      auto getState() const -> gapi::BufferState { return m_State; }
+      void transitState(gapi::CmdEncoder& encoder, const gapi::BufferState to_state);
+
+      auto unwrap() const
+        -> eastl::pair<gapi::BufferHandler, gapi::BufferState>
+      {
+        return {m_Handle, m_State};
+      }
+
+    protected:
+      gapi::BufferHandler m_Handle;
+      gapi::BufferState m_State;
+  };
+
+  class BufferViewWithState : public UniqueBufferWithState
+  {
+    public:
+      BufferViewWithState();
+      BufferViewWithState(const BufferViewWithState&);
+      BufferViewWithState(const gapi::BufferHandler, const gapi::BufferState);
+
+      ~BufferViewWithState();
+
+      auto operator=(const BufferViewWithState&) -> BufferViewWithState&;
+      operator gapi::BufferHandler() const { return m_Handle; }
   };
 
   class ScopedScissor

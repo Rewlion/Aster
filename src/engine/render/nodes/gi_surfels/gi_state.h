@@ -9,10 +9,9 @@ class GIOnSurfels
 {
   public:
     GIOnSurfels() = default;
-    GIOnSurfels(const ed::Scope*)
-    {
-      initialized = false;
-    }
+    GIOnSurfels(const ed::Scope*) {}
+
+    void init();
 
     bool initialized;
 };

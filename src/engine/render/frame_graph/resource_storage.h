@@ -24,8 +24,10 @@ namespace fg
 
     public:
       void create(const res_id_t, const Registry::Resource&);
-      void importTexture(const res_id_t, const gapi::TextureHandle, const gapi::TextureState init_state);
-      void importBuffer(const res_id_t, const gapi::BufferHandler, const gapi::BufferState init_state);
+      void importTextureTmp(const res_id_t, gapi::TextureViewWithState);
+      void importTexture(const res_id_t, gapi::TextureViewWithState*);
+      void importBufferTmp(const res_id_t, gapi::BufferViewWithState);
+      void importBuffer(const res_id_t, gapi::BufferViewWithState*);
       void transitTextureState(const res_id_t, const gapi::TextureState to_state, gapi::CmdEncoder& encoder);
       void transitBufferState(const res_id_t, const gapi::BufferState to_state, gapi::CmdEncoder& encoder);
       
@@ -54,8 +56,22 @@ namespace fg
     private:
       struct TextureResource
       {
-        gapi::TextureViewWithState texture;
+        std::variant<
+          gapi::TextureViewWithState,
+          gapi::TextureViewWithState*> texture;
         bool imported = false;
+
+        auto unwrap() -> gapi::TextureViewWithState&
+        {
+          if (std::holds_alternative<gapi::TextureViewWithState>(texture))
+            return std::get<gapi::TextureViewWithState>(texture);
+          return *std::get<gapi::TextureViewWithState*>(texture);
+        }
+
+        auto unwrap() const -> const gapi::TextureViewWithState&
+        {
+          return const_cast<TextureResource*>(this)->unwrap();
+        }
       };
 
       struct SamplerResource
@@ -65,8 +81,22 @@ namespace fg
 
       struct BufferResource
       {
-        gapi::BufferHandler buffer = gapi::BufferHandler::Invalid;
-        gapi::BufferState currentState = (gapi::BufferState)0;
+        std::variant<
+          gapi::BufferViewWithState,
+          gapi::BufferViewWithState*> buffer;
+
+         auto unwrap() -> gapi::BufferViewWithState&
+        {
+          if (std::holds_alternative<gapi::BufferViewWithState>(buffer))
+            return std::get<gapi::BufferViewWithState>(buffer);
+          return *std::get<gapi::BufferViewWithState*>(buffer);
+        }
+
+        auto unwrap() const -> const gapi::BufferViewWithState&
+        {
+          return const_cast<BufferResource*>(this)->unwrap();
+        }
+
         bool imported = false;
       };
   };
