@@ -50,6 +50,7 @@ auto import_backbuffer() -> gapi::TextureViewWithState*
   tmpWorkaround = {
     gapi::get_backbuffer(),
     gapi::TextureState::Present
+    
   };
   return &tmpWorkaround;
 }

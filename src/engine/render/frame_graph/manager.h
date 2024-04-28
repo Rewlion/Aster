@@ -41,7 +41,6 @@ namespace fg
       void placeBlobs();
       void flushResources();
       void execNodes();
-      void updatePersistentResourceStates();
 
     private:
       enum class State
@@ -52,7 +51,6 @@ namespace fg
 
       Registry m_Registry;
       ResourceStorage m_ResourceStorages[Engine::Render::FRAMES_COUNT];
-      PersistentResourceStorage m_PersistentResourceStorage;
       uint64_t m_iFrame = 0;
 
       const char* m_ClosingNode = nullptr;

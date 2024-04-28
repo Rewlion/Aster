@@ -24,8 +24,7 @@ void mk_fg_node_shadow_map(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_DEPTH_STENCIL | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::DepthWriteStencilWrite,
-      false
+      gapi::TextureState::DepthWriteStencilWrite
     );
 
     reg.requestRenderPass()

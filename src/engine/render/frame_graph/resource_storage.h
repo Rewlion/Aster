@@ -15,8 +15,6 @@ namespace fg
 {
   class ResourceStorage
   {
-      friend class PersistentResourceStorage;
-
       struct TextureResource;
       struct SamplerResource;
       struct BufferResource;
@@ -99,35 +97,5 @@ namespace fg
 
         bool imported = false;
       };
-  };
-
-  class PersistentResourceStorage
-  {
-    public:
-      void importResTo(const res_id_t, ResourceStorage&);
-      void create(const res_id_t, const Registry::Resource&);
-      void updateTexturesStateFrom(const ResourceStorage&);
-      void reset() { m_Storage.reset(); }
-    private:
-
-      template<class T>
-      static
-      auto hasAllocDescChanged(const Registry::Resource& prev,
-                               const Registry::Resource& cur)
-      {
-        if (const auto* prevBufInfo = std::get_if<T>(&prev))
-        {
-          const auto& oldAllocDesc = prevBufInfo->allocDesc;
-          const auto& newAllocDesc = std::get<T>(cur).allocDesc;
-
-          return std::memcmp(&oldAllocDesc, &newAllocDesc, sizeof(newAllocDesc)) > 0;
-        }
-        return false;
-      }
-
-    private:
-
-      ResourceStorage m_Storage;
-      Utils::ResizableVector<Registry::Resource, res_id_t> m_CreateInfos;
   };
 }

@@ -73,8 +73,7 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_UAV)
       },
-      gapi::TextureState::ShaderReadWrite,
-      false
+      gapi::TextureState::ShaderReadWrite
     );
 
 
@@ -87,8 +86,7 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_UAV)
       },
-      gapi::TextureState::ShaderReadWrite,
-      false
+      gapi::TextureState::ShaderReadWrite
     );
 
 
@@ -101,8 +99,7 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_RT)
       },
-      gapi::TextureState::ShaderReadWrite,
-      false
+      gapi::TextureState::ShaderReadWrite
     );
 
     auto gibs_surfels_lifetime = reg.modifyBuffer("gibs_surfels_lifetime", gapi::BufferState::BF_STATE_UAV_RW);
@@ -114,8 +111,7 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
         .size = uint((6 + 1) * 21 * 21 * 21) * sizeof(uint),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_UAV_RW,
-      false
+      gapi::BufferState::BF_STATE_UAV_RW
     );
     auto gibs_surfels_spatial_storage = reg.createBuffer(
       "gibs_surfels_spatial_storage",
@@ -123,8 +119,7 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
         .size = uint((6 + 1) * 21 * 21 * 21) * (1 + 127) * sizeof(uint),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_UAV_RW,
-      false
+      gapi::BufferState::BF_STATE_UAV_RW
     );
     auto gibs_surfels_meta = reg.modifyBuffer("gibs_surfels_meta", gapi::BufferState::BF_STATE_UAV_RW);
     auto gibs_nonlinear_aabbs = reg.modifyBuffer("gibs_nonlinear_aabbs", gapi::BufferState::BF_STATE_UAV_RW);
@@ -138,8 +133,7 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_UAV)
       },
-      gapi::TextureState::ShaderReadWrite,
-      false
+      gapi::TextureState::ShaderReadWrite
     );
 
 
@@ -152,8 +146,7 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_UAV)
       },
-      gapi::TextureState::ShaderReadWrite,
-      false
+      gapi::TextureState::ShaderReadWrite
     );
 
     auto gibs_surfels_ray_budget = reg.createBuffer(
@@ -162,8 +155,7 @@ void mk_fg_node_gibs_resources(Event*, ComponentsAccessor&)
         .size = sizeof(int),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_UAV_RW,
-      false
+      gapi::BufferState::BF_STATE_UAV_RW
     );
     auto gibs_rayguiding_map = reg.modifyTexture("gibs_rayguiding_map", gapi::TextureState::ShaderReadWrite);
 

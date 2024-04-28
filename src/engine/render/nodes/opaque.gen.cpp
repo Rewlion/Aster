@@ -27,8 +27,7 @@ void mk_fg_node_gbuffer_main_pass(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_DEPTH_STENCIL | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::DepthWriteStencilWrite,
-      false
+      gapi::TextureState::DepthWriteStencilWrite
     );
 
 
@@ -41,8 +40,7 @@ void mk_fg_node_gbuffer_main_pass(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::RenderTarget,
-      false
+      gapi::TextureState::RenderTarget
     );
 
 
@@ -55,8 +53,7 @@ void mk_fg_node_gbuffer_main_pass(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::RenderTarget,
-      false
+      gapi::TextureState::RenderTarget
     );
 
 
@@ -69,8 +66,7 @@ void mk_fg_node_gbuffer_main_pass(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::RenderTarget,
-      false
+      gapi::TextureState::RenderTarget
     );
 
 
@@ -83,8 +79,7 @@ void mk_fg_node_gbuffer_main_pass(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::RenderTarget,
-      false
+      gapi::TextureState::RenderTarget
     );
 
     auto camera_data = reg.readBlob<Engine::CameraData>("camera_data");
@@ -152,8 +147,7 @@ void mk_fg_node_gbuffer_resolve(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)((gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_UAV) | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::ShaderReadWrite,
-      false
+      gapi::TextureState::ShaderReadWrite
     );
 
     fg::dsl::AccessDecorator render_size{__renderSize__};

@@ -26,8 +26,7 @@ void mk_fg_node_gibs_indirect_light_sfilter(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_UAV | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::ShaderReadWrite,
-      false
+      gapi::TextureState::ShaderReadWrite
     );
 
 
@@ -40,8 +39,7 @@ void mk_fg_node_gibs_indirect_light_sfilter(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_UAV | gapi::TextureUsage::TEX_USAGE_SRV)
       },
-      gapi::TextureState::ShaderReadWrite,
-      false
+      gapi::TextureState::ShaderReadWrite
     );
 
     fg::dsl::AccessDecorator render_size{__renderSize__};

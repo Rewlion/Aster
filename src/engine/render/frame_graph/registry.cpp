@@ -35,16 +35,15 @@ namespace fg
   }
 
   auto Registry::createBuffer(const char* name, const gapi::BufferAllocationDescription& desc,
-                              const gapi::BufferState init_state, const bool persistent) -> BufferRequest
+                              const gapi::BufferState init_state) -> BufferRequest
   {
     if (!desc.name)
       const_cast<gapi::BufferAllocationDescription&>(desc).name = name;
 
     return createResourceInternal(name, BufferResource{.allocDesc = desc, .initState = init_state},
-      [this, init_state, persistent](const virt_res_id_t virt_res_id, NodeInfo& node)
+      [this, init_state](const virt_res_id_t virt_res_id, NodeInfo& node)
     {
       auto& vRes = m_VirtResources[virt_res_id];
-      vRes.persistent = persistent;
       vRes.modificationChain.insert(vRes.modificationChain.begin(), m_CurrentExecNodeId);
     });
   }
@@ -81,16 +80,15 @@ namespace fg
   }
 
   auto Registry::createTexture(const char* name, const gapi::TextureAllocationDescription& desc,
-                               const gapi::TextureState init_state, const bool persistent) -> TextureRequest
+                               const gapi::TextureState init_state) -> TextureRequest
   {
     if (!desc.name)
       const_cast<gapi::TextureAllocationDescription&>(desc).name = name;
 
     return createResourceInternal(name, TextureResource{.allocDesc = desc},
-      [this, init_state, persistent](const virt_res_id_t virt_res_id, NodeInfo& node)
+      [this, init_state](const virt_res_id_t virt_res_id, NodeInfo& node)
       {
         auto& vRes = m_VirtResources[virt_res_id];
-        vRes.persistent = persistent;
         vRes.modificationChain.insert(vRes.modificationChain.begin(), m_CurrentExecNodeId);
         node.execState.textureBeginStates.push_back({virt_res_id, init_state});
       });

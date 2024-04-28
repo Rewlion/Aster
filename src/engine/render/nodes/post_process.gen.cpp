@@ -49,8 +49,7 @@ void mk_fg_node_post_process(Event*, ComponentsAccessor&)
         .samplesPerPixel = gapi::TextureSamples::s1,
         .usage =           (gapi::TextureUsage)((gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV) | gapi::TextureUsage::TEX_USAGE_TRANSFER_SRC)
       },
-      gapi::TextureState::RenderTarget,
-      false
+      gapi::TextureState::RenderTarget
     );
 
     reg.requestRenderPass()

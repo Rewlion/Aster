@@ -93,8 +93,7 @@ void mk_fg_node_frame_preparing(Event*, ComponentsAccessor&)
         .size = (9 + 1) * sizeof(float4),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_UAV_RW,
-      false
+      gapi::BufferState::BF_STATE_UAV_RW
     );
     auto camera_data = reg.createBlob<Engine::CameraData>("camera_data");
     auto window_size = reg.createBlob<int2>("window_size");

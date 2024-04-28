@@ -58,8 +58,7 @@ void mk_fg_node_clustered_light_resources(Event*, ComponentsAccessor&)
         .size = (16 * 8 * 24) * sizeof(ClusterInfo),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_UAV_RW,
-      false
+      gapi::BufferState::BF_STATE_UAV_RW
     );
     auto clusters_indirecion = reg.createBuffer(
       "clusters_indirecion",
@@ -67,8 +66,7 @@ void mk_fg_node_clustered_light_resources(Event*, ComponentsAccessor&)
         .size = (16 * 8 * 24) * 128 * sizeof(ClusterIndirection),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_UAV_RW,
-      false
+      gapi::BufferState::BF_STATE_UAV_RW
     );
     auto clusters_indirecion_offset = reg.createBuffer(
       "clusters_indirecion_offset",
@@ -76,8 +74,7 @@ void mk_fg_node_clustered_light_resources(Event*, ComponentsAccessor&)
         .size = sizeof(uint),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_TRANSFER_DST,
-      false
+      gapi::BufferState::BF_STATE_TRANSFER_DST
     );
     auto clustered_lights = reg.importBufferProducer("clustered_lights", import_clustered_lights);
 
@@ -110,8 +107,7 @@ void mk_fg_node_build_light_clusters(Event*, ComponentsAccessor&)
         .size = (16 * 8 * 24) * sizeof(Cluster),
         .usage = gapi::BufferUsage::BF_BindUAV | gapi::BufferUsage::BF_GpuVisible
       },
-      gapi::BufferState::BF_STATE_UAV_RW,
-      false
+      gapi::BufferState::BF_STATE_UAV_RW
     );
 
     return [frustum_clusters](gapi::CmdEncoder& encoder)

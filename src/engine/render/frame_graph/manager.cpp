@@ -33,7 +33,6 @@ namespace fg
     placeBlobs();
     flushResources();
     execNodes();
-    updatePersistentResourceStates();
     ++m_iFrame;
   }
 
@@ -359,18 +358,9 @@ namespace fg
             const auto& vRes = m_Registry.m_VirtResources[vResId];
             if (vRes.clonnedVResId == INVALID_VIRT_RES_ID)
             {
+              PROFILE_CPU_NAMED("create")
               auto& res = m_Registry.m_Resources[vRes.resourceId];
-              if (vRes.persistent)
-              {
-                PROFILE_CPU_NAMED("persistent create")
-                m_PersistentResourceStorage.create(vRes.resourceId, res);
-                m_PersistentResourceStorage.importResTo(vRes.resourceId, getStorage());
-              }
-              else
-              {
-                PROFILE_CPU_NAMED("create")
-                getStorage().create(vRes.resourceId, res);
-              }
+              getStorage().create(vRes.resourceId, res);
             }
           }
         }
@@ -417,11 +407,6 @@ namespace fg
     }
 
     encoder->flush();
-  }
-
-  void Manager::updatePersistentResourceStates()
-  {
-    m_PersistentResourceStorage.updateTexturesStateFrom(getStorage());
   }
 
   auto Manager::getResourceId(const virt_res_id_t virt_res_id)  -> res_id_t
