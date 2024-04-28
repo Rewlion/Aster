@@ -103,8 +103,6 @@ namespace fg::dsl
   template<gapi::TextureUsage usage>
   struct TextureUsage {};
 
-  struct PersistentStorage {};
-
   template<gapi::BufferState state>
   struct BufferState {};
 
@@ -263,21 +261,16 @@ namespace fg::dsl
 #define BUF_STATE(state) gapi::BufferState::BF_STATE_ ## state
 #define BUF_SIZE_CB(cb) fg::dsl::FnName<#cb>
 #define BUF_SIZE(size) fg::dsl::AbsBufSize<size>
-#define BUF_PERSISTENT() , fg::dsl::PersistentStorage
-#define BUF_NOT_PERSISTENT() 
 
-#define CREATE_BUF_EX(name, usage, state, size, Gpu_Cpu, persistent) fg::dsl::CreateBuffer<\
+#define CREATE_BUF_EX(name, usage, state, size, Gpu_Cpu) fg::dsl::CreateBuffer<\
   fg::dsl::Name<#name>,\
   fg::dsl::BufferUsage<usage | gapi::BufferUsage:: MACRO_CONCAT(MACRO_CONCAT(BF_,Gpu_Cpu), Visible)>,\
   fg::dsl::BufferSize<size>,\
   fg::dsl::BufferState<state>\
-  persistent()\
   > NAME_WITH_LINE(createBuffer);
 
-#define CREATE_CPU_BUF(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Cpu, BUF_NOT_PERSISTENT)
-#define CREATE_GPU_BUF(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Gpu, BUF_NOT_PERSISTENT)
-#define CREATE_CPU_BUF_PERSISTENT(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Cpu, BUF_PERSISTENT)
-#define CREATE_GPU_BUF_PERSISTENT(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Gpu, BUF_PERSISTENT)
+#define CREATE_CPU_BUF(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Cpu)
+#define CREATE_GPU_BUF(name, usage, state, size) CREATE_BUF_EX(name, usage, state, size, Gpu)
 
 #define RENAME_BUF(from, to, state)\
   fg::dsl::RenameBuffer<\
@@ -339,10 +332,8 @@ namespace fg::dsl
 #define TEX_USAGE2(usage1, usage2) (gapi::TextureUsage)(TEX_USAGE(usage1) | TEX_USAGE(usage2))
 #define TEX_USAGE3(usage1, usage2, usage3) (gapi::TextureUsage)(TEX_USAGE2(usage1, usage2) | TEX_USAGE(usage3))
 #define TEX_STATE(state) gapi::TextureState:: state
-#define TEX_PERSISTENT() , fg::dsl::PersistentStorage
-#define TEX_NOT_PERSISTENT() 
 
-#define CREATE_TEX_EX(name, extent, format, mip_levels, array_layers, samples_per_pixel, usage, state, persistent_storage)\
+#define CREATE_TEX_EX(name, extent, format, mip_levels, array_layers, samples_per_pixel, usage, state)\
   fg::dsl::CreateTexture<\
     fg::dsl::Name<#name>,\
     fg::dsl::Extent<extent>,\
@@ -352,20 +343,16 @@ namespace fg::dsl
     fg::dsl::SamplesPerPixel<samples_per_pixel>,\
     fg::dsl::TextureUsage<usage>,\
     fg::dsl::TextureState<state>\
-    persistent_storage\
   > NAME_WITH_LINE(createTex);
 
-#define CREATE_TEX_2D_EX(name, size, format, mip_levels, usage, state, persisted)\
-  CREATE_TEX_EX(name, size, format, mip_levels, TEX_ARRAY_LAYERS(1), TEX_SAMPLES(1), usage, state, persisted())
+#define CREATE_TEX_2D_EX(name, size, format, mip_levels, usage, state)\
+  CREATE_TEX_EX(name, size, format, mip_levels, TEX_ARRAY_LAYERS(1), TEX_SAMPLES(1), usage, state)
 
 #define CREATE_TEX_2D(name, size, format, usage, state)\
-  CREATE_TEX_2D_EX(name, size, format, TEX_MIPS(1), usage, state, TEX_NOT_PERSISTENT)
+  CREATE_TEX_2D_EX(name, size, format, TEX_MIPS(1), usage, state)
 
 #define CREATE_TEX_2D_MIP(name, size, format, tex_mip, usage, state)\
-  CREATE_TEX_2D_EX(name, size, format, tex_mip, usage, state, TEX_NOT_PERSISTENT)
-
-#define CREATE_TEX_2D_PERSISTENT(name, size, format, usage, state)\
-  CREATE_TEX_2D_EX(name, size, format, TEX_MIPS(1), usage, state, TEX_PERSISTENT)
+  CREATE_TEX_2D_EX(name, size, format, tex_mip, usage, state)
 
 #define IMPORT_TEX(name, import_fn)\
   fg::dsl::ImportTextureProducer<\

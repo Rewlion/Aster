@@ -159,10 +159,6 @@ class TemplateParamExtractor:
     self.textureUsage = self.textureUsage + f" | {usage}" if self.textureUsage != "" else usage
 
 
-  def extractPersistentStorage(self, tmpl_arg_type):
-    self.persistentStorage = "fg::PERSISTENT"
-    
-
   def extractOptional(self, tmpl_arg_type):
     self.optional = "true"
 
@@ -246,12 +242,11 @@ class CreateBufferAction(BuildAction):
     self.bufferUsage = ""
     self.bufferState = ""
     self.bufferSize = ""
-    self.persistentStorage = ""
     self.extractParams(field_cursor)
     context.markResourceAccess(self.name)
 
   def generate(self):
-    return templates.generate_fg_create_buffer(self.name, self.bufferUsage, self.bufferState, self.bufferSize, self.persistentStorage)
+    return templates.generate_fg_create_buffer(self.name, self.bufferUsage, self.bufferState, self.bufferSize)
 
 
 class ImportBufferProducerAction(BuildAction):
@@ -276,7 +271,6 @@ class CreateTextureAction(BuildAction):
     self.samplesPerPixel = ""
     self.textureUsage = ""
     self.textureState = ""
-    self.persistentStorage = ""
     self.context = context
     self.extractParams(field_cursor)
     context.markResourceAccess(self.name)
@@ -286,7 +280,7 @@ class CreateTextureAction(BuildAction):
     return templates.generate_fg_create_texture(
       self.name, self.textureFormat, self.extent, self.mipLevels,
       self.arrayLayers, self.samplesPerPixel,
-      self.textureUsage, self.textureState, self.persistentStorage)
+      self.textureUsage, self.textureState)
 
 
 class ModifyBufferAction(BuildAction):

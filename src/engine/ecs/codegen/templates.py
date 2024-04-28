@@ -176,15 +176,14 @@ def generate_fg_order_after(node_name):
   return f"""    reg.orderMeAfter("{node_name}");"""
 
 
-def generate_fg_create_buffer(name, usage, state, size, persistent_storage):
+def generate_fg_create_buffer(name, usage, state, size):
   return f"""    auto {name} = reg.createBuffer(
       "{name}",
       gapi::BufferAllocationDescription{{
         .size = {size},
         .usage = {usage}
       }},
-      {state},
-      {persistent_storage if persistent_storage != "" else "false"}
+      {state}
     );"""
 
 
@@ -207,7 +206,7 @@ def generate_fg_rename_buffer(from_name, to_name, state):
 def generate_fg_create_texture(
   name, tex_format, extent, mip_levels,
   array_layers, samples_per_pixel,
-  usage, init_state, persistent_storage):
+  usage, init_state):
   return f"""
     auto {name} = reg.createTexture("{name}",
       gapi::TextureAllocationDescription{{
@@ -218,8 +217,7 @@ def generate_fg_create_texture(
         .samplesPerPixel = {samples_per_pixel if samples_per_pixel != "" else "gapi::TextureSamples::s1"},
         .usage =           {usage if usage != "" else "gapi::TextureUsage::TEX_USAGE_NONE"}
       }},
-      {init_state if init_state != "" else "gapi::TextureState::Undefined"},
-      {persistent_storage if persistent_storage != "" else "false"}
+      {init_state if init_state != "" else "gapi::TextureState::Undefined"}
     );
 """
 
