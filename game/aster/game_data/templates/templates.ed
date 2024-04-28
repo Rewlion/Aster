@@ -64,9 +64,9 @@ template @("name: CollisionTests")
   center:f3 = 0, 0, 0
 }
 
-template @("name: MovingPointLight; extends: PointLight")
+template @("name: MovingPointLight)
 {
-  center_pos:f3 = 0, 0, 0
+  point_light: PointLightComponent = {}
   moving_point_light_tag:b = yes
 }
 

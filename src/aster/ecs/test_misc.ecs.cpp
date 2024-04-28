@@ -1,4 +1,5 @@
 #include <engine/assets/assets_manager.h>
+#include <engine/components/point_light.h>
 #include <engine/components/static_mesh.h>
 #include <engine/console/cmd.h>
 #include <engine/console/console.h>
@@ -516,11 +517,7 @@ void spawn_moving_point_light_at_camera(eastl::span<string_view>)
       {
         const float3 initPos = pos + forward * 2.0f + float3(1.0, 0.0, 0.0) * x + float3(0.0f, 1.0f, 0.0f) * y;
         ecs::EntityComponents init;
-        init["center_pos"] = initPos;
-        init["pos"] = initPos;
-        init["point_light_attenuation_radius"] = 10.0f;
-        init["point_light_color"] = float3{0.0f, 1.0f, 0.0f};
-
+        init["point_light"] = PointLightComponent{10.0f, float3{0.0f, 1.0f, 0.0f}, initPos};
         ecs::get_registry().createEntity("MovingPointLight", std::move(init));
         return;
       }

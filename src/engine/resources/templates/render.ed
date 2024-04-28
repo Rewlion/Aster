@@ -59,12 +59,6 @@ template @("name: Decal") {
   pos:f3 = 0, 0, 0
 }
 
-template @("name: PointLight") {
-  pos:f3 = 0, 0, 0
-  point_light_attenuation_radius:f = 1
-  point_light_color:f3 = 1, 1, 1
-}
-
 ///
 
 //hierarchy basement

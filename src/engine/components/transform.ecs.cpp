@@ -74,4 +74,9 @@ auto TransformComponent::getWorldTransform() const -> float4x4
   return getWorldTransformTmInternal(this);
 }
 
+auto TransformComponent::getWorldPosition() const -> float3
+{
+  return getWorldTransform()[3];
+}
+
 DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT_WITH_NAME(TransformComponent, "TransformComponent");

@@ -1,5 +1,6 @@
 #include "clustered_lights.h"
 
+#include <engine/components/point_light.h>
 #include <engine/debug_marks.h>
 #include <engine/ecs/macros.h>
 #include <engine/ecs/type_meta.h>
@@ -12,24 +13,20 @@ ECS_DESCRIBE_QUERY(query_clustered_lights, Engine::Render::ClusteredLights& clus
 
 ECS_EVENT_SYSTEM()
 void point_light_dbg_draw(Engine::OnGameTick&,
-                          const float3& pos,
-                          const float3& point_light_color,
-                          const float point_light_attenuation_radius)
+                          const PointLightComponent& point_light)
 {
-  Engine::dbg::draw_line_sphere(pos, point_light_attenuation_radius, point_light_color, 0.0f);
+  Engine::dbg::draw_line_sphere(point_light.getWorldPosition(), point_light.getAttenuationRadius(), point_light.getColor(), 0.0f);
 }
 
 ECS_EVENT_SYSTEM()
 void listen_point_lights_creation(ecs::OnEntityCreated&,
-                                  const float3& pos,
-                                  const float3& point_light_color,
-                                  const float point_light_attenuation_radius)
+                                  const PointLightComponent& point_light)
 {
   query_clustered_lights([&](auto& clustered_lights){
     clustered_lights.addPointLight(PointLight{
-      .pos = pos,
-      .color = point_light_color,
-      .attenuationRadius = point_light_attenuation_radius,
+      .pos = point_light.getWorldPosition(),
+      .color = point_light.getColor(),
+      .attenuationRadius = point_light.getAttenuationRadius(),
     });
   });
 }
