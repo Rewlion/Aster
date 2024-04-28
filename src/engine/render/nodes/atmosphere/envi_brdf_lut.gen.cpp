@@ -15,7 +15,7 @@ void mk_fg_node_atm_envi_brdf(Event*, ComponentsAccessor&)
   fg::register_node("atm_envi_brdf", FG_FILE_DECL, [](fg::Registry& reg)
   { 
     reg.requestRenderPass()
-      .addTarget("atm_envi_brdf", gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addTarget("atm_envi_brdf", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
     ;
 
 

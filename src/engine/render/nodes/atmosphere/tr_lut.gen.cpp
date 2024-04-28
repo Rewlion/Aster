@@ -16,7 +16,7 @@ void mk_fg_node_atm_tr_lut_render(Event*, ComponentsAccessor&)
   { 
     reg.orderMeAfter("frame_preparing");
     reg.requestRenderPass()
-      .addTarget("atm_tr_lut", gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addTarget("atm_tr_lut", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
     ;
 
 

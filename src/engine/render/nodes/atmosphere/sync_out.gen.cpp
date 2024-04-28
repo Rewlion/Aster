@@ -8,6 +8,26 @@
 
 using namespace ecs;
 
+const static DirectQueryRegistration query_atmosphere_render_state_queryReg{
+  {
+    DESCRIBE_QUERY_COMPONENT("atmosphere_render_state", AtmosphereRenderState)
+  },
+  "query_atmosphere_render_state"};
+const static query_id_t query_atmosphere_render_state_queryId = query_atmosphere_render_state_queryReg.getId();
+
+
+void query_atmosphere_render_state (eastl::function<
+  void(
+    AtmosphereRenderState& atmosphere_render_state)> cb)
+{
+  ecs::get_registry().query(query_atmosphere_render_state_queryId, [&](ComponentsAccessor& accessor)
+  {
+    AtmosphereRenderState& atmosphere_render_state = accessor.get<AtmosphereRenderState>(compile_ecs_name_hash("atmosphere_render_state"));
+    cb(atmosphere_render_state);
+  });
+}
+
+
 //Engine::OnFrameGraphInit handler
 static
 void mk_fg_node_atm_sync_out(Event*, ComponentsAccessor&)
@@ -21,7 +41,11 @@ void mk_fg_node_atm_sync_out(Event*, ComponentsAccessor&)
     auto atm_ms_lut_srv = reg.renameTexture("atm_ms_lut", "atm_ms_lut_srv", gapi::TextureState::ShaderRead);
     auto atm_sky_lut_srv = reg.renameTexture("atm_sky_lut", "atm_sky_lut_srv", gapi::TextureState::ShaderRead);
     auto atm_ap_lut_srv = reg.renameTexture("atm_ap_lut", "atm_ap_lut_srv", gapi::TextureState::ShaderRead);
-    return [](gapi::CmdEncoder&){};
+
+    return [](gapi::CmdEncoder& )
+    {
+      atm_sync_out_exec();
+    };
   });
 }
 

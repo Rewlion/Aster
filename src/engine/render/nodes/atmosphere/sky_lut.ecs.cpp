@@ -1,3 +1,5 @@
+#include "render_state.h"
+
 #include <engine/render/frame_graph/dsl.h>
 
 NODE_BEGIN(atm_sky_lut_render)
@@ -5,7 +7,7 @@ NODE_BEGIN(atm_sky_lut_render)
   BIND_TEX_SRV_AS(atm_ms_lut, msLUT)
 
   RP_BEGIN()
-    TARGET_LOAD_DONTCARE(atm_sky_lut)
+    TARGET(atm_sky_lut)
   RP_END()
 
   EXEC(atm_sky_lut_render_exec)
@@ -15,6 +17,9 @@ NODE_EXEC()
 static
 void atm_sky_lut_render_exec(gapi::CmdEncoder& encoder)
 {
+  if (!AtmosphereRenderState::isDirty())
+    return;
+
   tfx::activate_technique("SkyLUT", encoder);
   encoder.updateResources();
   encoder.draw(4, 1, 0, 0);

@@ -22,12 +22,18 @@ class AtmosphereRenderState
 
     void init();
 
+    void markDirty() { m_LutState = AtmosphereLutState::Preparing; }
+    void markReady() { m_LutState = AtmosphereLutState::Ready; }
+
     auto getTrLut() -> gapi::TextureViewWithState* { return &m_TrLut; }
     auto getMsLut() -> gapi::TextureViewWithState* { return &m_MsLut; }
     auto getSkyLut() -> gapi::TextureViewWithState* { return &m_SkyLut; }
     auto getApLut() -> gapi::TextureViewWithState* { return &m_ApLut; }
     auto getEnviBRDFLut() -> gapi::TextureViewWithState* { return &m_EnviBRDFLut; }
     auto getEnviSpecular() -> gapi::TextureViewWithState* { return &m_EnviSpecular; }
+
+    static
+    auto isDirty() -> bool;
 
   private:
     AtmosphereLutState m_LutState;

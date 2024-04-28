@@ -1,4 +1,8 @@
+#include "render_state.h"
+
 #include <engine/render/frame_graph/dsl.h>
+
+ECS_COMP_GETTER(AtmosphereRenderState, atmosphere_render_state);
 
 NODE_BEGIN(atm_sync_out)
   ORDER_ME_AFTER(frame_preparing)
@@ -10,5 +14,13 @@ NODE_BEGIN(atm_sync_out)
   RENAME_TEX(atm_sky_lut, atm_sky_lut_srv, TEX_STATE(ShaderRead))
   RENAME_TEX(atm_ap_lut, atm_ap_lut_srv, TEX_STATE(ShaderRead))
 
-  NO_EXEC()
+  EXEC(atm_sync_out_exec)
 NODE_END()
+
+NODE_EXEC()
+static
+void atm_sync_out_exec()
+{
+  if (AtmosphereRenderState* st = get_atmosphere_render_state())
+    st->markReady();
+}

@@ -1,8 +1,27 @@
 #include "render_state.h"
 
+#include <engine/ecs/macros.h>
 #include <engine/ecs/type_meta.h>
+#include <engine/events.h>
 
 #include <engine/shaders/shaders/atmosphere/consts.hlsl>
+
+ECS_COMP_GETTER(AtmosphereRenderState, atmosphere_render_state)
+
+ECS_EVENT_SYSTEM()
+void on_sun_orientation_changed(const Engine::SunOrientationChanged& evt,
+                                AtmosphereRenderState& atmosphere_render_state)
+{
+  atmosphere_render_state.markDirty();
+}
+
+auto AtmosphereRenderState::isDirty() -> bool
+{
+  if (auto* st = get_atmosphere_render_state())
+    return st->m_LutState == AtmosphereLutState::Preparing;
+
+  return false;
+}
 
 void AtmosphereRenderState::init()
 {

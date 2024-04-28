@@ -50,8 +50,6 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/virtual_texture/vtile_lru.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/world_render.cpp"
 
-    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/atmosphere/render_state.cpp"
-
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/dbg_wnd.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/gi_surfels/gi_state.cpp"
 
@@ -66,6 +64,7 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/atmosphere/envi_specular.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/atmosphere/imgui_sun.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/atmosphere/ms_lut.ecs.cpp"
+    "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/atmosphere/render_state.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/atmosphere/resources.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/atmosphere/sky_apply.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/render/nodes/atmosphere/sky_lut.ecs.cpp"

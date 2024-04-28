@@ -17,7 +17,7 @@ void mk_fg_node_atm_sky_lut_render(Event*, ComponentsAccessor&)
     auto atm_tr_lut = reg.readTexture("atm_tr_lut", gapi::TextureState::ShaderRead, false);
     auto atm_ms_lut = reg.readTexture("atm_ms_lut", gapi::TextureState::ShaderRead, false);
     reg.requestRenderPass()
-      .addTarget("atm_sky_lut", gapi::LoadOp::DontCare, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
+      .addTarget("atm_sky_lut", gapi::LoadOp::Load, gapi::StoreOp::Store, gapi::ClearColorValue{uint32_t{0}})
     ;
 
 

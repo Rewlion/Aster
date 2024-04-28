@@ -1,3 +1,5 @@
+#include "render_state.h"
+
 #include <engine/render/frame_graph/dsl.h>
 
 NODE_BEGIN(atm_envi_specular)
@@ -16,6 +18,9 @@ void atm_envi_specular_exec(gapi::CmdEncoder& encoder,
                             const gapi::TextureHandle atm_envi_specular,
                             const int atm_envi_mips)
 {
+  if (!AtmosphereRenderState::isDirty())
+    return;
+
   tfx::set_extern("enviMips", (float)atm_envi_mips);
 
   for (int i = 0; i < atm_envi_mips; ++i)
