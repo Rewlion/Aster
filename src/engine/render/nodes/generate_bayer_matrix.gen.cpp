@@ -25,7 +25,7 @@ void mk_fg_node_generate_bayer_matrix(Event*, ComponentsAccessor&)
         .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_RT)
       },
       gapi::TextureState::TransferDst,
-      fg::PERSISTENT
+      false
     );
 
     reg.orderMeBefore("frame_preparing");

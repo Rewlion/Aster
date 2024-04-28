@@ -2,7 +2,7 @@
 
 NODE_BEGIN(generate_bayer_matrix)
   EXEC(generate_bayer_matrix)
-  CREATE_TEX_2D_PERSISTENT(bayer_matrix_8x8, TEX_SIZE(8,8,1), R32_FLOAT, TEX_USAGE2(SRV,RT), TEX_STATE(TransferDst))
+  CREATE_TEX_2D(bayer_matrix_8x8, TEX_SIZE(8,8,1), R32_FLOAT, TEX_USAGE2(SRV,RT), TEX_STATE(TransferDst))
   ORDER_ME_BEFORE(frame_preparing)
 NODE_END()
 
