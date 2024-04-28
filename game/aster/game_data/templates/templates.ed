@@ -52,10 +52,10 @@ template @("name: controller")
   controller_flag:b = false
 }
 
-template @("name: MovingDecal; extends: Decal")
+template @("name: MovingDecal; extends: SceneRoot")
 {
+  decal: DecalComponent = {}
   moving_decal_flag:b = true
-  center_pos:f3 = 0, 0, 0
 }
 
 template @("name: CollisionTests")
@@ -64,7 +64,7 @@ template @("name: CollisionTests")
   center:f3 = 0, 0, 0
 }
 
-template @("name: MovingPointLight)
+template @("name: MovingPointLight")
 {
   point_light: PointLightComponent = {}
   moving_point_light_tag:b = yes

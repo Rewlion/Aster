@@ -227,9 +227,8 @@ static EventSystemRegistration system_on_moving_decal_creation_registration(
 static void moving_decal_controller_internal(ComponentsAccessor& accessor)
 {
   bool moving_decal_flag = accessor.get<bool>(compile_ecs_name_hash("moving_decal_flag"));
-  const float3& center_pos = accessor.get<float3>(compile_ecs_name_hash("center_pos"));
-  float3& pos = accessor.get<float3>(compile_ecs_name_hash("pos"));
-  moving_decal_controller(moving_decal_flag,center_pos,pos);
+  DecalComponent& decal = accessor.get<DecalComponent>(compile_ecs_name_hash("decal"));
+  moving_decal_controller(moving_decal_flag,decal);
 }
 
 
@@ -237,8 +236,7 @@ static SystemRegistration moving_decal_controller_registration(
   moving_decal_controller_internal,
   {
     DESCRIBE_QUERY_COMPONENT("moving_decal_flag", bool),
-    DESCRIBE_QUERY_COMPONENT("center_pos", float3),
-    DESCRIBE_QUERY_COMPONENT("pos", float3)
+    DESCRIBE_QUERY_COMPONENT("decal", DecalComponent)
   },
   "moving_decal_controller"
 );

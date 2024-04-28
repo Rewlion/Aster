@@ -53,12 +53,6 @@ template @("name: VirtualTerrainRender") {
   vterrain_render: TerrainRender = {}
 }
 
-template @("name: Decal") {
-  decal_name:t = ""
-  size:f3 = 1, 1, 1
-  pos:f3 = 0, 0, 0
-}
-
 ///
 
 //hierarchy basement

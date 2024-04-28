@@ -220,7 +220,8 @@ entity @("template3")
 
 entity @("camera")
 {
-  pos:f3 = 192.299 , 609.8611 , -12.935
+  //pos:f3 = 192.299 , 609.8611 , -12.935
+  pos:f3 = 5, 600, 2.5
   camera_fov:f = 60.0
   camera_zNear:f = 0.1
   camera_zFar:f = 3000.0
@@ -258,9 +259,14 @@ entity @("VirtualTerrain")
 
 entity @("MovingDecal")
 {
-  decal_name:t = "test_decal"
-  size:f3 = 0.5, 0.5, 0.5
-  pos:f3 = 5, 600, 4.5
+  root_tm: TransformComponent = {
+    position:f3 = 5, 600, 4.5
+    scale:f3 = 0.5, 0.5, 0.5
+  }
+
+  decal: DecalComponent = {
+    name:t = "test_decal"
+  }
 }
 
 entity @("ed_test")

@@ -9,7 +9,8 @@ add_ecs_library(
     "${CMAKE_SOURCE_DIR}/src/engine/components/point_light.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/components/sun.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/components/terrain.cpp"
-  ECS_FILES
+    ECS_FILES
+    "${CMAKE_SOURCE_DIR}/src/engine/components/decal.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/components/static_mesh.ecs.cpp"
     "${CMAKE_SOURCE_DIR}/src/engine/components/transform.ecs.cpp"
   )

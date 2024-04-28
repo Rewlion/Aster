@@ -1,6 +1,7 @@
 #include <engine/assets/assets_manager.h>
 #include <engine/components/point_light.h>
 #include <engine/components/static_mesh.h>
+#include <engine/components/decal.h>
 #include <engine/console/cmd.h>
 #include <engine/console/console.h>
 #include <engine/ecs/ecs.h>
@@ -186,10 +187,10 @@ void system_on_moving_decal_creation(const ecs::OnEntityCreated& evt, float3& ce
 
 ECS_SYSTEM()
 static
-void moving_decal_controller(const bool moving_decal_flag, const float3& center_pos, float3& pos)
+void moving_decal_controller(const bool moving_decal_flag, DecalComponent& decal)
 {
   float t = Engine::Time::get_sec_since_start();
-  pos.y = center_pos.y + 0.3 * std::cos(t);
+  decal.setLocalPosition(float3{0.0f, 0.3f * std::cos(t), 0.0f});
 }
 
 ECS_DESCRIBE_QUERY(query_camera, (

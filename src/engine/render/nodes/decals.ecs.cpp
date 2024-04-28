@@ -1,10 +1,11 @@
 #include <engine/assets/assets_manager.h>
+#include <engine/components/decal.h>
 #include <engine/render/frame_graph/dsl.h>
 #include <engine/tfx/tfx.h>
 
 #include <glm/gtx/transform.hpp>
 
-ECS_DESCRIBE_QUERY(query_decals, (const string& decal_name, const float3& size, const float3& pos));
+ECS_DESCRIBE_QUERY(query_decals, (const DecalComponent& decal));
 
 NODE_BEGIN(decals)
   READ_TEX_DEPTH(late_opaque_depth)
@@ -19,14 +20,12 @@ NODE_EXEC()
 static
 void decals_exec(const gapi::TextureHandle late_opaque_depth, gapi::CmdEncoder& encoder)
 {
-  query_decals([&encoder, late_opaque_depth](auto& decal_name, auto& size, auto& pos){
-    const mat4 scale = glm::scale(size);
-    const mat4 tr = glm::translate(pos);
-    const mat4 tm = tr * scale;
+  query_decals([&encoder, late_opaque_depth](const DecalComponent& decal){
+    const mat4 tm = decal.getWorldTransform();
     const mat4 iTm = glm::inverse(tm);
 
     Engine::TextureAsset asset;
-    Engine::assets_manager.getTexture(decal_name+".albedo", asset);
+    Engine::assets_manager.getTexture(string{decal.getName()} + ".albedo", asset);
 
     tfx::set_extern("depthTex", late_opaque_depth);
     tfx::set_channel("modelTm", tm);
