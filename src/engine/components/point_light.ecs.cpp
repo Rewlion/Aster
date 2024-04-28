@@ -1,7 +1,9 @@
 #include "point_light.h"
 
 #include <engine/data/ed.h>
+#include <engine/ecs/macros.h>
 #include <engine/ecs/type_meta.h>
+#include <engine/events.h>
 
 PointLightComponent::PointLightComponent(const ed::Scope* init)
   : TransformComponent(init)
@@ -15,6 +17,16 @@ PointLightComponent::PointLightComponent(const float attenuation_radius, const f
   , m_AttenuationRadius(attenuation_radius)
   , m_Color(color)
 {
+}
+
+ECS_EVENT_SYSTEM()
+static
+void default_init_point_light_component(const ecs::OnEntityCreated& evt,
+                                        const TransformComponent& root_tm,
+                                        PointLightComponent& point_light)
+{
+  if (!point_light.hasAttachment())
+    point_light.attachToSelfComponent(&root_tm);
 }
 
 DECLARE_TRIVIAL_ECS_COMPONENT(PointLightComponent);
