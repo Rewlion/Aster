@@ -8,22 +8,22 @@
 
 using namespace ecs;
 
-const static DirectQueryRegistration query_atm_tr_lut_queryReg{
+const static DirectQueryRegistration query_atmosphere_render_state_queryReg{
   {
-    DESCRIBE_QUERY_COMPONENT("atm_tr_lut", gapi::TextureWrapper)
+    DESCRIBE_QUERY_COMPONENT("atmosphere_render_state", AtmosphereRenderState)
   },
-  "query_atm_tr_lut"};
-const static query_id_t query_atm_tr_lut_queryId = query_atm_tr_lut_queryReg.getId();
+  "query_atmosphere_render_state"};
+const static query_id_t query_atmosphere_render_state_queryId = query_atmosphere_render_state_queryReg.getId();
 
 
-void query_atm_tr_lut (eastl::function<
+void query_atmosphere_render_state (eastl::function<
   void(
-    const gapi::TextureWrapper& atm_tr_lut)> cb)
+    AtmosphereRenderState& atmosphere_render_state)> cb)
 {
-  ecs::get_registry().query(query_atm_tr_lut_queryId, [&](ComponentsAccessor& accessor)
+  ecs::get_registry().query(query_atmosphere_render_state_queryId, [&](ComponentsAccessor& accessor)
   {
-    const gapi::TextureWrapper& atm_tr_lut = accessor.get<gapi::TextureWrapper>(compile_ecs_name_hash("atm_tr_lut"));
-    cb(atm_tr_lut);
+    AtmosphereRenderState& atmosphere_render_state = accessor.get<AtmosphereRenderState>(compile_ecs_name_hash("atmosphere_render_state"));
+    cb(atmosphere_render_state);
   });
 }
 
@@ -68,153 +68,37 @@ void query_sun (eastl::function<
 }
 
 
-const static DirectQueryRegistration query_atm_lut_state_queryReg{
-  {
-    DESCRIBE_QUERY_COMPONENT("atm_lut_state", int)
-  },
-  "query_atm_lut_state"};
-const static query_id_t query_atm_lut_state_queryId = query_atm_lut_state_queryReg.getId();
-
-
-void query_atm_lut_state (eastl::function<
-  void(
-    int& atm_lut_state)> cb)
-{
-  ecs::get_registry().query(query_atm_lut_state_queryId, [&](ComponentsAccessor& accessor)
-  {
-    int& atm_lut_state = accessor.get<int>(compile_ecs_name_hash("atm_lut_state"));
-    cb(atm_lut_state);
-  });
-}
-
-
-static void atmosphere_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
-{
-  const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
-  const const AtmosphereComponent& atmosphere = accessor.get<const AtmosphereComponent>(compile_ecs_name_hash("atmosphere"));
-  atmosphere_creation_handler(*casted_event, atmosphere);
-}
-
-
-static EventSystemRegistration atmosphere_creation_handler_registration(
-  atmosphere_creation_handler_internal,
-  compile_ecs_name_hash("OnEntityCreated"),
-  {
-    DESCRIBE_QUERY_COMPONENT("atmosphere", const AtmosphereComponent)
-  },
-  "atmosphere_creation_handler"
-);
-
-
 //Engine::OnFrameGraphInit handler
 static
-void mk_fg_node_atm_res_import(Event*, ComponentsAccessor&)
+void mk_fg_node_atm_resources(Event*, ComponentsAccessor&)
 {
-  fg::register_node("atm_res_import", FG_FILE_DECL, [](fg::Registry& reg)
+  fg::register_node("atm_resources", FG_FILE_DECL, [](fg::Registry& reg)
   { 
     reg.orderMeAfter("frame_preparing");
     auto camera_data = reg.readBlob<Engine::CameraData>("camera_data");
-
-    auto atm_tr_lut = reg.createTexture("atm_tr_lut",
-      gapi::TextureAllocationDescription{
-        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
-        .extent =          uint3(int2(256, 64), 1),
-        .mipLevels =       1,
-        .arrayLayers =     1,
-        .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
-      },
-      gapi::TextureState::RenderTarget,
-      fg::PERSISTENT
-    );
-
-
-    auto atm_ms_lut = reg.createTexture("atm_ms_lut",
-      gapi::TextureAllocationDescription{
-        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
-        .extent =          uint3(int2(32, 32), 1),
-        .mipLevels =       1,
-        .arrayLayers =     1,
-        .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
-      },
-      gapi::TextureState::RenderTarget,
-      fg::PERSISTENT
-    );
-
-
-    auto atm_sky_lut = reg.createTexture("atm_sky_lut",
-      gapi::TextureAllocationDescription{
-        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
-        .extent =          uint3(int2(256, 128), 1),
-        .mipLevels =       1,
-        .arrayLayers =     1,
-        .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
-      },
-      gapi::TextureState::RenderTarget,
-      fg::PERSISTENT
-    );
-
-
-    auto atm_ap_lut = reg.createTexture("atm_ap_lut",
-      gapi::TextureAllocationDescription{
-        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
-        .extent =          uint3(int3(32, 32, 32).x, int3(32, 32, 32).y, int3(32, 32, 32).z),
-        .mipLevels =       1,
-        .arrayLayers =     1,
-        .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_UAV)
-      },
-      gapi::TextureState::ShaderReadWrite,
-      fg::PERSISTENT
-    );
-
-
-    auto atm_envi_specular = reg.createTexture("atm_envi_specular",
-      gapi::TextureAllocationDescription{
-        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
-        .extent =          uint3(int2(512, 256), 1),
-        .mipLevels =       get_envi_specular_mips(),
-        .arrayLayers =     1,
-        .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
-      },
-      gapi::TextureState::RenderTarget,
-      fg::PERSISTENT
-    );
-
-
-    auto atm_envi_brdf = reg.createTexture("atm_envi_brdf",
-      gapi::TextureAllocationDescription{
-        .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
-        .extent =          uint3(int2(256, 256), 1),
-        .mipLevels =       1,
-        .arrayLayers =     1,
-        .samplesPerPixel = gapi::TextureSamples::s1,
-        .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
-      },
-      gapi::TextureState::RenderTarget,
-      fg::PERSISTENT
-    );
-
+    auto atm_tr_lut = reg.importTextureProducer("atm_tr_lut", GET_ATM(TrLut));
+    auto atm_ms_lut = reg.importTextureProducer("atm_ms_lut", GET_ATM(MsLut));
+    auto atm_sky_lut = reg.importTextureProducer("atm_sky_lut", GET_ATM(SkyLut));
+    auto atm_ap_lut = reg.importTextureProducer("atm_ap_lut", GET_ATM(ApLut));
+    auto atm_envi_specular = reg.importTextureProducer("atm_envi_specular", GET_ATM(EnviSpecular));
+    auto atm_envi_brdf = reg.importTextureProducer("atm_envi_brdf", GET_ATM(EnviBRDFLut));
     auto atm_envi_mips = reg.createBlob<int>("atm_envi_mips");
     auto sun_azimuth_altitude = reg.createBlob<float2>("sun_azimuth_altitude");
 
     return [atm_envi_mips,camera_data,sun_azimuth_altitude](gapi::CmdEncoder& encoder)
     {
-      atm_res_import_exec(encoder, atm_envi_mips.get(), camera_data.get(), sun_azimuth_altitude.get());
+      atm_resources_exec(encoder, atm_envi_mips.get(), camera_data.get(), sun_azimuth_altitude.get());
     };
   });
 }
 
 static
-EventSystemRegistration mk_fg_node_atm_res_import_registration(
-  mk_fg_node_atm_res_import,
+EventSystemRegistration mk_fg_node_atm_resources_registration(
+  mk_fg_node_atm_resources,
   compile_ecs_name_hash("OnFrameGraphInit"),
   {
   },
-  "mk_fg_node_atm_res_import"
+  "mk_fg_node_atm_resources"
 );
 
 

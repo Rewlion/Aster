@@ -17,64 +17,162 @@
 
 #include <bit>
 
-ECS_DESCRIBE_QUERY(query_atm_tr_lut, (const gapi::TextureWrapper& atm_tr_lut));
-ECS_COMP_GETTER(AtmosphereComponent, atmosphere);
-ECS_COMP_GETTER(SunComponent, sun);
-ECS_DESCRIBE_QUERY(query_atm_lut_state, (int& atm_lut_state));
-
 enum class AtmosphereLutState : int
 {
   Preparing = 0,
   Ready = 1
 };
 
-ECS_EVENT_SYSTEM()
-static void atmosphere_creation_handler(const ecs::OnEntityCreated& evt,
-                                        const AtmosphereComponent& atmosphere)
-{
-  ecs::EntityComponents init;
-  init["atm_lut_state"] = (int)AtmosphereLutState::Preparing;
-  ecs::get_registry().createEntity("AtmosphereRender", std::move(init));
-}
-
-constexpr
 auto get_envi_specular_mips() -> uint
 {
   return std::min(std::bit_width((uint)ENVI_SPECULAR_LUT_SIZE.x), 5u);
 }
 
-NODE_BEGIN(atm_res_import)
+class AtmosphereRenderState
+{
+  public:
+    AtmosphereRenderState() = default;
+    AtmosphereRenderState(const ed::Scope* init)
+    {
+    }
+
+    void init()
+    {
+      m_LutState = AtmosphereLutState::Preparing;
+
+      m_TrLut = {
+        gapi::allocate_texture(
+          gapi::TextureAllocationDescription{
+            .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+            .extent =          uint3(TR_LUT_SIZE, 1),
+            .mipLevels =       1,
+            .arrayLayers =     1,
+            .samplesPerPixel = gapi::TextureSamples::s1,
+            .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV),
+            .name =            "atm_tr_lut"
+          }
+        ),
+        gapi::TextureState::Undefined
+      };
+
+      m_MsLut = {
+        gapi::allocate_texture(
+          gapi::TextureAllocationDescription{
+            .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+            .extent =          uint3(MS_LUT_SIZE, 1),
+            .mipLevels =       1,
+            .arrayLayers =     1,
+            .samplesPerPixel = gapi::TextureSamples::s1,
+            .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV),
+            .name =             "atm_ms_lut"
+          }
+        ),
+        gapi::TextureState::Undefined
+      };
+
+      m_SkyLut = {
+        gapi::allocate_texture(
+          gapi::TextureAllocationDescription{
+            .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+            .extent =          uint3(SKY_LUT_SIZE, 1),
+            .mipLevels =       1,
+            .arrayLayers =     1,
+            .samplesPerPixel = gapi::TextureSamples::s1,
+            .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV),
+            .name =            "atm_sky_lut"
+          }
+        ),
+        gapi::TextureState::Undefined
+      };
+
+      m_ApLut = {
+        gapi::allocate_texture(
+          gapi::TextureAllocationDescription{
+            .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+            .extent =          uint3(AP_LUT_SIZE),
+            .mipLevels =       1,
+            .arrayLayers =     1,
+            .samplesPerPixel = gapi::TextureSamples::s1,
+            .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_SRV | gapi::TextureUsage::TEX_USAGE_UAV)
+          }
+        ),
+        gapi::TextureState::Undefined
+      };
+
+      const uint enviMips = get_envi_specular_mips();
+      m_EnviBRDFLut = {
+        gapi::allocate_texture(
+          gapi::TextureAllocationDescription{
+            .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+            .extent =          uint3(ENVI_BRDF_SIZE, 1),
+            .mipLevels =       enviMips,
+            .arrayLayers =     1,
+            .samplesPerPixel = gapi::TextureSamples::s1,
+            .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+          }
+        ),
+        gapi::TextureState::Undefined
+      };
+
+      m_EnviSpecular = {
+        gapi::allocate_texture(
+          gapi::TextureAllocationDescription{
+            .format =          gapi::TextureFormat::R16G16B16A16_SFLOAT,
+            .extent =          uint3(ENVI_SPECULAR_LUT_SIZE, 1),
+            .mipLevels =       enviMips,
+            .arrayLayers =     1,
+            .samplesPerPixel = gapi::TextureSamples::s1,
+            .usage =           (gapi::TextureUsage)(gapi::TextureUsage::TEX_USAGE_RT | gapi::TextureUsage::TEX_USAGE_SRV)
+          }
+        ),
+        gapi::TextureState::Undefined
+      };
+    }
+
+    auto getTrLut() -> gapi::TextureViewWithState* { return &m_TrLut; }
+    auto getMsLut() -> gapi::TextureViewWithState* { return &m_MsLut; }
+    auto getSkyLut() -> gapi::TextureViewWithState* { return &m_SkyLut; }
+    auto getApLut() -> gapi::TextureViewWithState* { return &m_ApLut; }
+    auto getEnviBRDFLut() -> gapi::TextureViewWithState* { return &m_EnviBRDFLut; }
+    auto getEnviSpecular() -> gapi::TextureViewWithState* { return &m_EnviSpecular; }
+
+  private:
+    AtmosphereLutState m_LutState;
+    gapi::UniqueTextureWithState m_TrLut;
+    gapi::UniqueTextureWithState m_MsLut;
+    gapi::UniqueTextureWithState m_SkyLut;
+    gapi::UniqueTextureWithState m_ApLut;
+    gapi::UniqueTextureWithState m_EnviBRDFLut;
+    gapi::UniqueTextureWithState m_EnviSpecular;
+};
+DECLARE_INITABLE_ECS_OBJECT_COMPONENT(AtmosphereRenderState);
+
+ECS_COMP_GETTER(AtmosphereRenderState, atmosphere_render_state);
+ECS_COMP_GETTER(AtmosphereComponent, atmosphere);
+ECS_COMP_GETTER(SunComponent, sun);
+
+#define GET_ATM(res) [](){ return get_atmosphere_render_state()->get##res(); }
+
+NODE_BEGIN(atm_resources)
   ORDER_ME_AFTER(frame_preparing)
   READ_BLOB(camera_data, Engine::CameraData)
   
-  CREATE_TEX_2D_PERSISTENT(atm_tr_lut, TEX_SIZE2(TR_LUT_SIZE),
-                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
-  
-  CREATE_TEX_2D_PERSISTENT(atm_ms_lut, TEX_SIZE2(MS_LUT_SIZE),
-                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
-  
-  CREATE_TEX_2D_PERSISTENT(atm_sky_lut, TEX_SIZE2(SKY_LUT_SIZE),
-                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
-
-  CREATE_TEX_2D_PERSISTENT(atm_ap_lut, TEX_SIZE(AP_LUT_SIZE.x, AP_LUT_SIZE.y, AP_LUT_SIZE.z),
-                           R16G16B16A16_SFLOAT, TEX_USAGE2(SRV,UAV), TEX_STATE(ShaderReadWrite))
-
-  CREATE_TEX_2D_EX(atm_envi_specular, TEX_SIZE2(ENVI_SPECULAR_LUT_SIZE),
-                  R16G16B16A16_SFLOAT, TEX_MIPS(get_envi_specular_mips()), TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget),
-                  TEX_PERSISTENT)
-
-  CREATE_TEX_2D_PERSISTENT(atm_envi_brdf, TEX_SIZE2(ENVI_BRDF_SIZE),
-                           R16G16B16A16_SFLOAT, TEX_USAGE2(RT,SRV), TEX_STATE(RenderTarget))
+  IMPORT_TEX(atm_tr_lut,        GET_ATM(TrLut))
+  IMPORT_TEX(atm_ms_lut,        GET_ATM(MsLut))
+  IMPORT_TEX(atm_sky_lut,       GET_ATM(SkyLut))
+  IMPORT_TEX(atm_ap_lut,        GET_ATM(ApLut))
+  IMPORT_TEX(atm_envi_specular, GET_ATM(EnviSpecular))
+  IMPORT_TEX(atm_envi_brdf,     GET_ATM(EnviBRDFLut))
 
   CREATE_BLOB(atm_envi_mips, int)
   CREATE_BLOB(sun_azimuth_altitude, float2)
 
-  EXEC(atm_res_import_exec)
+  EXEC(atm_resources_exec)
 NODE_END()
 
 NODE_EXEC()
 static
-void atm_res_import_exec(gapi::CmdEncoder& encoder,
+void atm_resources_exec(gapi::CmdEncoder& encoder,
                          int& atm_envi_mips,
                          const Engine::CameraData& camera_data,
                          float2& sun_azimuth_altitude)

@@ -4,6 +4,7 @@ template @("name: CoreRender") {
   imgui_render: ImGuiRender = {}
   clustered_lights: ClusteredLights = {}
   state: GIOnSurfels = {}
+  atmosphere_render_state : AtmosphereRenderState = {}
 
   render_window_size:i2 = 0, 0
   
@@ -28,11 +29,6 @@ template @("name: Atmosphere") {
     top_radius_km:f = 6420
     bot_radius_km:f = 6360
   }
-}
-
-template @("name: AtmosphereRender") {
-  atm_lut_state:i = 0
-  atm_render_tag:i = 0
 }
 
 template @("name: Sun") {
