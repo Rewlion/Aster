@@ -33,10 +33,13 @@ class TransformComponent
     auto getLocalRotation() const -> float3 { return m_LocalRotation; }
     
     auto getWorldTransform() const -> float4x4;
+    auto getLocalTransform() const -> float4x4;
 
     void setLocalPosition(const float3& pos) { m_LocalPosition = pos; }
-    void setLocalRotation(const float3& rot) { m_LocalPosition = rot; }
-    void setLocalScale(const float3& scale) { m_LocalPosition = scale; }
+    void setLocalRotation(const float3& rot) { m_LocalRotation = rot; }
+    void setLocalScale(const float3& scale) { m_LocalScale = scale; }
+
+    auto getWorldForward() const -> float3;
 
   protected:
     struct SelfAttachment

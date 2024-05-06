@@ -1,4 +1,5 @@
 #include <engine/assets/assets_manager.h>
+#include <engine/components/camera.h>
 #include <engine/components/point_light.h>
 #include <engine/components/static_mesh.h>
 #include <engine/components/decal.h>
@@ -20,22 +21,6 @@
 #include <engine/work_cycle/camera.h>
 
 #include <glm/gtx/transform.hpp>
-
-// ECS_SYSTEM()
-// static void camera_rotation(
-//   const float2& camera_rotations
-// )
-// {
-//   const float2 pos = Engine::Input::manager.getAnalogStatus(str_hash("MouseMove"));
-//   Engine::gui::manager.setMouseCursorPos(pos);
-// }
-
-// ECS_EVENT_SYSTEM()
-// static void input_handler(const ButtonActionInputEvent& evt)
-// {
-//   if (evt.action == str_hash("MouseClick"))
-//     Engine::gui::manager.setMouseClickState(evt.status == Engine::Input::ButtonStatus::Press);
-// }
 
 class TestEDComponent
 {
@@ -193,15 +178,17 @@ void moving_decal_controller(const bool moving_decal_flag, DecalComponent& decal
   decal.setLocalPosition(float3{0.0f, 0.3f * std::cos(t), 0.0f});
 }
 
-ECS_DESCRIBE_QUERY(query_camera, (
-  const float3& pos,
-  const float2& camera_rotations,
-  const float3& forward))
+ECS_DESCRIBE_QUERY(query_camera, const CameraComponent& camera);
 
 static
 void draw_line_at_camera_pos(eastl::span<string_view> args)
 {
-  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
+  query_camera([](const CameraComponent& camera){
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
+    const float3 forward = camera.getWorldForward();
     Engine::dbg::draw_line(pos, pos + forward * float3(100.0), float3(1.0, 0.0, 0.0), 10.0);
   });
 }
@@ -209,7 +196,14 @@ void draw_line_at_camera_pos(eastl::span<string_view> args)
 static
 void draw_aabbs_at_camera_pos(eastl::span<string_view>)
 {
-  query_camera([](const float3& pos, const float2&, const float3& forward){
+  query_camera([](const CameraComponent& camera)
+  {
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
+    const float3 forward = camera.getWorldForward();
+
     float3 cubeCenter = pos + forward * float3(2.0);
     Engine::dbg::draw_aabb(cubeCenter, float3{1,1,0.1}, float4(1.0, 0.0, 0.0, 0.3), 20.0);
     Engine::dbg::draw_aabb(cubeCenter + float3(0.0, 0.0, 2.0), float3{1,1,0.1}, float4(0.0, 1.0, 0.0, 0.6), 20.0);
@@ -220,8 +214,14 @@ void draw_aabbs_at_camera_pos(eastl::span<string_view>)
 static
 void draw_line_plane_at_camera_pos(eastl::span<string_view>)
 {
-  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
-    
+  query_camera([](const CameraComponent& camera)
+  {
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
+    const float3 forward = camera.getWorldForward();
+
     const float3 plPos = pos + forward * float3(2.0);
     Utils::Plane p{plPos, glm::normalize(float3{0.0, 1.0, 1.0})};
     Engine::dbg::draw_line_plane(p, plPos, 0.4, float3(1.0, 0.0, 0.0), 10.0, true);
@@ -231,8 +231,14 @@ void draw_line_plane_at_camera_pos(eastl::span<string_view>)
 static
 void draw_plane_at_camera_pos(eastl::span<string_view>)
 {
-  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
-    
+  query_camera([](const CameraComponent& camera)
+  {
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
+    const float3 forward = camera.getWorldForward();
+
     const float3 plPos = pos + forward * float3(2.0);
     Utils::Plane p{plPos, glm::normalize(float3{0.0, 1.0, 1.0})};
     Engine::dbg::draw_plane(p, plPos, 0.4, float4(1.0, 1.0, 1.0, 0.5), 10.0, true);
@@ -242,8 +248,14 @@ void draw_plane_at_camera_pos(eastl::span<string_view>)
 static
 void draw_sphere_at_camera_pos(eastl::span<string_view>)
 {
-  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
-    
+  query_camera([](const CameraComponent& camera)
+  {
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
+    const float3 forward = camera.getWorldForward();
+
     const float3 center = pos + forward * float3(2.0);
     Utils::Sphere sp{center, 1.0};
     Engine::dbg::draw_line_sphere(sp, float3(0.0, 0.0, 1.0), 20.0);
@@ -253,8 +265,14 @@ void draw_sphere_at_camera_pos(eastl::span<string_view>)
 static
 void spawn_collision_tests(eastl::span<string_view>)
 {
-  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
-    
+  query_camera([](const CameraComponent& camera)
+  {
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
+    const float3 forward = camera.getWorldForward();
+
     const float3 center = pos + forward * float3(2.0);
     ecs::EntityComponents init;
     init["center"] = pos + forward * 2.0f;
@@ -267,8 +285,11 @@ void tick_collision_tests(Engine::OnGameTick&, const bool collision_test_tag, co
 {
   float3 cameraForward;
 
-  query_camera([&cameraForward](const float3& pos, const float2& rotation, const float3& forward){
-    cameraForward = forward;
+  query_camera([&cameraForward](const CameraComponent& camera){
+    if (!camera.isActive())
+      return;
+
+    cameraForward = camera.getWorldForward();
   });
 
   //sphere-plane
@@ -400,7 +421,14 @@ void tick_collision_tests(Engine::OnGameTick&, const bool collision_test_tag, co
 static
 void draw_frustum_at_camera_pos(eastl::span<string_view>)
 {
-  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
+  query_camera([](const CameraComponent& camera)
+  {
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
+    const float3 forward = camera.getWorldForward();
+
     float4x4 view = math::look_at(pos + forward * 2.0f, pos);
     float4x4 proj = math::perspective(45.0f, 1980.0f / 1024.0, 1.0f, 5.0f);
 
@@ -415,7 +443,14 @@ void draw_frustum_at_camera_pos(eastl::span<string_view>)
 static
 void draw_clustered_frustum_at_camera_pos(eastl::span<string_view>)
 {
-  query_camera([](const float3& pos, const float2& rotation, const float3& forward){
+  query_camera([](const CameraComponent& camera)
+  {
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
+    const float3 forward = camera.getWorldForward();
+
     const int3 N = {32,32,16};
 
     const float3 camPos = pos;
@@ -511,8 +546,14 @@ void move_point_light(const float3& center_pos, float3& pos, bool moving_point_l
 static
 void spawn_moving_point_light_at_camera(eastl::span<string_view>)
 {
-  query_camera([](const float3& pos, const float2& rotation, const float3& forward)
+  query_camera([](const CameraComponent& camera)
   {
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
+    const float3 forward = camera.getWorldForward();
+
     for (float x = 0; x < 2; ++x)
       for (float y = 0 ; y < 2; ++y)
       {
@@ -528,8 +569,14 @@ void spawn_moving_point_light_at_camera(eastl::span<string_view>)
 static
 void spawn_bvh_test(eastl::span<string_view>)
 {
-  query_camera([](const float3& pos, const float2& rotation, const float3& forward)
+  query_camera([](const CameraComponent& camera)
   {
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
+    const float3 forward = camera.getWorldForward();
+
     const float3 spawnPos = pos + forward * 5.0f;
     ecs::EntityComponents init;
     init["root_tm"] = TransformComponent{spawnPos, float3{-90,90,90}, float3{1,1,1}};
@@ -580,8 +627,14 @@ void render_bvh_test(
 static
 void spawn_tlas_test(eastl::span<string_view>)
 {
-  query_camera([](const float3& pos, const float2& rotation, const float3& forward)
+  query_camera([](const CameraComponent& camera)
   {
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
+    const float3 forward = camera.getWorldForward();
+
     const float3 spawnPos = pos + forward * 2.0f;
     ecs::EntityComponents init;
     init["tlas_test_center"] = spawnPos;
@@ -626,8 +679,12 @@ void render_tlas_test(
 static
 void cpos_cmd(eastl::span<string_view>)
 {
-  query_camera([](const float3& pos, const float2& rotation, const float3& forward)
+  query_camera([](const CameraComponent& camera)
   {
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
     console::clog(fmt::format("{},{},{}", pos.x, pos.y, pos.z));
   });
 }
@@ -635,8 +692,14 @@ void cpos_cmd(eastl::span<string_view>)
 static
 void spawn_pg_test(eastl::span<string_view>)
 {
-  query_camera([](const float3& pos, const float2& rotation, const float3& forward)
+  query_camera([](const CameraComponent& camera)
   {
+    if (!camera.isActive())
+      return;
+
+    const float3 pos = camera.getWorldPosition();
+    const float3 forward = camera.getWorldForward();
+
     const float3 spawnPos = pos + forward * 2.0f;
     ecs::EntityComponents init;
     init["pathguide_test_center"] = spawnPos;

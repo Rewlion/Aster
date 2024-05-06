@@ -1,5 +1,6 @@
 #include "camera.h"
 
+#include <engine/components/camera.h>
 #include <engine/ecs/macros.h>
 #include <engine/math.h>
 #include <engine/types.h>
@@ -8,27 +9,17 @@
 #include <EASTL/functional.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-ECS_QUERY()
-static void query_camera(eastl::function<void(
-  const float3& pos,
-  const float3& forward,
-  const float& camera_fov,
-  const float& camera_zNear,
-  const float& camera_zFar)> cb);
-
-ECS_QUERY()
-static void query_camera_pos(eastl::function<void(
-  const float3& pos,
-  const float& camera_fov)> cb);
+ECS_DESCRIBE_QUERY(query_camera, const CameraComponent& camera);
 
 namespace Engine
 {
   auto get_camera_pos() -> float3
   {
     float3 pos;
-    query_camera_pos([&pos](auto _pos, auto unused)
+    query_camera([&pos](const CameraComponent& camera)
     {
-      pos = _pos;
+      if (camera.isActive())
+        pos = camera.getWorldPosition();
     });
 
     return pos;
@@ -42,12 +33,17 @@ namespace Engine
     float zNear = 0;
     float zFar = 0;
 
-    query_camera([&](const float3& _pos, const float3& _forward, const float& _fov, const float& _zNear, const float& _zFar){
-      pos = _pos;
-      forward = _forward;
-      fov = _fov;
-      zNear = _zNear;
-      zFar = _zFar;
+    query_camera([&](const CameraComponent& camera)
+    {
+      if (camera.isActive())
+      {
+        const float4x4 tm = camera.getWorldTransform();
+        pos = tm[3];
+        forward = tm[2];
+        fov = camera.getFOV();
+        zNear = camera.getZNear();
+        zFar = camera.getZFar();
+      }
     });
 
     const float nearPlaneDist = zNear;

@@ -10,11 +10,7 @@ using namespace ecs;
 
 const static DirectQueryRegistration query_camera_queryReg{
   {
-    DESCRIBE_QUERY_COMPONENT("pos", float3),
-    DESCRIBE_QUERY_COMPONENT("forward", float3),
-    DESCRIBE_QUERY_COMPONENT("camera_fov", float),
-    DESCRIBE_QUERY_COMPONENT("camera_zNear", float),
-    DESCRIBE_QUERY_COMPONENT("camera_zFar", float)
+    DESCRIBE_QUERY_COMPONENT("camera", const CameraComponent)
   },
   "query_camera"};
 const static query_id_t query_camera_queryId = query_camera_queryReg.getId();
@@ -22,42 +18,11 @@ const static query_id_t query_camera_queryId = query_camera_queryReg.getId();
 
 void query_camera (eastl::function<
   void(
-    const float3& pos,
-    const float3& forward,
-    const float& camera_fov,
-    const float& camera_zNear,
-    const float& camera_zFar)> cb)
+    const const CameraComponent& camera)> cb)
 {
   ecs::get_registry().query(query_camera_queryId, [&](ComponentsAccessor& accessor)
   {
-    const float3& pos = accessor.get<float3>(compile_ecs_name_hash("pos"));
-    const float3& forward = accessor.get<float3>(compile_ecs_name_hash("forward"));
-    const float& camera_fov = accessor.get<float>(compile_ecs_name_hash("camera_fov"));
-    const float& camera_zNear = accessor.get<float>(compile_ecs_name_hash("camera_zNear"));
-    const float& camera_zFar = accessor.get<float>(compile_ecs_name_hash("camera_zFar"));
-    cb(pos,forward,camera_fov,camera_zNear,camera_zFar);
-  });
-}
-
-
-const static DirectQueryRegistration query_camera_pos_queryReg{
-  {
-    DESCRIBE_QUERY_COMPONENT("pos", float3),
-    DESCRIBE_QUERY_COMPONENT("camera_fov", float)
-  },
-  "query_camera_pos"};
-const static query_id_t query_camera_pos_queryId = query_camera_pos_queryReg.getId();
-
-
-void query_camera_pos (eastl::function<
-  void(
-    const float3& pos,
-    const float& camera_fov)> cb)
-{
-  ecs::get_registry().query(query_camera_pos_queryId, [&](ComponentsAccessor& accessor)
-  {
-    const float3& pos = accessor.get<float3>(compile_ecs_name_hash("pos"));
-    const float& camera_fov = accessor.get<float>(compile_ecs_name_hash("camera_fov"));
-    cb(pos,camera_fov);
+    const const CameraComponent& camera = accessor.get<const CameraComponent>(compile_ecs_name_hash("camera"));
+    cb(camera);
   });
 }

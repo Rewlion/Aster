@@ -5,6 +5,7 @@
 namespace math
 {
   auto radians(float degree) -> float;
+  auto radians(const float2 degree) -> float2;
   auto perspective(float fov, float aspect, float zNear, float zFar) -> float4x4;
   auto perspective_inv_z(float fov, float aspect, float zNear, float zFar) -> float4x4;
   auto look_at(const glm::vec3& at, const glm::vec3& from) -> float4x4;

@@ -56,14 +56,9 @@ auto TransformComponent::getWorldTransformTmInternal(const TransformComponent* c
   {
     const TransformComponent* parentAttachment = comp->getParentTransform();
     const float4x4 parentTm = comp->getWorldTransformTmInternal(parentAttachment);
+    const float4x4 localTm = comp->getLocalTransform();
 
-    const float4x4 trTm = glm::translate(comp->m_LocalPosition);
-    const float4x4 scaleTm = glm::scale(comp->m_LocalScale);
-
-    const auto [roll, pitch, yaw] = comp->m_LocalRotation;
-    const float4x4 rotTm = math::rotate(math::radians(roll), math::radians(pitch), math::radians(yaw));
-
-    return trTm * rotTm * scaleTm * parentTm;
+    return localTm * parentTm;
   }
 
   return float4x4{1.0};
@@ -74,9 +69,26 @@ auto TransformComponent::getWorldTransform() const -> float4x4
   return getWorldTransformTmInternal(this);
 }
 
+auto TransformComponent::getLocalTransform() const -> float4x4
+{
+  const float4x4 trTm = glm::translate(m_LocalPosition);
+  const float4x4 scaleTm = glm::scale(m_LocalScale);
+
+  const auto [roll, pitch, yaw] = m_LocalRotation;
+  const float4x4 rotTm = math::rotate(math::radians(roll), math::radians(pitch), math::radians(yaw));
+
+  return trTm * rotTm * scaleTm;
+}
+
 auto TransformComponent::getWorldPosition() const -> float3
 {
   return getWorldTransform()[3];
+}
+
+auto TransformComponent::getWorldForward() const -> float3
+{
+  const float4x4 tm = getWorldTransform();
+  return glm::normalize(tm[2]);
 }
 
 DECLARE_NON_TRIVIAL_ECS_OBJECT_COMPONENT_WITH_NAME(TransformComponent, "TransformComponent");

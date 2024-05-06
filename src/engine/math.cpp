@@ -12,6 +12,14 @@ namespace math
     return degree * float(M_PI) / 180.0f;
   }
 
+  auto radians(const float2 degree) -> float2
+  {
+    return {
+      radians(degree.x),
+      radians(degree.y)
+    };
+  }
+
   auto perspective(float fov, float aspect, float zNear, float zFar) -> float4x4
   {
     const float tanA = std::tanf(radians(fov) / 2.0);

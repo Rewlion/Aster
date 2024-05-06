@@ -220,13 +220,14 @@ entity @("template3")
 
 entity @("camera")
 {
-  //pos:f3 = 192.299 , 609.8611 , -12.935
-  pos:f3 = 5, 600, 2.5
-  camera_fov:f = 60.0
-  camera_zNear:f = 0.1
-  camera_zFar:f = 3000.0
-  camera_rotations:f2 = 0.0, 0.0
-  forward:f3 = 0.0, 0.0, 1.0
+  camera: CameraComponent = {
+    //position:f3 = 192.299 , 609.8611 , -12.935
+    active:b = yes
+    position:f3 = 5, 600, 2.5
+    fov:f = 60.0
+    znear:f = 0.1
+    zfar:f = 3000.0
+  }
 }
 
 entity @("test_static_mesh")

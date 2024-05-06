@@ -16,12 +16,7 @@ template @("name: template3; extends: template1, template2") {
 
 template @("name: camera")
 {
-  pos:f3 = 0.0, 0.0, 0.0
-  camera_fov:f = 0.0
-  camera_zNear:f = 0.0
-  camera_zFar:f = 0.0
-  camera_rotations:f2 = 0.0, 0.0
-  forward:f3 = 0.0, 0.0, 0.0
+  camera: CameraComponent = {}
 }
 
 template @("name: src_tmpl")

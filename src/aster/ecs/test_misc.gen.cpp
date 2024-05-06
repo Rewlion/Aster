@@ -244,9 +244,7 @@ static SystemRegistration moving_decal_controller_registration(
 
 const static DirectQueryRegistration query_camera_queryReg{
   {
-    DESCRIBE_QUERY_COMPONENT("pos", float3),
-    DESCRIBE_QUERY_COMPONENT("camera_rotations", float2),
-    DESCRIBE_QUERY_COMPONENT("forward", float3)
+    DESCRIBE_QUERY_COMPONENT("camera", const CameraComponent)
   },
   "query_camera"};
 const static query_id_t query_camera_queryId = query_camera_queryReg.getId();
@@ -254,16 +252,12 @@ const static query_id_t query_camera_queryId = query_camera_queryReg.getId();
 
 void query_camera (eastl::function<
   void(
-    const float3& pos,
-    const float2& camera_rotations,
-    const float3& forward)> cb)
+    const const CameraComponent& camera)> cb)
 {
   ecs::get_registry().query(query_camera_queryId, [&](ComponentsAccessor& accessor)
   {
-    const float3& pos = accessor.get<float3>(compile_ecs_name_hash("pos"));
-    const float2& camera_rotations = accessor.get<float2>(compile_ecs_name_hash("camera_rotations"));
-    const float3& forward = accessor.get<float3>(compile_ecs_name_hash("forward"));
-    cb(pos,camera_rotations,forward);
+    const const CameraComponent& camera = accessor.get<const CameraComponent>(compile_ecs_name_hash("camera"));
+    cb(camera);
   });
 }
 
