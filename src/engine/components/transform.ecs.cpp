@@ -58,7 +58,7 @@ auto TransformComponent::getWorldTransformTmInternal(const TransformComponent* c
     const float4x4 parentTm = comp->getWorldTransformTmInternal(parentAttachment);
     const float4x4 localTm = comp->getLocalTransform();
 
-    return localTm * parentTm;
+    return parentTm * localTm;
   }
 
   return float4x4{1.0};
