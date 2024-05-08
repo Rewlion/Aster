@@ -10,7 +10,7 @@ using namespace ecs;
 
 const static DirectQueryRegistration query_decals_queryReg{
   {
-    DESCRIBE_QUERY_COMPONENT("decal", const DecalComponent)
+    DESCRIBE_QUERY_COMPONENT("decal", DecalComponent)
   },
   "query_decals"};
 const static query_id_t query_decals_queryId = query_decals_queryReg.getId();
@@ -18,11 +18,11 @@ const static query_id_t query_decals_queryId = query_decals_queryReg.getId();
 
 void query_decals (eastl::function<
   void(
-    const const DecalComponent& decal)> cb)
+    const DecalComponent& decal)> cb)
 {
   ecs::get_registry().query(query_decals_queryId, [&](ComponentsAccessor& accessor)
   {
-    const const DecalComponent& decal = accessor.get<const DecalComponent>(compile_ecs_name_hash("decal"));
+    const DecalComponent& decal = accessor.get<DecalComponent>(compile_ecs_name_hash("decal"));
     cb(decal);
   });
 }

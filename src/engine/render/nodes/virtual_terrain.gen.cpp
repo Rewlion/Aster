@@ -51,7 +51,7 @@ void query_vterrain (eastl::function<
 static void virtual_terrain_creation_handler_internal(Event* event, ComponentsAccessor& accessor)
 {
   const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
-  const const VTerrainComponent& vterrain = accessor.get<const VTerrainComponent>(compile_ecs_name_hash("vterrain"));
+  const VTerrainComponent& vterrain = accessor.get<VTerrainComponent>(compile_ecs_name_hash("vterrain"));
   virtual_terrain_creation_handler(*casted_event, vterrain);
 }
 
@@ -60,7 +60,7 @@ static EventSystemRegistration virtual_terrain_creation_handler_registration(
   virtual_terrain_creation_handler_internal,
   compile_ecs_name_hash("OnEntityCreated"),
   {
-    DESCRIBE_QUERY_COMPONENT("vterrain", const VTerrainComponent)
+    DESCRIBE_QUERY_COMPONENT("vterrain", VTerrainComponent)
   },
   "virtual_terrain_creation_handler"
 );

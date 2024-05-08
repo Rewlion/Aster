@@ -13,13 +13,17 @@ def get_real_type(cursor_type):
 def get_template_real_type(cursor_type):
   return cursor_type if cursor_type.kind == clang.cindex.TypeKind.ELABORATED else cursor_type.get_pointee()
 
+def remove_const_qualifier(spelling):
+  prefix = "const "
+  return spelling[len(prefix):] if spelling.startswith(prefix) else spelling
+
 def get_real_type_name(real_type):
   if real_type.kind == clang.cindex.TypeKind.TYPEDEF:
-    return real_type.get_typedef_name()
+    return remove_const_qualifier(real_type.get_typedef_name())
   elif real_type.kind == clang.cindex.TypeKind.ELABORATED:
-    return real_type.get_named_type().spelling
+    return remove_const_qualifier(real_type.get_named_type().spelling)
   elif real_type.kind == clang.cindex.TypeKind.RECORD:
-    return real_type.spelling
+    return remove_const_qualifier(real_type.spelling)
   elif real_type.kind == clang.cindex.TypeKind.INT:
     return "int"
   elif real_type.kind == clang.cindex.TypeKind.FLOAT:

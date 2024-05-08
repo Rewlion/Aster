@@ -10,7 +10,7 @@ using namespace ecs;
 
 static void test_ed_comp_internal(ComponentsAccessor& accessor)
 {
-  const const TestEDComponent& ed = accessor.get<const TestEDComponent>(compile_ecs_name_hash("ed"));
+  const TestEDComponent& ed = accessor.get<TestEDComponent>(compile_ecs_name_hash("ed"));
   test_ed_comp(ed);
 }
 
@@ -18,7 +18,7 @@ static void test_ed_comp_internal(ComponentsAccessor& accessor)
 static SystemRegistration test_ed_comp_registration(
   test_ed_comp_internal,
   {
-    DESCRIBE_QUERY_COMPONENT("ed", const TestEDComponent)
+    DESCRIBE_QUERY_COMPONENT("ed", TestEDComponent)
   },
   "test_ed_comp"
 );
@@ -244,7 +244,7 @@ static SystemRegistration moving_decal_controller_registration(
 
 const static DirectQueryRegistration query_camera_queryReg{
   {
-    DESCRIBE_QUERY_COMPONENT("camera", const CameraComponent)
+    DESCRIBE_QUERY_COMPONENT("camera", CameraComponent)
   },
   "query_camera"};
 const static query_id_t query_camera_queryId = query_camera_queryReg.getId();
@@ -252,11 +252,11 @@ const static query_id_t query_camera_queryId = query_camera_queryReg.getId();
 
 void query_camera (eastl::function<
   void(
-    const const CameraComponent& camera)> cb)
+    const CameraComponent& camera)> cb)
 {
   ecs::get_registry().query(query_camera_queryId, [&](ComponentsAccessor& accessor)
   {
-    const const CameraComponent& camera = accessor.get<const CameraComponent>(compile_ecs_name_hash("camera"));
+    const CameraComponent& camera = accessor.get<CameraComponent>(compile_ecs_name_hash("camera"));
     cb(camera);
   });
 }
@@ -304,7 +304,7 @@ static SystemRegistration move_point_light_registration(
 
 static void render_bvh_test_internal(ComponentsAccessor& accessor)
 {
-  const const StaticMeshComponent& static_mesh = accessor.get<const StaticMeshComponent>(compile_ecs_name_hash("static_mesh"));
+  const StaticMeshComponent& static_mesh = accessor.get<StaticMeshComponent>(compile_ecs_name_hash("static_mesh"));
   bool bvh_test_flag = accessor.get<bool>(compile_ecs_name_hash("bvh_test_flag"));
   render_bvh_test(static_mesh,bvh_test_flag);
 }
@@ -313,7 +313,7 @@ static void render_bvh_test_internal(ComponentsAccessor& accessor)
 static SystemRegistration render_bvh_test_registration(
   render_bvh_test_internal,
   {
-    DESCRIBE_QUERY_COMPONENT("static_mesh", const StaticMeshComponent),
+    DESCRIBE_QUERY_COMPONENT("static_mesh", StaticMeshComponent),
     DESCRIBE_QUERY_COMPONENT("bvh_test_flag", bool)
   },
   "render_bvh_test"

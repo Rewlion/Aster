@@ -10,7 +10,7 @@ using namespace ecs;
 
 const static DirectQueryRegistration query_camera_queryReg{
   {
-    DESCRIBE_QUERY_COMPONENT("camera", const CameraComponent)
+    DESCRIBE_QUERY_COMPONENT("camera", CameraComponent)
   },
   "query_camera"};
 const static query_id_t query_camera_queryId = query_camera_queryReg.getId();
@@ -18,11 +18,11 @@ const static query_id_t query_camera_queryId = query_camera_queryReg.getId();
 
 void query_camera (eastl::function<
   void(
-    const const CameraComponent& camera)> cb)
+    const CameraComponent& camera)> cb)
 {
   ecs::get_registry().query(query_camera_queryId, [&](ComponentsAccessor& accessor)
   {
-    const const CameraComponent& camera = accessor.get<const CameraComponent>(compile_ecs_name_hash("camera"));
+    const CameraComponent& camera = accessor.get<CameraComponent>(compile_ecs_name_hash("camera"));
     cb(camera);
   });
 }

@@ -11,7 +11,7 @@ using namespace ecs;
 static void default_init_point_light_component_internal(Event* event, ComponentsAccessor& accessor)
 {
   const ecs::OnEntityCreated* casted_event = reinterpret_cast<const ecs::OnEntityCreated*>(event);
-  const const TransformComponent& root_tm = accessor.get<const TransformComponent>(compile_ecs_name_hash("root_tm"));
+  const TransformComponent& root_tm = accessor.get<TransformComponent>(compile_ecs_name_hash("root_tm"));
   PointLightComponent& point_light = accessor.get<PointLightComponent>(compile_ecs_name_hash("point_light"));
   default_init_point_light_component(*casted_event, root_tm,point_light);
 }
@@ -21,7 +21,7 @@ static EventSystemRegistration default_init_point_light_component_registration(
   default_init_point_light_component_internal,
   compile_ecs_name_hash("OnEntityCreated"),
   {
-    DESCRIBE_QUERY_COMPONENT("root_tm", const TransformComponent),
+    DESCRIBE_QUERY_COMPONENT("root_tm", TransformComponent),
     DESCRIBE_QUERY_COMPONENT("point_light", PointLightComponent)
   },
   "default_init_point_light_component"

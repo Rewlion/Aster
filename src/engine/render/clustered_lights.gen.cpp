@@ -31,7 +31,7 @@ void query_clustered_lights (eastl::function<
 static void point_light_dbg_draw_internal(Event* event, ComponentsAccessor& accessor)
 {
   Engine::OnGameTick* casted_event = reinterpret_cast<Engine::OnGameTick*>(event);
-  const const PointLightComponent& point_light = accessor.get<const PointLightComponent>(compile_ecs_name_hash("point_light"));
+  const PointLightComponent& point_light = accessor.get<PointLightComponent>(compile_ecs_name_hash("point_light"));
   point_light_dbg_draw(*casted_event, point_light);
 }
 
@@ -40,7 +40,7 @@ static EventSystemRegistration point_light_dbg_draw_registration(
   point_light_dbg_draw_internal,
   compile_ecs_name_hash("OnGameTick"),
   {
-    DESCRIBE_QUERY_COMPONENT("point_light", const PointLightComponent)
+    DESCRIBE_QUERY_COMPONENT("point_light", PointLightComponent)
   },
   "point_light_dbg_draw"
 );
@@ -49,7 +49,7 @@ static EventSystemRegistration point_light_dbg_draw_registration(
 static void listen_point_lights_creation_internal(Event* event, ComponentsAccessor& accessor)
 {
   ecs::OnEntityCreated* casted_event = reinterpret_cast<ecs::OnEntityCreated*>(event);
-  const const PointLightComponent& point_light = accessor.get<const PointLightComponent>(compile_ecs_name_hash("point_light"));
+  const PointLightComponent& point_light = accessor.get<PointLightComponent>(compile_ecs_name_hash("point_light"));
   listen_point_lights_creation(*casted_event, point_light);
 }
 
@@ -58,7 +58,7 @@ static EventSystemRegistration listen_point_lights_creation_registration(
   listen_point_lights_creation_internal,
   compile_ecs_name_hash("OnEntityCreated"),
   {
-    DESCRIBE_QUERY_COMPONENT("point_light", const PointLightComponent)
+    DESCRIBE_QUERY_COMPONENT("point_light", PointLightComponent)
   },
   "listen_point_lights_creation"
 );
