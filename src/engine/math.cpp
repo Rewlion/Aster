@@ -65,14 +65,32 @@ namespace math
     return glm::rotate(radians, float3{0.0, 1.0, 0.0}) * float4{1.0, 0.0, 0.0, 0.0};
   }
 
-  auto rotate(const float roll, const float pitch, const float yaw) -> float4x4
+  auto rotateZYX(const float roll, const float pitch, const float yaw) -> float4x4
   {
-    float cosa = std::cos(-roll);
-    float sina = std::sin(-roll);
-    float cosb = std::cos(-yaw);
-    float sinb = std::sin(-yaw);
-    float cosg = std::cos(-pitch);
-    float sing = std::sin(-pitch);
+    const float Cx = std::cos(-pitch);
+    const float Sx = std::sin(-pitch);
+    const float Cy = std::cos(-yaw);
+    const float Sy = std::sin(-yaw);
+    const float Cz = std::cos(-roll);
+    const float Sz = std::sin(-roll);
+
+    float4x4 ZYX;
+    ZYX[0] = float4{Cy*Cz, Cy*Sz, -Sy, 0};
+    ZYX[1] = float4{Cz*Sx*Sy-Cx*Sz, Cx*Cz+Sx*Sy*Sz, Cy*Sx, 0};
+    ZYX[2] = float4{Cx*Cz*Sy+Sx*Sz, Cx*Sy*Sz-Cz*Sx, Cx*Cy, 0};
+    ZYX[3] = float4{0,0,0,1};
+
+    return ZYX;
+  }
+
+  auto rotateZXY(const float roll, const float pitch, const float yaw) -> float4x4
+  {
+    const float cosa = std::cos(-roll);
+    const float sina = std::sin(-roll);
+    const float cosb = std::cos(-yaw);
+    const float sinb = std::sin(-yaw);
+    const float cosg = std::cos(-pitch);
+    const float sing = std::sin(-pitch);
 
     float4x4 ZXY;
     ZXY[0] = float4{cosa*cosb-sina*sinb*sing, cosa*sinb*sing + sina*cosb, -sinb * cosg, 0};

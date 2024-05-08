@@ -11,7 +11,8 @@ namespace math
   auto look_at(const glm::vec3& at, const glm::vec3& from) -> float4x4;
   auto get_right(const float radians) -> float3;
 
-  auto rotate(const float roll, const float pitch, const float yaw) -> float4x4;
+  auto rotateZYX(const float roll, const float pitch, const float yaw) -> float4x4;
+  auto rotateZXY(const float roll, const float pitch, const float yaw) -> float4x4;
   auto rotateX(const float radians) -> float4x4;
   auto rotateY(const float radians) -> float4x4;
   auto rotateZ(const float radians) -> float4x4;

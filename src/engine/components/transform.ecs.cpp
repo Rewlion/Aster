@@ -75,7 +75,7 @@ auto TransformComponent::getLocalTransform() const -> float4x4
   const float4x4 scaleTm = glm::scale(m_LocalScale);
 
   const auto [roll, pitch, yaw] = m_LocalRotation;
-  const float4x4 rotTm = math::rotate(math::radians(roll), math::radians(pitch), math::radians(yaw));
+  const float4x4 rotTm = math::rotateZYX(math::radians(roll), math::radians(pitch), math::radians(yaw));
 
   return trTm * rotTm * scaleTm;
 }
