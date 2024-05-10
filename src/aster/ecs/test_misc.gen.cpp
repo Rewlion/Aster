@@ -338,6 +338,29 @@ static SystemRegistration render_tlas_test_registration(
 );
 
 
+const static DirectQueryRegistration query_refl_test_queryReg{
+  {
+    DESCRIBE_QUERY_COMPONENT("root_tm", TransformComponent),
+    DESCRIBE_QUERY_COMPONENT("refl_test_flag", bool)
+  },
+  "query_refl_test"};
+const static query_id_t query_refl_test_queryId = query_refl_test_queryReg.getId();
+
+
+void query_refl_test (eastl::function<
+  void(
+    TransformComponent& root_tm,
+    bool refl_test_flag)> cb)
+{
+  ecs::get_registry().query(query_refl_test_queryId, [&](ComponentsAccessor& accessor)
+  {
+    TransformComponent& root_tm = accessor.get<TransformComponent>(compile_ecs_name_hash("root_tm"));
+    bool refl_test_flag = accessor.get<bool>(compile_ecs_name_hash("refl_test_flag"));
+    cb(root_tm,refl_test_flag);
+  });
+}
+
+
 static void pg_test_internal(ComponentsAccessor& accessor)
 {
   const float3& pathguide_test_center = accessor.get<float3>(compile_ecs_name_hash("pathguide_test_center"));

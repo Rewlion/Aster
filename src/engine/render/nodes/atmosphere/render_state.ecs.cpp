@@ -86,7 +86,7 @@ void AtmosphereRenderState::init()
     gapi::TextureState::Undefined
   };
 
-  const uint enviMips = std::min(std::bit_width((uint)ENVI_SPECULAR_LUT_SIZE.x), 5u);
+  const uint enviMips = std::min((uint)std::bit_width((uint)ENVI_SPECULAR_LUT_SIZE.x), 5u);
   m_EnviBRDFLut = {
     gapi::allocate_texture(
       gapi::TextureAllocationDescription{

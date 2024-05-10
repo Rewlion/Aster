@@ -104,3 +104,12 @@ template @("name: test_static_mesh")
     model:t = "damaged_helmet"
   }
 }
+
+template @("name: test_reflection; extends: SceneRoot")
+{
+  static_mesh: StaticMeshComponent = {
+    model:t = "damaged_helmet"
+  }
+  
+  refl_test_flag:b=yes
+}

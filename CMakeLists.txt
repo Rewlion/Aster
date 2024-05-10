@@ -17,9 +17,10 @@ endif()
 
 add_definitions(-DSPDLOG_COMPILED_LIB)
 add_definitions(-DPLATFORM_WIN64)
-add_definitions(#-Wno-defaulted-function-deleted
+add_definitions(
 -Wno-deprecated-volatile
--Wno-deprecated-declarations)
+-Wno-deprecated-declarations
+-Wno-invalid-offsetof)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_definitions(-DDEBUG)
@@ -85,6 +86,7 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/gui")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/input")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/input/drivers")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/qjs")
+add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/reflection")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/render")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/scene")
 add_subdirectory("${CMAKE_SOURCE_DIR}/src/engine/tfx")

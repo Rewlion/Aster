@@ -26,6 +26,7 @@ target_link_libraries(engine
   engine_input
   engine_input_drivers
   engine_qjs
+  engine_reflection
   engine_render_ecs_utils
   engine_scene
   engine_tfx

@@ -5,9 +5,66 @@
 #include <engine/ecs/type_meta.h>
 #include <engine/math.h>
 #include <engine/utils/pattern_matching.hpp>
+#include <engine/reflection/field.h>
+#include <engine/reflection/class.h>
 
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
+
+class TransformComponentClass : public Class
+{
+  public:
+    auto getFieldsBegin() const -> const ClassField* override
+    {
+      return m_Fields;
+    }
+    
+    auto getFieldsCount() const -> size_t override
+    {
+      return m_FieldsCount;
+    }
+    
+  private:
+    static ClassField m_Fields[];
+    static size_t m_FieldsCount;
+};
+
+ClassField TransformComponentClass::m_Fields[] = {
+  ClassField{
+    .offset = offsetof(TransformComponent, m_LocalPosition),
+    .name = "Position",
+    .type = ClassField::Type::Float3
+  },
+  ClassField{
+    .offset = offsetof(TransformComponent, m_LocalRotation),
+    .name = "Rotation",
+    .type = ClassField::Type::Float3
+  },
+  ClassField{
+    .offset = offsetof(TransformComponent, m_LocalScale),
+    .name = "Scale",
+    .type = ClassField::Type::Float3
+  },
+};
+
+size_t TransformComponentClass::m_FieldsCount = std::size(TransformComponentClass::m_Fields);
+
+template<>
+auto get_static_class<TransformComponent>() -> const Class*
+{
+  static TransformComponentClass c;
+  return &c;
+}
+
+auto TransformComponent::getClass() -> const Class*
+{
+  return getStaticClass();
+}
+
+auto TransformComponent::getStaticClass() -> const Class*
+{
+  return get_static_class<TransformComponent>();
+}
 
 TransformComponent::TransformComponent(const ed::Scope* init)
 {

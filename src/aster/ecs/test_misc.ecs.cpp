@@ -1,8 +1,8 @@
 #include <engine/assets/assets_manager.h>
 #include <engine/components/camera.h>
+#include <engine/components/decal.h>
 #include <engine/components/point_light.h>
 #include <engine/components/static_mesh.h>
-#include <engine/components/decal.h>
 #include <engine/console/cmd.h>
 #include <engine/console/console.h>
 #include <engine/ecs/ecs.h>
@@ -13,7 +13,9 @@
 #include <engine/gui/gui.h>
 #include <engine/input/input.h>
 #include <engine/math.h>
+#include <engine/reflection/field.h>
 #include <engine/render/debug/render.h>
+#include <engine/render/imgui/imgui.h>
 #include <engine/scene/scene.h>
 #include <engine/time.h>
 #include <engine/types.h>
@@ -710,6 +712,56 @@ void spawn_pg_test(eastl::span<string_view>)
 }
 
 
+//// REFLECTION
+static
+void spawn_refl_test(eastl::span<string_view>)
+{
+  query_camera([](const CameraComponent& camera)
+  {
+    if (!camera.isActive())
+      return;
+
+    const float3 spawnPos = camera.getWorldPosition() + camera.getWorldForward() * 5.0f;
+
+    ecs::EntityComponents init;
+    init["root_tm"] = TransformComponent{spawnPos, float3{0,0,0}, float3{1,1,1}};
+
+    ecs::get_registry().createEntity("test_reflection", std::move(init));
+  });
+}
+
+ECS_DESCRIBE_QUERY(query_refl_test, (TransformComponent& root_tm, bool refl_test_flag));
+
+void imgui_draw_reflection_test_editor()
+{
+  query_refl_test([] (TransformComponent& root_tm, bool refl_test_flag) {
+    ImGui::Begin("test_refl_editor", nullptr, 0);
+    const Class* sclass = root_tm.getClass();
+    const ClassField* field = sclass->getFieldsBegin();
+    const size_t fieldsCount = sclass->getFieldsCount();
+
+    for (size_t i = 0; i < fieldsCount; ++i)
+    {
+      const ClassField& f = field[i];
+      ASSERT(f.type == ClassField::Type::Float3);
+
+      float3 val;
+      sclass->getFieldValue(&f, &root_tm, &val);
+      
+      float imguiVal[3] = {val.x, val.y, val.z};
+      ImGui::InputFloat3(f.name, imguiVal);
+
+      val = {imguiVal[0], imguiVal[1], imguiVal[2]};
+      sclass->setFieldValue(&f, &root_tm, &val);
+    }
+
+    ImGui::End();
+  });
+}
+
+IMGUI_REG_WND(imgui_draw_reflection_test_editor);
+/////////////////////////////////////////////
+
 static
 float3 hemioct_to_float32x3(float2 e)
 {
@@ -775,3 +827,4 @@ CONSOLE_CMD("bvh_test", 0, 0, spawn_bvh_test);
 CONSOLE_CMD("tlas_test", 0,0, spawn_tlas_test);
 CONSOLE_CMD("cpos", 0,0, cpos_cmd);
 CONSOLE_CMD("pg_test", 0,0, spawn_pg_test);
+CONSOLE_CMD("test_reflection", 0, 0, spawn_refl_test);

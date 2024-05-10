@@ -5,6 +5,8 @@
 
 #include <variant>
 
+#include <engine/reflection/class.h>
+
 namespace ed
 {
   class Scope;
@@ -12,6 +14,13 @@ namespace ed
 
 class TransformComponent
 {
+  friend class TransformComponentClass;
+
+  public:
+    auto getClass() -> const Class*;
+    static
+    auto getStaticClass() -> const Class*;
+
   public:
     TransformComponent() = default;
     
@@ -64,3 +73,6 @@ class TransformComponent
     auto getWorldTransformTmInternal(const TransformComponent*) const -> float4x4;
     auto getParentTransform() const -> const TransformComponent*;
 };
+
+template<>
+auto get_static_class<TransformComponent>() -> const Class*;
