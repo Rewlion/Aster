@@ -1,6 +1,12 @@
 #pragma once
 
+#include <engine/reflection/class.h>
+#include <engine/reflection/macros.h>
+
 #ifdef __clang__
+  #define ECS_COMPONENT(...) CLASS(__VA_ARGS__)
+  #define ECS_BODY(...) REFLECTION_BODY(__VA_ARGS__)
+  
   #define ECS_QUERY() [[clang::annotate("ecs_query")]]
   #define ECS_SYSTEM() [[clang::annotate("ecs_system")]]
   #define ECS_EVENT_SYSTEM() [[clang::annotate("ecs_event_system")]]

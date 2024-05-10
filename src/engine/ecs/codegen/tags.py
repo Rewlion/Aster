@@ -1,0 +1,7 @@
+REFL_CLASS_TAG = "refl_class"
+REFL_PROPERTY_TAG = "refl_property"
+ES_SYSTEM_TAG = "ecs_system"
+ES_EVENT_SYSTEM_TAG = "ecs_event_system"
+ES_QUERY_TAG = "ecs_query"
+FG_EXEC_TAG = "fg_node_exec"
+FG_DSL_TAG = "fg_node_dsl"

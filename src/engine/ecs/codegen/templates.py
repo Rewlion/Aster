@@ -321,3 +321,52 @@ EventSystemRegistration {registrationFnName}_registration(
   "{registrationFnName}"
 );
 """
+
+
+def generate_reflection_property(comp_class, member, name, type):
+  return f"""ClassField{{
+    .offset = offsetof({comp_class}, {member}),
+    .name = "{name}",
+    .type = {type}
+  }},
+"""
+
+
+def generate_reflection_class(comp_class, comp_refl_class, properties):
+  genProperties = ''.join([generate_reflection_property(comp_class, p.member, p.name, p.type ) for p in properties])
+  return f"""
+class {comp_refl_class} : public Class
+{{
+  public:
+    auto getFieldsBegin() const -> const ClassField* override
+    {{
+      return m_Fields;
+    }}
+    
+    auto getFieldsCount() const -> size_t override
+    {{
+      return m_FieldsCount;
+    }}
+    
+  private:
+    static ClassField m_Fields[];
+    static size_t m_FieldsCount;
+}};
+
+ClassField {comp_refl_class}::m_Fields[] = {{
+  {genProperties}
+}};
+
+size_t {comp_refl_class}::m_FieldsCount = std::size({comp_refl_class}::m_Fields);
+
+auto {comp_class}::getClass() -> const Class*
+{{
+  return getStaticClass();
+}}
+
+auto {comp_class}::getStaticClass() -> const Class*
+{{
+  static {comp_refl_class} c;
+  return &c;
+}}
+"""

@@ -2,24 +2,19 @@
 
 #include <engine/types.h>
 #include <engine/ecs/eid.h>
+#include <engine/ecs/macros.h>
 
 #include <variant>
-
-#include <engine/reflection/class.h>
 
 namespace ed
 {
   class Scope;
 }
 
-class TransformComponent
+ECS_COMPONENT()
+TransformComponent
 {
-  friend class TransformComponentClass;
-
-  public:
-    auto getClass() -> const Class*;
-    static
-    auto getStaticClass() -> const Class*;
+  ECS_BODY(TransformComponent)
 
   public:
     TransformComponent() = default;
@@ -65,8 +60,13 @@ class TransformComponent
                  SelfAttachment,
                  EntityAttachment> m_ParentAttachment;
 
+    PROPERTY()
     float3 m_LocalPosition;
+    
+    PROPERTY()
     float3 m_LocalRotation;
+    
+    PROPERTY()
     float3 m_LocalScale;
 
   private:
@@ -74,5 +74,3 @@ class TransformComponent
     auto getParentTransform() const -> const TransformComponent*;
 };
 
-template<>
-auto get_static_class<TransformComponent>() -> const Class*;

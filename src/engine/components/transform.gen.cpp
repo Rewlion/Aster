@@ -7,3 +7,53 @@
 #include "transform.ecs.cpp" 
 
 using namespace ecs;
+
+class TransformComponentClass : public Class
+{
+  public:
+    auto getFieldsBegin() const -> const ClassField* override
+    {
+      return m_Fields;
+    }
+    
+    auto getFieldsCount() const -> size_t override
+    {
+      return m_FieldsCount;
+    }
+    
+  private:
+    static ClassField m_Fields[];
+    static size_t m_FieldsCount;
+};
+
+ClassField TransformComponentClass::m_Fields[] = {
+  ClassField{
+    .offset = offsetof(TransformComponent, m_LocalPosition),
+    .name = "m_LocalPosition",
+    .type = ClassField::Type::Float3
+  },
+ClassField{
+    .offset = offsetof(TransformComponent, m_LocalRotation),
+    .name = "m_LocalRotation",
+    .type = ClassField::Type::Float3
+  },
+ClassField{
+    .offset = offsetof(TransformComponent, m_LocalScale),
+    .name = "m_LocalScale",
+    .type = ClassField::Type::Float3
+  },
+
+};
+
+size_t TransformComponentClass::m_FieldsCount = std::size(TransformComponentClass::m_Fields);
+
+auto TransformComponent::getClass() -> const Class*
+{
+  return getStaticClass();
+}
+
+auto TransformComponent::getStaticClass() -> const Class*
+{
+  static TransformComponentClass c;
+  return &c;
+}

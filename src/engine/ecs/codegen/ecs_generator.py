@@ -26,7 +26,6 @@ if not os.path.isfile(args.src):
 
 generatedSrc = generate_ecs_impl(args.src, clangIncludes, clangDefines)
 
-
 f = open(args.src.replace('.ecs.cpp', '.gen.cpp'), 'w')
 f.write(generatedSrc)
 
